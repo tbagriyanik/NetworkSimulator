@@ -6,6 +6,7 @@ import { DEVICE_ICONS } from './NetworkTopology/utils/networkTopology.constants'
 import { CanvasDevice, SelectedPortRef } from './NetworkTopology/types/networkTopology.types';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useEffect } from 'react';
+import type { ReactNode } from 'react';
 
 type PortSelectorStep = 'source' | 'target';
 
@@ -103,6 +104,18 @@ export function NetworkTopologyPortSelectorModal({
                     console: { active: 'text-accent-400', inactive: 'text-accent-500 hover:text-accent-400' },
                   };
                   const c = colorMap[type] || colorMap.console;
+                  const cableIconMap: Partial<Record<CableType, ReactNode>> = {
+                    straight: <Cable className="w-4 h-4" />,
+                    crossover: <LineSquiggle className="w-4 h-4" />,
+                    serial: <Plug className="w-4 h-4" />,
+                    console: <TrendingUpDown className="w-4 h-4" />,
+                  };
+                  const cableLabelMap: Record<string, string> = {
+                    straight: t.straight,
+                    crossover: t.crossover,
+                    serial: t.serial,
+                    console: t.console,
+                  };
                   return (
                     <button
                       key={type}
@@ -114,19 +127,11 @@ export function NetworkTopologyPortSelectorModal({
                           : ''
                         }
                       ${cableType === type ? c.active : c.inactive}`}
-                      title={type === 'straight' ? t.straight : type === 'crossover' ? t.crossover : type === 'serial' ? t.serial : t.console}
+                      title={cableLabelMap[type]}
                     >
-                      {type === 'straight' ? (
-                        <Cable className="w-4 h-4" />
-                      ) : type === 'crossover' ? (
-                        <LineSquiggle className="w-4 h-4" />
-                      ) : type === 'serial' ? (
-                        <Plug className="w-4 h-4" />
-                      ) : (
-                        <TrendingUpDown className="w-4 h-4" />
-                      )}
+                      {cableIconMap[type] ?? cableIconMap.console}
                       <span className="hidden md:inline">
-                        {type === 'straight' ? t.straight : type === 'crossover' ? t.crossover : type === 'serial' ? t.serial : t.console}
+                        {cableLabelMap[type]}
                       </span>
                     </button>
                   )

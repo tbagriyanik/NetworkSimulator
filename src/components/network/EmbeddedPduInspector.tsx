@@ -228,7 +228,7 @@ export const EmbeddedPduInspector: React.FC<EmbeddedPduInspectorProps> = ({
                   <p className="text-xs text-slate-500 italic">{filterQuery ? t.noFilterMatches : 'No inbound layer data'}</p>
                 ) : (
                   filteredInLayers.map((layer, idx) => (
-                    <div key={idx} className={`p-3 rounded-lg border ${isDark ? 'bg-slate-900/90 border-slate-700/80' : 'bg-white border-slate-200'}`}>
+                    <div key={`in-layer-${layer.layer}-${layer.name}-${idx}`} className={`p-3 rounded-lg border ${isDark ? 'bg-slate-900/90 border-slate-700/80' : 'bg-white border-slate-200'}`}>
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-xs font-bold text-cyan-300">{t.layer(layer.layer)}: {layer.name}</span>
                         <span className="text-[10px] font-mono text-slate-400">{layer.title}</span>
@@ -236,7 +236,7 @@ export const EmbeddedPduInspector: React.FC<EmbeddedPduInspectorProps> = ({
                       {layer.fields && layer.fields.length > 0 && (
                         <div className="space-y-1 my-2">
                           {layer.fields.map((f, fIdx) => (
-                            <div key={fIdx} className="flex justify-between text-xs py-0.5 border-b border-slate-700/30">
+                            <div key={`in-field-${layer.layer}-${f.label}-${fIdx}`} className="flex justify-between text-xs py-0.5 border-b border-slate-700/30">
                               <span className="text-slate-400">{f.label}:</span>
                               <span className="font-mono text-slate-200 font-medium">{String(f.value)}</span>
                             </div>
@@ -246,7 +246,7 @@ export const EmbeddedPduInspector: React.FC<EmbeddedPduInspectorProps> = ({
                       {layer.notes && layer.notes.length > 0 && (
                         <div className="mt-2 text-[11px] text-amber-300/90 bg-amber-950/20 border border-amber-500/20 p-2 rounded">
                           {layer.notes.map((n, nIdx) => (
-                            <p key={nIdx}>{n}</p>
+                            <p key={`in-note-${layer.layer}-${nIdx}`}>{n}</p>
                           ))}
                         </div>
                       )}
@@ -267,7 +267,7 @@ export const EmbeddedPduInspector: React.FC<EmbeddedPduInspectorProps> = ({
                   <p className="text-xs text-slate-500 italic">{filterQuery ? t.noFilterMatches : 'No outbound layer data'}</p>
                 ) : (
                   filteredOutLayers.map((layer, idx) => (
-                    <div key={idx} className={`p-3 rounded-lg border ${isDark ? 'bg-slate-900/90 border-slate-700/80' : 'bg-white border-slate-200'}`}>
+                    <div key={`out-layer-${layer.layer}-${layer.name}-${idx}`} className={`p-3 rounded-lg border ${isDark ? 'bg-slate-900/90 border-slate-700/80' : 'bg-white border-slate-200'}`}>
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-xs font-bold text-emerald-300">{t.layer(layer.layer)}: {layer.name}</span>
                         <span className="text-[10px] font-mono text-slate-400">{layer.title}</span>
@@ -275,7 +275,7 @@ export const EmbeddedPduInspector: React.FC<EmbeddedPduInspectorProps> = ({
                       {layer.fields && layer.fields.length > 0 && (
                         <div className="space-y-1 my-2">
                           {layer.fields.map((f, fIdx) => (
-                            <div key={fIdx} className="flex justify-between text-xs py-0.5 border-b border-slate-700/30">
+                            <div key={`out-field-${layer.layer}-${f.label}-${fIdx}`} className="flex justify-between text-xs py-0.5 border-b border-slate-700/30">
                               <span className="text-slate-400">{f.label}:</span>
                               <span className="font-mono text-slate-200 font-medium">{String(f.value)}</span>
                             </div>
@@ -285,7 +285,7 @@ export const EmbeddedPduInspector: React.FC<EmbeddedPduInspectorProps> = ({
                       {layer.notes && layer.notes.length > 0 && (
                         <div className="mt-2 text-[11px] text-amber-300/90 bg-amber-950/20 border border-amber-500/20 p-2 rounded">
                           {layer.notes.map((n, nIdx) => (
-                            <p key={nIdx}>{n}</p>
+                            <p key={`out-note-${layer.layer}-${nIdx}`}>{n}</p>
                           ))}
                         </div>
                       )}
@@ -301,7 +301,7 @@ export const EmbeddedPduInspector: React.FC<EmbeddedPduInspectorProps> = ({
                 <h4 className="text-xs font-bold text-slate-300 mb-2">{t.deviceLog(currentHop?.deviceId || 'Device')}</h4>
                 <div className="space-y-1 font-mono text-xs text-slate-300">
                   {filteredDecisions.map((d, dIdx) => (
-                    <div key={dIdx} className="p-1.5 rounded bg-slate-900/60 border border-slate-800">
+                    <div key={`decision-${currentHop?.deviceId || 'dev'}-${dIdx}`} className="p-1.5 rounded bg-slate-900/60 border border-slate-800">
                       {d}
                     </div>
                   ))}

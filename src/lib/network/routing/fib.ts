@@ -235,6 +235,8 @@ export function fibLookup(
 /**
  * Format a FIB for `show ip cef` / FIB display commands.
  */
+const ROUTE_SOURCE_CODES: Record<string, string> = { connected: 'C', static: 'S' };
+
 export function formatFibTable(fib: FibEntry[]): string {
   let out = '\n';
   out += 'IP Forwarding Information Base (FIB)\n';
@@ -244,7 +246,7 @@ export function formatFibTable(fib: FibEntry[]): string {
     const primary = e.nextHops[0];
     const nh = primary?.nextHop ?? 'attached';
     const iface = primary?.interfaceId ?? (primary?.routeType === 'connected' ? primary.nextHop : '');
-    const source = primary?.code ?? (primary?.routeType === 'connected' ? 'C' : primary?.routeType === 'static' ? 'S' : '?');
+    const source = primary?.code ?? ROUTE_SOURCE_CODES[primary?.routeType ?? ''] ?? '?';
     const adMetric = `${e.administrativeDistance}/${e.metric}`;
     out += `${`${e.prefix}/${e.prefixLength}`.padEnd(18)}  ${nh.padEnd(17)}  ${iface.padEnd(15)}  ${source.padEnd(7)}  ${adMetric}`;
     if (e.nextHops.length > 1) out += `  [${e.nextHops.length}-way ECMP]`;

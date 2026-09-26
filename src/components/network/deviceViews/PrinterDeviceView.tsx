@@ -497,7 +497,7 @@ export function PrinterDeviceView({
                     const isConnected = selectedSsid === ssid;
                     return (
                       <div
-                        key={idx}
+                        key={`wifi-ssid-${ssid}-${idx}`}
                         onClick={() => handleSelectSsid(ssid)}
                         className={cn(
                           "p-2 rounded-lg border flex items-center justify-between cursor-pointer transition-all text-xs",
@@ -611,7 +611,7 @@ export function PrinterDeviceView({
               ) : (
                 <div className="space-y-1.5 max-h-[140px] overflow-y-auto custom-scrollbar">
                   {liveDevice.printJobs.map((job, idx) => (
-                    <div key={idx} className="p-2 rounded bg-slate-900 border border-slate-800 text-[11px] flex justify-between items-center">
+                    <div key={`print-job-${job.documentTitle}-${job.timestamp}-${idx}`} className="p-2 rounded bg-slate-900 border border-slate-800 text-[11px] flex justify-between items-center">
                       <div>
                         <div className="font-semibold text-purple-300 truncate max-w-[160px]">{job.documentTitle}</div>
                         <div className="text-[9px] opacity-60 font-mono">{job.senderName} • {job.pages} {isTr ? 'sayfa' : 'pg'}</div>
@@ -671,7 +671,7 @@ export function PrinterDeviceView({
         {pingResults.length > 0 && (
           <div className="p-3 rounded-lg bg-slate-950 font-mono text-xs text-emerald-400 space-y-1 overflow-x-auto border border-slate-800">
             {pingResults.map((line, idx) => (
-              <div key={idx}>{line}</div>
+              <div key={`ping-line-${idx}-${line.slice(0, 16)}`}>{line}</div>
             ))}
           </div>
         )}

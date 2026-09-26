@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo, useRef } from 'react';
+import type { ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Tooltip,
@@ -545,11 +546,23 @@ export function TopologyToolbar({
             serial: cableInfo.cableType === type ? 'text-success-400' : 'text-success-500 hover:text-success-400',
             console: cableInfo.cableType === type ? 'text-accent-400' : 'text-accent-500 hover:text-accent-400',
           };
+          const cableLabelMap: Record<string, string> = {
+            straight: t.straightCable,
+            crossover: t.crossoverCable,
+            serial: t.serialCable,
+            console: t.consoleCable,
+          };
+          const cableIconMap: Partial<Record<CableType, ReactNode>> = {
+            straight: <Cable className={`w-full h-full ${toolbarGlowClass}`} />,
+            crossover: <LineSquiggle className={`w-full h-full ${toolbarGlowClass}`} />,
+            serial: <Plug className={`w-full h-full ${toolbarGlowClass}`} />,
+            console: <TrendingUpDown className={`w-full h-full ${toolbarGlowClass}`} />,
+          };
           return (
             <Tooltip key={type}>
               <TooltipTrigger asChild>
                 <Button
-                  aria-label={type === 'straight' ? t.straightCable : type === 'crossover' ? t.crossoverCable : type === 'serial' ? t.serialCable : t.consoleCable}
+                  aria-label={cableLabelMap[type]}
                   variant="ghost"
                   size="icon"
                   className={`h-8 w-8 p-0.5 flex items-center justify-center font-bold transition-all
@@ -560,19 +573,11 @@ export function TopologyToolbar({
                   ${colorMap[type] || colorMap.console}`}
                   onClick={() => setCableInfo({ ...cableInfo, cableType: type })}
                 >
-                  {type === 'straight' ? (
-                    <Cable className={`w-full h-full ${toolbarGlowClass}`} />
-                  ) : type === 'crossover' ? (
-                    <LineSquiggle className={`w-full h-full ${toolbarGlowClass}`} />
-                  ) : type === 'serial' ? (
-                    <Plug className={`w-full h-full ${toolbarGlowClass}`} />
-                  ) : (
-                    <TrendingUpDown className={`w-full h-full ${toolbarGlowClass}`} />
-                  )}
+                  {cableIconMap[type] ?? cableIconMap.console}
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                {type === 'straight' ? t.straightCable : type === 'crossover' ? t.crossoverCable : type === 'serial' ? t.serialCable : t.consoleCable}
+                {cableLabelMap[type]}
               </TooltipContent>
             </Tooltip>
           );

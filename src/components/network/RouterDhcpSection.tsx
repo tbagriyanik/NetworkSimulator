@@ -397,7 +397,7 @@ export function RouterDhcpSection({
                       {filteredLeases.length > 0 ? (
                         filteredLeases.map((lease, idx) => (
                           <tr
-                            key={idx}
+                            key={`lease-${lease.ip}-${lease.mac || idx}`}
                             className={cn(
                               'border-b last:border-0 transition-colors',
                               isDark

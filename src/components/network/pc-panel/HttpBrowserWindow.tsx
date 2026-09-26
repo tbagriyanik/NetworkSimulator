@@ -465,9 +465,9 @@ export function HttpBrowserWindow({
           isDark ? 'bg-secondary-950/80 border-secondary-800' : 'bg-secondary-100 border-secondary-200'
         }`}>
           <span className="text-[10px] font-bold text-emerald-400 font-mono shrink-0">🌐 {language === 'tr' ? 'Siteler:' : 'Sites:'}</span>
-          {discoveredWebServers.map((srv, idx) => (
+          {discoveredWebServers.map((srv) => (
             <button
-              key={idx}
+              key={`srv-${srv.ip}-${srv.name}`}
               type="button"
               onClick={() => {
                 onUrlChange(srv.url);

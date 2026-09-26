@@ -744,6 +744,7 @@ export function Terminal({
                   ref={inputRef}
                   data-terminal-input
                   type={state.awaitingPassword || localPasswordPrompt ? 'password' : 'text'}
+                  aria-label={state.awaitingPassword || localPasswordPrompt ? (t.passwordLabel || 'Password') : (t.commandPrompt || 'CLI Command Input')}
                   value={input}
                   onChange={(e) => handleInputChange(e.target.value)}
                   onPaste={handlePaste}

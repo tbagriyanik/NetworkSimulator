@@ -4,6 +4,20 @@ import { CanvasDevice } from '../NetworkTopology/types/networkTopology.types';
 import { isSwitchDeviceType } from '../NetworkTopology/utils/networkTopology.helpers';
 import { isSwitchOrHubDeviceType, getDeviceFill } from './deviceRenderer.helpers';
 
+/** Device type → default stroke color (used when the device is rendered as a plain rect) */
+const DEVICE_DEFAULT_STROKE_COLORS: Record<string, string> = {
+  pc: 'var(--color-primary-500)',
+  iot: 'var(--color-secondary-500)',
+  mobile: 'var(--color-emerald-500)',
+  printer: 'var(--color-amber-500)',
+  firewall: 'var(--color-error-500)',
+  wlc: 'var(--color-warning-400)',
+};
+
+const getDeviceDefaultStroke = (type: CanvasDevice['type']): string =>
+  DEVICE_DEFAULT_STROKE_COLORS[type as string] ??
+  (isSwitchDeviceType(type) ? 'var(--color-accent-500)' : 'var(--color-warning-500)');
+
 interface DeviceBodyProps {
   device: CanvasDevice;
   deviceWidth: number;
@@ -14,6 +28,7 @@ interface DeviceBodyProps {
 
 export function DeviceBody({ device, deviceWidth, deviceHeight, isDark, isDragging }: DeviceBodyProps) {
   const deviceFill = getDeviceFill(device, isDark);
+  const deviceStroke = isDark ? getDeviceDefaultStroke(device.type) : 'var(--color-secondary-300)';
 
   return (
     <>
@@ -110,9 +125,7 @@ export function DeviceBody({ device, deviceWidth, deviceHeight, isDark, isDraggi
           rx={8}
           fill={deviceFill}
           style={{
-            stroke: isDark
-              ? ((device.type as string) === 'pc' ? 'var(--color-primary-500)' : (device.type as string) === 'iot' ? 'var(--color-secondary-500)' : (device.type as string) === 'mobile' ? 'var(--color-emerald-500)' : (device.type as string) === 'printer' ? 'var(--color-amber-500)' : (device.type as string) === 'firewall' ? 'var(--color-error-500)' : isSwitchDeviceType(device.type) ? 'var(--color-accent-500)' : (device.type as string) === 'wlc' ? 'var(--color-warning-400)' : 'var(--color-warning-500)')
-              : 'var(--color-secondary-300)'
+            stroke: deviceStroke
           }}
           strokeWidth={1.5}
           className={isDragging ? '' : 'transition-all duration-150'}

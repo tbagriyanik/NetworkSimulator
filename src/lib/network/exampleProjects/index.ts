@@ -64,6 +64,11 @@ const builders = [
   troubleShutdown, troubleGateway, troubleDuplicate, troubleAcl, realWorldComprehensive
 ];
 
+const resolveFaultText = (value: string | { tr?: string; en?: string } | undefined, isTr: boolean): string => {
+  if (typeof value === 'string') return value;
+  return (isTr ? value?.tr : value?.en) || '';
+};
+
 export const exampleProjects = (language: 'tr' | 'en'): ExampleProject[] => {
   const isTr = language === 'tr';
   return builders.map(build => {
@@ -72,8 +77,8 @@ export const exampleProjects = (language: 'tr' | 'en'): ExampleProject[] => {
     const formatProjectNoteText = (): string => {
       const fault = project.injectedFaults?.[0];
       if (fault) {
-        const faultDesc = typeof fault.description === 'string' ? fault.description : (isTr ? fault.description?.tr : fault.description?.en) || '';
-        const faultHint = fault.hint ? (typeof fault.hint === 'string' ? fault.hint : (isTr ? fault.hint.tr : fault.hint.en)) : '';
+        const faultDesc = resolveFaultText(fault.description, isTr);
+        const faultHint = fault.hint ? resolveFaultText(fault.hint, isTr) : '';
         return isTr
           ? `🔍 ${project.title}\n\n🎯 Amaç:\n${project.description}\n\n⚠️ Arıza Belirtisi:\n${faultDesc}\n\n💡 İpucu & Çözüm Yolu:\n${faultHint || 'Cihaz yapılandırmalarını ve arayüz durumlarını CLI komutlarıyla denetleyin.'}`
           : `🔍 ${project.title}\n\n🎯 Objective:\n${project.description}\n\n⚠️ Fault Symptom:\n${faultDesc}\n\n💡 Hint & Troubleshooting:\n${faultHint || 'Inspect running configuration and interface statuses via CLI.'}`;

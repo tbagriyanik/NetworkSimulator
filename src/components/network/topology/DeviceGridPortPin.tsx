@@ -76,7 +76,8 @@ export function DeviceGridPortPin({
 
   const hasStpInfo = isSwitchDeviceType(device.type) && simulatorPort?.spanningTree;
   const stpRole = simulatorPort?.spanningTree?.role;
-  const roleAbbr = stpRole === 'root' ? 'RP' : stpRole === 'alternate' ? 'AP' : stpRole === 'backup' ? 'BP' : '';
+  const STP_ROLE_ABBR: Record<string, string> = { root: 'RP', alternate: 'AP', backup: 'BP' };
+  const roleAbbr = stpRole ? (STP_ROLE_ABBR[stpRole] ?? '') : '';
 
   return (
     <g

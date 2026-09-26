@@ -262,7 +262,7 @@ export function NetworkDiagnosticsModal({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
               {diagnosticResult.passedChecks.map((check, idx) => (
                 <div
-                  key={idx}
+                  key={`passed-${idx}-${check.en.slice(0, 15)}`}
                   className={`p-2 rounded-lg text-xs flex items-center gap-2 border ${isDark ? 'bg-secondary-900/40 border-secondary-800/60 text-secondary-300' : 'bg-secondary-50 border-secondary-200 text-secondary-700'
                     }`}
                 >

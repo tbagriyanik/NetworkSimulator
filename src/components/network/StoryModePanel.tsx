@@ -712,7 +712,7 @@ export function StoryModePanel({
 
                             return (
                               <button
-                                key={idx}
+                                key={`choice-opt-${idx}-${option.id || idx}`}
                                 disabled={isChosenAny}
                                 onClick={() => handleChoiceSelect(idx)}
                                 className={`text-left text-xs p-2.5 rounded-lg border transition-all ${isSelected

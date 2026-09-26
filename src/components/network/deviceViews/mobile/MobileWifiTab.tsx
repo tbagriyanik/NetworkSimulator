@@ -44,11 +44,11 @@ export function MobileWifiTab({
             {isTr ? 'Kapsama alanında aktif Wi-Fi ağı bulunamadı' : 'No active Wi-Fi networks found in range'}
           </div>
         ) : (
-          availableSsids.map((ssid, idx) => {
+          availableSsids.map((ssid) => {
             const isConnected = selectedSsid === ssid && isWifiConnected;
             return (
               <div
-                key={idx}
+                key={`ssid-${ssid}`}
                 onClick={() => {
                   if (isConnected) {
                     onDisconnectWifi();

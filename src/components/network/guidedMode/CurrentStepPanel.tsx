@@ -165,7 +165,7 @@ export function CurrentStepPanel({
                     <CollapsibleContent>
                         <ol className="mt-2 space-y-1 text-xs text-secondary-600 dark:text-secondary-400 pl-4">
                             {currentStep.detailedInstructions[language].map((instruction, idx) => (
-                                <li key={idx} className="list-decimal">
+                                <li key={`inst-${currentStep.id}-${idx}`} className="list-decimal">
                                     {instruction}
                                 </li>
                             ))}

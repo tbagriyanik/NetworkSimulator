@@ -203,7 +203,7 @@ export const PythonFormWindow: React.FC<PythonFormWindowProps> = ({
                     }`}
                   >
                     {(elem.values || []).map((val, idx) => (
-                      <option key={idx} value={val}>
+                      <option key={`opt-${elem.id}-${idx}-${val}`} value={val}>
                         {val}
                       </option>
                     ))}
@@ -228,7 +228,7 @@ export const PythonFormWindow: React.FC<PythonFormWindowProps> = ({
                       const isSelected = String(elem.value) === item;
                       return (
                         <div
-                          key={idx}
+                          key={`list-${elem.id}-${idx}-${item}`}
                           onClick={() => {
                             elem.value = item;
                             triggerUpdate();

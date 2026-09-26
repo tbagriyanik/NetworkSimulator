@@ -555,7 +555,7 @@ export function AboutModal({ isOpen, onClose, onStartTour, isExamActive = false 
                           {cat.type === 'info' ? (
                             <div className="p-3 space-y-3">
                               {cat.cmds.map(([title, content], idx) => (
-                                <div key={idx} className="space-y-1">
+                                <div key={`info-${idx}-${title}`} className="space-y-1">
                                   <h4 className={cn('font-bold text-xs', isDark ? 'text-success-400' : 'text-success-600')}>
                                     {title}
                                   </h4>
@@ -569,7 +569,7 @@ export function AboutModal({ isOpen, onClose, onStartTour, isExamActive = false 
                             <table className="w-full text-xs">
                               <tbody>
                                 {cat.cmds.map(([cmd, desc, mode], idx) => (
-                                  <tr key={idx} className={cn('border-b last:border-b-0 group transition-colors', isDark ? 'border-secondary-800 hover:bg-secondary-800/60' : 'border-secondary-100 hover:bg-secondary-50')}>
+                                  <tr key={`cmd-${idx}-${cmd}`} className={cn('border-b last:border-b-0 group transition-colors', isDark ? 'border-secondary-800 hover:bg-secondary-800/60' : 'border-secondary-100 hover:bg-secondary-50')}>
                                     <td className="p-2 w-[48%]">
                                       <div className="flex items-center justify-between gap-1.5">
                                         <div className="flex flex-wrap items-center gap-1.5">

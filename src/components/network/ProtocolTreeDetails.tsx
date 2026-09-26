@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { ChevronRight, ChevronDown } from 'lucide-react';
 
+const IP_PROTOCOL_NUMBERS: Record<string, number> = { ICMP: 1, TCP: 6, UDP: 17 };
+const TCP_DST_PORTS: Record<string, number> = { HTTP: 80, HTTPS: 443, SSH: 22 };
+
 export interface PacketData {
   id: string;
   timestamp: number;
@@ -152,7 +155,7 @@ export function ProtocolTreeDetails({ packet, isDark, language }: ProtocolTreeDe
           <TreeLeaf label="Identification" value="0x1a2b (6699)" isDark={isDark} />
           <TreeLeaf label="Flags" value="0x02, Don't fragment" isDark={isDark} />
           <TreeLeaf label="Time to Live (TTL)" value="64" isDark={isDark} />
-          <TreeLeaf label="Protocol" value={`${proto} (${proto === 'ICMP' ? 1 : proto === 'TCP' ? 6 : proto === 'UDP' ? 17 : 89})`} isDark={isDark} />
+          <TreeLeaf label="Protocol" value={`${proto} (${IP_PROTOCOL_NUMBERS[proto] ?? 89})`} isDark={isDark} />
           <TreeLeaf label="Header Checksum" value="0xa1b2 [validation disabled]" isDark={isDark} />
           <TreeLeaf label="Source Address" value={packet.sourceIp} isDark={isDark} />
           <TreeLeaf label="Destination Address" value={packet.targetIp} isDark={isDark} />
@@ -172,9 +175,9 @@ export function ProtocolTreeDetails({ packet, isDark, language }: ProtocolTreeDe
       )}
 
       {(proto === 'TCP' || proto === 'HTTP' || proto === 'HTTPS' || proto === 'SSH' || proto === 'MQTT') && (
-        <TreeNode title={`Transmission Control Protocol, Src Port: 54321, Dst Port: ${proto === 'HTTP' ? 80 : proto === 'HTTPS' ? 443 : proto === 'SSH' ? 22 : 80}`} isDark={isDark}>
+        <TreeNode title={`Transmission Control Protocol, Src Port: 54321, Dst Port: ${TCP_DST_PORTS[proto] ?? 80}`} isDark={isDark}>
           <TreeLeaf label="Source Port" value="54321" isDark={isDark} />
-          <TreeLeaf label="Destination Port" value={proto === 'HTTP' ? '80' : proto === 'HTTPS' ? '443' : proto === 'SSH' ? '22' : '80'} isDark={isDark} />
+          <TreeLeaf label="Destination Port" value={String(TCP_DST_PORTS[proto] ?? 80)} isDark={isDark} />
           <TreeLeaf label="Sequence Number" value="1" isDark={isDark} />
           <TreeLeaf label="Acknowledgment Number" value="1" isDark={isDark} />
           <TreeLeaf label="Flags" value="0x018 (PSH, ACK)" isDark={isDark} />

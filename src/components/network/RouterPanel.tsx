@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState, useMemo, useEffect } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -867,7 +867,7 @@ export function RouterPanel({
                           const isSelectedLookup = lookupResult.route && lookupResult.route.destination === route.destination && lookupResult.route.nextHop === route.nextHop;
                           return (
                             <tr
-                              key={idx}
+                              key={`route-${route.type}-${route.destination}-${route.nextHop || route.interfaceId || idx}`}
                               className={cn(
                                 "border-b last:border-0 transition-colors",
                                 isDark ? "border-secondary-800 hover:bg-secondary-800/40" : "border-secondary-200 hover:bg-secondary-100/50",

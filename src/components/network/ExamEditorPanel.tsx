@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   X, Plus, Save, Scale, Shield,
   AlertCircle,
@@ -68,6 +68,17 @@ export function ExamEditorPanel({
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
   const [touchDragInfo, setTouchDragInfo] = useState<{ id: string; startIndex: number; currentIndex: number } | null>(null);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen || !activeExam) return null;
 
   const isTr = language === 'tr';
@@ -121,7 +132,7 @@ export function ExamEditorPanel({
           </div>
         </div>
         <TooltipWrapper title={t.close}>
-          <Button variant="ghost" size="icon" onClick={onClose}>
+          <Button variant="ghost" size="icon" onClick={onClose} aria-label={t.close || 'Close'}>
             <X className="w-5 h-5" />
           </Button>
         </TooltipWrapper>

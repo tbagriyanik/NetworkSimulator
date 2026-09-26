@@ -15,6 +15,14 @@ export const isSwitchOrHubDeviceType = (type: string) =>
 export const isPcLikeDeviceType = (type: string) =>
   type === 'pc' || type === 'iot' || type === 'mobile' || type === 'printer';
 
+/** Cloud device Ethernet port id → display number */
+const CLOUD_ETH_PORT_NUMBERS: Record<string, string> = {
+  eth0: '1',
+  eth1: '2',
+  eth2: '3',
+  eth3: '4',
+};
+
 export const getConnectionForPort = (
   device: CanvasDevice,
   deviceConnections: CanvasConnection[],
@@ -101,7 +109,7 @@ export const getGridPortDisplayNumber = (
   const portNum = port.label.replace(/\D/g, '');
   let displayNum = isConsole ? 'C' : (portNum ? parseInt(portNum, 10).toString() : 'C');
   if (deviceType === 'cloud') {
-    displayNum = port.id === 'eth0' ? '1' : port.id === 'eth1' ? '2' : port.id === 'eth2' ? '3' : port.id === 'eth3' ? '4' : '1';
+    displayNum = CLOUD_ETH_PORT_NUMBERS[port.id] ?? '1';
   } else if (isSerial) {
     const parts = portIdLower.split('/');
     if (parts.length >= 3) {

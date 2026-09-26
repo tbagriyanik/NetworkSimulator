@@ -129,6 +129,14 @@ export function PortPanel({ ports, t, theme, deviceName, deviceModel, activeDevi
       ? 'orange'
       : 'green';
 
+  const LED_STATUS_LABELS: Record<string, { tr: string; en: string }> = {
+    orange: { tr: 'Uyarı', en: 'Warning' },
+    green: { tr: 'Çalışıyor', en: 'Operational' },
+  };
+  const systemStatusLabel = isDevicePoweredOff
+    ? t.off
+    : (LED_STATUS_LABELS[systemLedColor] ?? LED_STATUS_LABELS.green)[t.language as 'tr' | 'en'];
+
   const renderStatusLed = (label: 'PWR' | 'SYST', color: PortLEDColor, tooltipText: string) => (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -395,9 +403,7 @@ export function PortPanel({ ports, t, theme, deviceName, deviceModel, activeDevi
                 {renderStatusLed(
                   'SYST',
                   systemLedColor,
-                  t.language === 'tr'
-                    ? `Sistem durumu: ${isDevicePoweredOff ? t.off : systemLedColor === 'orange' ? 'Uyarı' : 'Çalışıyor'}`
-                    : `System status: ${isDevicePoweredOff ? t.off : systemLedColor === 'orange' ? 'Warning' : 'Operational'}`
+                  `${t.language === 'tr' ? 'Sistem durumu' : 'System status'}: ${systemStatusLabel}`
                 )}
               </div>
             </div>

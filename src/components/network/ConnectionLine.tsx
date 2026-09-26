@@ -243,6 +243,18 @@ export const ConnectionLine = memo(function ConnectionLine({
   const animationDuration = `${durationSec}s`;
   const reverseBeginOffset = `${(durationSec / 2).toFixed(2)}s`;
 
+  const getLineOpacity = (): number => {
+    if (isPathHighlighted) return 1;
+    if (isHovered) return 0.9;
+    if (isEffectivelyActive) {
+      if (isWireless) {
+        return wirelessStrength !== undefined ? 0.2 + (wirelessStrength / 5) * 0.6 : 0.1;
+      }
+      return 0.4;
+    }
+    return 0.65;
+  };
+
   return (
     <g data-connection-id={connection.id}>
       {/* Invisible wider path for hover detection */}
@@ -269,9 +281,7 @@ export const ConnectionLine = memo(function ConnectionLine({
         vectorEffect="non-scaling-stroke"
         style={{
           // Inactive cables (powered off / shutdown) get higher opacity so they're visible in dark mode
-          opacity: isPathHighlighted ? 1 : (isHovered ? 0.9 : (isEffectivelyActive ? (
-            isWireless ? (wirelessStrength !== undefined ? (0.2 + (wirelessStrength / 5) * 0.6) : 0.1) : 0.4
-          ) : 0.65)),
+          opacity: getLineOpacity(),
           filter: isPathHighlighted
             ? 'drop-shadow(0 0 3px var(--color-emerald-400)) drop-shadow(0 0 8px var(--color-emerald-500))'
             : (isHovered || (graphicsQuality === 'high' && isEffectivelyActive && !isWireless) ?

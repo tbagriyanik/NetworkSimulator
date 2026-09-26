@@ -33,7 +33,7 @@ export function TerminalAutocompleteDropdown({
         <div ref={listRef} className="max-h-40 overflow-y-auto overflow-x-hidden font-geist-mono flex flex-col">
           {suggestions.map((cmd, idx) => (
             <button
-              key={idx}
+              key={`ac-${cmd}-${idx}`}
               type="button"
               data-autocomplete-index={idx}
               onClick={() => onSelect(cmd)}

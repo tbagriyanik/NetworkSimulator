@@ -2,6 +2,7 @@ import type { CanvasConnection, CanvasDevice } from '@/components/network/Networ
 import type { SwitchState } from '@/lib/network/types';
 
 export interface StoryChoiceOption {
+  id?: string | number;
   label: string;
   labelEn?: string;
   bonusPoints: number;

@@ -8,6 +8,14 @@ import {
   parseFormatArgs,
 } from './pcPythonRunnerHelpers';
 
+/** Normalise an iterable value (array / Set / string) into a plain array */
+function toIterableItems(iterVal: unknown): unknown[] {
+  if (Array.isArray(iterVal)) return iterVal;
+  if (iterVal instanceof Set) return Array.from(iterVal);
+  if (typeof iterVal === 'string') return iterVal.split('');
+  return [];
+}
+
 export interface CollectionResult {
   handled: boolean;
   value?: unknown;
@@ -199,7 +207,7 @@ export function evaluatePythonCollections(
     if (parts.length >= 2) {
       const fnVal = evaluateExpr(parts[0]);
       const iterVal = evaluateExpr(parts[1]);
-      const items = Array.isArray(iterVal) ? iterVal : iterVal instanceof Set ? Array.from(iterVal) : typeof iterVal === 'string' ? iterVal.split('') : [];
+      const items = toIterableItems(iterVal);
       if (typeof fnVal === 'function') {
         return { handled: true, value: items.map(item => fnVal(item)) };
       }
@@ -213,7 +221,7 @@ export function evaluatePythonCollections(
     if (parts.length >= 2) {
       const fnVal = evaluateExpr(parts[0]);
       const iterVal = evaluateExpr(parts[1]);
-      const items = Array.isArray(iterVal) ? iterVal : iterVal instanceof Set ? Array.from(iterVal) : typeof iterVal === 'string' ? iterVal.split('') : [];
+      const items = toIterableItems(iterVal);
       if (typeof fnVal === 'function') {
         return { handled: true, value: items.filter(item => Boolean(fnVal(item))) };
       }

@@ -50,8 +50,8 @@ export function MacTablePanel({ macTable, isDark = false, language, deviceName }
               </thead>
               <tbody>
                 {sorted.length > 0 ? (
-                  sorted.map((entry, idx) => (
-                    <tr key={idx} className={cn("border-b last:border-0", rowBorder, hoverBg)}>
+                  sorted.map((entry) => (
+                    <tr key={`mac-${entry.vlan}-${entry.mac}-${entry.port || 'none'}`} className={cn("border-b last:border-0", rowBorder, hoverBg)}>
                       <td className="p-2.5 font-mono font-semibold">{entry.vlan}</td>
                       <td className="p-2.5 font-mono">{entry.mac}</td>
                       <td className="p-2.5">

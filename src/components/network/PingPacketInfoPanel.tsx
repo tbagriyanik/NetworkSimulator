@@ -303,10 +303,15 @@ export function PingPacketInfoPanel({
     const isSuccess = success === true;
     const isFailure = success === false;
 
+    let statusIconClass = 'text-accent-500';
+    if (isSuccess) statusIconClass = 'text-success-500';
+    else if (isFailure) statusIconClass = 'text-error-500';
+    else if (isReturn) statusIconClass = 'text-warning-400';
+
     const titleContent = (
         <div className="flex items-center gap-2 overflow-hidden min-w-0">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-                className={`flex-shrink-0 ${isSuccess ? 'text-success-500' : isFailure ? 'text-error-500' : isReturn ? 'text-warning-400' : 'text-accent-500'}`}>
+                className={`flex-shrink-0 ${statusIconClass}`}>
                 <rect x="2" y="4" width="20" height="16" rx="2" stroke="currentColor" strokeWidth="2" fill="none" />
                 <path d="M2 7l10 7 10-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             </svg>

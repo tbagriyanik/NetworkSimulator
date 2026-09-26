@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useMemo, useEffect } from 'react';
 import { DragPosition as ModalPosition, DragSize as ModalSize } from '@/hooks/useDrag';
@@ -29,6 +29,23 @@ import type { TerminalOutput } from './Terminal';
 import type { Translations } from '@/contexts/LanguageContext';
 import type { TaskDefinition, TaskContext } from '@/lib/network/taskDefinitions';
 import { getRoutingTable } from '@/lib/network/routing';
+
+/** Console tab icon per device type (fallback: terminal icon) */
+const DEVICE_CONSOLE_TAB_ICONS: Partial<Record<DeviceType, React.ReactNode>> = {
+    hub: <DeviceIcon type="hub" size={14} color="var(--color-teal-500)" />,
+    cloud: <Globe className="w-3 h-3 text-cyan-400" />,
+    printer: <PrinterIcon className="w-3 h-3 text-purple-400" />,
+    mobile: <Smartphone className="w-3 h-3 text-sky-400" />,
+};
+
+type NormalizedPortType = 'fastethernet' | 'gigabitethernet' | 'serial' | 'tengigabitethernet' | 'tunnel' | 'vlan';
+
+/** Port type → normalized simulation port type string */
+const PORT_TYPE_NORMALIZED: Record<string, NormalizedPortType> = {
+    tenGigabitEthernet: 'tengigabitethernet',
+    serial: 'serial',
+    fastEthernet: 'fastethernet',
+};
 
 const RouterDhcpSection = dynamic(() => import('./RouterDhcpSection').then(m => m.RouterDhcpSection), { ssr: false });
 const DhcpPoolManagerModal = dynamic(() => import('./DhcpPoolManagerModal').then(m => m.DhcpPoolManagerModal), { ssr: false });
@@ -203,7 +220,7 @@ export function UnifiedDevicePanel({
                         <Tabs value={activeTab} onValueChange={(v: string) => onTabChange(v as 'console' | 'settings' | 'stp' | 'physical')} className="min-w-0">
                             <TabsList className={cn("h-7 p-0.5", isDark ? "bg-secondary-800" : "bg-secondary-100")}>
                                 <TabsTrigger value="console" className="flex items-center gap-1.5 px-2 h-6 text-xs">
-                                    {deviceType === 'hub' ? <DeviceIcon type="hub" size={14} color="var(--color-teal-500)" /> : deviceType === 'cloud' ? <Globe className="w-3 h-3 text-cyan-400" /> : deviceType === 'printer' ? <PrinterIcon className="w-3 h-3 text-purple-400" /> : deviceType === 'mobile' ? <Smartphone className="w-3 h-3 text-sky-400" /> : <TerminalIcon className="w-3 h-3" />}
+                                    {DEVICE_CONSOLE_TAB_ICONS[deviceType] ?? <TerminalIcon className="w-3 h-3" />}
                                     <span className="hidden sm:inline">
                                         {deviceType === 'hub' ? (language === 'tr' ? 'Hub Durumu' : 'Hub Status')
                                             : deviceType === 'cloud' ? (language === 'tr' ? 'Bulut & WAN' : 'Cloud & WAN')
@@ -425,7 +442,7 @@ export function UnifiedDevicePanel({
                                                                         speed: p.speed || '1000',
                                                                         duplex: 'auto',
                                                                         shutdown: !!p.shutdown,
-                                                                        type: p.type === 'tenGigabitEthernet' ? 'tengigabitethernet' : (p.type === 'serial' ? 'serial' : (p.type === 'fastEthernet' ? 'fastethernet' : 'gigabitethernet')),
+                                                                        type: (p.type ? PORT_TYPE_NORMALIZED[String(p.type)] : undefined) ?? 'gigabitethernet',
                                                                     };
                                                                 }
                                                             });
@@ -585,7 +602,7 @@ export function UnifiedDevicePanel({
                                                         {filteredRoutes.length > 0 ? (
                                                             filteredRoutes.map((route, idx) => (
                                                                 <tr
-                                                                    key={idx}
+                                                                    key={`route-${route.type}-${route.destination}-${route.nextHop || route.interfaceId || idx}`}
                                                                     className={cn(
                                                                         "border-b last:border-0 transition-colors",
                                                                         isDark ? "border-secondary-800 hover:bg-secondary-800/40" : "border-secondary-200 hover:bg-secondary-100/50"

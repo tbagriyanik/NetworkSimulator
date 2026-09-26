@@ -28,7 +28,8 @@ export function PacketHexDump({ packet, isDark }: PacketHexDumpProps) {
       arr.push(0x45, 0x00, 0x00, 0x3c, 0x1a, 0x2b, 0x40, 0x00, 0x40); // IP header
       // Protocol number (ICMP=1, TCP=6, UDP=17)
       const proto = packet.protocol.toUpperCase();
-      const pNum = proto === 'ICMP' ? 1 : proto === 'TCP' ? 6 : proto === 'UDP' ? 17 : 89;
+      const IP_PROTOCOL_NUMBERS: Record<string, number> = { ICMP: 1, TCP: 6, UDP: 17 };
+      const pNum = IP_PROTOCOL_NUMBERS[proto] ?? 89;
       arr.push(pNum);
       arr.push(0xa1, 0xb2); // Checksum
 

@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'; 
 import type { SwitchState } from '@/lib/network/types'; 
 import type { CommandContext } from '@/lib/network/core/commandTypes';
+import { cmdShowNtp } from '@/lib/network/core/showCommands';
 
 describe('Show Commands Suite', () => {
   const switchState = {
@@ -87,8 +88,7 @@ describe('Show Commands Suite', () => {
     expect(brief[3].interface).toBe('gi0/1');
   });
 
-  it('should render show ntp status and show ntp associations', async () => {
-    const { cmdShowNtp } = await import('@/lib/network/core/showCommands');
+  it('should render show ntp status and show ntp associations', () => {
     const disabled = cmdShowNtp({ hostname: 'SW1' } as SwitchState, 'show ntp status', {} as CommandContext);
     expect(disabled.output).toContain('NTP is not enabled');
 

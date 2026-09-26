@@ -3,6 +3,9 @@
 import { useState, useEffect, useRef } from 'react';
 import type { CanvasDevice } from './NetworkTopology/types/networkTopology.types';
 
+/** Sensor type → display unit suffix */
+const SENSOR_UNITS: Record<string, string> = { temperature: '°C', humidity: '%', light: 'lx' };
+
 /** Router icon with arrows in circle */
 export const RouterIcon = ({ className = 'w-5 h-5' }: { className?: string }) => (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -268,7 +271,7 @@ export const IoTSensorDisplay = ({
                     {!isPassive && (
                         <div className="text-xs text-accent-500/80 font-mono">
                             {latestVal.toFixed(isDigital ? 0 : 1)}{' '}
-                            {isDigital ? '' : (sensorType === 'temperature' ? '°C' : sensorType === 'humidity' ? '%' : sensorType === 'light' ? 'lx' : 'dB')}
+                            {isDigital ? '' : (SENSOR_UNITS[sensorType] ?? 'dB')}
                         </div>
                     )}
                 </div>

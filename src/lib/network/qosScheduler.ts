@@ -221,7 +221,9 @@ export function scheduleQosPackets(
   for (const name of order) {
     const queue = queues.get(name)!;
     const cls = byName.get(name);
-    const quota = discipline === 'llq' && cls?.priority ? remaining : discipline === 'wfq' ? remaining : Math.floor(capacity * (cls?.bandwidthPercent ?? 100) / 100);
+    const quota = (discipline === 'wfq' || (discipline === 'llq' && cls?.priority))
+      ? remaining
+      : Math.floor(capacity * (cls?.bandwidthPercent ?? 100) / 100);
     let used = 0;
     while (queue.length && used + queue[0].bytes <= quota && queue[0].bytes <= remaining) {
       const p = queue.shift()!;

@@ -18,7 +18,7 @@
 
 import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
-import type { NetworkPacketFrame, PipelineExecutionResult, ProtocolNeighborChangeEvent, AgingChangeEvent } from './packetFrame';
+import type { NetworkPacketFrame, PipelineExecutionResult, ProtocolNeighborChangeEvent, AgingChangeEvent, CapwapFramePayload } from './packetFrame';
 import { forwardPacketFrame } from './commonForwardingEngine';
 import { runAgingTick } from '@/lib/network/agingEngine';
 import { evaluateIpSlaOperations } from '@/lib/network/ipSlaEngine';
@@ -42,6 +42,14 @@ import {
 
 /** Simulated seconds per pipeline tick (wall-clock 250 ms ≈ 0.25 simulated seconds) */
 const SIM_SECONDS_PER_TICK = 0.25;
+
+/** CAPWAP session state → periodic PDU message name */
+const CAPWAP_STATE_MESSAGE: Record<string, CapwapFramePayload['message']> = {
+  joining: 'join',
+  configuring: 'config',
+  data: 'data',
+  failed: 'reset',
+};
 
 export function runNetworkEventPipeline(
   deviceStates: Map<string, SwitchState>,
@@ -89,7 +97,7 @@ export function runNetworkEventPipeline(
       if (capwap.events.length > 0) {
         capwap.state.eventLogs = [...(capwap.state.eventLogs || []), ...capwap.events];
         Object.values(capwap.sessions).forEach(session => {
-          const message = session.state === 'joining' ? 'join' : session.state === 'configuring' ? 'config' : session.state === 'data' ? 'data' : session.state === 'failed' ? 'reset' : 'keepalive';
+          const message = CAPWAP_STATE_MESSAGE[session.state] ?? 'keepalive';
           processedFrames.push({
             id: `capwap-${device.id}-${session.apName}-${now}`,
             protocol: 'CAPWAP', timestamp: now, ingressDeviceId: device.id,

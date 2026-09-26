@@ -287,7 +287,7 @@ export function MailServiceConfig({
                   ) : (
                     serviceMailInbox.map((msg, idx) => (
                       <div
-                        key={idx}
+                        key={`inbox-${msg.timestamp || idx}-${msg.from}-${idx}`}
                         onClick={() => setViewingMsg({ type: 'inbox', msg, idx })}
                         className={`p-2 rounded border text-[10px] flex items-start justify-between gap-2 cursor-pointer transition-colors ${isDark ? 'border-secondary-800 bg-secondary-900/50 hover:bg-secondary-800' : 'border-secondary-200 bg-white hover:bg-secondary-100'}`}
                       >
@@ -328,7 +328,7 @@ export function MailServiceConfig({
                   ) : (
                     serviceMailSent.map((msg, idx) => (
                       <div
-                        key={idx}
+                        key={`sent-${msg.timestamp || idx}-${msg.to}-${idx}`}
                         onClick={() => setViewingMsg({ type: 'sent', msg, idx })}
                         className={`p-2 rounded border text-[10px] flex items-start justify-between gap-2 cursor-pointer transition-colors ${isDark ? 'border-secondary-800 bg-secondary-900/50 hover:bg-secondary-800' : 'border-secondary-200 bg-white hover:bg-secondary-100'}`}
                       >

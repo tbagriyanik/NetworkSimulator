@@ -37,6 +37,11 @@ function renderIcon(info: DeviceIconInfo) {
   }
 }
 
+const resolveHint = (hint: string | { tr?: string; en?: string } | undefined, language: string): string | undefined => {
+  if (typeof hint === 'string') return hint;
+  return language === 'tr' ? hint?.tr : hint?.en;
+};
+
 export function TerminalOutputLines({
   lines,
   isPoweredOff,
@@ -149,7 +154,7 @@ export function TerminalOutputLines({
                     <span className="font-black uppercase tracking-tighter mr-1 opacity-70">
                       {t.learningNote}
                     </span>
-                    {typeof line.hint === 'string' ? line.hint : (language === 'tr' ? line.hint?.tr : line.hint?.en)}
+                    {resolveHint(line.hint, language)}
                   </div>
                 </div>
               )}

@@ -87,9 +87,10 @@ export function DeviceLabels({ device, deviceWidth, isSelected, isDark, isTR, t,
       {device.type === 'iot' && (
         (() => {
           const kind = device.iot?.kind || 'sensor';
-          const kindLabel = isTR
-            ? (kind === 'lamp' ? 'Lamba' : kind === 'heater' ? 'Isıtıcı' : kind === 'cooler' ? 'Soğutucu' : 'Sensör')
-            : (kind === 'lamp' ? 'Lamp' : kind === 'heater' ? 'Heater' : kind === 'cooler' ? 'Cooler' : 'Sensor');
+          const kindLabelMap: Record<string, string> = isTR
+            ? { lamp: 'Lamba', heater: 'Isıtıcı', cooler: 'Soğutucu' }
+            : { lamp: 'Lamp', heater: 'Heater', cooler: 'Cooler' };
+          const kindLabel = kindLabelMap[kind] ?? (isTR ? 'Sensör' : 'Sensor');
 
           return (
             <text

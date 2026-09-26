@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -150,7 +150,7 @@ export function TabletSplitView({
             <h2 className="font-bold text-sm truncate">
               {t.pcTerminal} - {topologyDevices?.find((d: CanvasDevice) => d.id === showPCDeviceId)?.name || showPCDeviceId}
             </h2>
-            <Button variant="ghost" size="icon" onClick={() => setShowPCPanel(false)}>
+            <Button variant="ghost" size="icon" onClick={() => setShowPCPanel(false)} aria-label={t.close || 'Close'}>
               <X className="w-4 h-4" />
             </Button>
           </div>
@@ -182,7 +182,7 @@ export function TabletSplitView({
             <h2 className="font-bold text-sm truncate">
               {t.configure} - {topologyDevices?.find((d: CanvasDevice) => d.id === showRouterDeviceId)?.name || showRouterDeviceId}
             </h2>
-            <Button variant="ghost" size="icon" onClick={() => setShowRouterPanel(false)}>
+            <Button variant="ghost" size="icon" onClick={() => setShowRouterPanel(false)} aria-label={t.close || 'Close'}>
               <X className="w-4 h-4" />
             </Button>
           </div>

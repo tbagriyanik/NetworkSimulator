@@ -778,6 +778,15 @@ export function MobileDeviceView({
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
+  let voipButtonClass: string;
+  if (activeScreen === 'voip') {
+    voipButtonClass = 'bg-emerald-600 text-white';
+  } else if (device.activeVoipCall) {
+    voipButtonClass = 'bg-emerald-950 text-emerald-300 border border-emerald-500 animate-pulse font-bold';
+  } else {
+    voipButtonClass = isDark ? 'text-slate-400 hover:text-white' : 'text-slate-600 hover:text-slate-900';
+  }
+
   return (
     <div className="h-full overflow-y-auto p-4 sm:p-6 flex flex-col items-center justify-center custom-scrollbar">
       {/* Smartphone Outer Chassis Frame */}
@@ -830,7 +839,7 @@ export function MobileDeviceView({
           </button>
           <button
             onClick={() => setActiveScreen('voip')}
-            className={cn("py-1.5 rounded-lg font-medium flex items-center justify-center gap-1 transition-colors text-[10px] relative", activeScreen === 'voip' ? "bg-emerald-600 text-white" : device.activeVoipCall ? "bg-emerald-950 text-emerald-300 border border-emerald-500 animate-pulse font-bold" : (isDark ? "text-slate-400 hover:text-white" : "text-slate-600 hover:text-slate-900"))}
+            className={cn("py-1.5 rounded-lg font-medium flex items-center justify-center gap-1 transition-colors text-[10px] relative", voipButtonClass)}
           >
             <PhoneCall className="w-3 h-3" />
             VoIP

@@ -172,7 +172,12 @@ export function useDeviceManager() {
 
         // Get existing state to preserve saved configuration and identity
         const startupConfig = existingState?.startupConfig;
-        const defaultHostname = getDefaultDeviceName(deviceType || (isRouter ? 'router' : isWLC ? 'wlc' : isFirewall ? 'firewall' : 'switchL2'));
+        let inferredDeviceType: DeviceType = 'switchL2';
+        if (isRouter) inferredDeviceType = 'router';
+        else if (isWLC) inferredDeviceType = 'wlc';
+        else if (isFirewall) inferredDeviceType = 'firewall';
+        const targetDeviceType: DeviceType = (deviceType as DeviceType) || inferredDeviceType;
+        const defaultHostname = getDefaultDeviceName(targetDeviceType);
         const hostname = startupConfig ? (existingState?.hostname || defaultHostname) : (existingState?.hostname || defaultHostname);
 
         const baseIdentityState: SwitchState = {

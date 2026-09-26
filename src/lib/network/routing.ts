@@ -231,6 +231,12 @@ function applyRouteRedistribution(
         bgp: 1
       };
 
+      const administrativeDistanceMap: Record<string, number> = {
+        ospf: 110,
+        rip: 120,
+        eigrp: 170
+      };
+
       const redistributedRoute: Route = {
         destination: srcRoute.destination,
         subnetMask: srcRoute.subnetMask,
@@ -239,7 +245,7 @@ function applyRouteRedistribution(
         metric: rule.metric !== undefined ? rule.metric : (defaultMetricMap[rule.targetProtocol] || 20),
         type: 'dynamic',
         code: codeMap[rule.targetProtocol] || 'O E2',
-        administrativeDistance: rule.targetProtocol === 'ospf' ? 110 : rule.targetProtocol === 'rip' ? 120 : rule.targetProtocol === 'eigrp' ? 170 : 20
+        administrativeDistance: administrativeDistanceMap[rule.targetProtocol] ?? 20
       };
 
       result.push(redistributedRoute);

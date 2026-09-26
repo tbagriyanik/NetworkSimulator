@@ -61,7 +61,7 @@ export function MobilePingTab({
       {pingResults.length > 0 && (
         <div className="p-2.5 rounded-lg bg-black font-mono text-[10px] text-emerald-400 space-y-1 overflow-x-auto border border-slate-800 max-h-[140px]">
           {pingResults.map((line, idx) => (
-            <div key={idx}>{line}</div>
+            <div key={`ping-${idx}-${line.slice(0, 15)}`}>{line}</div>
           ))}
         </div>
       )}

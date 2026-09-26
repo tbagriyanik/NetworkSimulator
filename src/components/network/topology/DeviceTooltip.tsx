@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { Monitor, Network, Laptop } from 'lucide-react';
 import { normalizeMAC } from '@/lib/utils';
@@ -135,7 +135,7 @@ export function DeviceTooltip({ tooltip, deviceMap, isDark, isTR, isDraggingInte
                     <div className="space-y-1 mt-2 pt-2 border-t border-white/5">
                       <div className="text-[9px] font-bold opacity-30 uppercase tracking-wider">DHCP Pool</div>
                       {dev.services.dhcp.pools.map((pool, idx) => (
-                        <div key={idx} className="text-[9px] space-y-0.5 bg-purple-500/10 rounded p-1.5">
+                        <div key={pool.poolName || `dhcp-pool-${idx}`} className="text-[9px] space-y-0.5 bg-purple-500/10 rounded p-1.5">
                           <div className="flex justify-between"><span className="opacity-50">Pool:</span><span className="font-mono">{pool.poolName}</span></div>
                           <div className="flex justify-between"><span className="opacity-50">IP:</span><span className="font-mono">{pool.startIp}</span></div>
                           <div className="flex justify-between"><span className="opacity-50">Mask:</span><span className="font-mono">{pool.subnetMask}</span></div>
@@ -150,7 +150,7 @@ export function DeviceTooltip({ tooltip, deviceMap, isDark, isTR, isDraggingInte
                     <div className="space-y-1 mt-2 pt-2 border-t border-white/5">
                       <div className="text-[9px] font-bold opacity-30 uppercase tracking-wider">{isTR ? 'DNS Kayıtları' : 'DNS Records'}</div>
                       {dev.services.dns.records.map((record, idx) => (
-                        <div key={idx} className="text-[9px] flex justify-between items-center gap-2 bg-primary-500/10 rounded px-1.5 py-0.5">
+                        <div key={`dns-rec-${record.domain}-${record.address}-${idx}`} className="text-[9px] flex justify-between items-center gap-2 bg-primary-500/10 rounded px-1.5 py-0.5">
                           <span className="font-mono text-primary-400 truncate max-w-[80px]">{record.domain}</span>
                           <span className="opacity-50">→</span>
                           <span className="font-mono">{record.address}</span>
