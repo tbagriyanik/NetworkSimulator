@@ -67,6 +67,7 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
   // JSON stringified versions for use in <script> blocks to prevent logic corruption and XSS
   const adminUsername = username?.trim() || 'admin';
   const adminPassword = password || 'admin';
+  const safeUsername = sanitizeHTML(adminUsername);
   const jsUsername = safeJSONForHTML(adminUsername);
   const jsPassword = safeJSONForHTML(adminPassword);
   const jsDeviceId = safeJSONForHTML(deviceId || '');
@@ -125,7 +126,7 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
 
   const { passwordField, hiddenCheckbox, maxClientsField } = renderWifiConfigFieldTemplates(wifi, isTurkish, safeWifiPassword);
 
-  const loginFormHTML = renderWifiAdminLoginTemplate({ deviceName: safeDeviceName, isTurkish, username: adminUsername, isAuthenticated });
+  const loginFormHTML = renderWifiAdminLoginTemplate({ deviceName: safeDeviceName, isTurkish, username: safeUsername, isAuthenticated });
 
   const mainContent = `
     <div id="main-content" style="display:${isAuthenticated ? 'block' : 'none'};">
@@ -316,7 +317,7 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
       availableDevices: availableIotDevices,
     })}
 
-    ${renderWifiAdminAccountTemplate(activeTab, isTurkish, jsUsername)}
+    ${renderWifiAdminAccountTemplate(activeTab, isTurkish, safeUsername)}
 
     <!-- Status Tab -->
     <div id="status-tab" class="content" style="display:${activeTab === 'status' ? 'block' : 'none'};">

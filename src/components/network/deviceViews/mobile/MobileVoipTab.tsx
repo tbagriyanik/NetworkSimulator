@@ -219,7 +219,7 @@ export function MobileVoipTab({
 
                     return (
                       <div
-                        key={i}
+                        key={d.id || d.ip || `voip-${i}`}
                         onClick={(e) => {
                           e.stopPropagation();
                           onInitiateCall(d.ip);

@@ -20,6 +20,7 @@ import Image from 'next/image';
 import { getCommandCategories } from './networkTopology.commands';
 import { TutorialAnimationPlayer } from './TutorialAnimationPlayer';
 import { SubnettingPanel } from './pc-panel/SubnettingPanel';
+import { isDesktopApp } from '@/lib/utils/desktopDetection';
 
 interface AboutModalProps {
   isOpen: boolean;
@@ -107,6 +108,17 @@ export function AboutModal({ isOpen, onClose, onStartTour, isExamActive = false 
 
     // If any errors, don't submit
     if (errors.name || errors.email || errors.message) {
+      return;
+    }
+
+    if (isDesktopApp()) {
+      setSubmitStatus('error');
+      setValidationErrors(prev => ({
+        ...prev,
+        message: t.language === 'tr'
+          ? 'Masaüstü uygulamasında iletişim formu için web sürümünü ziyaret ediniz.'
+          : 'Please visit the web edition to submit feedback in desktop mode.'
+      }));
       return;
     }
 

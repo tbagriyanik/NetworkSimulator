@@ -88,8 +88,8 @@ export function MultiDeviceWindowManager({
 
   return (
     <>
-      {/* Sol Ortadaki Açık Pencereler Simgeleri (Left-Middle Open Windows Dock - mobilde tek pencere olduğu için gizlenir) */}
-      {openWindows.length > 0 && (
+      {/* Sol Ortadaki Açık Pencereler Simgeleri (Left-Middle Open Windows Dock - tek pencere için gereksiz olduğu için >= 2 pencerede gösterilir) */}
+      {openWindows.length >= 2 && (
         <aside
           aria-label={language === 'tr' ? 'Açık Pencereler' : 'Open Windows'}
           className={`hidden md:flex fixed left-0 top-1/2 -translate-y-1/2 z-[9995] flex-col items-center p-1 rounded-r-xl border border-l-0 shadow-xl backdrop-blur-xl transition-all select-none animate-in slide-in-from-left duration-200 ${

@@ -1,7 +1,7 @@
-import { SwitchState, CommandResult } from '../types';
+import type { SwitchState, CommandResult } from '../types';
 import { executeCommand } from '../executor';
 import { simulatePacketFlow } from '../forwarding/packetPipeline';
-import { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
+import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 export interface BehavioralTestCase {
   id: string;

@@ -218,6 +218,11 @@ function resolveEgress(
   let routeDecision: string | undefined;
   const connectionIndex = buildConnectionIndex(connections);
 
+  // Check if frame reached its final destination host
+  if ((device.type === 'pc' || device.type === 'iot' || device.type === 'printer') && frame.ingressDeviceId === device.id) {
+    return { egressPorts: [], nextDeviceId: undefined, routeDecision: `Packet delivered to destination host ${device.name}` };
+  }
+
   const multicastGroup = frame.dstIp && frame.dstIp.split('.').length === 4
     ? Number(frame.dstIp.split('.')[0]) >= 224 && Number(frame.dstIp.split('.')[0]) <= 239
     : false;
@@ -364,6 +369,21 @@ function resolveEgress(
       }
     });
     routeDecision = 'Cloud hub forwarding to attached interfaces';
+  } else {
+    // End devices (PC, IoT, Server, etc.): send via connected active link
+    const conn = connections.find(c => c.active && (c.sourceDeviceId === device.id || c.targetDeviceId === device.id));
+    if (conn) {
+      const portId = conn.sourceDeviceId === device.id ? conn.sourcePort : conn.targetPort;
+      egressPorts.push(portId);
+      nextDeviceId = conn.sourceDeviceId === device.id ? conn.targetDeviceId : conn.sourceDeviceId;
+      routeDecision = `Host egress via port ${portId} toward ${nextDeviceId}`;
+    } else if (device.ports && device.ports.length > 0) {
+      const p = device.ports.find(pt => pt.status === 'connected' && !pt.shutdown) || device.ports[0];
+      if (p) {
+        egressPorts.push(p.id);
+        routeDecision = `Host egress via port ${p.id}`;
+      }
+    }
   }
 
   return { egressPorts, nextDeviceId, routeDecision };
@@ -516,6 +536,16 @@ export function runHopPipeline(
   const { egressPorts, nextDeviceId, routeDecision } = resolveEgress(frame, device, state!, connections, deviceMap);
 
   if (egressPorts.length === 0) {
+    if (routeDecision?.includes('delivered to destination host')) {
+      traces.push(makeTrace(hopIndex, device, ingressPortId, 'egress', 'pass', routeDecision, frame));
+      return {
+        deviceId: device.id,
+        accepted: true,
+        trapToControlPlane: false,
+        egressPorts: [],
+        traces
+      };
+    }
     const isRouter = (device.type === 'router' || device.type === 'firewall');
     const code = isRouter ? DropReasonCode.L3_NO_ROUTE : DropReasonCode.L2_UNKNOWN_MAC_NO_EGRESS;
     return drop(isRouter ? 'route-lookup' : 'mac-lookup', routeDecision || formatDropReason(code, `No path for dst ${frame.dstIp || frame.dstMac}`), 0);

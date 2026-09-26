@@ -662,6 +662,7 @@ export function eigrpNeighborTransition(
 
     case 'InterfaceDown': {
       next.state = 'Down';
+      next.holdTimer = 0;
       neighborLost = neighbor.state !== 'Down';
       logMessage = `EIGRP: Neighbor ${neighbor.neighborIp} → Down (interface down)`;
       break;

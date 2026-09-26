@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { FaultInjectionEngine } from '@/lib/network/faultInjectionSystem';
 import { TroubleshootingSession, TroubleshootingScenario } from '@/lib/network/troubleshootingModeEngine';
 import { createInitialState } from '@/lib/network/initialState';
+import { SwitchState } from '@/lib/network/types';
 import { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 describe('Fault Injection System & Troubleshooting Mode', () => {
@@ -164,5 +165,108 @@ describe('Fault Injection System & Troubleshooting Mode', () => {
 
     const eval2 = session.evaluate();
     expect(eval2.resolvedFaultsCount).toBe(1);
+  });
+
+  it('4. Injects and resolves VLAN mismatch fault', () => {
+    const vlanFault = FaultInjectionEngine.createFault({
+      deviceId: 'sw1',
+      faultType: 'wrongVlan',
+      portId: 'fa0/2',
+      faultValue: 99,
+      correctValue: 10
+    });
+
+    const stateWithPort: SwitchState = {
+      ...switchBase,
+      ports: {
+        ...switchBase.ports,
+        'fa0/2': {
+          id: 'fa0/2',
+          name: '',
+          status: 'connected' as const,
+          vlan: 10,
+          mode: 'access' as const,
+          duplex: 'auto' as const,
+          speed: 'auto' as const,
+          shutdown: false,
+          type: 'fastethernet' as const
+        }
+      }
+    };
+
+    const injected = FaultInjectionEngine.injectFault(stateWithPort, vlanFault);
+    expect(injected.ports['fa0/2']?.vlan).toBe(99);
+    expect(FaultInjectionEngine.isResolved(injected, vlanFault)).toBe(false);
+
+    const fixed: SwitchState = {
+      ...injected,
+      ports: {
+        ...injected.ports,
+        'fa0/2': { ...injected.ports['fa0/2'], vlan: 10 }
+      }
+    };
+    expect(FaultInjectionEngine.isResolved(fixed, vlanFault)).toBe(true);
+  });
+
+  it('5. Handles multiple faults and incremental resolution in a single session', () => {
+    const f1 = FaultInjectionEngine.createFault({
+      deviceId: 'r1',
+      faultType: 'shutdownInterface',
+      portId: 'Gi0/0'
+    });
+    const f2 = FaultInjectionEngine.createFault({
+      deviceId: 'r1',
+      faultType: 'wrongIpAddress',
+      portId: 'Gi0/0',
+      faultValue: '172.16.1.99',
+      correctValue: '172.16.1.1'
+    });
+
+    let routerState: SwitchState = {
+      ...switchBase,
+      ports: {
+        ...switchBase.ports,
+        'Gi0/0': {
+          id: 'Gi0/0',
+          name: '',
+          status: 'connected' as const,
+          vlan: 1,
+          mode: 'routed' as const,
+          duplex: 'auto' as const,
+          speed: 'auto' as const,
+          shutdown: false,
+          type: 'gigabitethernet' as const,
+          ipAddress: '172.16.1.1',
+          subnetMask: '255.255.255.0'
+        }
+      }
+    };
+
+    routerState = FaultInjectionEngine.injectFault(routerState, f1);
+    routerState = FaultInjectionEngine.injectFault(routerState, f2);
+
+    expect(routerState.ports['Gi0/0']?.shutdown).toBe(true);
+    expect(routerState.ports['Gi0/0']?.ipAddress).toBe('172.16.1.99');
+
+    // Fix first fault
+    routerState = {
+      ...routerState,
+      ports: {
+        ...routerState.ports,
+        'Gi0/0': { ...routerState.ports['Gi0/0'], shutdown: false }
+      }
+    };
+    expect(FaultInjectionEngine.isResolved(routerState, f1)).toBe(true);
+    expect(FaultInjectionEngine.isResolved(routerState, f2)).toBe(false);
+
+    // Fix second fault
+    routerState = {
+      ...routerState,
+      ports: {
+        ...routerState.ports,
+        'Gi0/0': { ...routerState.ports['Gi0/0'], ipAddress: '172.16.1.1' }
+      }
+    };
+    expect(FaultInjectionEngine.isResolved(routerState, f2)).toBe(true);
   });
 });

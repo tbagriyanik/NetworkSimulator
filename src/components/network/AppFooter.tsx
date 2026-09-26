@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import type { CanvasDevice } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { Translations } from '@/contexts/LanguageContext';
@@ -28,7 +28,7 @@ export function AppFooter({
   topologyDevices, showProjectPicker, showOnboarding,
   setShowAboutModal, onShortcut
 }: AppFooterProps) {
-  const hasOpenWindows = useMultiWindowStore((state) => state.openWindows.length > 0);
+  const hasMultipleWindows = useMultiWindowStore((state) => state.openWindows.length >= 2);
   const { preferences } = useUiPreferences();
 
   if (!preferences.showFooter) {
@@ -95,7 +95,7 @@ export function AppFooter({
                     <>
                       <button type="button" onClick={() => onShortcut('next-device')} className={`px-1.5 py-0.5 rounded text-[10px] font-mono cursor-pointer hover:ring-1 ${isDark ? 'bg-secondary-700 text-secondary-300 hover:ring-secondary-400' : 'bg-secondary-200 text-secondary-700 hover:ring-secondary-400'}`}>TAB</button>
                       <span className="mx-1">{t.tabToNext}</span>
-                      {hasOpenWindows && (
+                      {hasMultipleWindows && (
                         <>
                           <button type="button" onClick={() => onShortcut('windows')} className={`px-1.5 py-0.5 rounded text-[10px] font-mono cursor-pointer hover:ring-1 ${isDark ? 'bg-secondary-700 text-secondary-300 hover:ring-secondary-400' : 'bg-secondary-200 text-secondary-700 hover:ring-secondary-400'}`}>Shift+Tab</button>
                           <span className="mx-1">{language === 'tr' ? 'Pencereler' : 'Windows'}</span>

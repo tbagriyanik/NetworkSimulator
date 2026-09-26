@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { checkEnvStatus } from '@/app/actions/envCheck';
 import { useToast } from '@/hooks/use-toast';
+import { safeGetSessionItem, safeSetSessionItem } from '@/lib/storage/safeStorage';
 
 export function EnvNotifier() {
   const { toast } = useToast();
@@ -14,13 +15,13 @@ export function EnvNotifier() {
     if (process.env.NODE_ENV !== 'development') return;
 
     // Check session storage to only trigger once per session
-    if (typeof window !== 'undefined' && sessionStorage.getItem('env_notified')) return;
+    if (safeGetSessionItem('env_notified')) return;
 
     async function verifyEnv() {
       try {
         const status = await checkEnvStatus();
         if (!mounted) return;
-        sessionStorage.setItem('env_notified', 'true');
+        safeSetSessionItem('env_notified', 'true');
 
         if (!status.hasEnv) {
           toast({

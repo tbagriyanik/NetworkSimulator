@@ -121,8 +121,8 @@ export function bgpSessionTransition(
       next.lastActivityAt = now;
       if (next.state === 'Established') {
         next.holdTimer = next.holdTime;
-        if (event === 'UpdateReceived' && session.prefixesReceived !== undefined) {
-          // count handled by caller via record patch
+        if (event === 'UpdateReceived') {
+          next.prefixesReceived = (next.prefixesReceived ?? 0) + 1;
         }
       } else if (next.state === 'OpenConfirm' && event === 'KeepaliveReceived') {
         // Delegate to OpenConfirmReceived semantics

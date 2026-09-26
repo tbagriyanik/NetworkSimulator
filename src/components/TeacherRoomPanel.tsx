@@ -11,7 +11,7 @@ import { useRoom } from '@/contexts/RoomContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { generateSecureId } from '@/lib/security/sanitizer';
 import { csrfHeaders } from '@/lib/security/csrf';
-import { safeGetItem, safeSetItem, safeSetSessionItem } from '@/lib/storage/safeStorage';
+import { safeGetItem, safeSetItem, safeGetSessionItem, safeSetSessionItem } from '@/lib/storage/safeStorage';
 import { isDesktopApp } from '@/lib/utils/desktopDetection';
 
 type SortField = 'name' | 'duration' | 'tasks' | 'score';
@@ -227,7 +227,7 @@ function RoomMonitor({ roomCode, onClose }: { roomCode: string; onClose: () => v
 export function TeacherRoomPanel() {
   const { showTeacherPanel, setShowTeacherPanel, studentRoomCode } = useRoom();
   const { t } = useLanguage();
-  const [roomCodeInput, setRoomCodeInput] = useState(() => typeof sessionStorage !== 'undefined' ? (sessionStorage.getItem('teacher-room-code') || '') : '');
+  const [roomCodeInput, setRoomCodeInput] = useState(() => safeGetSessionItem('teacher-room-code') || '');
   const [activeCode, setActiveCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -236,7 +236,7 @@ export function TeacherRoomPanel() {
   // Room code is stored in sessionStorage (not localStorage) so it does not persist across
   // browser sessions, reducing exposure of the classroom join code.
   useEffect(() => {
-    if (activeCode && typeof sessionStorage !== 'undefined') sessionStorage.setItem('teacher-room-code', activeCode);
+    if (activeCode) safeSetSessionItem('teacher-room-code', activeCode);
   }, [activeCode]);
 
   useEffect(() => {

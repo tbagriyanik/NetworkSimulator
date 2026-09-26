@@ -246,11 +246,12 @@ export function getWifiControlPanelScripts(params: WifiAdminScriptParams): strin
       });
     };
 
+    var currentDeviceId = ${jsDeviceId};
     var currentAdminUser = ${jsUsername};
     var currentAdminPass = ${jsPassword};
     window.__router_auth_state = ${isAuthenticated ? 'true' : 'false'};
     if (window.__router_auth_state) {
-      window['__router_admin_auth_' + ${jsDeviceId}] = 'true';
+      window['__router_admin_auth_' + currentDeviceId] = 'true';
     }
 
     window.handleLogin = function(event) {
@@ -270,18 +271,18 @@ export function getWifiControlPanelScripts(params: WifiAdminScriptParams): strin
 
         if (usernameInput.toLowerCase() === String(currentAdminUser || '').trim().toLowerCase() && passwordInput === String(currentAdminPass || '').trim()) {
           window.__router_auth_state = true;
-          window['__router_admin_auth_' + ${jsDeviceId}] = 'true';
+          window['__router_admin_auth_' + currentDeviceId] = 'true';
           try {
-            window.parent.postMessage({ type: 'router-admin-auth-success', deviceId: ${jsDeviceId} }, '*');
+            window.parent.postMessage({ type: 'router-admin-auth-success', deviceId: currentDeviceId }, '*');
           } catch (_) {}
           try {
             if (typeof sessionStorage !== 'undefined' && sessionStorage) {
-              sessionStorage.setItem('router_admin_auth_' + ${jsDeviceId}, 'true');
+              sessionStorage.setItem('router_admin_auth_' + currentDeviceId, 'true');
             }
           } catch (_) {}
           try {
             if (typeof localStorage !== 'undefined' && localStorage) {
-              localStorage.setItem('router_admin_auth_' + ${jsDeviceId}, 'true');
+              localStorage.setItem('router_admin_auth_' + currentDeviceId, 'true');
             }
           } catch (_) {}
           if (loginForm) loginForm.style.display = 'none';
@@ -297,18 +298,18 @@ export function getWifiControlPanelScripts(params: WifiAdminScriptParams): strin
 
     window.handleLogout = function() {
       window.__router_auth_state = false;
-      window['__router_admin_auth_' + ${jsDeviceId}] = null;
+      window['__router_admin_auth_' + currentDeviceId] = null;
       try {
-        window.parent.postMessage({ type: 'router-admin-logout', deviceId: ${jsDeviceId} }, '*');
+        window.parent.postMessage({ type: 'router-admin-logout', deviceId: currentDeviceId }, '*');
       } catch (_) {}
       try {
         if (typeof sessionStorage !== 'undefined' && sessionStorage) {
-          sessionStorage.removeItem('router_admin_auth_' + ${jsDeviceId});
+          sessionStorage.removeItem('router_admin_auth_' + currentDeviceId);
         }
       } catch (_) {}
       try {
         if (typeof localStorage !== 'undefined' && localStorage) {
-          localStorage.removeItem('router_admin_auth_' + ${jsDeviceId});
+          localStorage.removeItem('router_admin_auth_' + currentDeviceId);
         }
       } catch (_) {}
       var loginForm = document.getElementById('login-form');
@@ -649,15 +650,15 @@ export function getWifiControlPanelScripts(params: WifiAdminScriptParams): strin
       try {
         var localAuth = null;
         var sessionAuth = null;
-        var memoryAuth = window['__router_admin_auth_' + ${jsDeviceId}];
+        var memoryAuth = window['__router_admin_auth_' + currentDeviceId];
         try {
           if (typeof sessionStorage !== 'undefined' && sessionStorage) {
-            sessionAuth = sessionStorage.getItem('router_admin_auth_' + ${jsDeviceId});
+            sessionAuth = sessionStorage.getItem('router_admin_auth_' + currentDeviceId);
           }
         } catch (_) {}
         try {
           if (typeof localStorage !== 'undefined' && localStorage) {
-            localAuth = localStorage.getItem('router_admin_auth_' + ${jsDeviceId});
+            localAuth = localStorage.getItem('router_admin_auth_' + currentDeviceId);
           }
         } catch (_) {}
         if (memoryAuth === 'true' || sessionAuth === 'true' || localAuth === 'true' || window.__router_auth_state === true) {

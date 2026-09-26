@@ -43,7 +43,7 @@ export function BroadcastAnimation({ broadcastSvgData, isGlass, isDark }: Broadc
                         </filter>
                     </defs>
                     {broadcastSvgData.map((item, i) => (
-                        <g key={i}>
+                        <g key={`bcast-line-${item.fromX}-${item.fromY}-${item.toX}-${item.toY}-${i}`}>
                             <line
                                 x1={item.fromX}
                                 y1={item.fromY}

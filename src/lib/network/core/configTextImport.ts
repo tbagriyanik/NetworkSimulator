@@ -34,7 +34,13 @@ function resolvePortKey(rawName: string): string | null {
   return normalizePortId(trimmed) || (lower ? lower : null);
 }
 
-export function applyConfigText(state: SwitchState, text: string): Partial<SwitchState> {
+export interface ConfigImportResult {
+  patch: Partial<SwitchState>;
+  errors: string[];
+}
+
+export function importConfigWithDiagnostics(state: SwitchState, text: string): ConfigImportResult {
+  const errors: string[] = [];
   const lines = text.split(/\r?\n/);
 
   const ports: Record<string, Port> = { ...state.ports };
@@ -271,5 +277,9 @@ export function applyConfigText(state: SwitchState, text: string): Partial<Switc
   if (securityChanged && security) patch.security = security;
   if (vlanChanged) patch.vlans = vlans;
   if (dirtyPorts.size > 0) patch.ports = ports;
-  return patch;
+  return { patch, errors };
+}
+
+export function applyConfigText(state: SwitchState, text: string): Partial<SwitchState> {
+  return importConfigWithDiagnostics(state, text).patch;
 }

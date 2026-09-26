@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useCallback, Dispatch, SetStateAction } from 'react';
 import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
@@ -281,7 +281,7 @@ export function useRefreshNetwork({
             description: (
               <div className="flex flex-col gap-1 text-xs">
                 {dhcpAssignments.map((asgn, i) => (
-                  <div key={i} className="flex justify-between gap-4">
+                  <div key={`dhcp-asgn-${asgn.name}-${asgn.ip}-${i}`} className="flex justify-between gap-4">
                     <span className="font-medium">{asgn.name}:</span>
                     <span className="text-primary-400">{asgn.ip}</span>
                   </div>

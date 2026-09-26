@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { Monitor, X, SettingsIcon, ChevronUp, ChevronDown } from 'lucide-react';
 import { SwitchIcon, RouterIcon } from '@/components/network/PCPanelWidgets';
@@ -124,7 +124,7 @@ export function PCInfoPopover({ pc, t, language, isDark, onClose, onFocus, zInde
               {windowCollapsed ? <ChevronDown className="w-3 h-3" /> : <ChevronUp className="w-3 h-3" />}
             </button>
             <TooltipWrapper title={t.close}>
-              <button onClick={(e) => { e.stopPropagation(); onClose(); }} className={`w-5 h-5 rounded-md bg-error-500 hover:bg-error-600 cursor-pointer transition-colors inline-flex items-center justify-center shrink-0`}>
+              <button aria-label={t.close} onClick={(e) => { e.stopPropagation(); onClose(); }} className={`w-5 h-5 rounded-md bg-error-500 hover:bg-error-600 cursor-pointer transition-colors inline-flex items-center justify-center shrink-0`}>
                 <X className="w-3 h-3 text-white pointer-events-none" />
               </button>
             </TooltipWrapper>
@@ -278,11 +278,13 @@ export function PCInfoPopover({ pc, t, language, isDark, onClose, onFocus, zInde
                   }
                 }}
                 disabled={!pc?.type || !pc?.id}
+                aria-label={t.open}
                 className={`flex-1 py-1 rounded-lg text-xs font-bold transition-colors ${isDark ? 'bg-accent-700 hover:bg-accent-600 text-white disabled:bg-secondary-700 disabled:text-secondary-500' : 'bg-primary-600 hover:bg-primary-700 text-white disabled:bg-secondary-300 disabled:text-secondary-500'}`}
               >
                 {t.open}
               </button>
               <button
+                aria-label={t.details}
                 onClick={() => {
                   if (pc?.id) {
                     if (onOpenSettings) {
@@ -398,6 +400,7 @@ export function RouterInfoPopover({ router, routerState, t, language, isDark, on
             </button>
             <TooltipWrapper title={t.close}>
               <button
+                aria-label={t.close}
                 onClick={(e) => { e.stopPropagation(); onClose(); }}
                 className={`w-5 h-5 rounded-md bg-error-500 hover:bg-error-600 cursor-pointer transition-colors inline-flex items-center justify-center shrink-0`}
               >
@@ -476,7 +479,7 @@ export function RouterInfoPopover({ router, routerState, t, language, isDark, on
                   </CollapsibleTrigger>
                   <CollapsibleContent>
                     {ipAddresses.map((addr: string, i: number) => (
-                      <TooltipWrapper key={i} title={t.copy}>
+                      <TooltipWrapper key={addr || `ip-${i}`} title={t.copy}>
                         <div
                           className="font-mono text-xs opacity-70 truncate cursor-pointer hover:bg-secondary-500/10 rounded px-1 transition-colors"
                           onClick={() => navigator.clipboard.writeText(addr)}
@@ -491,6 +494,7 @@ export function RouterInfoPopover({ router, routerState, t, language, isDark, on
             </div>
             <div className={`px-2 py-1.5 border-t ${isDark ? 'border-secondary-700/50' : 'border-secondary-200/50'} flex gap-1.5`}>
               <button
+                aria-label={t.openCLI}
                 onClick={() => {
                   handleDeviceDoubleClick(router.type, router.id);
                 }}
@@ -500,6 +504,7 @@ export function RouterInfoPopover({ router, routerState, t, language, isDark, on
               </button>
               <TooltipWrapper title={t.details}>
                 <button
+                  aria-label={t.details}
                   onClick={() => {
                     if (onOpenSettings) {
                       onOpenSettings(router.id);

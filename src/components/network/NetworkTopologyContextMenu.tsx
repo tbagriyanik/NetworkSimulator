@@ -110,6 +110,7 @@ export default function NetworkTopologyContextMenu({
     disabled?: boolean;
   }) => (
     <button
+      aria-label={label}
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -188,6 +189,7 @@ export default function NetworkTopologyContextMenu({
               return (
                 <button
                   key={c}
+                  aria-label={c}
                   onClick={() => { if (contextMenu.noteId) onUpdateNoteStyle(contextMenu.noteId, { color: c }); onClose(); }}
                   className={`w-4 h-4 rounded border ${note?.color === c ? 'ring-2 ring-accent-500' : 'border-black/10'}`}
                   style={{ background: gradientMap[c] || c, outline: note?.color === c ? '2px solid cyan' : 'none' }}
@@ -205,6 +207,7 @@ export default function NetworkTopologyContextMenu({
               {noteFonts.map((f) => (
                 <button
                   key={f}
+                  aria-label={f}
                   onClick={() => { if (contextMenu.noteId) onUpdateNoteStyle(contextMenu.noteId, { font: f }); onClose(); }}
                   className={`px-2 py-1 rounded text-left text-[11px] ${note?.font === f
                     ? (isDark ? 'bg-secondary-600 text-white border-accent-500 border' : 'bg-secondary-200 text-black border-accent-500 border')
@@ -226,6 +229,7 @@ export default function NetworkTopologyContextMenu({
               {NOTE_FONT_SIZES.map((s) => (
                 <button
                   key={s}
+                  aria-label={`${s}px`}
                   onClick={() => { if (contextMenu.noteId) onUpdateNoteStyle(contextMenu.noteId, { fontSize: s }); onClose(); }}
                   className={`px-2 py-1 rounded text-[11px] ${note?.fontSize === s
                     ? (isDark ? 'bg-secondary-600 text-white border-accent-500 border' : 'bg-secondary-200 text-black border-accent-500 border')
@@ -246,6 +250,7 @@ export default function NetworkTopologyContextMenu({
               {NOTE_OPACITY.map((o) => (
                 <button
                   key={o}
+                  aria-label={`%${Math.round(o * 100)}`}
                   onClick={() => { if (contextMenu.noteId) onUpdateNoteStyle(contextMenu.noteId, { opacity: o }); onClose(); }}
                   className={`px-2 py-1 rounded text-[11px] ${note?.opacity === o
                     ? (isDark ? 'bg-secondary-600 text-white border-accent-500 border' : 'bg-secondary-200 text-black border-accent-500 border')

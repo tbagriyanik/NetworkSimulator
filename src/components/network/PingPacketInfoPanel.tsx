@@ -324,9 +324,20 @@ export function PingPacketInfoPanel({
 
             {!isDone && totalHopCount > 0 && !isMobile && (
                 <div className="flex items-center gap-1 shrink-0">
-                    {Array.from({ length: totalHopCount }).map((_, i) => (
-                        <div key={i} className={`rounded-full transition-all duration-300 ${i === safeIdx ? 'w-4 h-2 bg-accent-500' : i < safeIdx ? (isDark ? 'w-2 h-2 bg-secondary-500' : 'w-2 h-2 bg-secondary-400') : (isDark ? 'w-2 h-2 bg-secondary-700' : 'w-2 h-2 bg-secondary-200')}`} title={`${t.hop} ${i + 1}`} />
-                    ))}
+                    {Array.from({ length: totalHopCount }).map((_, i) => {
+                        const dotClass = i === safeIdx
+                            ? 'w-4 h-2 bg-accent-500'
+                            : i < safeIdx
+                                ? (isDark ? 'w-2 h-2 bg-secondary-500' : 'w-2 h-2 bg-secondary-400')
+                                : (isDark ? 'w-2 h-2 bg-secondary-700' : 'w-2 h-2 bg-secondary-200');
+                        return (
+                            <div
+                                key={`hop-dot-${i}`}
+                                className={cn("rounded-full transition-all duration-300", dotClass)}
+                                title={`${t.hop} ${i + 1}`}
+                            />
+                        );
+                    })}
                 </div>
             )}
 

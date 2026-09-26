@@ -1,4 +1,5 @@
 import { SwitchState, CommandResult } from '../types';
+import { createInitialState } from '../initialState';
 import { executeCommand } from '../executor';
 import { simulatePacketFlow, PacketSimulationResult } from '../forwarding/packetPipeline';
 import { NetworkPacketFrame } from '../forwarding/packetFrame';
@@ -89,7 +90,7 @@ export function verifyCliStateEnginePacketChain(
         currentState = { ...currentState, ...res.newState };
         deviceStatesMap.set(deviceId, currentState);
       }
-      if (res.output && res.output.includes('% Invalid') && !cmd.includes('invalid')) {
+      if (!res.success || (res.output && res.output.includes('% Invalid') && !cmd.includes('invalid'))) {
         cliOk = false;
       }
     }
@@ -143,6 +144,17 @@ export function verifyCliStateEnginePacketChain(
 
       const pDevices = pTest.devices.length > 0 ? pTest.devices : devices;
       const pConns = pTest.connections.length > 0 ? pTest.connections : connections;
+
+      if (!deviceStatesMap.has(pTest.sourceDeviceId)) {
+        const srcSt = createInitialState('00:11:22:33:44:10', 'NS-L2-24TT-L');
+        srcSt.deviceType = 'pc';
+        deviceStatesMap.set(pTest.sourceDeviceId, srcSt);
+      }
+      if (!deviceStatesMap.has(pTest.targetDeviceId)) {
+        const tgtSt = createInitialState('00:11:22:33:44:20', 'NS-L2-24TT-L');
+        tgtSt.deviceType = 'pc';
+        deviceStatesMap.set(pTest.targetDeviceId, tgtSt);
+      }
 
       const trace = simulatePacketFlow(
         pTest.sourceDeviceId,

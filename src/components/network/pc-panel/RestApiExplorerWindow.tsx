@@ -300,7 +300,7 @@ export function RestApiExplorerWindow({
               >
                 <option value="">{isTr ? '-- Hazır Şablon Seç --' : '-- Preset Template --'}</option>
                 {TEMPLATE_ENDPOINTS.map((tpl, i) => (
-                  <option key={i} value={tpl.url}>{tpl.label}</option>
+                  <option key={tpl.url || `tpl-${i}`} value={tpl.url}>{tpl.label}</option>
                 ))}
               </select>
             </div>

@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { generateSecureId } from '@/lib/security/sanitizer';
 import { csrfHeaders } from '@/lib/security/csrf';
-import { safeGetItem, safeSetItem, safeGetSessionItem, safeSetSessionItem } from '@/lib/storage/safeStorage';
+import { safeGetItem, safeSetItem, safeGetSessionItem, safeSetSessionItem, safeRemoveSessionItem } from '@/lib/storage/safeStorage';
 
 interface UseRoomSyncOptions {
   roomCode: string | null;
@@ -76,7 +76,7 @@ export function useRoomSync({
         if (res.status === 404 || res.status === 401) {
           lastPayloadRef.current = '';
           if (res.status === 401) {
-            sessionStorage.removeItem(`room-session-token-${currentRoomCode}`);
+            safeRemoveSessionItem(`room-session-token-${currentRoomCode}`);
           }
         }
       } catch {

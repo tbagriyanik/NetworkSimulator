@@ -41,7 +41,15 @@ export function createTabSpecificStorage() {
     return {
       getItem: (name: string) => {
         const tabKey = getTabSpecificKey(name);
-        return safeGetItem(tabKey);
+        const val = safeGetItem(tabKey);
+        if (val !== null) return val;
+        // Fallback migration for legacy pre-tab storage
+        const legacyVal = safeGetItem(name);
+        if (legacyVal !== null) {
+          safeSetItem(tabKey, legacyVal);
+          return legacyVal;
+        }
+        return null;
       },
       setItem: (name: string, value: string) => {
         const tabKey = getTabSpecificKey(name);

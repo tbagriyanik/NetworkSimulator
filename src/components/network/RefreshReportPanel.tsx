@@ -88,7 +88,7 @@ export function RefreshReportPanel({
                   {refreshNetworkReport.dhcpMessages.length > 0 && (
                     <div className="flex flex-wrap gap-x-3 gap-y-1 opacity-80 text-xs">
                       {refreshNetworkReport.dhcpMessages.map((msg: string, i: number) => (
-                        <div key={i} className="flex items-center gap-1.5">
+                        <div key={`dhcp-msg-${msg}-${i}`} className="flex items-center gap-1.5">
                           <span>{i + 1}.</span>
                           <span>{msg}</span>
                         </div>
@@ -181,7 +181,7 @@ export function RefreshReportPanel({
                           </div>
                           <div className="space-y-0.5">
                             {refreshNetworkReport.summary.networkWarnings.map((w: string, i: number) => (
-                              <div key={i} className="flex items-center gap-1 text-amber-700 dark:text-amber-300">
+                              <div key={`net-warn-${w}-${i}`} className="flex items-center gap-1 text-amber-700 dark:text-amber-300">
                                 <span>⚠</span>
                                 <span>{w}</span>
                               </div>

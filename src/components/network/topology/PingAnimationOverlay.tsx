@@ -1,4 +1,4 @@
-﻿import React from 'react';
+import React from 'react';
 import { CanvasDevice, CanvasConnection } from '../NetworkTopology/types/networkTopology.types';
 import { BroadcastAnimTarget } from '@/hooks/networkTopology/usePingSequence';
 import { colors } from '@/lib/design-tokens/colors';
@@ -222,7 +222,7 @@ export const PingAnimationOverlay: React.FC<PingAnimationOverlayProps> = ({
           const radius = Math.max(0.75, 2.2 - i * 0.35);
           return (
             <circle
-              key={i}
+              key={`ping-trail-${i}`}
               cx={tx}
               cy={ty}
               r={radius}

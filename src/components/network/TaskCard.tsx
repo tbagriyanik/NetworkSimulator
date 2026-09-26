@@ -85,7 +85,7 @@ export const TaskCard = React.memo(({ tasks, state, context, isDark }: TaskCardP
           {/* Particles simulation */}
           {[...Array(12)].map((_, i) => (
             <div
-              key={i}
+              key={`celebration-particle-${i}`}
               className="absolute w-2 h-2 rounded-full particle-explosion"
               style={{
                 backgroundColor: ['var(--color-accent-400)', 'var(--color-warning-400)', 'var(--color-error-400)', 'var(--color-success-400)'][i % 4],

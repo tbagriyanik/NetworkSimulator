@@ -525,4 +525,36 @@ describe('describeWav', () => {
     const decoded = decodeWav(buildWav({ channels: 2, frames: 100, sampleRate: 8000 }))!;
     expect(describeWav(decoded)).toBe('0.01s, 8000 Hz, 2ch, 16-bit pcm');
   });
+
+  it('validates strict canonical 44-byte WAV binary header format', () => {
+    const samples = new Float32Array([0.0, 0.5, -0.5, 1.0]);
+    const wavBytes = encodeWav(samples, 44100);
+
+    // Total length: 44 bytes header + (4 samples * 2 bytes = 8 bytes data) = 52 bytes
+    expect(wavBytes.length).toBe(52);
+
+    // RIFF header marker
+    const riff = String.fromCharCode(...wavBytes.slice(0, 4));
+    expect(riff).toBe('RIFF');
+
+    // WAVE format marker
+    const wave = String.fromCharCode(...wavBytes.slice(8, 12));
+    expect(wave).toBe('WAVE');
+
+    // fmt subchunk header
+    const fmt = String.fromCharCode(...wavBytes.slice(12, 16));
+    expect(fmt).toBe('fmt ');
+
+    const view = new DataView(wavBytes.buffer);
+    expect(view.getUint32(16, true)).toBe(16); // fmt chunk size
+    expect(view.getUint16(20, true)).toBe(1); // AudioFormat PCM
+    expect(view.getUint16(22, true)).toBe(1); // NumChannels 1 (mono)
+    expect(view.getUint32(24, true)).toBe(44100); // SampleRate
+    expect(view.getUint16(34, true)).toBe(16); // BitsPerSample 16
+
+    // data subchunk header
+    const data = String.fromCharCode(...wavBytes.slice(36, 40));
+    expect(data).toBe('data');
+    expect(view.getUint32(40, true)).toBe(8); // data size (4 samples * 2 bytes)
+  });
 });
