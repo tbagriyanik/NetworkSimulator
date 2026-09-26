@@ -420,6 +420,7 @@ doc/
 - [x] Topoloji & Paket İnceleme Arama Temizleme Butonları, ESC Kısayolları, Terminal Temizleme Notu & Proje Sürümü Yükseltme (v6.4.0) belgelendi
 - [x] Masaüstü (.exe / Tauri v2) Desteği, SVG İkon Paketi, Hibrit Export Mimarisi & Proje Sürümü Yükseltme (v6.5.0) belgelendi
 - [x] Bütünsel Başarılarım Sistemi, Canlı Sınıf Öğrenci Takip Detayları & Proje Sürümü Yükseltme (v6.6.0) belgelendi
+- [x] Davranış Regresyonu, 'no' Komut Matrisi, Fault Injection, Troubleshooting Modu & TAB Autocomplete (v6.7.0) belgelendi
 - [x] Klavye & Tuval Yardım Penceresi İçeriği (ShortcutsModal, F1/Shift+?) Tüm Yeni Kısayollarla Güncellendi
 
 ---

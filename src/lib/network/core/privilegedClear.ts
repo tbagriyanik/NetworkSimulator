@@ -143,6 +143,43 @@ export function cmdClearCounters(state: SwitchState, input: string, _ctx: Comman
 }
 
 /**
+ * Clear IP NAT Translation
+ * Syntax: clear ip nat translation * | clear ip nat translation <inside-global-ip>
+ */
+export function cmdClearIpNatTranslation(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+    if (state.currentMode !== 'privileged') {
+        return { success: false, error: '% Command available only in privileged EXEC mode.' };
+    }
+
+    const translations = state.natTranslations || [];
+    if (translations.length === 0) {
+        return { success: true, output: '\n% No active NAT translations\n' };
+    }
+
+    const match = input.trim().match(/^clear\s+ip\s+nat\s+translation\s+(\S+)$/i);
+    const target = match?.[1] || '*';
+
+    let remaining = translations;
+    let cleared = 0;
+    if (target === '*') {
+        cleared = translations.length;
+        remaining = [];
+    } else {
+        remaining = translations.filter(t => t.globalIp !== target);
+        cleared = translations.length - remaining.length;
+        if (cleared === 0) {
+            return { success: false, error: `% No NAT translation for global IP ${target}` };
+        }
+    }
+
+    return {
+        success: true,
+        output: `\n% Cleared ${cleared} NAT translation(s)\n`,
+        newState: { natTranslations: remaining }
+    };
+}
+
+/**
  * Clear Line
  */
 export function cmdClearLine(_state: SwitchState, input: string, _ctx: CommandContext): CommandResult {

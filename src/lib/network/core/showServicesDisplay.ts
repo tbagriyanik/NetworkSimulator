@@ -4,6 +4,7 @@ import { isIpInNetwork, getPrefixLength } from './showHelpers';
 import { getOrCreateMplsConfig, getLdpDiscoveryInfo, getLdpNeighborTable, getLfibTable, getLibTable, generateLfib, generateLib } from '../mplsLdpEngine';
 import { getEvpnMacTable, getEvpnNeighborTable, getNveInterfaceTable, getOrCreateVxlanConfig } from '../vxlanEvpn';
 import { ageOutNetflowCache } from '../forwarding/netflowEngine';
+import { buildFibFromRib, type FibEntry } from '../routing/fib';
 
 /**
  * Show Hosts - Display DNS host mapping
@@ -807,18 +808,21 @@ export function cmdShowIpCef(state: SwitchState, input: string, _ctx: CommandCon
   const prefixMatch = input.match(/cef\s+([0-9.]+(?:\/\d+)?)\s*(?:detail)?$/i);
   const filterPrefix = prefixMatch ? prefixMatch[1] : null;
 
-  // Build CEF table from connected and static/dynamic routes
-  const routes: Array<{ prefix: string; mask: string; nextHop: string; outIf: string; adjType: string }> = [];
+  // Build the RIB exactly as the routing engine does for this device:
+  // connected + static + dynamic routes (the FIB is derived from it).
+  const rib: Array<{ destination: string; subnetMask?: string; nextHop: string; metric?: number; type: 'connected' | 'static' | 'dynamic'; code?: string; interfaceId?: string; administrativeDistance?: number; mask?: string }> = [];
 
   // Connected routes from ports
   Object.entries(state.ports || {}).forEach(([portName, port]) => {
     if (port.ipAddress && port.subnetMask && !port.shutdown) {
-      routes.push({
-        prefix: port.ipAddress,
-        mask: port.subnetMask,
-        nextHop: 'directly connected',
-        outIf: portName,
-        adjType: 'receive',
+      rib.push({
+        destination: port.ipAddress,
+        subnetMask: port.subnetMask,
+        nextHop: portName,
+        metric: 0,
+        type: 'connected',
+        code: 'C',
+        interfaceId: portName,
       });
     }
   });
@@ -828,23 +832,32 @@ export function cmdShowIpCef(state: SwitchState, input: string, _ctx: CommandCon
   const allRoutes = [
     ...(state.staticRoutes || []),
     ...(state.dynamicRoutes || []),
-    ...((rawState.ipRoutes as Array<{ destination?: string; network?: string; subnetMask?: string; mask?: string; nextHop?: string; exitInterface?: string }>) || []),
+    ...((rawState.ipRoutes as Array<{ destination?: string; network?: string; subnetMask?: string; mask?: string; nextHop?: string; exitInterface?: string; interfaceId?: string }>) || []),
   ];
-  allRoutes.forEach((r: { destination?: string; network?: string; subnetMask?: string; mask?: string; nextHop?: string; exitInterface?: string }) => {
-    const dest = r.destination || r.network || '0.0.0.0';
-    const mask = r.subnetMask || r.mask || '255.255.255.0';
-    const nh = r.nextHop || 'directly connected';
-    const outIf = r.exitInterface || '';
-    routes.push({ prefix: dest, mask, nextHop: nh, outIf, adjType: nh === 'directly connected' ? 'receive' : 'adjacency' });
+  allRoutes.forEach((r: { destination?: string; network?: string; subnetMask?: string; mask?: string; nextHop?: string; exitInterface?: string; interfaceId?: string; metric?: number; type?: string; code?: string }) => {
+    const dest = r.destination || r.network;
+    const mask = r.subnetMask || r.mask;
+    if (!dest) return;
+    rib.push({
+      destination: dest,
+      subnetMask: mask,
+      nextHop: r.nextHop || 'directly connected',
+      metric: r.metric ?? 0,
+      type: r.type === 'static' ? 'static' : r.type === 'dynamic' ? 'dynamic' : 'static',
+      code: r.code,
+      interfaceId: r.interfaceId ?? r.exitInterface,
+    });
   });
+
+  const fib: FibEntry[] = buildFibFromRib(rib as never);
 
   // Filter by prefix if given
   const displayed = filterPrefix
-    ? routes.filter(r => {
+    ? fib.filter(e => {
       const query = filterPrefix.includes('/') ? filterPrefix.split('/')[0] : filterPrefix;
-      return r.prefix === query;
+      return e.prefix === query;
     })
-    : routes;
+    : fib;
 
   if (displayed.length === 0) {
     if (filterPrefix) return { success: true, output: `\n% Prefix ${filterPrefix} not found in CEF table\n` };
@@ -852,15 +865,24 @@ export function cmdShowIpCef(state: SwitchState, input: string, _ctx: CommandCon
   }
 
   let output = '\n';
-  output += 'IP CEF Table - Prefix          Next Hop          Interface         Type\n';
-  output += '-----------------------------  ----------------  ----------------  -----------\n';
+  output += 'IP CEF Table - Prefix          Next Hop          Interface         Type     AD/Metric\n';
+  output += '-----------------------------  ----------------  ----------------  -------  ---------\n';
 
-  displayed.forEach(r => {
-    const pl = getPrefixLength(r.mask);
-    const prefixStr = `${r.prefix}/${pl}`;
-    output += `${prefixStr.padEnd(31)} ${r.nextHop.padEnd(18)} ${r.outIf.padEnd(18)} ${r.adjType}\n`;
-    if (isDetail && r.adjType === 'adjacency') {
-      output += `    Adjacency: IP adj out of ${r.outIf || 'unknown'}, addr ${r.nextHop}\n`;
+  displayed.forEach(e => {
+    const prefixStr = `${e.prefix}/${e.prefixLength}`;
+    const primary = e.nextHops[0];
+    const nh = primary?.nextHop ?? 'attached';
+    const outIf = primary?.interfaceId ?? (primary?.routeType === 'connected' ? nh : '');
+    const adjType = primary?.routeType === 'connected' ? 'receive' : 'adjacency';
+    const code = primary?.code ?? '';
+    output += `${prefixStr.padEnd(29)} ${nh.padEnd(17)} ${outIf.padEnd(17)} ${code.padEnd(8)} ${e.administrativeDistance}/${e.metric}`;
+    if (e.nextHops.length > 1) output += `  [${e.nextHops.length}-way ECMP]`;
+    output += '\n';
+    if (isDetail && adjType === 'adjacency') {
+      output += `    Adjacency: IP adj out of ${outIf || 'unknown'}, addr ${nh}\n`;
+      e.nextHops.slice(1).forEach((alt, i) => {
+        output += `    ECMP path ${i + 2}: via ${alt.nextHop}${alt.interfaceId ? ` out of ${alt.interfaceId}` : ''}\n`;
+      });
     }
   });
 

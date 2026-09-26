@@ -95,7 +95,9 @@ import {
   cmdVlanState,
   cmdVtpMode,
   cmdVtpDomain,
-  cmdSpanningTreeMode
+  cmdSpanningTreeMode,
+  cmdMacAgingTime,
+  cmdNoMacAgingTime
 } from './globalConfigVlanCommands';
 
 import {
@@ -195,6 +197,8 @@ export const globalConfigHandlers: Record<string, CommandHandler> = {
   'vtp mode': cmdVtpMode,
   'vtp domain': cmdVtpDomain,
   'spanning-tree mode': cmdSpanningTreeMode,
+  'mac address-table aging-time': cmdMacAgingTime,
+  'no mac address-table aging-time': cmdNoMacAgingTime,
   'spanning-tree vlan': cmdSpanningTreeVlan,
   'spanning-tree portfast': cmdSpanningTreePortfastDefault,
   'no spanning-tree portfast default': cmdNoSpanningTreePortfastDefault,

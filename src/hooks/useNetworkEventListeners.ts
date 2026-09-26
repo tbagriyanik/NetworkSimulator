@@ -6,6 +6,7 @@ import type { TabType } from '@/app/page.types';
 import { recalculateStp, computeStpTopologyChanges } from '@/lib/network/stp';
 import { detectEtherChannelBundles, computeEtherChannelChanges } from '@/lib/network/etherchannel';
 import { learnMacsOnNewConnection } from '@/lib/network/macLearning';
+import { propagateLinkStateChange } from '@/lib/network/linkStateEngine';
 import { useAppStore } from '@/lib/store/appStore';
 
 interface UseNetworkEventListenersParams {
@@ -85,7 +86,37 @@ export function useNetworkEventListeners(params: UseNetworkEventListenersParams)
       const { topologyConnections: updatedConnections } = (event as CustomEvent).detail;
       if (updatedConnections) {
         const prevStates = deviceStatesRef.current;
-        const allUpdatedStates = recalculateStp(prevStates, updatedConnections);
+
+        // Diff prior vs current topology: any connection that disappeared or
+        // was deactivated represents a link-state down for both endpoints —
+        // propagate through the central link-state engine (OSPF KillNbr,
+        // EIGRP InterfaceDown, BGP session drop, NAT purge, DHCP LinkDown,
+        // ARP/MAC/NDP flush) before recalculation.
+        let workingStates = prevStates;
+        const linkEvents: ReturnType<typeof propagateLinkStateChange>['events'] = [];
+        if (prevTopologyConnectionsRef.current) {
+          const nextIds = new Set(updatedConnections.map((c: CanvasConnection) => c.id));
+          for (const conn of prevTopologyConnectionsRef.current) {
+            if (nextIds.has(conn.id)) continue;
+            // Each end of the removed cable experiences a link down.
+            const srcRes = propagateLinkStateChange(workingStates, updatedConnections, conn.sourceDeviceId, [conn.sourcePort], 'down');
+            workingStates = srcRes.deviceStates;
+            linkEvents.push(...srcRes.events);
+            const dstRes = propagateLinkStateChange(workingStates, updatedConnections, conn.targetDeviceId, [conn.targetPort], 'down');
+            workingStates = dstRes.deviceStates;
+            linkEvents.push(...dstRes.events);
+          }
+          for (const ev of linkEvents) {
+            addNetworkEventLog({
+              level: ev.level,
+              category: 'Link',
+              message: ev.message,
+              detail: `${ev.deviceId}|${ev.portId}`,
+            });
+          }
+        }
+
+        const allUpdatedStates = recalculateStp(workingStates, updatedConnections);
         for (const change of computeStpTopologyChanges(prevStates, allUpdatedStates)) {
           const isForwardingTransition =
             change.type === 'port-state-change' &&

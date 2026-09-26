@@ -1,11 +1,17 @@
 import type { CommandContext } from '../commandTypes';
 import type { SwitchState, CommandResult } from '../../types';
 import { getSwitchDisplayProfile } from '../showHelpers';
+import { getEffectiveHistorySize } from '../../historySize';
 
 export function cmdShowHistory(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
   const history = state.commandHistory || [];
   let output = '\n';
-  history.slice(-20).forEach((cmd: string) => { output += `  ${cmd}\n`; });
+  // commandHistory is stored newest-first (index 0 = most recent). lists the
+  // most recent commands oldest-first with ascending line numbers, so reverse here.
+  // The window honors the line-level `history size N` setting (default 50).
+  history.slice(0, getEffectiveHistorySize(state)).reverse().forEach((cmd: string, i: number) => {
+    output += `  ${String(i + 1).padStart(3)}  ${cmd}\n`;
+  });
   return { success: true, output };
 }
 

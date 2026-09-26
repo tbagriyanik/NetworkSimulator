@@ -775,6 +775,12 @@ export const systemPatterns: Record<string, CommandPattern> = {
     minArgs: 1,
     maxArgs: 1
   },
+  'no mtu': {
+    pattern: /^no\s+mtu$/i,
+    modes: ['interface', 'config-if-range'],
+    minArgs: 0,
+    maxArgs: 0
+  },
 
   //  Router config negation commands 
   'no network': {

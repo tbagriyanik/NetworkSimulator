@@ -41,6 +41,41 @@ import { flowSubmodeHandlers } from './core/flowCommands';
 // --- Command handler types & context ---
 import { CommandContext, CommandHandler } from './core/commandTypes';
 
+// --- Pager (--More--) support ---
+function handlePagerResume(state: SwitchState, input: string): CommandResult | null {
+  const pending = state.pendingPager;
+  if (!pending) return null;
+  const trimmed = input.trim();
+  const lower = trimmed.toLowerCase();
+
+  // 'q' quits the pager: the remaining output is discarded and a fresh
+  // prompt follows (IOS behavior).
+  if (lower === 'q' || lower === 'quit') {
+    return { success: true, output: '', newState: { pendingPager: undefined } };
+  }
+
+  // Enter advances one line, Space advances one full page (IOS behavior).
+  // Note: check the RAW input for space — after trim() a bare ' ' becomes ''.
+  const isSpace = input === ' ';
+  const isEnter = input.trim() === '';
+  if (isSpace || isEnter) {
+    const step = isSpace ? Math.max(1, pending.length) : 1;
+    const lines = pending.rest.split('\n');
+    const chunk = lines.slice(0, step).join('\n');
+    const restLines = lines.slice(step);
+    const hasMore = restLines.length > 0;
+    return {
+      success: true,
+      output: `${chunk}${hasMore ? '\n--More-- ' : ''}`,
+      newState: {
+        pendingPager: hasMore ? { rest: restLines.join('\n'), length: pending.length } : undefined
+      } as Partial<SwitchState>
+    };
+  }
+
+  return null; // not a pager key — caller ignores the input while --More-- is active
+}
+
 // --- Core executor ---
 export function executeCommand(
   state: SwitchState,
@@ -74,6 +109,15 @@ export function executeCommand(
   if (input.startsWith('__SSH_CONNECT__')) {
     const sshUser = input.includes(':') ? input.split(':').slice(1).join(':').trim() : '';
     return handleSshConnect(state, language, sshUser || undefined);
+  }
+
+  // --More-- pager: Space/Enter advance the pending page, 'q' quits.
+  // Any other input is IGNORED while --More-- is active (IOS behavior);
+  // the pager keeps its place until the user advances through or quits.
+  if (state.pendingPager) {
+    const resume = handlePagerResume(state, input);
+    if (resume) return resume;
+    return { success: true, output: '', newState: {} };
   }
 
   if (state.awaitingPassword) {

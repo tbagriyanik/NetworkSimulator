@@ -10,14 +10,14 @@ export function cmdRouterId(_state: SwitchState, input: string): CommandResult {
     return {
         success: true,
         output: `Router ID set to ${match[1]}`,
-        newState: { routerId: match[1] }
+        newState: { routerId: match[1], ospfRouterId: match[1] }
     };
 }
 
 export function cmdNoRouterId(_state: SwitchState, _input: string): CommandResult {
     return {
         success: true,
-        newState: { routerId: undefined }
+        newState: { routerId: undefined, ospfRouterId: undefined }
     };
 }
 

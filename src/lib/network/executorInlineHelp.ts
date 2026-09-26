@@ -1,12 +1,51 @@
 import { SwitchState, CommandMode } from './types';
 import { commandHelp, commandDescriptions } from './executorCommandHelp';
-import { commandPatterns, getLevenshteinDistance, expandKeywordPrefixes, resolveAliases } from './parser';
+import { commandPatterns, getLevenshteinDistance, expandKeywordPrefixes, resolveAliases, isKeywordToken } from './parser';
 import { CLI_ERRORS } from './core/cliErrors';
 import { getDeviceCapabilities } from './capabilities';
 import type { CanvasDevice, DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
+/**
+ * Build a generic per-mode help tree from commandPatterns for modes that have
+ * no hand-written commandHelp entry (dhcp-config, config-ext-nacl, router-ospf,
+ * vlan, ssid-config, ...). Pattern keys are tokenized with the same keyword
+ * filter the execution trie uses, so parameter tokens like "(deny|permit)" are
+ * skipped while real keywords become top-level commands and sub-keywords.
+ */
+const patternModeHelpCache: Record<string, Record<string, string[]> | null> = {};
+function buildModeHelpFromPatterns(mode: CommandMode): Record<string, string[]> | null {
+  const cached = patternModeHelpCache[mode];
+  if (cached !== undefined) return cached;
+
+  const tree: Record<string, string[]> = { '': [] };
+  const top = new Set<string>();
+
+  for (const [name, pattern] of Object.entries(commandPatterns)) {
+    if (!pattern.modes.includes(mode)) continue;
+    const tokens = name.toLowerCase().split(/\s+/).filter(isKeywordToken);
+    if (tokens.length === 0) continue;
+    top.add(tokens[0]);
+    for (let i = 0; i < tokens.length; i++) {
+      const key = tokens.slice(0, i).join(' ');
+      (tree[key] = tree[key] || []).push(tokens[i]);
+    }
+  }
+
+  if (top.size === 0) {
+    patternModeHelpCache[mode] = null;
+    return null;
+  }
+
+  tree[''] = Array.from(top).sort();
+  for (const key of Object.keys(tree)) {
+    tree[key] = Array.from(new Set(tree[key])).sort();
+  }
+  patternModeHelpCache[mode] = tree;
+  return tree;
+}
+
 function getInlineHelp(mode: CommandMode, partialInput: string, prompt: string, state?: SwitchState): string {
-  const modeCommands = commandHelp[mode] || commandHelp.user;
+  const modeCommands = commandHelp[mode] || buildModeHelpFromPatterns(mode) || commandHelp.user;
   const modeDescriptions = commandDescriptions[mode] || commandDescriptions.user;
 
   // Resolve command aliases and keyword prefixes (e.g. "int f" -> "interface f", "sh ip" -> "show ip")

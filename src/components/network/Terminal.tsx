@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, KeyboardEvent, useCallback, useMemo } from 'react';
 import { SwitchState } from '@/lib/network/types';
 import { getModePrompt } from '@/lib/network/initialState';
+import { getEffectiveHistorySize } from '@/lib/network/historySize';
 import { Translations } from '@/contexts/LanguageContext';
 import { getDeviceWifiConfig, getWirelessSignalStrength } from '@/lib/network/connectivity';
 import { Button } from '@/components/ui/button';
@@ -104,7 +105,7 @@ export function Terminal({
   deviceStates
 }: TerminalProps) {
   const [input, setInput] = useState('');
-  const { history, addHistoryCommand, navigateUp, navigateDown } = useTerminalHistory(deviceId, state.commandHistory);
+  const { history, addHistoryCommand, navigateUp, navigateDown } = useTerminalHistory(deviceId, state.commandHistory, getEffectiveHistorySize(state));
 
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -368,6 +369,23 @@ export function Terminal({
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
       e.preventDefault();
       setSearchOpen(true);
+      return;
+    }
+
+    // --More-- pager: while output is paged, Space/Enter/'q' drive the pager
+    // directly and all other keys are ignored until the pager finishes (IOS
+    // behavior). The buffer is reset so a stale half-typed command does not
+    // leak into the next prompt.
+    if (state.pendingPager) {
+      const key = e.key.toLowerCase();
+      if (e.key === ' ' || e.key === 'Enter' || key === 'q') {
+        e.preventDefault();
+        const action = e.key === ' ' ? ' ' : e.key === 'Enter' ? '' : 'q';
+        setInput('');
+        void onCommand(action);
+      } else {
+        e.preventDefault();
+      }
       return;
     }
 

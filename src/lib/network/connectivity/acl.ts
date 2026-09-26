@@ -159,6 +159,7 @@ export function evaluateIpv6Acl(
     if (!matchSpec(sourceIp, srcSpec)) continue;
     if (!matchSpec(targetIp, dstSpec)) continue;
 
+    incrementAclCounter(state, aclId, ruleIdx);
     return action;
   }
 

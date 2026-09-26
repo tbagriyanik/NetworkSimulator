@@ -40,7 +40,7 @@ export function cmdShowIpOspfInterface(state: SwitchState, input: string, _ctx: 
       const passive = (port.passiveInterface || (state.passiveInterfaces || []).some(p => p.toLowerCase() === name.toLowerCase()));
       output += `${name} is up, line protocol is up\n`;
       output += `  Internet Address ${port.ipAddress}/${getPrefixLength(port.subnetMask)}, Area ${portArea}\n`;
-      output += `  Process ID ${portProcess}, Router ID ${state.ospfRouterId || state.ip || '192.168.1.1'}, Network Type BROADCAST, Cost: ${cost}\n`;
+      output += `  Process ID ${portProcess}, Router ID ${state.ospfRouterId || state.routerId || state.ip || '192.168.1.1'}, Network Type BROADCAST, Cost: ${cost}\n`;
       output += `  Transmit Delay is 1 sec, State DR, Priority ${priority}\n`;
       output += `  Designated Router (ID) ${state.ip || '192.168.1.1'}, Interface address ${port.ipAddress}\n`;
       output += `  Backup Designated router (ID) 0.0.0.0, Interface address 0.0.0.0\n`;
@@ -77,7 +77,7 @@ export function cmdShowIpProtocols(state: SwitchState, _input: string, _ctx: Com
   let output = '\n';
   if (state.routingProtocol === 'ospf') {
     const processId = state.ospfProcessId || 1;
-    const routerId = state.ospfRouterId || state.ip || '192.168.1.1';
+    const routerId = state.ospfRouterId || state.routerId || state.ip || '192.168.1.1';
     const areas = new Set<number>();
     if (state.dynamicRoutes) state.dynamicRoutes.forEach(r => { if (r.area !== undefined) areas.add(r.area); });
     if (state.ospfAreas) state.ospfAreas.forEach(a => areas.add(a));
@@ -142,7 +142,7 @@ export function cmdShowIpProtocols(state: SwitchState, _input: string, _ctx: Com
     }
     output += '    Metric weight K1=1, K2=0, K3=1, K4=0, K5=0\n';
     output += '    NSF-aware route hold timer is 240\n';
-    output += `    Router-ID: ${state.ospfRouterId || state.ip || '10.0.0.1'}\n`;
+    output += `    Router-ID: ${state.ospfRouterId || state.routerId || state.ip || '10.0.0.1'}\n`;
     output += '    Topology : 0 (base)\n';
     output += '      Active Timer: 3 min\n';
     output += '      Distance: internal 90 external 170\n';
@@ -236,7 +236,7 @@ export function cmdShowIpOspfDatabase(state: SwitchState, input: string, ctx: Co
     return { success: true, output: '\n% OSPF is not enabled\n' };
   }
 
-  const routerId = state.ospfRouterId || state.ip || '192.168.1.1';
+  const routerId = state.ospfRouterId || state.routerId || state.ip || '192.168.1.1';
   const areas = state.ospfAreas && state.ospfAreas.length > 0 ? state.ospfAreas : [0];
   const deviceStates = ensureDeviceStatesMap(ctx.deviceStates);
 
@@ -446,7 +446,7 @@ export function cmdShowIpOspf(state: SwitchState, _input: string, _ctx: CommandC
   }
 
   const processId = state.ospfProcessId || 1;
-  const routerId = state.ospfRouterId || state.ip || '192.168.1.1';
+  const routerId = state.ospfRouterId || state.routerId || state.ip || '192.168.1.1';
   const areas = new Set<number>();
   if (state.dynamicRoutes) state.dynamicRoutes.forEach(r => { if (r.area !== undefined) areas.add(r.area); });
   if (state.ospfAreas) state.ospfAreas.forEach(a => areas.add(a));

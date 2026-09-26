@@ -88,6 +88,9 @@ export interface SwitchState {
   terminalLength?: number;
   terminalWidth?: number;
   terminalMonitor?: boolean;
+  // --More-- pager: remaining output awaiting Space/Enter/'q' when a long
+  // command result was truncated to `terminalLength` lines.
+  pendingPager?: { rest: string; length: number };
   currentInterface?: string;
   selectedInterfaces?: string[];  // interface range için çoklu port seçimi
   currentLine?: string;
@@ -282,6 +285,7 @@ export interface SwitchState {
   routingProtocol?: 'none' | 'rip' | 'ospf' | 'ripng' | 'ospfv3' | 'eigrp' | 'bgp'; // Routing protocol
   ripVersion?: 1 | 2;                 // RIP version configured in router mode
   autoSummary?: boolean;           // Auto-summary for routing protocols
+  ospf?: { processId?: number; routerId?: string; networks?: { network: string; wildcard: string; area: number }[] };
   ospfProcessId?: string | number; // OSPF process ID
   ospfRouterId?: string;           // OSPF Router ID
   ospfAreas?: number[];            // OSPF active areas
@@ -313,6 +317,11 @@ export interface SwitchState {
   bgpAs?: string;                  // BGP AS number
   bgpNeighbors?: BgpNeighbor[];   // BGP neighbor configurations
   bgpNeighborState?: Record<string, string>; // BGP neighbor dynamic state mapping (e.g. 'Established', 'Idle')
+  /**
+   * BGP neighbor FSM session records keyed by peer IP (hold timer, session
+   * state machine progress — Idle → Connect → ... → Established).
+   */
+  bgpSessionStates?: Record<string, import('../protocols/bgpStateMachine').BgpSessionRecord>;
   bgpNetworks?: { network: string; mask: string }[]; // BGP advertised networks (network <ip> mask <mask>)
   // --- Advanced BGP global settings (router-config mode for BGP) ---
   bgpMaximumPaths?: number;          // maximum-paths <n> multipath
@@ -404,6 +413,8 @@ export interface SwitchState {
       maxMessages?: number;
     };
   };
+  /** Global MAC address-table aging time in seconds (mac address-table aging-time <sec>) */
+  macAgingTime?: number;
   spanningTreePriority?: number;
   firewallRules?: Array<{
     id: string;

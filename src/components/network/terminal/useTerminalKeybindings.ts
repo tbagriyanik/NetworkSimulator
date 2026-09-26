@@ -36,9 +36,65 @@ export function handleTerminalShortcuts(
   }
 
   if (key === 'a') {
+    // Ctrl+A moves the cursor to the beginning of the line.
     e.preventDefault();
     if (inputRef.current) {
-      inputRef.current.select();
+      inputRef.current.setSelectionRange(0, 0);
+    }
+    return true;
+  }
+
+  if (key === 'e') {
+    // Ctrl+E moves the cursor to the end of the line.
+    e.preventDefault();
+    if (inputRef.current) {
+      const len = inputRef.current.value.length;
+      inputRef.current.setSelectionRange(len, len);
+    }
+    return true;
+  }
+
+  if (key === 'u') {
+    // Ctrl+U deletes from the cursor to the beginning of the line.
+    e.preventDefault();
+    if (inputRef.current && input) {
+      const start = inputRef.current.selectionStart || 0;
+      const newInput = input.substring(start);
+      setInput(newInput);
+      setTimeout(() => {
+        if (inputRef.current) inputRef.current.setSelectionRange(0, 0);
+      }, 0);
+    }
+    return true;
+  }
+
+  if (key === 'k') {
+    // Ctrl+K deletes from the cursor to the end of the line.
+    e.preventDefault();
+    if (inputRef.current && input) {
+      const start = inputRef.current.selectionStart || 0;
+      const newInput = input.substring(0, start);
+      setInput(newInput);
+      setTimeout(() => {
+        if (inputRef.current) inputRef.current.setSelectionRange(start, start);
+      }, 0);
+    }
+    return true;
+  }
+
+  if (key === 'w') {
+    // Ctrl+W deletes the word before the cursor.
+    e.preventDefault();
+    if (inputRef.current && input) {
+      const start = inputRef.current.selectionStart || 0;
+      const end = inputRef.current.selectionEnd || 0;
+      const before = input.substring(0, start);
+      const after = input.substring(end);
+      const newBefore = before.replace(/\S+\s*$/, '');
+      setInput(newBefore + after);
+      setTimeout(() => {
+        if (inputRef.current) inputRef.current.setSelectionRange(newBefore.length, newBefore.length);
+      }, 0);
     }
     return true;
   }

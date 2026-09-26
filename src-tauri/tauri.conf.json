@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Network Simulator",
-  "version": "6.6.1",
+  "version": "6.7.0",
   "identifier": "com.networksimulator.desktop",
   "build": {
     "frontendDist": "../out",

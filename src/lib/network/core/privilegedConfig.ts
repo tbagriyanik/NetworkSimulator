@@ -3,6 +3,8 @@ import type { CommandContext } from './commandTypes';
 import type { SwitchState, CommandResult, Port } from '../types';
 import type { CanvasDevice } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { isValidIPv4Format } from '../dns';
+import { buildRunningConfig } from './configBuilder';
+import { applyConfigText } from './configTextImport';
 
 /**
  * Write Memory - Save configuration
@@ -15,7 +17,8 @@ export function cmdWriteMemory(state: SwitchState, _input: string, _ctx: Command
     return {
         success: true,
         output: 'Building configuration...\n[OK]\n',
-        saveConfig: true
+        saveConfig: true,
+        newState: { savedConfig: buildRunningConfig(state).join('\n') }
     };
 }
 
@@ -30,7 +33,8 @@ export function cmdCopyRunningStartup(state: SwitchState, _input: string, _ctx: 
     return {
         success: true,
         output: 'Destination filename [startup-config]?\nBuilding configuration...\n[OK]\n',
-        saveConfig: true
+        saveConfig: true,
+        newState: { savedConfig: buildRunningConfig(state).join('\n') }
     };
 }
 
@@ -194,7 +198,7 @@ export function cmdCopyTftp(state: SwitchState, input: string, ctx: CommandConte
         return { success: false, error: `% Error: TFTP service is not enabled on ${targetIp}.` };
     }
 
-    const configContent = Array.isArray(state.runningConfig) ? state.runningConfig.join('\n') : '';
+    const configContent = buildRunningConfig(state).join('\n');
     const remoteFiles = targetDevice.services?.ftp?.files || [];
     const remoteFile = remoteFiles.find((file: { name: string }) => file.name.toLowerCase() === filename.toLowerCase());
 
@@ -238,7 +242,14 @@ export function cmdCopyTftp(state: SwitchState, input: string, ctx: CommandConte
     return {
         success: true,
         output: `\n${verb} ${source} to ${dest} ...\nBuilding configuration...\n[OK]\n`,
-        ...(isRestore ? { newState: { runningConfig: remoteFile?.content?.split('\n') || [] } } : {})
+        ...(isRestore && typeof remoteFile?.content === 'string'
+            ? {
+                newState: {
+                    runningConfig: remoteFile.content.split('\n'),
+                    ...applyConfigText(state, remoteFile.content)
+                }
+            }
+            : {})
     };
 }
 

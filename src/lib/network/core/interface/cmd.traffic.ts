@@ -467,6 +467,17 @@ export function cmdMtu(state: SwitchState, input: string, _ctx: CommandContext):
   return { success: true, output: `MTU set to ${mtuValue} bytes`, newState: { ports: newPorts } };
 }
 
+export function cmdNoMtu(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
+  if (!isInInterfaceMode(state)) return { success: false, error: cliModeError() };
+  // default interface MTU is 1500 bytes; 'no mtu' restores it.
+  const updatePort = (port: Port) => ({ ...port, mtu: 1500 });
+  if (state.selectedInterfaces?.length) return { success: true, newState: { ports: applyToSelectedPorts(state, updatePort) } };
+  if (!state.currentInterface) return { success: false, error: '% No interface selected' };
+  const newPorts = { ...state.ports };
+  newPorts[state.currentInterface] = updatePort(newPorts[state.currentInterface] || {});
+  return { success: true, output: 'MTU restored to default 1500 bytes', newState: { ports: newPorts } };
+}
+
 export function cmdKeepalive(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (!isInInterfaceMode(state)) return { success: false, error: cliModeError() };
   const match = input.match(/^keepalive(?:\s+(\d+))?$/i);

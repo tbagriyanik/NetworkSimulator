@@ -32,6 +32,43 @@ export function cmdHostname(state: SwitchState, input: string, _ctx: CommandCont
   };
 }
 
+/**
+ * MAC address-table aging-time (global config)
+ * Syntax: mac address-table aging-time <10-1000000> | no mac address-table aging-time
+ */
+export function cmdMacAgingTime(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  if (state.currentMode !== 'config') {
+    return { success: false, error: cliModeError() };
+  }
+
+  const match = input.match(/^mac\s+address-table\s+aging-time\s+(\d+)$/i);
+  if (!match) {
+    return { success: false, error: "% Invalid input detected at '^' marker." };
+  }
+
+  const seconds = parseInt(match[1], 10);
+  if (seconds < 10 || seconds > 1000000) {
+    return { success: false, error: '% Aging time must be between 10 and 1000000 seconds' };
+  }
+
+  return {
+    success: true,
+    output: `MAC address table aging time set to ${seconds} seconds`,
+    newState: { macAgingTime: seconds }
+  };
+}
+
+export function cmdNoMacAgingTime(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
+  if (state.currentMode !== 'config') {
+    return { success: false, error: cliModeError() };
+  }
+  return {
+    success: true,
+    output: 'MAC address table aging time reset to default (300 seconds)',
+    newState: { macAgingTime: undefined }
+  };
+}
+
 export function cmdNoHostname(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
     return { success: false, error: cliModeError() };

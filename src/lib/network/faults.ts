@@ -34,15 +34,21 @@ export function checkFaultResolved(state: SwitchState, fault: FaultDefinition): 
   let current: Record<string, unknown> = state as unknown as Record<string, unknown>;
   for (let i = 0; i < parts.length - 1; i++) {
     const part = parts[i];
-    if (current && typeof current === 'object' && part in current) {
-      current = current[part] as Record<string, unknown>;
+    if (current && typeof current === 'object') {
+      const matchKey = Object.keys(current).find(k => k.toLowerCase() === part.toLowerCase()) || part;
+      if (matchKey in current) {
+        current = current[matchKey] as Record<string, unknown>;
+      } else {
+        return false;
+      }
     } else {
       return false;
     }
   }
 
   const lastPart = parts[parts.length - 1];
-  const currentValue = current?.[lastPart];
+  const lastKey = Object.keys(current || {}).find(k => k.toLowerCase() === lastPart.toLowerCase()) || lastPart;
+  const currentValue = current?.[lastKey];
 
   // For complex objects, simple comparison might not work, but for most config it's fine
   if (typeof fault.correctValue === 'object' && fault.correctValue !== null) {

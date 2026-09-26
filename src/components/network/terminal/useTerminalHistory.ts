@@ -19,21 +19,24 @@ export interface UseTerminalHistoryReturn {
 
 export function useTerminalHistory(
   deviceId: string,
-  globalCommandHistory?: string[]
+  globalCommandHistory?: string[],
+  historySize?: number
 ): UseTerminalHistoryReturn {
-  const [history, setHistory] = useState<string[]>(() => globalCommandHistory || []);
+  const cap = historySize && historySize > 0 ? historySize : 50;
+  const [history, setHistory] = useState<string[]>(() => (globalCommandHistory || []).slice(0, cap));
   const [historyIndex, setHistoryIndex] = useState(-1);
 
   // Synchronize history with global device state during render when device or history changes
   const [prevSync, setPrevSync] = useState<{
     deviceId: string | null;
     history: string[] | undefined;
-  }>({ deviceId: null, history: undefined });
+    historySize: number | null;
+  }>({ deviceId: null, history: undefined, historySize: null });
 
-  if (prevSync.deviceId !== deviceId || prevSync.history !== globalCommandHistory) {
+  if (prevSync.deviceId !== deviceId || prevSync.history !== globalCommandHistory || prevSync.historySize !== cap) {
     const deviceChanged = prevSync.deviceId !== deviceId;
-    setPrevSync({ deviceId, history: globalCommandHistory });
-    setHistory(globalCommandHistory || []);
+    setPrevSync({ deviceId, history: globalCommandHistory, historySize: cap });
+    setHistory((globalCommandHistory || []).slice(0, cap));
     if (deviceChanged) {
       setHistoryIndex(-1);
     }
@@ -48,12 +51,12 @@ export function useTerminalHistory(
     const trimmed = command;
     let nextHistory = history;
     if (history[0] !== trimmed) {
-      nextHistory = [trimmed, ...history].slice(0, 50);
+      nextHistory = [trimmed, ...history].slice(0, cap);
       setHistory(nextHistory);
     }
     setHistoryIndex(-1);
     return nextHistory;
-  }, [history]);
+  }, [history, cap]);
 
   const navigateUp = useCallback((): string | null => {
     if (history.length > 0 && historyIndex < history.length - 1) {

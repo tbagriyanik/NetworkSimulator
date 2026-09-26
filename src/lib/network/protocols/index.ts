@@ -31,6 +31,13 @@ export type {
   LacpPortEvent,
   LacpPortTransitionResult,
 } from './protocolStateMachines';
+export type {
+  // BGP (RFC 4271 §8)
+  BgpPeerState,
+  BgpSessionRecord,
+  BgpSessionEvent,
+  BgpSessionTransitionResult,
+} from './bgpStateMachine';
 
 export {
   // OSPF
@@ -49,3 +56,10 @@ export {
   lacpPortTransition,
   lacpTickTimer,
 } from './protocolStateMachines';
+export {
+  bgpSessionTransition,
+  bgpTickSession,
+  createBgpSessionRecord,
+  BGP_DEFAULT_KEEPALIVE,
+  BGP_DEFAULT_HOLDTIME,
+} from './bgpStateMachine';

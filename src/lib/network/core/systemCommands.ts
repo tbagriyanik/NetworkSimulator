@@ -5,6 +5,7 @@ import { privilegedHandlers } from './privilegedCommands';
 import { parseCommand, validateCommand } from '../parser';
 import type { SwitchState, CommandResult, CommandMode } from '../types';
 import { getCommandCapabilityError } from './commandCapabilityCheck';
+import { buildRunningConfig } from './configBuilder';
 
 // Sistem ve oturum komutları (enable, configure terminal, ping, reload, debug, vs.)
 
@@ -391,7 +392,10 @@ function cmdDo(
   }
   const validationSub = validateCommand(parsedSub, 'privileged', privilegedState);
   if (!validationSub.valid || !validationSub.matchedPattern) {
-    return { success: false, error: `% Invalid input detected at '^' marker.\n${subCommand ? `% ${subCommand}` : ''}` };
+    // Propagate the real validation error (carets, % Ambiguous / % Incomplete
+    // classification and mode hints) instead of discarding it behind a generic
+    // message, matching IOS's `do` behavior.
+    return { success: false, error: validationSub.error || `% Invalid input detected at '^' marker.` };
   }
 
   const matched = validationSub.matchedPattern;
@@ -409,7 +413,7 @@ function cmdDo(
       success: true,
       output: 'Building configuration...\n[OK]\n',
       saveConfig: true,
-      newState: { currentMode: originalMode }
+      newState: { currentMode: originalMode, savedConfig: buildRunningConfig(state).join('\n') }
     });
   }
 

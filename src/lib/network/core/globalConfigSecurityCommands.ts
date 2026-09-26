@@ -94,11 +94,18 @@ export function cmdNoInterface(state: SwitchState, input: string, _ctx: CommandC
   }
 
   const vlanId = match[1];
+  const newPorts = { ...state.ports };
   const newVlans = { ...state.vlans };
 
   if (!newVlans[vlanId]) {
     return { success: false, error: `% VLAN ${vlanId} does not exist` };
   }
+
+  // The SVI lives in state.ports as a vlan-typed port created by
+  // 'interface vlan <id>' — deleting the VLAN record alone leaves the
+  // interface fully intact in 'show running-config'.
+  const vlanPortId = `vlan${vlanId}`;
+  delete newPorts[vlanPortId];
 
   newVlans[vlanId] = {
     ...newVlans[vlanId],
@@ -108,7 +115,7 @@ export function cmdNoInterface(state: SwitchState, input: string, _ctx: CommandC
 
   return {
     success: true,
-    newState: { vlans: newVlans }
+    newState: { ports: newPorts, vlans: newVlans }
   };
 }
 

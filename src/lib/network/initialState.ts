@@ -724,25 +724,14 @@ export function applyStartupConfig(baseState: SwitchState, startup: StartupConfi
     }
     mergedPorts[id] = {
       ...basePort,
-      name: savedPort.name,
-      vlan: savedPort.vlan,
-      mode: savedPort.mode,
-      voiceVlan: savedPort.voiceVlan ?? basePort.voiceVlan ?? 'none',
-      duplex: savedPort.duplex,
-      speed: savedPort.speed,
-      shutdown: savedPort.shutdown,
-      type: savedPort.type,
-      allowedVlans: savedPort.allowedVlans,
-      channelGroup: savedPort.channelGroup,
-      channelMode: savedPort.channelMode,
-      channelProtocol: savedPort.channelProtocol,
-      portSecurity: savedPort.portSecurity,
-      ipAddress: savedPort.ipAddress,
-      subnetMask: savedPort.subnetMask,
-      ipv6Address: savedPort.ipv6Address,
-      ipv6Prefix: savedPort.ipv6Prefix,
-      // Preserve wifi config so AP settings survive power cycles and reloads
-      wifi: savedPort.wifi ?? basePort.wifi,
+      // Restore the FULL saved port shape (all ~180 fields), so interface
+      // settings like description, mtu, spanning-tree, port-security,
+      // channel-group, HSRP/VRRP, OSPF, QoS, power inline and ACLs survive a
+      // reload / power-cycle instead of reverting to factory defaults.
+      // buildStartupConfig() already persists a deep clone of the whole port.
+      ...savedPort,
+      // Preserve the saved link state (or the base state when unknown); the
+      // connectivity engine re-derives it once the topology loads.
       status: savedPort.status ?? basePort.status,
     };
   });

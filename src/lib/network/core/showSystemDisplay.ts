@@ -47,9 +47,8 @@ export function cmdShowStartupConfig(
     };
   }
 
-  let output = '\nBuilding configuration...\n\n';
-  output += 'Startup configuration : 1024 bytes\n\n';
-  output += '!\n';
+  let header = '\nBuilding configuration...\n\n';
+  let output = '!\n';
   output += `version ${state.startupConfig.version || '15.0'}\n`;
   output += `hostname ${state.startupConfig.hostname || state.hostname || 'Switch'}\n`;
 
@@ -177,7 +176,8 @@ export function cmdShowStartupConfig(
   }
 
   output += 'end\n';
-  return { success: true, output };
+  header += `Startup configuration : ${output.length} bytes\n\n`;
+  return { success: true, output: header + output };
 }
 
 /**

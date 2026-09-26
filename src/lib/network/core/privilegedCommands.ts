@@ -31,7 +31,8 @@ import {
     cmdClearLine,
     cmdClearInterface,
     cmdClearIpOspfProcess,
-    cmdClearIpBgp
+    cmdClearIpBgp,
+    cmdClearIpNatTranslation
 } from './privilegedClear';
 import {
     cmdReload,
@@ -90,6 +91,7 @@ export const privilegedHandlers: Record<string, CommandHandler> = {
     'no debug all': cmdUndebugAll,
     'help': cmdHelp,
     'clear ip bgp': cmdClearIpBgp,
+    'clear ip nat translation': cmdClearIpNatTranslation,
     'write erase': cmdEraseStartupConfig,
     'ping tcp': cmdPingTcp,
     'ping udp': cmdPingUdp,

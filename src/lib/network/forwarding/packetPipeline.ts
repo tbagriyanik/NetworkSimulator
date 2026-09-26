@@ -933,3 +933,41 @@ export function runFullPacketPipeline(
     dropReason: formatDropReason(DropReasonCode.MAX_HOPS_EXCEEDED, `Maximum hop count (${maxHops}) exceeded — possible routing loop`)
   };
 }
+
+export interface PacketHopTrace {
+  deviceId: string;
+  portId?: string;
+  vlan?: number;
+  nextHopDevice?: string;
+  details?: string;
+}
+
+export interface PacketSimulationResult {
+  success: boolean;
+  dropReason?: string;
+  hops: PacketHopTrace[];
+}
+
+export function simulatePacketFlow(
+  sourceDeviceId: string,
+  _targetDeviceId: string,
+  frame: NetworkPacketFrame,
+  devices: CanvasDevice[],
+  connections: CanvasConnection[],
+  deviceStates: Map<string, SwitchState>
+): PacketSimulationResult {
+  const result = runFullPacketPipeline(frame, sourceDeviceId, devices, deviceStates, connections);
+  const hops: PacketHopTrace[] = (result.hopResults || []).map((h, i) => {
+    return {
+      deviceId: h.deviceId,
+      portId: h.egressPorts[0],
+      nextHopDevice: result.hopResults?.[i + 1]?.deviceId,
+      details: h.traces.map(t => `${t.stage}: ${t.reason}`).join('; ')
+    };
+  });
+  return {
+    success: result.success,
+    dropReason: result.dropReason,
+    hops
+  };
+}

@@ -1,5 +1,30 @@
 # 📅 Network Simulator — Proje Geçmişi
 
+## v6.7.0 — 2026-09-26
+
+- **🎯 Davranış Regresyon Sistemi & E2E Test Matrisi (`behavioralRegressionEngine.ts`, `cliBehavioralRegression.test.ts`, `noCommandE2EMatrix.test.ts`)**:
+  - **Sistemik Davranış Regresyon Test Grubu**: CLI girdilerinden `SwitchState` güncellemelerine, protokol motorlarından uçtan uca paket iletimine kadar tüm zinciri kapsayan otomatize regresyon motoru eklendi.
+  - **Kapsamlı `no` Komutları E2E Matrisi**: `no ip address`, `no shutdown`, `no router ospf`, `no ip access-group`, `no vlan`, `no switchport access vlan` ve FHRP/EtherChannel/NAT sıfırlama komutlarının durum ve paket akışı üzerindeki geri alma etkileri test matrisiyle doğrulandı.
+
+- **🔗 CLI → State → Engine → Packet Zinciri Doğrulama Motoru (`cliStateEnginePacketVerifier.ts`)**:
+  - Komutların parsed edildiği, cihaz durumunu güncellediği, protokol motorlarını (STP, ARP, MAC, Routing, ACL, NAT) tetiklediği ve paket iletim izini oluşturduğu 4 aşamalı uçtan uca doğrulama altyapısı kuruldu.
+
+- **🛠️ Sorun Giderme (Troubleshooting) & Arıza Enjeksiyonu (Fault Injection) Sistemi (`faultInjectionSystem.ts`, `troubleshootingModeEngine.ts`, `faultInjectionAndTroubleshooting.test.ts`)**:
+  - **Dinamik Arıza Enjeksiyon Motoru**: Cihazlara ve portlara otomatik arıza tanımlayan (kapatılmış portlar, yanlış IP/Subnet maskesi, eksik gateway, hatalı VLAN, ACL engeli vb.), arızanın çözülüp çözülmediğini değerlendiren ve 3 kademeli ipucu ureten altyapı oluşturuldu.
+  - **Etkileşimli Sorun Giderme Modu**: Öğrencilerin ağ arızalarını adım adım teşhis etmelerini sağlayan seans yönetim motoru eklendi.
+
+- **📊 Gelişmiş Paket Yolculuğu (Packet Journey) & PDU İnceleme Motoru (`packetJourneyEnhancer.ts`)**:
+  - Sıçrama (hop) bazında L1-L7 katman ayrıntıları, Ethernet/IPv4/TCP/UDP/ICMP başlık alanları, Hex ve ASCII dökümleri ile kararlar (ACL hat eşleşmesi, ARP araması, en uzun maskeli rota eşleşmesi, NAT çevirisi) görselleştirilebilir veri yapısına dönüştürüldü.
+
+- **⌨️ CLI Abbreviation & TAB Ototamlama Motoru (`cliAutocomplete.ts`, `cliAutocompleteAndMode.test.ts`)**:
+  - CLI komut kısaltmaları (`sh ip ro`, `conf t`, `int fa0/1`) ve TAB ototamlama motoru geliştirildi; port adları, mod kelimeleri ve `do` ön ekleri tamamlanabilir hale getirildi.
+
+- **📐 Otantik CLI Hata Mesajları & Mod/Context Doğrulamaları**:
+  - Hata durumlarında caret (`^`) imleç konumlandırması, `% Invalid input detected at '^' marker.`, `% Ambiguous command` ve `% Incomplete command` çıktıları otantik CLI formatına dönüştürüldü.
+
+- **🧹 Temiz Kod & Kozmetik İyileştirmeler**:
+  - Gereksiz yapay simgeler (emojiler) ve karmaşık iki dilli metinler temizlendi; terminal ve arayüz çıktıları profesyonel ağ araçları standardına getirildi.
+
 ## v6.6.1 — 2026-09-25
 
 - **🧪 Kurumsal CLI Davranış Regresyon Matrisi & E2E Otomasyon Test Grubu (`cliBehaviorRegressionMatrix.test.ts`)**:

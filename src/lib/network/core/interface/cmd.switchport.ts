@@ -379,9 +379,11 @@ export function cmdNoSwitchportMode(state: SwitchState, _input: string, _ctx: Co
     return { success: false, error: '% No interface selected' };
   }
 
+  // 'no switchport mode' restores the platform default
+  // (switchport mode dynamic auto), not a hard-coded 'access' mode.
   const newPorts = applyToSelectedPorts(state, (port: Port) => ({
     ...port,
-    mode: 'access'
+    mode: 'dynamic-auto'
   }));
 
   return { success: true, newState: { ports: newPorts } };

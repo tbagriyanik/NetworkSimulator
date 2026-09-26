@@ -8,6 +8,27 @@ import {
 } from './showHelpers';
 
 /**
+ * Derive IOS-style interface status from the simulated port state.
+ * The simulation tracks a per-port link status ('connected' when a cable is
+ * attached; the factory default is 'notconnect'), which must drive the line
+ * protocol instead of assuming every port is up. A link that was never
+ * plugged in (or is STP-blocked / err-disabled) prints "down, line protocol
+ * is down", matching real IOS. Local console ports stay up unless shut down.
+ */
+function derivePortStatus(
+  port: Port | undefined,
+  isConsole = false
+): { adminStatus: string; lineProtocol: string; isUp: boolean } {
+  const shutdown = !!port?.shutdown;
+  const isUp = !shutdown && (isConsole || port?.status === 'connected');
+  return {
+    adminStatus: shutdown ? 'administratively down' : isUp ? 'up' : 'down',
+    lineProtocol: isUp ? 'up' : 'down',
+    isUp,
+  };
+}
+
+/**
  * Show Interfaces
  */
 export function cmdShowInterfaces(
@@ -25,8 +46,7 @@ export function cmdShowInterfaces(
     const displayName = formatPortName(portName);
 
     // Admin and operational status
-    const adminStatus = port.adminStatus || (port.shutdown ? 'down' : 'up');
-    const lineProtocol = port.lineProtocol || (port.shutdown ? 'down' : 'up');
+    const { adminStatus, lineProtocol } = derivePortStatus(port, portName.toLowerCase() === 'console');
 
     output += `${displayName} is ${adminStatus}, line protocol is ${lineProtocol}\n`;
 
@@ -105,7 +125,7 @@ export function cmdShowInterfaces(
     output += `     ${stats.inputErrors || 0} input errors, ${stats.crcErrors || 0} CRC, 0 frame, ${stats.overruns || 0} overrun, 0 ignored\n`;
     output += `     0 watchdog, 0 multicast, 0 pause input\n`;
     output += `     ${stats.outputPackets || 0} packets output, ${stats.outputBytes || 0} bytes, ${stats.underruns || 0} underruns\n`;
-    output += `     ${stats.outputErrors || 0} output errors, ${stats.collisions || 0} collisions, ${stats.resets || 1} interface resets\n`;
+    output += `     ${stats.outputErrors || 0} output errors, ${stats.collisions || 0} collisions, ${stats.resets || 0} interface resets\n`;
     output += `     0 unknown protocol, ${stats.drops || 0} dropped\n`;
     output += `     0 babbles, 0 late collision, 0 deferred\n`;
     output += `     0 lost carrier, 0 no carrier, 0 PAUSE output\n`;
@@ -320,7 +340,7 @@ export function cmdShowInterface(
   output += `     ${stats.inputErrors || 0} input errors, ${stats.crcErrors || 0} CRC, 0 frame, ${stats.overruns || 0} overrun, 0 ignored\n`;
   output += `     0 watchdog, 0 multicast, 0 pause input\n`;
   output += `     ${stats.outputPackets || 0} packets output, ${stats.outputBytes || 0} bytes, ${stats.underruns || 0} underruns\n`;
-  output += `     ${stats.outputErrors || 0} output errors, ${stats.collisions || 0} collisions, ${stats.resets || 1} interface resets\n`;
+  output += `     ${stats.outputErrors || 0} output errors, ${stats.collisions || 0} collisions, ${stats.resets || 0} interface resets\n`;
   output += `     0 unknown protocol, ${stats.drops || 0} dropped\n`;
   output += `     0 babbles, 0 late collision, 0 deferred\n`;
   output += `     0 lost carrier, 0 no carrier, 0 PAUSE output\n`;
@@ -465,8 +485,8 @@ export function cmdShowIpInterfaceBrief(
     // Skip ports that are part of a channel group (show in PoX instead)
     if (port.channelGroup) return;
 
-    const status = port.shutdown ? 'administratively down' : 'up';
-    const protocol = port.shutdown ? 'down' : 'up';
+    const status = port.shutdown ? 'administratively down' : (derivePortStatus(port, portName.toLowerCase() === 'console').isUp ? 'up' : 'down');
+    const protocol = derivePortStatus(port, portName.toLowerCase() === 'console').lineProtocol;
     const displayPortName = toDisplayName(portName);
 
     const ipStr = (port.ipAddress && port.subnetMask) ? port.ipAddress : 'unassigned';
@@ -486,7 +506,7 @@ export function cmdShowIpInterfaceBrief(
       const ipStr = tun.tunnelIp || 'unassigned';
       const ipMethod = tun.tunnelIp ? 'manual' : 'unset';
       const isUp = Boolean(tun.source && tun.destination);
-      const status = isUp ? 'up' : 'up';
+      const status = isUp ? 'up' : 'down';
       const protocol = isUp ? 'up' : 'down';
       output += `${tunName.padEnd(22)} ${ipStr.padEnd(15)} YES ${ipMethod.padEnd(6)} ${status.padEnd(21)} ${protocol}\n`;
     });
@@ -504,7 +524,7 @@ export function cmdShowInterfacesStatus(state: SwitchState, _input: string, _ctx
   output += '-------- ------------------ ------------ ---------- ------- ------ --------------------\n';
   Object.keys(state.ports || {}).forEach(portName => {
     const port = state.ports[portName];
-    const status = port.shutdown ? 'disabled' : (port.status === 'notconnect' ? 'notconnect' : 'connected');
+    const status = port.shutdown ? 'disabled' : (port.status || 'notconnect');
     const vlan = port.mode === 'trunk' ? 'trunk' : (port.accessVlan || port.vlan || 1);
     const duplex = port.duplex === 'half' ? 'half' : (port.duplex === 'full' ? 'full' : 'a-full');
     const speedVal = port.speed === 'auto' ? (port.type === 'gigabitethernet' ? 'a-1000' : 'a-100') : port.speed;
@@ -525,7 +545,8 @@ export function cmdShowIpInterface(state: SwitchState, input: string, _ctx: Comm
   const interfaceName = match?.[1];
 
   const renderInterfaceIPInfo = (name: string, port: Port) => {
-    let out = `${name} is ${port.shutdown ? 'administratively down' : 'up'}, line protocol is ${port.shutdown ? 'down' : 'up'}\n`;
+    const { adminStatus, lineProtocol } = derivePortStatus(port, name.toLowerCase() === 'console');
+    let out = `${name} is ${adminStatus}, line protocol is ${lineProtocol}\n`;
     out += `  Internet address is ${port.ipAddress || 'unassigned'}/${port.subnetMask || ''}\n`;
     out += `  Broadcast address is 255.255.255.255\n`;
     out += `  Address determined by setup command\n`;

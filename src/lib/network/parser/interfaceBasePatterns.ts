@@ -44,11 +44,23 @@ export const interfaceBasePatterns: Record<string, CommandPattern> = {
     minArgs: 1,
     maxArgs: 1
   },
+  'no speed': {
+    pattern: /^no\s+speed$/i,
+    modes: ['interface', 'config-if-range'],
+    minArgs: 0,
+    maxArgs: 0
+  },
   'duplex': {
     pattern: /^duplex\s+(half|full|auto)$/i,
     modes: ['interface', 'config-if-range'],
     minArgs: 1,
     maxArgs: 1
+  },
+  'no duplex': {
+    pattern: /^no\s+duplex$/i,
+    modes: ['interface', 'config-if-range'],
+    minArgs: 0,
+    maxArgs: 0
   },
   'description': {
     pattern: /^description\s+(.+)$/i,

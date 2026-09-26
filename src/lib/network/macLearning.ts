@@ -10,7 +10,18 @@ export interface MacTableEntry {
   timestamp?: number;
 }
 
-const MAC_AGING_TIME = 300000; // 5 minutes in milliseconds 
+const MAC_AGING_TIME = 300000; // 5 minutes in milliseconds
+
+/**
+ * Resolve the effective aging time for a MAC entry.
+ * Precedence: device global `macAgingTime` (seconds, from
+ * `mac address-table aging-time <sec>`) → default 300 s.
+ */
+function resolveAgingMs(state: SwitchState): number {
+  const global = (state as { macAgingTime?: number }).macAgingTime;
+  if (typeof global === 'number' && global > 0) return global * 1000;
+  return MAC_AGING_TIME;
+}
 
 export type MacLifecycleEventType = 'LEARN' | 'MOVE' | 'AGE' | 'FLOOD';
 
@@ -118,12 +129,13 @@ export function cleanExpiredMacEntries(state: SwitchState, deviceId?: string): M
   if (!state.macAddressTable || state.macAddressTable.length === 0) return [];
 
   const now = Date.now();
+  const agingMs = resolveAgingMs(state);
   const agedEvents: MacLifecycleEvent[] = [];
 
   state.macAddressTable = state.macAddressTable.filter(entry => {
     if (entry.type === 'STATIC') return true;
     if (!entry.timestamp) return true;
-    const isExpired = (now - entry.timestamp) >= MAC_AGING_TIME;
+    const isExpired = (now - entry.timestamp) >= agingMs;
     if (isExpired) {
       const evt: MacLifecycleEvent = {
         type: 'AGE',

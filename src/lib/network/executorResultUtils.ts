@@ -13,7 +13,32 @@ export function processCommandResult(result: CommandResult, input: string, mode:
       return { ...result, error: `${error}\n\n${title}: ${suggestions.join(', ')}` };
     }
   }
+
+  // --More-- pager: when `terminal length N` (N>0) is set, long success output
+  // is truncated to N lines plus a --More-- marker; the remainder is queued in
+  // `pendingPager` and served by the executor on Space/Enter/'q'.
+  const pageLength = state.terminalLength ?? 0;
+  if (result.success && typeof result.output === 'string' && result.output && pageLength > 0
+      && !result.requiresPassword && !result.newState?.awaitingPassword) {
+    const paged = paginateOutput(result.output, pageLength);
+    if (!paged.complete) {
+      return {
+        ...result,
+        output: paged.page,
+        newState: { ...result.newState, pendingPager: { rest: paged.rest, length: pageLength } }
+      };
+    }
+  }
   return result;
+}
+
+/** Splits `output` into a first page (at most `length` lines + --More--) and the rest. */
+export function paginateOutput(output: string, length: number): { page: string; rest: string; complete: boolean } {
+  const lines = output.split('\n');
+  if (lines.length <= length) return { page: output, rest: '', complete: true };
+  const head = lines.slice(0, length).join('\n');
+  const rest = lines.slice(length).join('\n');
+  return { page: `${head}\n--More-- `, rest, complete: false };
 }
 
 export function applyPipeFilterOutput(

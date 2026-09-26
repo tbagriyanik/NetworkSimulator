@@ -69,6 +69,9 @@ describe('show ip interface brief formatting', () => {
           ipAddress: '192.168.1.150',
           subnetMask: '255.255.255.0',
           shutdown: false,
+          // Simulates an active link: unconnected ports report 'down' in the
+          // brief output, matching real IOS (see derivePortStatus).
+          status: 'connected',
         } as unknown as SwitchState['ports']['gi0/0'],
       },
     } as SwitchState;

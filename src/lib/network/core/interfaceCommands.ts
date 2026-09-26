@@ -216,7 +216,7 @@ import { cmdStormControl, cmdStormControlAction, cmdMlsQosTrust, cmdMlsQosCos, c
 import { cmdDot1xPort } from './globalConfigAaaCommands';
 import { cmdCdpEnable, cmdNoCdpEnable, cmdUdldEnable, cmdNoUdld, cmdChannelProtocol } from './interface/cmd.cdp';
 import { cmdEncapsulationDot1q, cmdEncapsulationHdlc, cmdEncapsulationPpp, cmdNoEncapsulation, cmdClockRate, cmdNoClockRate, cmdPppAuthPap, cmdPppAuthChap, cmdNoPppAuth, cmdPppPapSentUsername, cmdPppChapCredentials } from './interface/cmd.ppp';
-import { cmdBandwidth, cmdDelay, cmdMtu, cmdKeepalive, cmdNoKeepalive, cmdDirectedBroadcast, cmdCarrierDelay, cmdLoadInterval, cmdPowerInline, cmdPowerInlineConsumption, cmdArpInspectionLimit } from './interface/cmd.physical';
+import { cmdBandwidth, cmdDelay, cmdMtu, cmdKeepalive, cmdNoKeepalive, cmdDirectedBroadcast, cmdCarrierDelay, cmdLoadInterval, cmdPowerInline, cmdPowerInlineConsumption, cmdArpInspectionLimit, cmdNoMtu } from './interface/cmd.physical';
 import { cmdLldpTransmit, cmdLldpReceive, cmdNoLldpTransmit, cmdNoLldpReceive } from './interface/cmd.misc';
 
 // cmd modülleri
@@ -225,7 +225,9 @@ import {
   cmdShutdown,
   cmdNoShutdown,
   cmdSpeed,
+  cmdNoSpeed,
   cmdDuplex,
+  cmdNoDuplex,
   cmdDescription,
   cmdNoDescription,
 } from './interface/cmd.interface';
@@ -364,7 +366,9 @@ export const interfaceHandlers: Record<string, CommandHandler> = {
   'shutdown': cmdShutdown,
   'no shutdown': cmdNoShutdown,
   'speed': cmdSpeed,
+  'no speed': cmdNoSpeed,
   'duplex': cmdDuplex,
+  'no duplex': cmdNoDuplex,
   'description': cmdDescription,
   'switchport mode': cmdSwitchportMode,
   'switchport access vlan': cmdSwitchportAccessVlan,
@@ -463,6 +467,7 @@ export const interfaceHandlers: Record<string, CommandHandler> = {
   'delay': cmdDelay,
   'load-interval': cmdLoadInterval,
   'mtu': cmdMtu,
+  'no mtu': cmdNoMtu,
   'switchport trunk encapsulation': cmdSwitchportTrunkEncapsulation,
   'encapsulation dot1q': cmdEncapsulationDot1q,
   'encapsulation hdlc': cmdEncapsulationHdlc,

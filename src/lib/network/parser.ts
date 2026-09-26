@@ -271,6 +271,8 @@ function isKeywordToken(token: string): boolean {
   return /^[a-z0-9-]+$/i.test(token);
 }
 
+export { isKeywordToken };
+
 // BOLT: Cache map to store built command trees to avoid rebuilding the trie on every key press
 const commandTreeCache = new Map<string, CommandTreeNode>();
 
@@ -484,7 +486,7 @@ export function validateCommand(
     // Point at the token that is actually ambiguous (may not be the first one).
     const ambiguousTokens = resolvedInput.trim().split(/\s+/);
     const ambiguousToken = ambiguousTokens[treeResolution.failedTokenIndex ?? ambiguousTokens.length - 1] || resolvedInput;
-    return { valid: false, reason: 'ambiguous', error: `% Ambiguous command:  "${ambiguousToken}"` };
+    return { valid: false, reason: 'ambiguous', error: `% Ambiguous command: "${ambiguousToken}"` };
   }
   if (treeResolution.kind === 'incomplete') {
     return { valid: false, reason: 'incomplete', error: CLI_ERRORS.incomplete };
@@ -556,33 +558,33 @@ export function getInvalidCommandError(
     const isTr = language === 'tr';
     const smartHint = getSmartCliHint(cleanedInput);
     if (smartHint) {
-      errorMsg += `\n\n📋 ${isTr ? 'Kullanım Formatı' : 'Syntax'}: ${smartHint.template}`;
-      errorMsg += `\n💡 ${isTr ? 'Örnek' : 'Example'}: ${smartHint.example}`;
-      errorMsg += `\nℹ️  ${smartHint.explanation[language]}`;
+      errorMsg += `\n\n${isTr ? 'Kullanım' : 'Syntax'}: ${smartHint.template}`;
+      errorMsg += `\n${isTr ? 'Örnek' : 'Example'}: ${smartHint.example}`;
+      errorMsg += `\n${smartHint.explanation[language]}`;
     } else if (firstWord === 'interface' || firstWord === 'int') {
       errorMsg += isTr
-        ? `\n💡 İpucu: "interface" komutundan sonra bir arayüz adı bekleniyor (Örn: "fa0/1").`
-        : `\n💡 Hint: "interface" command expects an interface name (e.g. "fa0/1").`;
+        ? `\nİpucu: "interface" komutundan sonra arayüz adı bekleniyor (Örn: "fa0/1").`
+        : `\nHint: "interface" command expects interface name (e.g. "fa0/1").`;
     } else if (firstWord === 'vlan') {
       errorMsg += isTr
-        ? `\n💡 İpucu: "vlan" komutundan sonra bir numara bekleniyor (1-4094).`
-        : `\n💡 Hint: "vlan" command expects a number (1-4094).`;
+        ? `\nİpucu: "vlan" komutundan sonra numara bekleniyor (1-4094).`
+        : `\nHint: "vlan" command expects a number (1-4094).`;
     } else if (firstWord === 'ip' && cmdTokens[1] === 'address') {
       errorMsg += isTr
-        ? `\n💡 İpucu: "ip address" komutu bir IP ve alt ağ maskesi bekler.`
-        : `\n💡 Hint: "ip address" command expects an IP and subnet mask.`;
+        ? `\nİpucu: "ip address" komutu IP ve alt ağ maskesi bekler.`
+        : `\nHint: "ip address" command expects IP and subnet mask.`;
     } else if (firstWord === 'access-list') {
       errorMsg += isTr
-        ? `\n💡 İpucu: "access-list" komutu bir numara, permit/deny ve koşul bekler.`
-        : `\n💡 Hint: "access-list" command expects a number, permit/deny and condition.`;
+        ? `\nİpucu: "access-list" komutu numara, permit/deny ve koşul bekler.`
+        : `\nHint: "access-list" command expects a number, permit/deny and condition.`;
     } else if (firstWord === 'line' && (cmdTokens[1] === 'vty' || cmdTokens[1] === 'console' || cmdTokens[1] === 'con')) {
       errorMsg += isTr
-        ? `\n💡 İpucu: "line" komutundan sonra hat tipi ve numarası bekleniyor.`
-        : `\n💡 Hint: "line" command expects line type and number.`;
+        ? `\nİpucu: "line" komutundan sonra hat tipi ve numarası bekleniyor.`
+        : `\nHint: "line" command expects line type and number.`;
     } else if (firstWord === 'router' && (cmdTokens[1] === 'ospf' || cmdTokens[1] === 'rip' || cmdTokens[1] === 'eigrp')) {
       errorMsg += isTr
-        ? `\n💡 İpucu: "router" komutundan sonra protokol ve ID bekleniyor.`
-        : `\n💡 Hint: "router" command expects protocol and AS/Process ID.`;
+        ? `\nİpucu: "router" komutundan sonra protokol ve ID bekleniyor.`
+        : `\nHint: "router" command expects protocol and process/AS ID.`;
     }
 
     // Mevcut mod için geçerli komutların ilk kelimelerini topla
@@ -602,7 +604,7 @@ export function getInvalidCommandError(
 
     if (suggestions.length > 0) {
       const suggestionStr = suggestions.map(s => s.word).join(', ');
-      errorMsg += `\n\nBunu mu demek istediniz? (Did you mean?): ${suggestionStr}`;
+      errorMsg += `\n\n${isTr ? 'Olası komutlar' : 'Did you mean'}: ${suggestionStr}`;
     }
   }
 

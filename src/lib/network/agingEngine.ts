@@ -7,6 +7,7 @@
 import { SwitchState } from './types';
 import { cleanExpiredMacEntries, MacLifecycleEvent } from './macLearning';
 import { cleanExpiredArpEntries } from './arp';
+import { ageOutNatTranslations } from './forwarding/natEngine';
 
 export interface AgingArpEvent {
   deviceId: string;
@@ -23,7 +24,9 @@ export interface AgingResult {
   arpEvents: AgingArpEvent[];
 }
 
-const NAT_SESSION_TIMEOUT = 300000; // 5 minutes in ms
+// Protocol-aware NAT timeouts live in forwarding/natEngine.ts (TCP 120s /
+// UDP 30s / ICMP 10s / default 60s). The aging engine delegates to it so
+// both paths share one set of timeout constants.
 
 /**
  * Execute real-time aging tick across all device states.
@@ -59,20 +62,13 @@ export function runAgingTick(deviceStates: Map<string, SwitchState>): AgingResul
       }
     }
 
-    // NAT translation session aging
+    // NAT translation session aging (delegates to the protocol-aware
+    // timeouts in natEngine so CLI/legacy and pipeline paths agree)
     if (state.natTranslations && state.natTranslations.length > 0) {
-      const now = Date.now();
-      const initialNatCount = state.natTranslations.length;
-      state.natTranslations = state.natTranslations.filter(t => {
-        // Entries without an explicit timestamp are never aged (they carry no
-        // session clock); only timestamped dynamic sessions expire.
-        const entryTime = (t as { timestamp?: number }).timestamp;
-        if (entryTime == null) return true;
-        return (now - entryTime) < NAT_SESSION_TIMEOUT;
-      });
-      const removedNat = initialNatCount - state.natTranslations.length;
-      if (removedNat > 0) {
-        agedNatCount += removedNat;
+      const natRes = ageOutNatTranslations(state, Date.now());
+      if (natRes.expiredCount > 0) {
+        agedNatCount += natRes.expiredCount;
+        Object.assign(state, natRes.updatedState);
       }
     }
   }

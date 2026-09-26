@@ -491,6 +491,43 @@ export function cmdDuplex(state: SwitchState, input: string, _ctx: CommandContex
 }
 
 /**
+ * No Speed - Restore interface speed to the default (auto)
+ */
+export function cmdNoSpeed(state: SwitchState, _input: string, ctx: CommandContext): CommandResult {
+  if (!isInInterfaceMode(state) || !state.currentInterface) {
+    return { success: false, error: cliModeError() };
+  }
+
+  const newPorts = applyToSelectedPorts(state, (port: Port) => ({ ...port, speed: 'auto' as SpeedMode }));
+  const updatedCurrentState = { ...state, ports: newPorts };
+  const pvst = getPvstUpdate(updatedCurrentState, ctx);
+  if ('error' in pvst) return pvst.error;
+  const { allUpdatedStates, myUpdatedState } = pvst;
+
+  return {
+    success: true,
+    newState: myUpdatedState || ({ ports: newPorts } as Partial<SwitchState>),
+    deviceStates: allUpdatedStates
+  };
+}
+
+/**
+ * No Duplex - Restore interface duplex mode to the default (auto)
+ */
+export function cmdNoDuplex(state: SwitchState, _input: string, _ctx: CommandContext): CommandResult {
+  if (!isInInterfaceMode(state) || !state.currentInterface) {
+    return { success: false, error: cliModeError() };
+  }
+
+  const newPorts = applyToSelectedPorts(state, (port: Port) => ({ ...port, duplex: 'auto' as DuplexMode }));
+
+  return {
+    success: true,
+    newState: { ports: newPorts }
+  };
+}
+
+/**
  * standby <group> ip <virtual-ip>
  */
 export function cmdStandbyIp(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {

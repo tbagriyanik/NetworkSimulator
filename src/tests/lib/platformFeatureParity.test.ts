@@ -52,7 +52,7 @@ describe('Platform Feature Parity Test Matrix (Windows, macOS, Linux)', () => {
   describe('2. Native File Dialog & Fallback File Handling', () => {
     it('handles JSON project export/import safely across desktop platforms', () => {
       const mockProject = {
-        version: '6.6.1',
+        version: '6.7.0',
         devices: [{ id: 'R1', name: 'CoreRouter', type: 'router', x: 100, y: 100 }],
         connections: [],
       };
@@ -61,7 +61,7 @@ describe('Platform Feature Parity Test Matrix (Windows, macOS, Linux)', () => {
       expect(jsonStr).toContain('CoreRouter');
 
       const parsed = JSON.parse(jsonStr);
-      expect(parsed.version).toBe('6.6.1');
+      expect(parsed.version).toBe('6.7.0');
       expect(parsed.devices).toHaveLength(1);
     });
   });

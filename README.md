@@ -1,6 +1,6 @@
 # Network Simulator
 
-![Version](https://img.shields.io/badge/version-6.6.1-blue)
+![Version](https://img.shields.io/badge/version-6.7.0-blue)
 ![Next.js](https://img.shields.io/badge/Next.js-16.3.6-black?logo=next.js)
 ![React](https://img.shields.io/badge/React-19.3.0-61DAFB?logo=react&logoColor=black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-7.0.2-3178C6?logo=typescript&logoColor=white)

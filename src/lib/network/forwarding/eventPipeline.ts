@@ -33,8 +33,11 @@ import {
   ospfTickDeadTimer,
   eigrpTickHoldTimer,
   dhcpTickClient,
+  bgpTickSession,
+  createBgpSessionRecord,
   type OspfNeighborRecord,
   type EigrpNeighborRecord,
+  type BgpSessionRecord,
 } from '@/lib/network/protocols';
 
 /** Simulated seconds per pipeline tick (wall-clock 250 ms ≈ 0.25 simulated seconds) */
@@ -382,7 +385,66 @@ export function runNetworkEventPipeline(
       nextState.dhcpClientStates = updatedDhcp;
     }
 
-    // -- 5d. STP Port timer ticks --------------------------------------
+    // -- 5d. BGP session FSM ticks (RFC 4271 §8) -------------------------
+    if (nextState.bgpNeighbors && nextState.bgpNeighbors.length > 0) {
+      const localAs = parseInt(nextState.bgpAs || '0', 10) || 0;
+      const sessions: Record<string, BgpSessionRecord> = { ...nextState.bgpSessionStates };
+      let bgpChanged = false;
+
+      for (const nbr of nextState.bgpNeighbors) {
+        if (nbr.shutdown) continue;
+        const remoteAs = parseInt(String(nbr.remoteAs ?? nbr.as ?? '0'), 10) || 0;
+        let session = sessions[nbr.ip];
+
+        // Seed a session record for newly configured neighbors.
+        if (!session) {
+          const keepalive = nbr.timersKeepalive ?? 60;
+          const holdtime = nbr.timersHoldtime ?? 180;
+          session = createBgpSessionRecord(nbr.ip, localAs, remoteAs, keepalive, holdtime, now);
+          sessions[nbr.ip] = session;
+        }
+
+        // Established sessions receive simulated keepalives every tick —
+        // refresh the hold timer so only a real link loss (propagated by
+        // linkStateEngine → TransportClosed) can drop them.
+        const isEstablished = (nextState.bgpNeighborState?.[nbr.ip] || nbr.state) === 'Established';
+
+        let nextSession = session;
+        if (isEstablished && session.state !== 'Established') {
+          // Session established via neighbor recalculation — advance FSM.
+          // Simulate the negotiation ladder in one pass (OpenSent → OpenConfirm → Established).
+          nextSession = { ...session, state: 'OpenSent', holdTimer: 4 * session.keepaliveTime };
+          nextSession = { ...nextSession, state: 'OpenConfirm', holdTimer: session.holdTime };
+          nextSession = { ...nextSession, state: 'Established', sessionStart: now, lastActivityAt: now, holdTimer: session.holdTime };
+          bgpChanged = true;
+          if (!nextState.eventLogs) nextState.eventLogs = [];
+          nextState.eventLogs = [...nextState.eventLogs, `%BGP-5-ADJCHANGE: neighbor ${nbr.ip} Up`];
+        } else if (isEstablished) {
+          // Refresh hold timer (keepalive received in simulation).
+          nextSession = { ...session, state: 'Established', holdTimer: session.holdTime, lastActivityAt: now };
+          if (session.state !== 'Established') bgpChanged = true;
+        } else {
+          const tickRes = bgpTickSession(session, SIM_SECONDS_PER_TICK, now);
+          if (tickRes.stateChanged || tickRes.logMessage) {
+            bgpChanged = true;
+            if (tickRes.logMessage) {
+              if (!nextState.eventLogs) nextState.eventLogs = [];
+              nextState.eventLogs = [...nextState.eventLogs, tickRes.logMessage];
+            }
+          }
+          nextSession = tickRes.nextSession;
+        }
+
+        sessions[nbr.ip] = nextSession;
+      }
+
+      if (bgpChanged || Object.keys(sessions).length > 0) {
+        nextState.bgpSessionStates = sessions;
+        stateChanged = true;
+      }
+    }
+
+    // -- 5e. STP Port timer ticks --------------------------------------
     if (nextState.lacpPortStates) {
       // LACP timers would be ticked here if needed
       // (simple pass-through for now, structure in place)
