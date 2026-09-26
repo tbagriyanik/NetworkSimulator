@@ -166,9 +166,12 @@ export const WindowSwitcherModal: React.FC<WindowSwitcherModalProps> = ({
 
   return (
     <div
+      role="presentation"
       data-task-switcher="true"
       className="fixed inset-0 z-[99999] flex items-center justify-center bg-slate-950/20 p-4 transition-opacity duration-150 animate-in fade-in"
-      onClick={() => closeSwitcher()}
+      onClick={e => {
+        if (e.target === e.currentTarget) closeSwitcher();
+      }}
     >
       <div
         className={cn(
@@ -177,7 +180,6 @@ export const WindowSwitcherModal: React.FC<WindowSwitcherModalProps> = ({
             ? (isDark ? 'bg-secondary-950 border-secondary-800 text-secondary-100 shadow-none' : 'bg-white border-secondary-300 text-secondary-900 shadow-none')
             : (isDark ? 'bg-secondary-950/95 border-white/10 text-secondary-100 shadow-2xl shadow-black/40 backdrop-blur-xl' : 'bg-white/95 border-secondary-200 text-secondary-900 shadow-2xl backdrop-blur-xl')
         )}
-        onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
         <div className="flex items-center gap-3 pb-4 mb-5 border-b border-secondary-700/40">

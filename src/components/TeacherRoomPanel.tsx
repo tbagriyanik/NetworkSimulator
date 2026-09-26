@@ -357,10 +357,15 @@ export function TeacherRoomPanel() {
   if (!showTeacherPanel || studentRoomCode) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-start justify-center pt-12" onClick={() => setShowTeacherPanel(false)}>
+    <div
+      role="presentation"
+      className="fixed inset-0 z-[100] flex items-start justify-center pt-12"
+      onClick={e => {
+        if (e.target === e.currentTarget) setShowTeacherPanel(false);
+      }}
+    >
       <div
         className="flex flex-col rounded-xl shadow-2xl border overflow-hidden liquid-glass-light border-secondary-200/50 dark:border-secondary-700/50 w-full max-w-xl mx-4 max-h-[85vh]"
-        onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between p-4 border-b sticky top-0 bg-muted/50 rounded-t-xl">
           <div className="flex items-center gap-2">

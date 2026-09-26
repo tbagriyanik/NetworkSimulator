@@ -319,14 +319,18 @@ export function DeviceConfigModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 modal" onClick={onClose}>
+    <div
+      role="presentation"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 modal"
+      onClick={e => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
       <div className="absolute inset-0 bg-secondary-950/40" />
       <div
         ref={modalRef}
         className={`relative w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden rounded-[2rem] border transition-all duration-500 hover:shadow-accent-500/10 ${isDark ? 'bg-secondary-900/90 border-secondary-800/50 shadow-2xl backdrop-blur-md' : 'bg-white/95 border-secondary-200/50 shadow-2xl backdrop-blur-md'
           }`}
-        onClick={e => e.stopPropagation()}
-        onTouchEnd={(e) => e.stopPropagation()}
         onKeyDown={(e) => {
           if (e.key === 'Escape') {
             e.preventDefault();
