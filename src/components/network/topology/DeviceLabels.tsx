@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { CanvasDevice } from '../NetworkTopology/types/networkTopology.types';
 import { colors } from '@/lib/design-tokens/colors';
@@ -23,7 +23,7 @@ export function DeviceLabels({ device, deviceWidth, isSelected, isDark, isTR, t,
       <text
         x={deviceWidth / 2}
         y={58}
-        style={{ fill: isSelected ? SELECTION_HIGHLIGHT_COLOR : isDark ? 'var(--color-secondary-100)' : 'var(--color-secondary-800)' }}
+        fill={isSelected ? SELECTION_HIGHLIGHT_COLOR : isDark ? 'var(--color-secondary-100)' : 'var(--color-secondary-800)'}
         fontSize="10"
         textAnchor="middle"
         fontWeight={isSelected ? '800' : 'bold'}
@@ -34,21 +34,45 @@ export function DeviceLabels({ device, deviceWidth, isSelected, isDark, isTR, t,
 
       {/* Device IP */}
       {(device.type === 'pc' || device.type === 'mobile' || device.type === 'printer') && (
-        <text x={deviceWidth / 2} y={70} style={{ fill: isDark ? 'var(--color-secondary-400)' : 'var(--color-secondary-500)' }} fontSize={device.type === 'mobile' ? "9" : "10"} textAnchor="middle" fontFamily="var(--font-geist-mono)" className="select-none pointer-events-none">
+        <text
+          x={deviceWidth / 2}
+          y={70}
+          fill={isDark ? 'var(--color-secondary-400)' : 'var(--color-secondary-500)'}
+          fontSize={device.type === 'mobile' ? '9' : '10'}
+          textAnchor="middle"
+          fontFamily="var(--font-geist-mono)"
+          className="select-none pointer-events-none"
+        >
           {device.ip || (device.ipConfigMode === 'dhcp' ? 'DHCP' : '0.0.0.0')}
         </text>
       )}
 
       {/* Device VLAN */}
       {device.type === 'pc' && (
-        <text x={deviceWidth / 2} y={81} style={{ fill: isDark ? 'var(--color-accent-400)' : 'var(--color-accent-700)' }} fontSize="9" textAnchor="middle" fontFamily="var(--font-geist-mono)" className="select-none pointer-events-none">
+        <text
+          x={deviceWidth / 2}
+          y={81}
+          fill={isDark ? 'var(--color-accent-400)' : 'var(--color-accent-700)'}
+          fontSize="9"
+          textAnchor="middle"
+          fontFamily="var(--font-geist-mono)"
+          className="select-none pointer-events-none"
+        >
           VLAN {String(getLiveDeviceVlan(device))}
         </text>
       )}
 
       {/* Printer Job Count */}
       {device.type === 'printer' && (
-        <text x={deviceWidth / 2} y={81} style={{ fill: isDark ? 'var(--color-pink-400)' : 'var(--color-pink-700)' }} fontSize="9" textAnchor="middle" fontFamily="var(--font-geist-mono)" className="select-none pointer-events-none">
+        <text
+          x={deviceWidth / 2}
+          y={81}
+          fill={isDark ? 'var(--color-pink-400)' : 'var(--color-pink-700)'}
+          fontSize="9"
+          textAnchor="middle"
+          fontFamily="var(--font-geist-mono)"
+          className="select-none pointer-events-none"
+        >
           {(() => {
             const completedCount = (device.printJobs || []).filter(j => j.status === 'completed').length;
             const activeCount = (device.printJobs || []).filter(j => j.status === 'printing' || j.status === 'queued').length;
@@ -71,7 +95,7 @@ export function DeviceLabels({ device, deviceWidth, isSelected, isDark, isTR, t,
             <text
               x={deviceWidth / 2}
               y={46}
-              style={{ fill: isDark ? 'var(--color-secondary-300)' : 'var(--color-secondary-500)' }}
+              fill={isDark ? 'var(--color-secondary-300)' : 'var(--color-secondary-500)'}
               fontSize="8"
               textAnchor="middle"
               className="select-none pointer-events-none italic opacity-80"
@@ -89,14 +113,14 @@ export function DeviceLabels({ device, deviceWidth, isSelected, isDark, isTR, t,
           const isPassive = device.iot?.collaborationEnabled === false;
           if (isIotPoweredOff) {
             return (
-              <text x={deviceWidth / 2} y={70} style={{ fill: isDark ? 'var(--color-secondary-400)' : 'var(--color-secondary-500)' }} fontSize="10" textAnchor="middle" fontFamily="var(--font-geist-mono)" className="select-none pointer-events-none" filter={`drop-shadow(0px 0px 1px ${colors.common.black})`}>
+              <text x={deviceWidth / 2} y={70} fill={isDark ? 'var(--color-secondary-400)' : 'var(--color-secondary-500)'} fontSize="10" textAnchor="middle" fontFamily="var(--font-geist-mono)" className="select-none pointer-events-none" filter={`drop-shadow(0px 0px 1px ${colors.common.black})`}>
                 <tspan x={deviceWidth / 2} dy="6">{isTR ? 'Kapalı' : 'Off'}</tspan>
               </text>
             );
           }
           if (isPassive) {
             return (
-              <text x={deviceWidth / 2} y={70} style={{ fill: isDark ? 'var(--color-secondary-400)' : 'var(--color-secondary-500)' }} fontSize="10" textAnchor="middle" fontFamily="var(--font-geist-mono)" className="select-none pointer-events-none" filter={`drop-shadow(0px 0px 1px ${colors.common.black})`}>
+              <text x={deviceWidth / 2} y={70} fill={isDark ? 'var(--color-secondary-400)' : 'var(--color-secondary-500)'} fontSize="10" textAnchor="middle" fontFamily="var(--font-geist-mono)" className="select-none pointer-events-none" filter={`drop-shadow(0px 0px 1px ${colors.common.black})`}>
                 <tspan x={deviceWidth / 2} dy="6">{t.passive}</tspan>
               </text>
             );
@@ -111,7 +135,7 @@ export function DeviceLabels({ device, deviceWidth, isSelected, isDark, isTR, t,
             const isActive = device.iot?.value ?? false;
             const statusColor = isActive ? (isDark ? 'var(--color-warning-400)' : 'var(--color-warning-500)') : (isDark ? 'var(--color-secondary-400)' : 'var(--color-secondary-500)');
             return (
-              <text x={deviceWidth / 2} y={70} style={{ fill: statusColor }} fontSize="10" textAnchor="middle" fontFamily="var(--font-geist-mono)" className="select-none pointer-events-none" filter={`drop-shadow(0px 0px 1px ${colors.common.black})`}>
+              <text x={deviceWidth / 2} y={70} fill={statusColor} fontSize="10" textAnchor="middle" fontFamily="var(--font-geist-mono)" className="select-none pointer-events-none" filter={`drop-shadow(0px 0px 1px ${colors.common.black})`}>
                 <tspan x={deviceWidth / 2} dy="6">{value}</tspan>
               </text>
             );
@@ -120,42 +144,42 @@ export function DeviceLabels({ device, deviceWidth, isSelected, isDark, isTR, t,
           switch (sensorType) {
             case 'temperature':
               return (
-                <text x={deviceWidth / 2} y={70} style={{ fill: isDark ? 'var(--color-success-400)' : 'var(--color-success-600)' }} fontSize="10" textAnchor="middle" fontFamily="var(--font-geist-mono)" className="select-none pointer-events-none" filter={`drop-shadow(0px 0px 1px ${colors.common.black})`}>
+                <text x={deviceWidth / 2} y={70} fill={isDark ? 'var(--color-success-400)' : 'var(--color-success-600)'} fontSize="10" textAnchor="middle" fontFamily="var(--font-geist-mono)" className="select-none pointer-events-none" filter={`drop-shadow(0px 0px 1px ${colors.common.black})`}>
                   <tspan x={deviceWidth / 2} dy="0">{t.temperature}:</tspan>
                   <tspan x={deviceWidth / 2} dy="12">{value}</tspan>
                 </text>
               );
             case 'humidity':
               return (
-                <text x={deviceWidth / 2} y={70} style={{ fill: isDark ? 'var(--color-primary-500)' : 'var(--color-primary-600)' }} fontSize="10" textAnchor="middle" fontFamily="var(--font-geist-mono)" className="select-none pointer-events-none" filter={`drop-shadow(0px 0px 1px ${colors.common.black})`}>
+                <text x={deviceWidth / 2} y={70} fill={isDark ? 'var(--color-primary-500)' : 'var(--color-primary-600)'} fontSize="10" textAnchor="middle" fontFamily="var(--font-geist-mono)" className="select-none pointer-events-none" filter={`drop-shadow(0px 0px 1px ${colors.common.black})`}>
                   <tspan x={deviceWidth / 2} dy="0">{t.humidity}:</tspan>
                   <tspan x={deviceWidth / 2} dy="12">{value}</tspan>
                 </text>
               );
             case 'light':
               return (
-                <text x={deviceWidth / 2} y={70} style={{ fill: isDark ? 'var(--color-warning-400)' : 'var(--color-warning-500)' }} fontSize="10" textAnchor="middle" fontFamily="var(--font-geist-mono)" className="select-none pointer-events-none" filter={`drop-shadow(0px 0px 1px ${colors.common.black})`}>
+                <text x={deviceWidth / 2} y={70} fill={isDark ? 'var(--color-warning-400)' : 'var(--color-warning-500)'} fontSize="10" textAnchor="middle" fontFamily="var(--font-geist-mono)" className="select-none pointer-events-none" filter={`drop-shadow(0px 0px 1px ${colors.common.black})`}>
                   <tspan x={deviceWidth / 2} dy="0">{t.lightLevel}:</tspan>
                   <tspan x={deviceWidth / 2} dy="12">{value}</tspan>
                 </text>
               );
             case 'sound':
               return (
-                <text x={deviceWidth / 2} y={70} style={{ fill: isDark ? 'var(--color-warning-600)' : 'var(--color-warning-600)' }} fontSize="10" textAnchor="middle" fontFamily="var(--font-geist-mono)" className="select-none pointer-events-none" filter={`drop-shadow(0px 0px 1px ${colors.common.black})`}>
+                <text x={deviceWidth / 2} y={70} fill={isDark ? 'var(--color-warning-600)' : 'var(--color-warning-600)'} fontSize="10" textAnchor="middle" fontFamily="var(--font-geist-mono)" className="select-none pointer-events-none" filter={`drop-shadow(0px 0px 1px ${colors.common.black})`}>
                   <tspan x={deviceWidth / 2} dy="0">{t.sensorSound}:</tspan>
                   <tspan x={deviceWidth / 2} dy="12">{value}</tspan>
                 </text>
               );
             case 'motion':
               return (
-                <text x={deviceWidth / 2} y={70} style={{ fill: isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-600)' }} fontSize="10" textAnchor="middle" fontFamily="var(--font-geist-mono)" className="select-none pointer-events-none" filter={`drop-shadow(0px 0px 1px ${colors.common.black})`}>
+                <text x={deviceWidth / 2} y={70} fill={isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-600)'} fontSize="10" textAnchor="middle" fontFamily="var(--font-geist-mono)" className="select-none pointer-events-none" filter={`drop-shadow(0px 0px 1px ${colors.common.black})`}>
                   <tspan x={deviceWidth / 2} dy="0">{t.sensorMotion}:</tspan>
                   <tspan x={deviceWidth / 2} dy="12">{value}</tspan>
                 </text>
               );
             default:
               return (
-                <text x={deviceWidth / 2} y={70} style={{ fill: isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-600)' }} fontSize="9" textAnchor="middle" fontFamily="var(--font-geist-mono)" className="select-none pointer-events-none" filter={`drop-shadow(0px 0px 1px ${colors.common.black})`}>
+                <text x={deviceWidth / 2} y={70} fill={isDark ? 'var(--color-secondary-600)' : 'var(--color-secondary-600)'} fontSize="9" textAnchor="middle" fontFamily="var(--font-geist-mono)" className="select-none pointer-events-none" filter={`drop-shadow(0px 0px 1px ${colors.common.black})`}>
                   {value}
                 </text>
               );

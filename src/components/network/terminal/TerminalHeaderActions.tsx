@@ -113,7 +113,7 @@ export function TerminalHeaderActions({
             {!isMobile && <ShortcutBadge shortcut="Ctrl+F" variant="primary" />}
           </div>
         }>
-        <Button variant="ghost" size="icon" onClick={() => setSearchOpen(true)} className={btnClass} aria-controls="search-dialog">
+        <Button variant="ghost" size="icon" onClick={() => setSearchOpen(true)} className={btnClass} aria-controls="search-dialog" aria-label={t.search || 'Search'}>
           <Search className="w-4 h-4" aria-hidden="true" />
         </Button>
       </TooltipWrapper>
@@ -122,12 +122,12 @@ export function TerminalHeaderActions({
           handleCopyAll();
           setCopied(true);
           setTimeout(() => setCopied(false), 2000);
-        }} className={cn(btnClass, copied && "text-success-500 hover:text-success-600 bg-success-500/10")}>
+        }} className={cn(btnClass, copied && "text-success-500 hover:text-success-600 bg-success-500/10")} aria-label={copied ? (language === 'tr' ? 'Kopyalandı' : 'Copied') : (t.copy || 'Copy Output')}>
           {copied ? <Check className="w-4 h-4" aria-hidden="true" /> : <Copy className="w-4 h-4" aria-hidden="true" />}
         </Button>
       </TooltipWrapper>
       <TooltipWrapper title={t.exportLabel || (language === 'tr' ? 'Dışa Aktar' : 'Export')}>
-        <Button variant="ghost" size="icon" onClick={exportTerminal} className={btnClass}>
+        <Button variant="ghost" size="icon" onClick={exportTerminal} className={btnClass} aria-label={t.exportLabel || (language === 'tr' ? 'Dışa Aktar' : 'Export')}>
           <Download className="w-4 h-4" aria-hidden="true" />
         </Button>
       </TooltipWrapper>
@@ -173,7 +173,7 @@ export function TerminalHeaderActions({
         </Button>
       </TooltipWrapper>
       <TooltipWrapper title={t.fontLabel}>
-        <Button variant="ghost" size="icon" onClick={() => setShowSettings(!showSettings)} className={cn("h-9 w-9 md:h-8 md:w-8 rounded-lg text-secondary-600 hover:text-secondary-900", showSettings && "bg-accent", isDark && "text-secondary-300 hover:text-secondary-100")}>
+        <Button variant="ghost" size="icon" onClick={() => setShowSettings(!showSettings)} className={cn("h-9 w-9 md:h-8 md:w-8 rounded-lg text-secondary-600 hover:text-secondary-900", showSettings && "bg-accent", isDark && "text-secondary-300 hover:text-secondary-100")} aria-label={t.fontLabel || 'Font Settings'}>
           <Type className="w-4 h-4" aria-hidden="true" />
         </Button>
       </TooltipWrapper>
@@ -181,7 +181,7 @@ export function TerminalHeaderActions({
         <>
           <div className={cn("w-px h-4 mx-1", isDark ? "bg-secondary-600" : "bg-border")} />
           <TooltipWrapper title={t.power}>
-            <Button variant="ghost" size="icon" onClick={() => onTogglePower?.(deviceId)} className={cn("h-9 w-9 md:h-8 md:w-8 rounded-lg", isPoweredOff ? "text-error-500" : "text-success-500")}>
+            <Button variant="ghost" size="icon" onClick={() => onTogglePower?.(deviceId)} className={cn("h-9 w-9 md:h-8 md:w-8 rounded-lg", isPoweredOff ? "text-error-500" : "text-success-500")} aria-label={t.power || 'Power'}>
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 2v10" />
                 <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 5.636a9 9 0 1 1-12.728 0" />
@@ -195,14 +195,14 @@ export function TerminalHeaderActions({
           <Button variant="ghost" size="icon" onClick={(e) => {
             e.stopPropagation();
             onQuickSettings();
-          }} className={btnClass}>
+          }} className={btnClass} aria-label={t.quickSettingsAndTasks || 'Settings'}>
             <Settings className="w-4 h-4" aria-hidden="true" />
           </Button>
         </TooltipWrapper>
       )}
       {isMobile && (device?.type === 'firewall' || device?.type === 'pc' || device?.type === 'iot') && onClose && (
         <TooltipWrapper title={t.close || 'Close'}>
-          <Button variant="ghost" size="icon" onClick={onClose} className="h-9 w-9 rounded-lg hover:bg-error-500 hover:text-white dark:hover:bg-error-600">
+          <Button variant="ghost" size="icon" onClick={onClose} className="h-9 w-9 rounded-lg hover:bg-error-500 hover:text-white dark:hover:bg-error-600" aria-label={t.close || 'Close'}>
             <span className="w-4 h-4" aria-hidden="true" />
           </Button>
         </TooltipWrapper>

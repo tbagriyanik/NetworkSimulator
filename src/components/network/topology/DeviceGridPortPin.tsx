@@ -82,21 +82,22 @@ export function DeviceGridPortPin({
     <g
       key={port.id}
       transform={`translate(${portX}, ${portY})`}
-      style={{ cursor: isDraggingInteractionDisabled ? 'default' : 'pointer', pointerEvents: isDraggingInteractionDisabled ? 'none' : 'all' }}
+      className={isDraggingInteractionDisabled ? 'cursor-default pointer-events-none' : 'cursor-pointer pointer-events-auto'}
+      aria-label={`Port ${port.id} ${isConnected ? '(Connected)' : '(Available)'}`}
       onMouseEnter={(e) => handlePortHover(e, device.id, port.id)}
       onMouseLeave={handlePortMouseLeave}
     >
       {isTargetPort && (
         <circle
           r={10}
-          className="animate-pulse"
-          style={{ fill: 'var(--color-warning-500)', opacity: 0.3 }}
+          fill="var(--color-warning-500)"
+          className="animate-pulse opacity-30"
         />
       )}
       <circle
         r={7}
         fill="transparent"
-        style={{ pointerEvents: isDraggingInteractionDisabled ? 'none' : 'all', cursor: isDraggingInteractionDisabled ? 'default' : 'pointer' }}
+        className={isDraggingInteractionDisabled ? 'pointer-events-none cursor-default' : 'pointer-events-auto cursor-pointer'}
         onPointerDown={(e) => {
           e.stopPropagation();
           handlePortClick(e, device.id, port.id);
@@ -111,16 +112,17 @@ export function DeviceGridPortPin({
         stroke={isBlocked || isTargetPort ? portStroke : getPortFrameColor(isDark, hasProblem, isConnected, connectionHealthy)}
         strokeWidth={isShutdown || isDeviceOffline || isConnected || isTargetPort ? 2 : 1}
         opacity={hasProblem && !isBlocked && !isTargetPort ? 0.45 : 1}
-        style={{ pointerEvents: 'none' }}
+        className="pointer-events-none"
       />
       <text
         y={1}
-        style={{ fill: 'var(--color-background)', userSelect: 'none', pointerEvents: 'none' }}
+        fill="var(--color-background)"
         fontSize="8"
         textAnchor="middle"
         dominantBaseline="middle"
         textLength={displayNum.length > 2 ? 10 : undefined}
         lengthAdjust={displayNum.length > 2 ? 'spacingAndGlyphs' : undefined}
+        className="select-none pointer-events-none"
       >
         {displayNum}
       </text>
