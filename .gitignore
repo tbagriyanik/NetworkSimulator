@@ -61,4 +61,5 @@ dev_server.log
 .cursor/
 .windsurf/
 .freebuff/
+_api_backup/
 
