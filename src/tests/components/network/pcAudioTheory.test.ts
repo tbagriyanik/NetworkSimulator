@@ -259,10 +259,8 @@ describe('renderSequence', () => {
   it('keeps stacked voices inside the 16-bit range', () => {
     const dense = parseNoteSequence('C4:4 D4:4 E4:4 F4:4 G4:4 A4:4 B4:4 C5:4', { bpm: 200 });
     const samples = renderSequence(dense, { sampleRate: 8000, volume: 1 });
-    samples.forEach(sample => {
-      expect(Number.isFinite(sample)).toBe(true);
-      expect(Math.abs(sample)).toBeLessThanOrEqual(1);
-    });
+    const isBounded = samples.every(sample => Number.isFinite(sample) && Math.abs(sample) <= 1);
+    expect(isBounded).toBe(true);
   });
 
   it('renders silence for rests and empty input', () => {
