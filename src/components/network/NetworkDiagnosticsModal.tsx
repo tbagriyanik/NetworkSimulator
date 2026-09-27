@@ -4,7 +4,17 @@ import { useState, useMemo } from 'react';
 import { DraggableWindowWrapper } from './DraggableWindowWrapper';
 import { useDrag } from '@/hooks/useDrag';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { DeviceIcon } from './DeviceIcon';
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectSeparator,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   AlertTriangle,
   CheckCircle2,
@@ -13,6 +23,7 @@ import {
   Lightbulb,
   Network,
   ShieldAlert,
+  ArrowLeftRight,
 } from 'lucide-react';
 import type { CanvasDevice, CanvasConnection } from './NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
@@ -55,8 +66,81 @@ export function NetworkDiagnosticsModal({
   });
 
   const eligibleDevices = useMemo(() => {
-    return devices.filter(d => d.type !== 'cloud');
+    return devices;
   }, [devices]);
+
+  const groupedDevices = useMemo(() => {
+    const endDevices: CanvasDevice[] = [];
+    const routerDevices: CanvasDevice[] = [];
+    const switchDevices: CanvasDevice[] = [];
+    const cloudDevices: CanvasDevice[] = [];
+    const otherDevices: CanvasDevice[] = [];
+
+    eligibleDevices.forEach((d) => {
+      switch (d.type) {
+        case 'pc':
+        case 'iot':
+        case 'mobile':
+        case 'printer':
+          endDevices.push(d);
+          break;
+        case 'router':
+        case 'firewall':
+          routerDevices.push(d);
+          break;
+        case 'switchL2':
+        case 'switchL3':
+        case 'hub':
+        case 'wlc':
+          switchDevices.push(d);
+          break;
+        case 'cloud':
+          cloudDevices.push(d);
+          break;
+        default:
+          otherDevices.push(d);
+          break;
+      }
+    });
+
+    const groups: { id: string; label: { tr: string; en: string }; devices: CanvasDevice[] }[] = [];
+    if (endDevices.length > 0) {
+      groups.push({
+        id: 'end',
+        label: { tr: 'Uç Cihazlar (PC, Telefon, Yazıcı)', en: 'End Devices' },
+        devices: endDevices,
+      });
+    }
+    if (routerDevices.length > 0) {
+      groups.push({
+        id: 'routers',
+        label: { tr: 'Yönlendirici & Güvenlik (Router, Firewall)', en: 'Routers & Security' },
+        devices: routerDevices,
+      });
+    }
+    if (switchDevices.length > 0) {
+      groups.push({
+        id: 'switches',
+        label: { tr: 'Anahtar & Çoklayıcı (Switch, Hub, WLC)', en: 'Switches & Hubs' },
+        devices: switchDevices,
+      });
+    }
+    if (cloudDevices.length > 0) {
+      groups.push({
+        id: 'cloud',
+        label: { tr: 'Dış Ağ & Bulut (Internet, WAN)', en: 'Cloud & WAN' },
+        devices: cloudDevices,
+      });
+    }
+    if (otherDevices.length > 0) {
+      groups.push({
+        id: 'other',
+        label: { tr: 'Diğer Cihazlar', en: 'Other Devices' },
+        devices: otherDevices,
+      });
+    }
+    return groups;
+  }, [eligibleDevices]);
 
   const [sourceId, setSourceId] = useState<string>(() => {
     return defaultSourceId || (eligibleDevices[0]?.id ?? '');
@@ -65,6 +149,14 @@ export function NetworkDiagnosticsModal({
   const [targetId, setTargetId] = useState<string>(() => {
     return defaultTargetId || (eligibleDevices[1]?.id ?? eligibleDevices[0]?.id ?? '');
   });
+
+  const selectedSourceDevice = useMemo(() => eligibleDevices.find(d => d.id === sourceId), [eligibleDevices, sourceId]);
+  const selectedTargetDevice = useMemo(() => eligibleDevices.find(d => d.id === targetId), [eligibleDevices, targetId]);
+
+  const handleSwap = () => {
+    setSourceId(targetId);
+    setTargetId(sourceId);
+  };
 
   const diagnosticResult: NetworkDiagnosticResult = useMemo(() => {
     if (!sourceId || !targetId) {
@@ -118,40 +210,134 @@ export function NetworkDiagnosticsModal({
       contentClassName="p-4 overflow-y-auto space-y-4 custom-scrollbar"
     >
       {/* Source & Target Selection */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 shrink-0">
-        <div className="space-y-1.5">
-          <label className="text-xs font-semibold text-secondary-300 flex items-center gap-1.5">
-            <Network className="w-3.5 h-3.5 text-sky-400" />
-            {isTr ? 'Kaynak Cihaz' : 'Source Device'}
-          </label>
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-2 shrink-0 bg-secondary-900/40 p-3 rounded-xl border border-secondary-800/60">
+        {/* Source Device */}
+        <div className="flex-1 space-y-1.5">
+          <div className="flex items-center justify-between">
+            <label className="text-xs font-semibold text-sky-400 flex items-center gap-1.5">
+              <Network className="w-3.5 h-3.5 text-sky-400" />
+              {isTr ? 'Kaynak Cihaz' : 'Source Device'}
+            </label>
+            {selectedSourceDevice && (
+              <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-sky-500/10 text-sky-400 border border-sky-500/20">
+                {selectedSourceDevice.ip || (selectedSourceDevice.type === 'cloud' ? (isTr ? 'Bulut' : 'Cloud') : 'L2')}
+              </span>
+            )}
+          </div>
           <Select value={sourceId} onValueChange={setSourceId}>
-            <SelectTrigger className={`w-full text-xs h-9 ${isDark ? 'bg-secondary-900 border-secondary-800' : 'bg-secondary-50 border-secondary-200'}`}>
-              <SelectValue placeholder={isTr ? 'Kaynak seçin' : 'Select source'} />
+            <SelectTrigger className={`w-full text-xs h-9 ${isDark ? 'bg-secondary-900 border-secondary-800 text-secondary-100' : 'bg-white border-secondary-200 text-secondary-900'}`}>
+              {selectedSourceDevice ? (
+                <div className="flex items-center gap-2 truncate">
+                  <DeviceIcon type={selectedSourceDevice.type} size={16} switchModel={selectedSourceDevice.switchModel} className="shrink-0 text-sky-400" />
+                  <span className="font-semibold">{selectedSourceDevice.name}</span>
+                  {selectedSourceDevice.ip && (
+                    <span className="text-[10px] font-mono opacity-70">({selectedSourceDevice.ip})</span>
+                  )}
+                </div>
+              ) : (
+                <SelectValue placeholder={isTr ? 'Kaynak seçin' : 'Select source'} />
+              )}
             </SelectTrigger>
-            <SelectContent className={`z-[10005] ${isDark ? 'bg-secondary-900 border-secondary-800 text-secondary-100' : 'bg-white border-secondary-200 text-secondary-900'}`}>
-              {eligibleDevices.map((d) => (
-                <SelectItem key={d.id} value={d.id} className="text-xs cursor-pointer">
-                  {d.name} {d.ip ? `(${d.ip})` : ''}
-                </SelectItem>
+            <SelectContent className={`z-[10005] max-h-72 ${isDark ? 'bg-secondary-900 border-secondary-800 text-secondary-100' : 'bg-white border-secondary-200 text-secondary-900'}`}>
+              {groupedDevices.map((group, gIdx) => (
+                <SelectGroup key={group.id}>
+                  {gIdx > 0 && <SelectSeparator className={isDark ? 'bg-secondary-800' : 'bg-secondary-200'} />}
+                  <SelectLabel className={`text-[11px] font-bold uppercase tracking-wider px-2 py-1 ${isDark ? 'text-secondary-400' : 'text-secondary-500'}`}>
+                    {group.label[language]}
+                  </SelectLabel>
+                  {group.devices.map((d) => (
+                    <SelectItem key={d.id} value={d.id} className="text-xs cursor-pointer py-1.5">
+                      <div className="flex items-center justify-between w-full gap-2">
+                        <span className="font-medium truncate flex items-center gap-2">
+                          <DeviceIcon type={d.type} size={16} switchModel={d.switchModel} className="shrink-0" />
+                          <span>{d.name}</span>
+                        </span>
+                        {d.ip ? (
+                          <span className="text-[10px] font-mono opacity-80 px-1.5 py-0.5 rounded bg-sky-500/10 text-sky-400 border border-sky-500/20">
+                            {d.ip}
+                          </span>
+                        ) : (
+                          <span className="text-[10px] opacity-50 italic">
+                            {d.type === 'cloud' ? (isTr ? 'Bulut/WAN' : 'WAN') : (d.type === 'switchL2' || d.type === 'hub' ? 'L2' : (isTr ? 'IP Yok' : 'No IP'))}
+                          </span>
+                        )}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
               ))}
             </SelectContent>
           </Select>
         </div>
 
-        <div className="space-y-1.5">
-          <label className="text-xs font-semibold text-secondary-300 flex items-center gap-1.5">
-            <Network className="w-3.5 h-3.5 text-purple-400" />
-            {isTr ? 'Hedef Cihaz' : 'Target Device'}
-          </label>
+        {/* Swap Button */}
+        <div className="flex items-center justify-center pb-0.5">
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            onClick={handleSwap}
+            title={isTr ? 'Kaynak ve Hedef Cihazı Yer Değiştir (⇄)' : 'Swap Source & Target'}
+            className={`h-9 w-9 shrink-0 ${isDark ? 'bg-secondary-900 border-secondary-800 text-secondary-300 hover:text-white hover:bg-secondary-800' : 'bg-secondary-100 border-secondary-200 text-secondary-700 hover:bg-secondary-200'}`}
+          >
+            <ArrowLeftRight className="w-4 h-4 text-emerald-400" />
+          </Button>
+        </div>
+
+        {/* Target Device */}
+        <div className="flex-1 space-y-1.5">
+          <div className="flex items-center justify-between">
+            <label className="text-xs font-semibold text-purple-400 flex items-center gap-1.5">
+              <Network className="w-3.5 h-3.5 text-purple-400" />
+              {isTr ? 'Hedef Cihaz' : 'Target Device'}
+            </label>
+            {selectedTargetDevice && (
+              <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                {selectedTargetDevice.ip || (selectedTargetDevice.type === 'cloud' ? (isTr ? 'Bulut' : 'Cloud') : 'L2')}
+              </span>
+            )}
+          </div>
           <Select value={targetId} onValueChange={setTargetId}>
-            <SelectTrigger className={`w-full text-xs h-9 ${isDark ? 'bg-secondary-900 border-secondary-800' : 'bg-secondary-50 border-secondary-200'}`}>
-              <SelectValue placeholder={isTr ? 'Hedef seçin' : 'Select target'} />
+            <SelectTrigger className={`w-full text-xs h-9 ${isDark ? 'bg-secondary-900 border-secondary-800 text-secondary-100' : 'bg-white border-secondary-200 text-secondary-900'}`}>
+              {selectedTargetDevice ? (
+                <div className="flex items-center gap-2 truncate">
+                  <DeviceIcon type={selectedTargetDevice.type} size={16} switchModel={selectedTargetDevice.switchModel} className="shrink-0 text-purple-400" />
+                  <span className="font-semibold">{selectedTargetDevice.name}</span>
+                  {selectedTargetDevice.ip && (
+                    <span className="text-[10px] font-mono opacity-70">({selectedTargetDevice.ip})</span>
+                  )}
+                </div>
+              ) : (
+                <SelectValue placeholder={isTr ? 'Hedef seçin' : 'Select target'} />
+              )}
             </SelectTrigger>
-            <SelectContent className={`z-[10005] ${isDark ? 'bg-secondary-900 border-secondary-800 text-secondary-100' : 'bg-white border-secondary-200 text-secondary-900'}`}>
-              {eligibleDevices.map((d) => (
-                <SelectItem key={d.id} value={d.id} className="text-xs cursor-pointer">
-                  {d.name} {d.ip ? `(${d.ip})` : ''}
-                </SelectItem>
+            <SelectContent className={`z-[10005] max-h-72 ${isDark ? 'bg-secondary-900 border-secondary-800 text-secondary-100' : 'bg-white border-secondary-200 text-secondary-900'}`}>
+              {groupedDevices.map((group, gIdx) => (
+                <SelectGroup key={group.id}>
+                  {gIdx > 0 && <SelectSeparator className={isDark ? 'bg-secondary-800' : 'bg-secondary-200'} />}
+                  <SelectLabel className={`text-[11px] font-bold uppercase tracking-wider px-2 py-1 ${isDark ? 'text-secondary-400' : 'text-secondary-500'}`}>
+                    {group.label[language]}
+                  </SelectLabel>
+                  {group.devices.map((d) => (
+                    <SelectItem key={d.id} value={d.id} className="text-xs cursor-pointer py-1.5">
+                      <div className="flex items-center justify-between w-full gap-2">
+                        <span className="font-medium truncate flex items-center gap-2">
+                          <DeviceIcon type={d.type} size={16} switchModel={d.switchModel} className="shrink-0" />
+                          <span>{d.name}</span>
+                        </span>
+                        {d.ip ? (
+                          <span className="text-[10px] font-mono opacity-80 px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                            {d.ip}
+                          </span>
+                        ) : (
+                          <span className="text-[10px] opacity-50 italic">
+                            {d.type === 'cloud' ? (isTr ? 'Bulut/WAN' : 'WAN') : (d.type === 'switchL2' || d.type === 'hub' ? 'L2' : (isTr ? 'IP Yok' : 'No IP'))}
+                          </span>
+                        )}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
               ))}
             </SelectContent>
           </Select>
@@ -243,9 +429,10 @@ export function NetworkDiagnosticsModal({
                         onOpenChange(false);
                         window.dispatchEvent(new CustomEvent('open-device-cli', { detail: { deviceId: diagnosticResult.sourceDevice!.id } }));
                       }}
-                      className="h-6 px-2 text-[10.5px] font-mono text-sky-400 hover:text-sky-300 hover:bg-sky-500/10"
+                      className="h-6 px-2 text-[10.5px] font-mono text-sky-400 hover:text-sky-300 hover:bg-sky-500/10 flex items-center gap-1"
                     >
-                      ⚙️ {diagnosticResult.sourceDevice.name} {diagnosticResult.sourceDevice.type === 'pc' ? (isTr ? 'CMD Aç' : 'Open CMD') : (isTr ? 'CLI Aç' : 'Open CLI')}
+                      <DeviceIcon type={diagnosticResult.sourceDevice.type} size={13} className="shrink-0" />
+                      <span>{diagnosticResult.sourceDevice.name} {diagnosticResult.sourceDevice.type === 'pc' ? (isTr ? 'CMD Aç' : 'Open CMD') : (isTr ? 'CLI Aç' : 'Open CLI')}</span>
                     </Button>
                   )}
                   {diagnosticResult.targetDevice && (
@@ -256,9 +443,10 @@ export function NetworkDiagnosticsModal({
                         onOpenChange(false);
                         window.dispatchEvent(new CustomEvent('open-device-cli', { detail: { deviceId: diagnosticResult.targetDevice!.id } }));
                       }}
-                      className="h-6 px-2 text-[10.5px] font-mono text-purple-400 hover:text-purple-300 hover:bg-purple-500/10"
+                      className="h-6 px-2 text-[10.5px] font-mono text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 flex items-center gap-1"
                     >
-                      ⚙️ {diagnosticResult.targetDevice.name} {diagnosticResult.targetDevice.type === 'pc' ? (isTr ? 'CMD Aç' : 'Open CMD') : (isTr ? 'CLI Aç' : 'Open CLI')}
+                      <DeviceIcon type={diagnosticResult.targetDevice.type} size={13} className="shrink-0" />
+                      <span>{diagnosticResult.targetDevice.name} {diagnosticResult.targetDevice.type === 'pc' ? (isTr ? 'CMD Aç' : 'Open CMD') : (isTr ? 'CLI Aç' : 'Open CLI')}</span>
                     </Button>
                   )}
                 </div>
