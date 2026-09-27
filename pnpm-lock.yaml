@@ -33,7 +33,7 @@ importers:
         specifier: ^1.2.8
         version: 1.2.16(@types/react-dom@19.2.5(@types/react@19.2.18))(@types/react@19.2.18)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       '@tauri-apps/api':
-        specifier: ^2.11.1
+        specifier: ~2.11.1
         version: 2.11.1
       '@upstash/redis':
         specifier: ^1.38.0
