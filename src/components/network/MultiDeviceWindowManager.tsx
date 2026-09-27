@@ -39,6 +39,7 @@ interface MultiDeviceWindowManagerProps {
   confirmDialog: { show: boolean; message: string; action: string; onConfirm: () => void } | null;
   setConfirmDialog: (dialog: { show: boolean; message: string; action: string; onConfirm: () => void } | null) => void;
   isTablet?: boolean;
+  onUpdateDevice?: (updatedDevice: CanvasDevice, updatedSwitchState?: SwitchState, removedConnections?: string[]) => void;
 }
 
 export function MultiDeviceWindowManager({
@@ -62,6 +63,7 @@ export function MultiDeviceWindowManager({
   updateDeviceConfig,
   confirmDialog = null,
   setConfirmDialog = () => {},
+  onUpdateDevice,
 }: MultiDeviceWindowManagerProps) {
   const {
     openWindows,
@@ -464,6 +466,7 @@ export function MultiDeviceWindowManager({
             handlePointerDown={handlePointerDown}
             handleResizeStart={handleResizeStart}
             restoreRequest={windowRestoreRequests[win.id]}
+            onUpdateDevice={onUpdateDevice}
           />
         );
       })}

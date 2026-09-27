@@ -167,10 +167,12 @@ export function DraggableWindowWrapper({
     : {
       position: 'fixed',
       left: isMobile ? Math.max(8, Math.min(modalPosition.x, (typeof window !== 'undefined' ? window.innerWidth : 360) - 300)) : modalPosition.x,
-      top: isMobile ? Math.max(8, Math.min(modalPosition.y, (typeof window !== 'undefined' ? window.innerHeight : 600) - 200)) : modalPosition.y,
+      top: isMobile
+        ? Math.max(64, Math.min(modalPosition.y, (typeof window !== 'undefined' ? window.innerHeight : 600) - 100))
+        : Math.max(128, modalPosition.y),
       width: isMobile ? 'calc(100vw - 16px)' : modalSize.width,
       maxWidth: '100vw',
-      maxHeight: isMobile ? 'calc(100vh - 32px)' : '100vh',
+      maxHeight: isMobile ? 'calc(100vh - 32px)' : 'calc(100vh - 136px)',
       height: isCollapsed ? 'auto' : (isMobile ? Math.min(modalSize.height, (typeof window !== 'undefined' ? window.innerHeight - 32 : 400)) : modalSize.height),
       zIndex,
       touchAction: 'none',

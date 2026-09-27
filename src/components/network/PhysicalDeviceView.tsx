@@ -57,17 +57,11 @@ export function PhysicalDeviceView({
   };
 
   const handleInstall = (slotIndex: number, moduleId: string) => {
-    if (powerOn) {
-      setPowerError(
-        isTR
-          ? 'Güvenlik Uyarısı: Modül takmadan önce cihazın güç anahtarını (Power Switch) KAPATIN!'
-          : 'Safety Warning: Turn the device power OFF before inserting expansion cards!'
-      );
-      return;
-    }
     setPowerError(null);
     try {
-      const res = installExpansionModule(device, slotIndex, moduleId, switchState);
+      const targetDevice = powerOn ? { ...device, status: 'offline' as const } : device;
+      if (powerOn) setPowerOn(false);
+      const res = installExpansionModule(targetDevice, slotIndex, moduleId, switchState);
       onUpdateDevice?.(res.updatedDevice, res.updatedSwitchState, []);
       setSelectedSlot(null);
     } catch (err: unknown) {
@@ -77,18 +71,17 @@ export function PhysicalDeviceView({
   };
 
   const handleRemove = (slotIndex: number) => {
-    if (powerOn) {
-      setPowerError(
-        isTR
-          ? 'Güvenlik Uyarısı: Modül çıkarmadan önce cihazın güç anahtarını (Power Switch) KAPATIN!'
-          : 'Safety Warning: Turn the device power OFF before removing expansion cards!'
-      );
-      return;
-    }
     setPowerError(null);
-    const res = removeExpansionModule(device, slotIndex, connections, switchState);
-    onUpdateDevice?.(res.updatedDevice, res.updatedSwitchState, res.removedConnections);
-    setSelectedSlot(null);
+    try {
+      const targetDevice = powerOn ? { ...device, status: 'offline' as const } : device;
+      if (powerOn) setPowerOn(false);
+      const res = removeExpansionModule(targetDevice, slotIndex, connections, switchState);
+      onUpdateDevice?.(res.updatedDevice, res.updatedSwitchState, res.removedConnections);
+      setSelectedSlot(null);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setPowerError(msg);
+    }
   };
 
   return (

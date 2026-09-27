@@ -1,8 +1,10 @@
-﻿import { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
+import { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { SwitchState } from '@/lib/network/types';
 import { ensureDeviceStatesMap } from '@/lib/network/networkUtils';
-import { isIpInSubnet, isPortShutdown } from '@/lib/network/connectivity.utils';
+import { isIpInSubnet, isPortShutdown, isConnectionCableCompatible } from '@/lib/network/connectivity.utils';
 import { checkConnectivity } from './pathResolution/algorithm';
+import { checkDeviceConnectivity } from './pingDiagnostics';
+import { buildImplicitWirelessConnections } from '@/lib/network/wireless';
 
 export interface DiagnosticIssue {
   id: string;
@@ -52,6 +54,10 @@ export function runRootCauseAnalysis(
     return { canCommunicate: false, sourceDevice: source, targetDevice: target, issues, passedChecks };
   }
 
+  // Implicit wireless (WiFi) bağlantılarını da dahil et
+  const implicitWirelessConns = buildImplicitWirelessConnections(devices, safeDeviceStates, 'diag-wireless');
+  const allConnections = [...connections, ...implicitWirelessConns];
+
   // 1. Güç Kontrolü
   if (source.status === 'offline') {
     issues.push({
@@ -81,6 +87,14 @@ export function runRootCauseAnalysis(
     passedChecks.push({ tr: `${target.name} cihazı açık ve çalışıyor.`, en: `${target.name} is powered on and online.` });
   }
 
+  // Helper: Cihazın IP adresi yapılandırması gerektirip gerektirmediğini belirle (Hub, L2 Switch, Bulut IP istemez)
+  const requiresIpAddress = (device: CanvasDevice): boolean => {
+    if (device.type === 'hub' || device.type === 'switchL2' || device.type === 'cloud') {
+      return false;
+    }
+    return true;
+  };
+
   // 2. IP & Subnet Konfigürasyonu
   const sourceIp = source.ip || '';
   const targetIp = target.ip || '';
@@ -88,50 +102,169 @@ export function runRootCauseAnalysis(
   const targetSubnet = target.subnet || '255.255.255.0';
 
   if (!sourceIp) {
-    issues.push({
-      id: 'source-no-ip',
-      category: 'ip',
-      severity: 'error',
-      title: { tr: 'Kaynak IP Eksik', en: 'Source IP Missing' },
-      description: { tr: `${source.name} cihazına henüz bir IP adresi tanımlanmamış.`, en: `${source.name} has no IP address configured.` },
-      suggestedFix: { tr: 'Cihaz ayarlarından veya CLI üzerinden IP adresi atayın (veya DHCP aktif edin).', en: 'Assign an IP in device settings or CLI (or enable DHCP).' },
-      deviceId: source.id
-    });
+    if (requiresIpAddress(source)) {
+      issues.push({
+        id: 'source-no-ip',
+        category: 'ip',
+        severity: 'error',
+        title: { tr: 'Kaynak IP Eksik', en: 'Source IP Missing' },
+        description: { tr: `${source.name} cihazına henüz bir IP adresi tanımlanmamış.`, en: `${source.name} has no IP address configured.` },
+        suggestedFix: { tr: 'Cihaz ayarlarından veya CLI üzerinden IP adresi atayın (veya DHCP aktif edin).', en: 'Assign an IP in device settings or CLI (or enable DHCP).' },
+        deviceId: source.id
+      });
+    } else {
+      const label = source.type === 'hub' ? 'Hub' : source.type === 'switchL2' ? 'L2 Switch' : 'Bulut';
+      passedChecks.push({ tr: `${source.name} (${label}) IP adresi yapılandırması gerektirmez.`, en: `${source.name} (${label}) does not require IP configuration.` });
+    }
   } else {
     passedChecks.push({ tr: `Kaynak IP: ${sourceIp}/${sourceSubnet}`, en: `Source IP: ${sourceIp}/${sourceSubnet}` });
   }
 
   if (!targetIp) {
-    issues.push({
-      id: 'target-no-ip',
-      category: 'ip',
-      severity: 'error',
-      title: { tr: 'Hedef IP Eksik', en: 'Target IP Missing' },
-      description: { tr: `${target.name} cihazına henüz bir IP adresi tanımlanmamış.`, en: `${target.name} has no IP address configured.` },
-      suggestedFix: { tr: 'Hedef cihaza geçerli bir IP adresi verin.', en: 'Assign a valid IP address to the target device.' },
-      deviceId: target.id
-    });
+    if (requiresIpAddress(target)) {
+      issues.push({
+        id: 'target-no-ip',
+        category: 'ip',
+        severity: 'error',
+        title: { tr: 'Hedef IP Eksik', en: 'Target IP Missing' },
+        description: { tr: `${target.name} cihazına henüz bir IP adresi tanımlanmamış.`, en: `${target.name} has no IP address configured.` },
+        suggestedFix: { tr: 'Hedef cihaza geçerli bir IP adresi verin.', en: 'Assign a valid IP address to the target device.' },
+        deviceId: target.id
+      });
+    } else {
+      const label = target.type === 'hub' ? 'Hub' : target.type === 'switchL2' ? 'L2 Switch' : 'Bulut';
+      passedChecks.push({ tr: `${target.name} (${label}) IP adresi yapılandırması gerektirmez.`, en: `${target.name} (${label}) does not require IP configuration.` });
+    }
   } else {
     passedChecks.push({ tr: `Hedef IP: ${targetIp}/${targetSubnet}`, en: `Target IP: ${targetIp}/${targetSubnet}` });
   }
 
-  // 3. Fiziksel Bağlantı & Port Shutdown Kontrolleri
-  const sourceConns = connections.filter(c => c.sourceDeviceId === source.id || c.targetDeviceId === source.id);
+  // Helper: Determine if a device primarily expects a WiFi connection when un-cabled
+  const isExpectsWireless = (device: CanvasDevice): boolean => {
+    if (device.type === 'mobile') return true;
+    if (device.wifi && (device.wifi.enabled === true || (device.wifi.ssid && device.wifi.ssid.trim() !== ''))) {
+      return true;
+    }
+    return false;
+  };
+
+  // 3. Fiziksel / Kablosuz (WiFi), Serial, Gigabit & Ethernet Bağlantı Kontrolleri
+  const sourceConns = allConnections.filter(c => c.sourceDeviceId === source.id || c.targetDeviceId === source.id);
+  const isSourceWirelessConnected = sourceConns.some(c => c.cableType === 'wireless' || c.sourcePort === 'wlan0' || c.targetPort === 'wlan0');
+
   if (sourceConns.length === 0) {
-    issues.push({
-      id: 'source-no-cable',
-      category: 'physical',
-      severity: 'error',
-      title: { tr: 'Kaynak Kablosu Takılı Değil', en: 'Source Cable Not Connected' },
-      description: { tr: `${source.name} herhangi bir switch veya router'a bağlı değil.`, en: `${source.name} is not connected to any switch or router.` },
-      suggestedFix: { tr: 'Kablo aracını kullanarak cihazı ağa bağlayın.', en: 'Connect the device with a cable.' },
-      deviceId: source.id
-    });
+    if (isExpectsWireless(source)) {
+      issues.push({
+        id: 'source-no-wifi-conn',
+        category: 'physical',
+        severity: 'error',
+        title: { tr: 'Kablosuz (WiFi) Bağlantısı Kurulamadı', en: 'Wireless (WiFi) Connection Failed' },
+        description: { tr: `${source.name} kapsama alanında bir Erişim Noktası (AP / Router / WLC) bulamadı veya WiFi şifre/SSID ayarları uyuşmuyor.`, en: `${source.name} could not associate with any Access Point (check SSID, password, channel or distance).` },
+        suggestedFix: { tr: 'SSID ve WPA2/WEP şifresinin hedef AP ile aynı olduğunu ve cihazın sinyal alanında bulunduğunu kontrol edin.', en: 'Ensure SSID and security key match the AP and client is in coverage range.' },
+        deviceId: source.id
+      });
+    } else {
+      issues.push({
+        id: 'source-no-cable',
+        category: 'physical',
+        severity: 'error',
+        title: { tr: 'Kaynak Kablosu Takılı Değil', en: 'Source Cable Not Connected' },
+        description: { tr: `${source.name} herhangi bir switch, router veya cihaza bağlı değil.`, en: `${source.name} is not connected to any switch or router.` },
+        suggestedFix: { tr: 'Kablo aracını kullanarak cihazı ağa bağlayın (veya kablosuz kullanılıyorsa WiFi ayarlarını aktif edin).', en: 'Connect the device with a cable (or configure WiFi settings if using wireless).' },
+        deviceId: source.id
+      });
+    }
+  } else {
+    if (isSourceWirelessConnected) {
+      passedChecks.push({ tr: `${source.name} kablosuz (WiFi) ağa başarıyla bağlı.`, en: `${source.name} is connected via Wireless (WiFi).` });
+    } else {
+      const serialConn = sourceConns.find(c => c.cableType === 'serial' || c.sourcePort.toLowerCase().startsWith('se') || c.targetPort.toLowerCase().startsWith('se'));
+      const fiberConn = sourceConns.find(c => c.cableType === 'fiber');
+      const gigabitConn = sourceConns.find(c => c.sourcePort.toLowerCase().startsWith('gi') || c.sourcePort.toLowerCase().startsWith('te') || c.targetPort.toLowerCase().startsWith('gi') || c.targetPort.toLowerCase().startsWith('te'));
+      const consoleConn = sourceConns.find(c => c.cableType === 'console');
+
+      if (serialConn) {
+        passedChecks.push({ tr: `${source.name} Seri (Serial) WAN bağlantısı ile bağlı.`, en: `${source.name} is connected via Serial WAN interface.` });
+      } else if (fiberConn) {
+        passedChecks.push({ tr: `${source.name} Fiber Optik kablo ile bağlı.`, en: `${source.name} is connected via Fiber Optic link.` });
+      } else if (gigabitConn) {
+        passedChecks.push({ tr: `${source.name} Gigabit / 10G Ethernet bağlantısı ile bağlı.`, en: `${source.name} is connected via Gigabit/10G Ethernet interface.` });
+      } else if (consoleConn) {
+        passedChecks.push({ tr: `${source.name} Konsol (Console) seri yönetim hattı ile bağlı.`, en: `${source.name} is connected via Console management line.` });
+      } else {
+        passedChecks.push({ tr: `${source.name} Ethernet / FastEthernet kablosu ile bağlı.`, en: `${source.name} is connected via Ethernet cable.` });
+      }
+    }
   }
 
-  // Port shutdown kontrolleri
+  const targetConns = allConnections.filter(c => c.sourceDeviceId === target.id || c.targetDeviceId === target.id);
+  const isTargetWirelessConnected = targetConns.some(c => c.cableType === 'wireless' || c.sourcePort === 'wlan0' || c.targetPort === 'wlan0');
+
+  if (targetConns.length === 0) {
+    if (isExpectsWireless(target)) {
+      issues.push({
+        id: 'target-no-wifi-conn',
+        category: 'physical',
+        severity: 'error',
+        title: { tr: 'Hedef Kablosuz (WiFi) Bağlantısı Kurulamadı', en: 'Target Wireless (WiFi) Connection Failed' },
+        description: { tr: `${target.name} kapsama alanında bir Erişim Noktasına (AP / Router / WLC) bağlanamadı.`, en: `${target.name} could not associate with any Access Point.` },
+        suggestedFix: { tr: 'Hedef cihazın WiFi SSID ve şifre yapılandırmasını kontrol edin.', en: 'Check target device WiFi SSID and security configuration.' },
+        deviceId: target.id
+      });
+    } else {
+      issues.push({
+        id: 'target-no-cable',
+        category: 'physical',
+        severity: 'error',
+        title: { tr: 'Hedef Kablosu Takılı Değil', en: 'Target Cable Not Connected' },
+        description: { tr: `${target.name} herhangi bir switch, router veya cihaza bağlı değil.`, en: `${target.name} is not connected to any switch or router.` },
+        suggestedFix: { tr: 'Kablo aracını kullanarak hedef cihazı ağa bağlayın (veya kablosuz kullanılıyorsa WiFi ayarlarını aktif edin).', en: 'Connect target device with a cable (or configure WiFi settings if using wireless).' },
+        deviceId: target.id
+      });
+    }
+  } else if (isTargetWirelessConnected) {
+    passedChecks.push({ tr: `${target.name} kablosuz (WiFi) ağa başarıyla bağlı.`, en: `${target.name} is connected via Wireless (WiFi).` });
+  } else {
+    const serialConn = targetConns.find(c => c.cableType === 'serial' || c.sourcePort.toLowerCase().startsWith('se') || c.targetPort.toLowerCase().startsWith('se'));
+    const fiberConn = targetConns.find(c => c.cableType === 'fiber');
+    const gigabitConn = targetConns.find(c => c.sourcePort.toLowerCase().startsWith('gi') || c.sourcePort.toLowerCase().startsWith('te') || c.targetPort.toLowerCase().startsWith('gi') || c.targetPort.toLowerCase().startsWith('te'));
+    const consoleConn = targetConns.find(c => c.cableType === 'console');
+
+    if (serialConn) {
+      passedChecks.push({ tr: `${target.name} Seri (Serial) WAN bağlantısı ile bağlı.`, en: `${target.name} is connected via Serial WAN interface.` });
+    } else if (fiberConn) {
+      passedChecks.push({ tr: `${target.name} Fiber Optik kablo ile bağlı.`, en: `${target.name} is connected via Fiber Optic link.` });
+    } else if (gigabitConn) {
+      passedChecks.push({ tr: `${target.name} Gigabit / 10G Ethernet bağlantısı ile bağlı.`, en: `${target.name} is connected via Gigabit/10G Ethernet interface.` });
+    } else if (consoleConn) {
+      passedChecks.push({ tr: `${target.name} Konsol (Console) seri yönetim hattı ile bağlı.`, en: `${target.name} is connected via Console management line.` });
+    } else {
+      passedChecks.push({ tr: `${target.name} Ethernet / FastEthernet kablosu ile bağlı.`, en: `${target.name} is connected via Ethernet cable.` });
+    }
+  }
+
+  // Kablo Uyumluluğu & Port Shutdown Kontrolleri
   sourceConns.forEach(conn => {
     const port = conn.sourceDeviceId === source.id ? conn.sourcePort : conn.targetPort;
+    const targetDevId = conn.sourceDeviceId === source.id ? conn.targetDeviceId : conn.sourceDeviceId;
+    const targetDev = deviceMap.get(targetDevId);
+
+    if (conn.cableType !== 'wireless' && targetDev) {
+      const compatible = isConnectionCableCompatible(conn, source, targetDev);
+      if (!compatible) {
+        issues.push({
+          id: `incompatible-cable-${source.id}-${port}`,
+          category: 'physical',
+          severity: 'error',
+          title: { tr: `Uyumsuz Kablo Tipi: ${conn.cableType}`, en: `Incompatible Cable Type: ${conn.cableType}` },
+          description: { tr: `${source.name} (${port}) ve ${targetDev.name} arasında kullanılan kablo tipi uyumsuz.`, en: `Incompatible cable used between ${source.name} and ${targetDev.name}.` },
+          suggestedFix: { tr: 'Cihaz tiplerine uygun kabloyu seçin (örn: PC-Switch için Düz Kablo, PC-PC için Çapraz Kablo, Router-Router için Seri Kablo).', en: 'Use appropriate cable (e.g. Straight-through, Crossover, or Serial cable).' },
+          deviceId: source.id,
+          portId: port
+        });
+      }
+    }
+
     if (isPortShutdown(source.id, port, devices, safeDeviceStates)) {
       issues.push({
         id: `port-shutdown-${source.id}-${port}`,
@@ -232,8 +365,22 @@ export function runRootCauseAnalysis(
   }
 
   // 6. Uçtan Uca Bağlantı Doğrulama
-  if (targetIp) {
-    const connectivity = checkConnectivity(source.id, targetIp, devices, connections, safeDeviceStates);
+  if (source.type === 'hub' || target.type === 'hub' || !targetIp || !sourceIp) {
+    const connectivity = checkDeviceConnectivity(source.id, target.id, devices, allConnections, safeDeviceStates);
+    if (connectivity.success) {
+      passedChecks.push({ tr: `Fiziksel bağlantı / L1-L2 yolu bulundu: ${connectivity.hops.join(' -> ')}`, en: `Physical/L1-L2 path resolved: ${connectivity.hops.join(' -> ')}` });
+    } else if (issues.length === 0) {
+      issues.push({
+        id: 'physical-path-missing',
+        category: 'physical',
+        severity: 'error',
+        title: { tr: 'Fiziksel Bağlantı Yolu Bulunamadı', en: 'No Physical Connection Path' },
+        description: { tr: `${source.name} ile ${target.name} arasında fiziksel bir bağlantı yolu bulunamadı.`, en: `No physical connection path found between ${source.name} and ${target.name}.` },
+        suggestedFix: { tr: 'Cihazlar arasındaki kablo bağlantılarını ve port durumlarını kontrol edin.', en: 'Check cable connections and port statuses between devices.' }
+      });
+    }
+  } else if (targetIp) {
+    const connectivity = checkConnectivity(source.id, targetIp, devices, allConnections, safeDeviceStates);
     if (connectivity.success) {
       passedChecks.push({ tr: `Uçtan uca yol bulundu: ${connectivity.hops.join(' -> ')}`, en: `End-to-end path resolved: ${connectivity.hops.join(' -> ')}` });
     } else if (issues.length === 0) {

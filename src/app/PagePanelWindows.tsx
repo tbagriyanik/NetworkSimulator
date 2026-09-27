@@ -1,5 +1,6 @@
-﻿'use client';
+'use client';
 
+import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { MultiDeviceWindowManager } from '@/components/network/MultiDeviceWindowManager';
 import { WindowSwitcherModal } from '@/components/network/WindowSwitcherModal';
@@ -10,6 +11,7 @@ const {
   UnifiedDevicePanel,
   PCWindow,
   FirewallWindow,
+  NetworkDiagnosticsModal,
 } = {
   // Import concrete modules (not the panels barrel) so the initial bundle
   // stays lean: the barrel also re-exports certificate panels which pull in jsPDF.
@@ -17,6 +19,7 @@ const {
   UnifiedDevicePanel: dynamic(() => import('@/components/network/UnifiedDevicePanel').then((m) => m.UnifiedDevicePanel)),
   PCWindow: dynamic(() => import('@/components/network/PCWindow').then((m) => m.PCWindow), { ssr: false }),
   FirewallWindow: dynamic(() => import('@/components/network/FirewallWindow').then((m) => m.FirewallWindow), { ssr: false }),
+  NetworkDiagnosticsModal: dynamic(() => import('@/components/network/NetworkDiagnosticsModal').then((m) => m.NetworkDiagnosticsModal), { ssr: false }),
 };
 
 type PageController = ReturnType<typeof usePageController>;
@@ -69,6 +72,7 @@ export type PagePanelWindowsProps = Pick<
   | 'handleExecuteCommand'
   | 'toggleDevicePower'
   | 'updateDeviceConfig'
+  | 'handleUpdateDevice'
   // PC window
   | 'showPCPanel'
   | 'setShowPCPanel'
@@ -131,6 +135,7 @@ export function PagePanelWindows({
   handleExecuteCommand,
   toggleDevicePower,
   updateDeviceConfig,
+  handleUpdateDevice,
 
   showPCPanel,
   setShowPCPanel,
@@ -151,6 +156,20 @@ export function PagePanelWindows({
   showRouterDeviceId,
   routerDrag,
 }: PagePanelWindowsProps) {
+  const [showDiagnosticsModal, setShowDiagnosticsModal] = useState(false);
+  const [diagnosticsParams, setDiagnosticsParams] = useState<{ defaultSourceId?: string; defaultTargetId?: string }>({});
+
+  useEffect(() => {
+    const handleOpen = (e: CustomEvent<{ defaultSourceId?: string; defaultTargetId?: string } | undefined>) => {
+      if (e.detail) {
+        setDiagnosticsParams(e.detail);
+      }
+      setShowDiagnosticsModal(true);
+    };
+    window.addEventListener('open-network-diagnostics', handleOpen as EventListener);
+    return () => window.removeEventListener('open-network-diagnostics', handleOpen as EventListener);
+  }, []);
+
   return (
     <>
       <UnifiedDevicePanel
@@ -183,6 +202,7 @@ export function PagePanelWindows({
         modalSize={unifiedDrag.size}
         handlePointerDown={unifiedDrag.handlePointerDown}
         handleResizeStart={unifiedDrag.handleResizeStart}
+        onUpdateDevice={handleUpdateDevice}
       />
 
       <FirewallWindow
@@ -254,6 +274,7 @@ export function PagePanelWindows({
         confirmDialog={confirmDialog}
         setConfirmDialog={setConfirmDialog}
         isTablet={isTablet}
+        onUpdateDevice={handleUpdateDevice}
       />
 
       <WindowSwitcherModal
@@ -275,6 +296,20 @@ export function PagePanelWindows({
         handleResizeStart={routerDrag.handleResizeStart}
         className={focusedOverlay === 'router-info' ? "border-emerald-400 shadow-[0_0_0_1px_rgba(52,211,153,0.35)]" : "border-emerald-950/80"}
       />
+
+      {showDiagnosticsModal && (
+        <NetworkDiagnosticsModal
+          open={showDiagnosticsModal}
+          onOpenChange={setShowDiagnosticsModal}
+          devices={topologyDevices}
+          connections={topologyConnections}
+          deviceStates={deviceStates}
+          isDark={isDark}
+          language={language}
+          defaultSourceId={diagnosticsParams.defaultSourceId}
+          defaultTargetId={diagnosticsParams.defaultTargetId}
+        />
+      )}
     </>
   );
 }

@@ -1,6 +1,6 @@
 # 📅 Network Simulator — Proje Geçmişi
 
-## v6.7.0 — 2026-09-26
+## v6.7.1 — 2026-09-27
 
 - **🎯 Davranış Regresyon Sistemi & E2E Test Matrisi (`behavioralRegressionEngine.ts`, `cliBehavioralRegression.test.ts`, `noCommandE2EMatrix.test.ts`)**:
   - **Sistemik Davranış Regresyon Test Grubu**: CLI girdilerinden `SwitchState` güncellemelerine, protokol motorlarından uçtan uca paket iletimine kadar tüm zinciri kapsayan otomatize regresyon motoru eklendi.

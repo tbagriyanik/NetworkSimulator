@@ -8,7 +8,7 @@ const CURRENT_VERSION = packageJson.version;
 const CHECK_INTERVAL_MS = 10 * 60 * 1000; // Check every 10 minutes
 
 /**
- * Compare two semver strings (e.g., "6.6.0" vs "6.7.0")
+ * Compare two semver strings (e.g., "6.6.0" vs "6.7.1")
  * Returns 1 if v2 > v1, -1 if v1 > v2, 0 if equal.
  */
 function compareVersions(v1: string, v2: string): number {

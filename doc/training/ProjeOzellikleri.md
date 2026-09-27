@@ -1,12 +1,12 @@
 # Network Simulator — Özellik ve Yetenek Envanteri
 
-**Sürüm / Version:** 6.7.0 · **Son doğrulama / Last verified:** 2026-09-26
+**Sürüm / Version:** 6.7.1 · **Son doğrulama / Last verified:** 2026-09-27
 
 ## Packet/Control-Plane Entegrasyon Özeti
 
 MPLS/LDP, IPSec, SNMP, NETCONF/RESTCONF, EEM, MST, IP SLA, QoS MQC, 802.1X, CAPWAP, sFlow/NetFlow, MQTT ve CoAP akışları ortak state/packet pipeline ile doğrulanır. Telemetry export’ları collector frame olarak, MQTT/CoAP/NETCONF işlemleri servis portlarına bağlı request-response frame olarak modellenir.
 
-## Davranış Regresyonu, Arıza Enjeksiyonu, CLI Ototamlama & Hop Paket Yolculuğu (2026-09-26 - v6.7.0)
+## Davranış Regresyonu, Arıza Enjeksiyonu, CLI Ototamlama & Hop Paket Yolculuğu (2026-09-27 - v6.7.1)
 
 | Özellik | Güncel kapsam ve sınır |
 |---|---|

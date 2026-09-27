@@ -44,7 +44,7 @@ export function RouterRoutesTab({
     if (!isIpv4 && !isIpv6) {
       setLookupResult({
         route: null,
-        explanation: language === 'tr' ? 'GeÃ§ersiz IP adresi formatÄ±.' : 'Invalid IP address format.',
+        explanation: language === 'tr' ? 'Geçersiz IP adresi formatı.' : 'Invalid IP address format.',
         searched: true
       });
       return;
@@ -55,16 +55,16 @@ export function RouterRoutesTab({
       let desc = '';
       if (matchedRoute.type === 'connected') {
         desc = language === 'tr'
-          ? `DoÄŸrudan baÄŸlÄ± aÄŸ eÅŸleÅŸmesi. Paket ${matchedRoute.nextHop} arayÃ¼zÃ¼ Ã¼zerinden doÄŸrudan iletilecek.`
+          ? `Doğrudan bağlı ağ eşleşmesi. Paket ${matchedRoute.nextHop} arayüzü üzerinden doğrudan iletilecek.`
           : `Directly connected network match. Packet will be forwarded directly via interface ${matchedRoute.nextHop}.`;
       } else if (matchedRoute.destination === '0.0.0.0' || matchedRoute.destination === '::') {
         desc = language === 'tr'
-          ? `Ã–zel rota bulunamadÄ±. VarsayÄ±lan rota (Default Route) kullanÄ±lÄ±yor. Next Hop: ${matchedRoute.nextHop}.`
+          ? `Özel rota bulunamadı. Varsayılan rota (Default Route) kullanılıyor. Next Hop: ${matchedRoute.nextHop}.`
           : `No specific route found. Using Default Route. Next Hop: ${matchedRoute.nextHop}.`;
       } else {
         const protocol = matchedRoute.type === 'static' ? (language === 'tr' ? 'Statik' : 'Static') : matchedRoute.type.toUpperCase();
         desc = language === 'tr'
-          ? `${protocol} yÃ¶nlendirme kuralÄ± eÅŸleÅŸti (En Uzun Ã–nek EÅŸleÅŸmesi). Hedefe gitmek iÃ§in paket ÅŸu Next Hop'a iletilecek: ${matchedRoute.nextHop}.`
+          ? `${protocol} yönlendirme kuralı eşleşti (En Uzun Önek Eşleşmesi). Hedefe gitmek için paket şu Next Hop'a iletilecek: ${matchedRoute.nextHop}.`
           : `${protocol} routing rule matched (Longest Prefix Match). Packet will be forwarded to Next Hop: ${matchedRoute.nextHop}.`;
       }
       setLookupResult({
@@ -76,7 +76,7 @@ export function RouterRoutesTab({
       setLookupResult({
         route: null,
         explanation: language === 'tr'
-          ? 'Hedef aÄŸ bulunamadÄ±. YÃ¶nlendirme tablosunda bu IP adresiyle eÅŸleÅŸen bir kural yok ve varsayÄ±lan aÄŸ geÃ§idi (0.0.0.0/0) yapÄ±landÄ±rÄ±lmamÄ±ÅŸ.'
+          ? 'Hedef ağ bulunamadı. Yönlendirme tablosunda bu IP adresiyle eşleşen bir kural yok ve varsayılan ağ geçidi (0.0.0.0/0) yapılandırılmamış.'
           : 'Destination host unreachable. No matching route in the routing table, and no default gateway (0.0.0.0/0) is configured.',
         searched: true
       });
@@ -90,7 +90,7 @@ export function RouterRoutesTab({
           <AlertCircle className="w-4 h-4 shrink-0" />
           <span>
             {language === 'tr'
-              ? 'IP YÃ¶nlendirme kapalÄ±! Cihaz paket yÃ¶nlendirmesi yapamaz. CLI Ã¼zerinden "ip routing" komutunu Ã§alÄ±ÅŸtÄ±rarak aktif edebilirsiniz.'
+              ? 'IP Yönlendirme kapalı! Cihaz paket yönlendirmesi yapamaz. CLI üzerinden "ip routing" komutunu çalıştırarak aktif edebilirsiniz.'
               : 'IP Routing is disabled! This device cannot forward packets. You can enable it by running the "ip routing" command in CLI.'}
           </span>
         </div>
@@ -107,7 +107,7 @@ export function RouterRoutesTab({
             type="text"
             value={lookupIp}
             onChange={(e) => setLookupIp(e.target.value)}
-            placeholder={language === 'tr' ? 'Hedef IP Adresi (Ã¶rn: 192.168.1.5)' : 'Target IP Address (e.g. 192.168.1.5)'}
+            placeholder={language === 'tr' ? 'Hedef IP Adresi (örn: 192.168.1.5)' : 'Target IP Address (e.g. 192.168.1.5)'}
             className={cn(
               "flex-1 px-3 py-2 rounded-lg text-xs border outline-none",
               isDark ? "bg-secondary-950 border-secondary-800 text-white focus:border-purple-500" : "bg-white border-secondary-300 text-secondary-900 focus:border-purple-600"
@@ -129,7 +129,7 @@ export function RouterRoutesTab({
               {lookupResult.route ? (
                 <>
                   <CheckCircle2 className="w-4 h-4 text-success-500" />
-                  <span>{language === 'tr' ? 'Rota EÅŸleÅŸti!' : 'Route Matched!'}</span>
+                  <span>{language === 'tr' ? 'Rota Eşleşti!' : 'Route Matched!'}</span>
                   <span className="font-mono bg-success-500/10 px-1.5 py-0.5 rounded text-[10px]">
                     {lookupResult.route.destination}
                     {lookupResult.route.subnetMask ? `/${lookupResult.route.subnetMask}` : lookupResult.route.prefixLength ? `/${lookupResult.route.prefixLength}` : ''}
@@ -138,7 +138,7 @@ export function RouterRoutesTab({
               ) : (
                 <>
                   <XCircle className="w-4 h-4 text-error-500" />
-                  <span>{language === 'tr' ? 'EÅŸleÅŸen Rota Yok!' : 'No Matching Route!'}</span>
+                  <span>{language === 'tr' ? 'Eşleşen Rota Yok!' : 'No Matching Route!'}</span>
                 </>
               )}
             </div>
@@ -174,9 +174,9 @@ export function RouterRoutesTab({
             <thead className={cn("border-b text-[10px] uppercase tracking-wider font-semibold sticky top-0 z-10", isDark ? "bg-secondary-950 border-secondary-800 text-secondary-400" : "bg-secondary-100 border-secondary-200 text-secondary-600")}>
               <tr>
                 <th className="p-3 w-24">{language === 'tr' ? 'Tip' : 'Type'}</th>
-                <th className="p-3">{language === 'tr' ? 'Hedef AÄŸ' : 'Destination Network'}</th>
+                <th className="p-3">{language === 'tr' ? 'Hedef Ağ' : 'Destination Network'}</th>
                 <th className="p-3 w-32">{language === 'tr' ? 'Metrik [AD/Metrik]' : 'Metric [AD/Metric]'}</th>
-                <th className="p-3">{language === 'tr' ? 'Sonraki Hop / ArayÃ¼z' : 'Next Hop / Interface'}</th>
+                <th className="p-3">{language === 'tr' ? 'Sonraki Hop / Arayüz' : 'Next Hop / Interface'}</th>
               </tr>
             </thead>
             <tbody>
@@ -201,7 +201,7 @@ export function RouterRoutesTab({
                               ? "bg-primary-500/10 text-primary-500 border-primary-500/20"
                               : "bg-warning-500/10 text-warning-500 border-warning-500/20"
                         )}>
-                          {route.type === 'connected' ? (language === 'tr' ? 'BaÄŸlÄ±' : 'Connected') : route.type}
+                          {route.type === 'connected' ? (language === 'tr' ? 'Bağlı' : 'Connected') : route.type}
                         </span>
                       </td>
                       <td className="p-3 font-mono">
@@ -220,7 +220,7 @@ export function RouterRoutesTab({
               ) : (
                 <tr>
                   <td colSpan={4} className="p-6 text-center text-muted-foreground italic">
-                    {language === 'tr' ? 'KayÄ±tlÄ± rota bulunamadÄ±.' : 'No routes found.'}
+                    {language === 'tr' ? 'Kayıtlı rota bulunamadı.' : 'No routes found.'}
                   </td>
                 </tr>
               )}

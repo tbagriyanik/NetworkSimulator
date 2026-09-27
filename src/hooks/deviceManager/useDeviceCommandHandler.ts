@@ -274,10 +274,10 @@ export function useDeviceCommandHandler({
           const timestamp = new Date().toLocaleString();
 
           toast({
-            title: language === 'tr' ? 'YapÄ±landÄ±rma Kaydedildi' : 'Configuration Saved',
+            title: language === 'tr' ? 'Yapılandırma Kaydedildi' : 'Configuration Saved',
             description: language === 'tr'
-              ? `${deviceName} - running-config â†’ startup-config (${timestamp})`
-              : `${deviceName} - running-config â†’ startup-config (${timestamp})`,
+              ? `${deviceName} - running-config → startup-config (${timestamp})`
+              : `${deviceName} - running-config → startup-config (${timestamp})`,
             variant: 'default'
           });
         }
@@ -301,10 +301,10 @@ export function useDeviceCommandHandler({
           const timestamp = new Date().toLocaleString();
 
           toast({
-            title: language === 'tr' ? 'Flash KaydÄ± TamamlandÄ±' : 'Flash Save Complete',
+            title: language === 'tr' ? 'Flash Kaydı Tamamlandı' : 'Flash Save Complete',
             description: language === 'tr'
-              ? `${deviceName} - running-config â†’ flash:${flashFilename} (${timestamp})`
-              : `${deviceName} - running-config â†’ flash:${flashFilename} (${timestamp})`,
+              ? `${deviceName} - running-config → flash:${flashFilename} (${timestamp})`
+              : `${deviceName} - running-config → flash:${flashFilename} (${timestamp})`,
             variant: 'default'
           });
         }
@@ -331,17 +331,17 @@ export function useDeviceCommandHandler({
 
           if (restored) {
             toast({
-              title: language === 'tr' ? 'Flash Geri YÃ¼kleme TamamlandÄ±' : 'Flash Restore Complete',
+              title: language === 'tr' ? 'Flash Geri Yükleme Tamamlandı' : 'Flash Restore Complete',
               description: language === 'tr'
-                ? `${deviceName} - flash:${sourceFilename} â†’ startup-config (${timestamp})`
-                : `${deviceName} - flash:${sourceFilename} â†’ startup-config (${timestamp})`,
+                ? `${deviceName} - flash:${sourceFilename} → startup-config (${timestamp})`
+                : `${deviceName} - flash:${sourceFilename} → startup-config (${timestamp})`,
               variant: 'default'
             });
           } else {
             toast({
-              title: language === 'tr' ? 'Flash DosyasÄ± BulunamadÄ±' : 'Flash File Not Found',
+              title: language === 'tr' ? 'Flash Dosyası Bulunamadı' : 'Flash File Not Found',
               description: language === 'tr'
-                ? `${deviceName} Ã¼zerinde flash:${sourceFilename} bulunamadÄ±`
+                ? `${deviceName} üzerinde flash:${sourceFilename} bulunamadı`
                 : `flash:${sourceFilename} was not found on ${deviceName}`,
               variant: 'destructive'
             });
@@ -369,7 +369,7 @@ export function useDeviceCommandHandler({
           const timestamp = new Date().toLocaleString();
 
           toast({
-            title: language === 'tr' ? 'YapÄ±landÄ±rma Silindi' : 'Configuration Erased',
+            title: language === 'tr' ? 'Yapılandırma Silindi' : 'Configuration Erased',
             description: language === 'tr'
               ? `${deviceName} - startup-config silindi (${timestamp})`
               : `${deviceName} - startup-config erased (${timestamp})`,
@@ -401,7 +401,7 @@ export function useDeviceCommandHandler({
           const deviceName = device?.name || deviceId;
 
           toast({
-            title: language === 'tr' ? 'VLAN VeritabanÄ± Silindi' : 'VLAN Database Deleted',
+            title: language === 'tr' ? 'VLAN Veritabanı Silindi' : 'VLAN Database Deleted',
             description: language === 'tr'
               ? `${deviceName} - vlan.dat silindi`
               : `${deviceName} - vlan.dat deleted`,
@@ -508,7 +508,7 @@ export function useDeviceCommandHandler({
       if (errorMsg.toLowerCase().includes('password') || errorMsg.toLowerCase().includes('auth')) {
         toast({
           title: language === 'tr' ? 'Hata' : 'Error',
-          description: language === 'tr' ? 'Konsol ÅŸifresi hatalÄ±!' : 'Invalid console password!',
+          description: language === 'tr' ? 'Konsol şifresi hatalı!' : 'Invalid console password!',
           variant: 'destructive',
         });
       }

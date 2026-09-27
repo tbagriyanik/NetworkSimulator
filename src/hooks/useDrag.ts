@@ -98,7 +98,7 @@ export function useDrag(options: UseDragOptions = {}): UseDragReturn {
     if (storageKey && typeof window !== 'undefined') {
       const parsed = safeGetJSON<DragPosition | null>(storageKey, null);
       if (parsed && typeof parsed.x === 'number' && typeof parsed.y === 'number' && isFinite(parsed.x) && isFinite(parsed.y)) {
-        if (disableSnap) return parsed;
+        if (disableSnap) return { x: parsed.x, y: Math.max(TOP_SAFE_OFFSET, parsed.y) };
         const vw = window.innerWidth;
         const vh = window.innerHeight;
         const approxW = mode === 'drag-resize' ? (defaultSize?.width || 800) : 280;
@@ -267,7 +267,7 @@ export function useDrag(options: UseDragOptions = {}): UseDragReturn {
             el.style.bottom = `${newY}px`;
           } else {
             const newX = ds2.startPosX + dx;
-            const newY = ds2.startPosY + dy;
+            const newY = Math.max(TOP_SAFE_OFFSET, ds2.startPosY + dy);
             liveDragPosRef.current = { x: newX, y: newY };
             el.style.left = `${newX}px`;
             el.style.top = `${newY}px`;
@@ -287,9 +287,9 @@ export function useDrag(options: UseDragOptions = {}): UseDragReturn {
             newX = ds2.startPosX + (ds2.startW - newW);
           }
           if (ds2.direction.includes('n')) {
-            const unconstrainedH = ds2.startH - dy2;
-            newH = Math.max(ds2.minSize.height, unconstrainedH);
-            newY = ds2.startPosY + (ds2.startH - newH);
+            const clampedY = Math.max(TOP_SAFE_OFFSET, ds2.startPosY + dy2);
+            newH = Math.max(ds2.minSize.height, (ds2.startPosY + ds2.startH) - clampedY);
+            newY = (ds2.startPosY + ds2.startH) - newH;
           }
 
           liveDragPosRef.current = { x: newX, y: newY };
@@ -326,7 +326,7 @@ export function useDrag(options: UseDragOptions = {}): UseDragReturn {
 
         // Clamp position to viewport (skip for resize operations to prevent jump)
         let clampedX: number = isFinite(finalX) ? finalX : ds.startPosX;
-        let clampedY: number = isFinite(finalY) ? finalY : ds.startPosY;
+        let clampedY: number = isFinite(finalY) ? Math.max(TOP_SAFE_OFFSET, finalY) : Math.max(TOP_SAFE_OFFSET, ds.startPosY);
         let elW = 200, elH = 100;
         if (!ds.disableSnap && ds.type !== 'resize') {
           const margin = 16;
@@ -343,7 +343,9 @@ export function useDrag(options: UseDragOptions = {}): UseDragReturn {
           }
           const snapped = snapToEdge(clampedX, clampedY, elW, elH, ds.disableSnap);
           clampedX = snapped.x;
-          clampedY = snapped.y;
+          clampedY = Math.max(TOP_SAFE_OFFSET, snapped.y);
+        } else {
+          clampedY = Math.max(TOP_SAFE_OFFSET, clampedY);
         }
 
         // Commit immediately, no settle animation
@@ -503,12 +505,12 @@ export function GlobalDragManager() {
       document.body.style.cursor = '';
       document.body.style.userSelect = '';
       const finalLeft = state.offsetX + state.deltaX;
-      const finalTop = state.offsetY + state.deltaY;
+      const finalTop = Math.max(TOP_SAFE_OFFSET, state.offsetY + state.deltaY);
       const disableSnap = state.el.getAttribute('data-disable-snap') === 'true';
       let clampedLeft: number, clampedTop: number;
       if (disableSnap) {
         clampedLeft = finalLeft;
-        clampedTop = finalTop;
+        clampedTop = Math.max(TOP_SAFE_OFFSET, finalTop);
       } else {
         const margin = 16;
         const rect = state.el.getBoundingClientRect();
@@ -516,7 +518,7 @@ export function GlobalDragManager() {
         clampedTop = Math.max(TOP_SAFE_OFFSET, Math.min(finalTop, window.innerHeight - margin));
         const snapped = snapToEdge(clampedLeft, clampedTop, rect.width, rect.height, disableSnap);
         clampedLeft = snapped.x;
-        clampedTop = snapped.y;
+        clampedTop = Math.max(TOP_SAFE_OFFSET, snapped.y);
       }
       // Smooth settle: animate transform from current drag offset to final clamped offset
       if (state.deltaX !== 0 || state.deltaY !== 0) {

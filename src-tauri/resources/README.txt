@@ -1,5 +1,5 @@
 ================================================================================
-NETWORK SIMULATOR v6.5.0
+NETWORK SIMULATOR
 KURULUM, TANITIM VE KULLANIM REHBERİ / USER & SETUP GUIDE
 ================================================================================
 
@@ -22,7 +22,7 @@ terminali dahil olmak üzere zengin bir ağ laboratuvarı ortamı sunar.
 --------------------------------------------------------------------------------
 [ Windows ]
 - Desteklenen Sürümler: Windows 10 (64-bit) ve Windows 11.
-- Kurulum: "network-simulator_6.5.0_x64-setup.exe" veya ".msi" dosyasını 
+- Kurulum: "network-simulator_VERSION_x64-setup.exe" veya ".msi" dosyasını 
   çift tıklayarak çalıştırın. Kurulum sihirbazı gerekli dosyaları Program Files 
   altına yükleyecek ve masaüstü kısayolunu oluşturacaktır.
 - Gereksinim: Windows 10 ve 11'de Microsoft Edge WebView2 yerleşik olarak gelir. 
@@ -30,12 +30,12 @@ terminali dahil olmak üzere zengin bir ağ laboratuvarı ortamı sunar.
 
 [ macOS ]
 - Desteklenen Sürümler: macOS 10.15 (Catalina) ve üzeri (Intel & Apple Silicon).
-- Kurulum: "network-simulator_6.5.0_x64.dmg" dosyasını açın. Network Simulator 
+- Kurulum: "network-simulator_VERSION_x64.dmg" dosyasını açın. Network Simulator 
   simgesini "Applications" (Uygulamalar) klasörüne sürükleyip bırakın.
 
 [ Linux ]
-- Ubuntu / Debian: "sudo dpkg -i network-simulator_6.5.0_amd64.deb"
-- Evrensel (AppImage): "network-simulator_6.5.0_amd64.AppImage" dosyasına 
+- Ubuntu / Debian: "sudo dpkg -i network-simulator_VERSION_amd64.deb"
+- Evrensel (AppImage): "network-simulator_VERSION_amd64.AppImage" dosyasına 
   sağ tıklayın -> Özellikler -> İzinler -> "Çalıştırılabilir" yapın ve çift tıklayın.
 
 3. HIZLI BAŞLANGIÇ & KULLANIM İPUÇLARI

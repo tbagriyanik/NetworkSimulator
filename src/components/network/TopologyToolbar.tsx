@@ -18,7 +18,6 @@ import { useAppStore } from '@/lib/store/appStore';
 import { cn } from '@/lib/utils';
 import { ViewVisibilityMenu } from './ViewVisibilityMenu';
 import { DeviceIcon } from './DeviceIcon';
-import { NetworkDiagnosticsModal } from './NetworkDiagnosticsModal';
 import { SnapshotManagerModal } from './SnapshotManagerModal';
 import { applyAutoLayout, type LayoutAlgorithm } from '@/lib/network/autoLayoutEngine';
 import { useUiPreferences } from '@/hooks/useUiPreferences';
@@ -90,7 +89,6 @@ export function TopologyToolbar({
   const topologyZoom = useAppStore((state) => state.topology.zoom);
 
   const isHighQuality = graphicsQuality === 'high';
-  const [isDiagnosticsOpen, setIsDiagnosticsOpen] = useState(false);
   const [isSnapshotModalOpen, setIsSnapshotModalOpen] = useState(false);
   const preAutoLayoutDevicesRef = useRef<CanvasDevice[] | null>(null);
 
@@ -409,7 +407,11 @@ export function TopologyToolbar({
               variant="ghost"
               size="icon"
               className="h-8 w-8 p-0 text-cyan-400 hover:bg-cyan-500/10"
-              onClick={() => setIsDiagnosticsOpen(true)}
+              onClick={() => {
+                if (typeof window !== 'undefined') {
+                  window.dispatchEvent(new CustomEvent('open-network-diagnostics'));
+                }
+              }}
             >
               <Stethoscope className={`w-4 h-4 ${toolbarGlowClass}`} />
             </Button>
@@ -518,18 +520,7 @@ export function TopologyToolbar({
         </div>
       )}
 
-      {/* Diagnostics & Snapshot Modals */}
-      {isDiagnosticsOpen && (
-        <NetworkDiagnosticsModal
-          open={isDiagnosticsOpen}
-          onOpenChange={setIsDiagnosticsOpen}
-          devices={topologyDevices}
-          connections={[]}
-          deviceStates={deviceStates}
-          isDark={isDark}
-          language={language}
-        />
-      )}
+      {/* Snapshot Modal */}
 
       {isSnapshotModalOpen && (
         <SnapshotManagerModal

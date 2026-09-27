@@ -1,4 +1,4 @@
-﻿import { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
+import { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { SwitchState } from '@/lib/network/types';
 import { IndexedConnection } from '@/lib/network/connectionIndex';
 import { findRoute, getRoutingTable, isIpv6InNetwork } from '@/lib/network/routing';
@@ -28,6 +28,16 @@ export type L3RoutingResult =
 
 export function validateL3Routing(deps: L3RoutingDeps): L3RoutingResult {
   const { sourceId, deviceStates, sourceDeviceForSubnet, targetDevice, devices, connections, deviceMap, safeDeviceStates, adjacency, path, hopNames, sourceIp, resolvedTargetIp, language } = deps;
+
+  // Hubs operate strictly at Layer 1 and do not participate in L3 routing or require default gateways
+  if (sourceDeviceForSubnet?.type === 'hub' || targetDevice?.type === 'hub') {
+    return { type: 'ok', routingRequired: false };
+  }
+
+  // If source or target has no IP, L3 routing is not applicable
+  if (!sourceIp || !resolvedTargetIp) {
+    return { type: 'ok', routingRequired: false };
+  }
 
   const isTargetIpv6 = resolvedTargetIp.includes(':');
   let routingRequired = false;

@@ -17,6 +17,8 @@ import { getPrompt } from '@/lib/network/executor';
 import { createInitialState } from '@/lib/network/initialState';
 import { addProjectRecord } from '@/utils/achievementRecords';
 import type { TerminalOutput } from '@/components/network/Terminal';
+import type { CanvasDevice } from '@/components/network/NetworkTopology/types/networkTopology.types';
+import type { SwitchState } from '@/lib/network/types';
 
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -560,6 +562,21 @@ export function usePageController({ initialProjectId }: { initialProjectId?: str
     });
   }, []);
 
+  const handleUpdateDevice = useCallback((
+    updatedDevice: CanvasDevice,
+    updatedSwitchState?: SwitchState,
+    removedConnections?: string[]
+  ) => {
+    setDevices(prev => prev.map(d => d.id === updatedDevice.id ? updatedDevice : d));
+    if (updatedSwitchState) {
+      setDeviceStates(prev => new Map(prev).set(updatedDevice.id, updatedSwitchState));
+    }
+    if (removedConnections && removedConnections.length > 0) {
+      setConnections(prev => prev.filter(c => !removedConnections.includes(c.id)));
+    }
+    setHasUnsavedChanges(true);
+  }, [setDevices, setDeviceStates, setConnections, setHasUnsavedChanges]);
+
   const { handleDeviceDoubleClick, handleDeviceRename, handleUpdateHistory, handleUpdatePCHistory } = useDeviceEdit({ topologyDevices, setActiveDeviceId, setActiveDeviceType, setShowPCDeviceId, setPcPanelInitialTab, setUnifiedDeviceActiveTab, setDeviceStates, setPcHistories, getOrCreatePCOutputs, getOrCreateDeviceState, getOrCreateDeviceOutputs, setTopologyDevices });
 
   const handleDeviceDelete = useDeviceDelete({
@@ -780,6 +797,7 @@ export function usePageController({ initialProjectId }: { initialProjectId?: str
     handleExecuteCommand,
     toggleDevicePower,
     updateDeviceConfig,
+    handleUpdateDevice,
     showPCPanel,
     setShowPCPanel,
     showPCDeviceId,

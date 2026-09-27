@@ -175,6 +175,7 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
             handleExecuteCommand={page.handleExecuteCommand}
             toggleDevicePower={page.toggleDevicePower}
             updateDeviceConfig={page.updateDeviceConfig}
+            handleUpdateDevice={page.handleUpdateDevice}
             showPCPanel={page.showPCPanel}
             setShowPCPanel={page.setShowPCPanel}
             showPCDeviceId={page.showPCDeviceId}

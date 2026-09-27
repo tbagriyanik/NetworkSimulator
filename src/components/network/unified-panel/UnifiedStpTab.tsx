@@ -54,10 +54,10 @@ export function UnifiedStpTab({
           <div>
             <h3 className="text-sm font-semibold flex items-center gap-2 text-primary">
               <Network className="w-4 h-4 text-primary" />
-              {language === 'tr' ? 'YÃ¶nlendirme Tablosu' : 'Routing Table'}
+              {language === 'tr' ? 'Yönlendirme Tablosu' : 'Routing Table'}
             </h3>
             <p className="text-xs text-muted-foreground mt-0.5">
-              {language === 'tr' ? 'CihazÄ±n aktif IP rotalarÄ± ve aÄŸ yÃ¶nlendirme bilgileri.' : 'Active IP routes and network forwarding table for this router.'}
+              {language === 'tr' ? 'Cihazın aktif IP rotaları ve ağ yönlendirme bilgileri.' : 'Active IP routes and network forwarding table for this router.'}
             </p>
           </div>
         </div>
@@ -88,9 +88,9 @@ export function UnifiedStpTab({
               <thead className={cn("border-b text-[10px] uppercase tracking-wider font-semibold sticky top-0 z-10", isDark ? "bg-secondary-950 border-secondary-800 text-secondary-400" : "bg-secondary-100 border-secondary-200 text-secondary-600")}>
                 <tr>
                   <th className="p-3 w-24">{language === 'tr' ? 'Tip' : 'Type'}</th>
-                  <th className="p-3">{language === 'tr' ? 'Hedef AÄŸ' : 'Destination Network'}</th>
+                  <th className="p-3">{language === 'tr' ? 'Hedef Ağ' : 'Destination Network'}</th>
                   <th className="p-3 w-32">{language === 'tr' ? 'Metrik [AD/Metrik]' : 'Metric [AD/Metric]'}</th>
-                  <th className="p-3">{language === 'tr' ? 'Sonraki Hop / ArayÃ¼z' : 'Next Hop / Interface'}</th>
+                  <th className="p-3">{language === 'tr' ? 'Sonraki Hop / Arayüz' : 'Next Hop / Interface'}</th>
                 </tr>
               </thead>
               <tbody>
@@ -112,7 +112,7 @@ export function UnifiedStpTab({
                               ? "bg-primary-500/10 text-primary-500 border-primary-500/20"
                               : "bg-warning-500/10 text-warning-500 border-warning-500/20"
                         )}>
-                          {route.type === 'connected' ? (language === 'tr' ? 'BaÄŸlÄ±' : 'Connected') : route.type}
+                          {route.type === 'connected' ? (language === 'tr' ? 'Bağlı' : 'Connected') : route.type}
                         </span>
                       </td>
                       <td className="p-3 font-mono">
@@ -130,7 +130,7 @@ export function UnifiedStpTab({
                 ) : (
                   <tr>
                     <td colSpan={4} className="p-6 text-center text-muted-foreground italic">
-                      {language === 'tr' ? 'KayÄ±tlÄ± rota bulunamadÄ±.' : 'No routes found.'}
+                      {language === 'tr' ? 'Kayıtlı rota bulunamadı.' : 'No routes found.'}
                     </td>
                   </tr>
                 )}
@@ -157,7 +157,7 @@ export function UnifiedStpTab({
               className="px-3 py-1 text-xs font-bold rounded-lg bg-emerald-600 hover:bg-emerald-500 text-slate-950 shadow-sm transition-colors flex items-center gap-1.5"
             >
               <Code className="w-3.5 h-3.5" />
-              <span>{language === 'tr' ? 'AyrÄ± Pencerede AÃ§' : 'Open in Window'}</span>
+              <span>{language === 'tr' ? 'Ayrı Pencerede Aç' : 'Open in Window'}</span>
             </button>
           </div>
         </div>
@@ -177,7 +177,7 @@ export function UnifiedStpTab({
         <div className={cn("p-8 rounded-lg border text-center", isDark ? "bg-secondary-800 border-secondary-700" : "bg-secondary-50 border-secondary-200")}>
           <Layers className="w-12 h-12 mx-auto mb-3 text-muted-foreground animate-pulse" />
           <p className="text-muted-foreground text-sm font-medium">
-            {language === 'tr' ? 'Bu cihazda STP aktif deÄŸil veya henÃ¼z baÅŸlatÄ±lmadÄ±. AÄŸÄ± yenileyiniz. (F5 kÄ±sayolu)' : 'STP is not active or has not initialized on this device. Refresh the network. (F5 shortcut)'}
+            {language === 'tr' ? 'Bu cihazda STP aktif değil veya henüz başlatılmadı. Ağı yenileyiniz. (F5 kısayolu)' : 'STP is not active or has not initialized on this device. Refresh the network. (F5 shortcut)'}
           </p>
         </div>
       </div>
@@ -193,10 +193,10 @@ export function UnifiedStpTab({
         <div>
           <h3 className="text-sm font-semibold flex items-center gap-2 text-primary">
             <Layers className="w-4 h-4 text-warning-500" />
-            {language === 'tr' ? 'Spanning Tree ProtokolÃ¼' : 'Spanning Tree Protocol'}
+            {language === 'tr' ? 'Spanning Tree Protokolü' : 'Spanning Tree Protocol'}
           </h3>
           <p className="text-xs text-muted-foreground mt-0.5">
-            {language === 'tr' ? 'CihazÄ±n ve portlarÄ±n Spanning Tree durumlarÄ±nÄ± inceleyin.' : 'Inspect Spanning Tree states of the device and its ports.'}
+            {language === 'tr' ? 'Cihazın ve portların Spanning Tree durumlarını inceleyin.' : 'Inspect Spanning Tree states of the device and its ports.'}
           </p>
         </div>
         {vlanIds.length > 1 && (
@@ -228,11 +228,11 @@ export function UnifiedStpTab({
           <div className="flex items-center gap-2 font-bold text-sm">
             {stpVlanState.isRoot ? (
               <>
-                <span className="text-lg">ğŸ‘‘</span>
-                <span>{language === 'tr' ? 'Cihaz KÃ¶k KÃ¶prÃ¼ (Root Bridge) Durumunda' : 'This Switch is the Root Bridge'}</span>
+                <span className="text-lg">👑</span>
+                <span>{language === 'tr' ? 'Cihaz Kök Köprü (Root Bridge) Durumunda' : 'This Switch is the Root Bridge'}</span>
               </>
             ) : (
-              <span>{language === 'tr' ? 'KÃ¶k KÃ¶prÃ¼ Bilgisi' : 'Root Bridge Information'}</span>
+              <span>{language === 'tr' ? 'Kök Köprü Bilgisi' : 'Root Bridge Information'}</span>
             )}
           </div>
           <p className="text-xs opacity-80 font-mono">
@@ -246,7 +246,7 @@ export function UnifiedStpTab({
         </div>
         <div className="grid grid-cols-2 gap-4 text-xs font-mono border-t md:border-t-0 md:border-l pt-3 md:pt-0 md:pl-6 border-secondary-700/30">
           <div>
-            <span className="opacity-60">{language === 'tr' ? 'KÃ¶prÃ¼ Ã–nceliÄŸi:' : 'Bridge Priority:'}</span>
+            <span className="opacity-60">{language === 'tr' ? 'Köprü Önceliği:' : 'Bridge Priority:'}</span>
             <p className="font-semibold">{localBridgePriority}</p>
           </div>
           <div>
@@ -259,18 +259,18 @@ export function UnifiedStpTab({
       <div className={cn("rounded-lg border overflow-hidden", isDark ? "bg-secondary-900 border-secondary-800/80" : "bg-secondary-50 border-secondary-200")}>
         <div className="px-4 py-2.5 border-b border-secondary-800/80 bg-secondary-100/20 dark:bg-secondary-950/10">
           <h4 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-            {language === 'tr' ? 'Port Rol ve DurumlarÄ±' : 'Port Roles and States'}
+            {language === 'tr' ? 'Port Rol ve Durumları' : 'Port Roles and States'}
           </h4>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-xs text-left">
             <thead className={cn("border-b text-[10px] uppercase tracking-wider font-semibold", isDark ? "bg-secondary-950 border-secondary-800 text-secondary-400" : "bg-secondary-100 border-secondary-200 text-secondary-600")}>
               <tr>
-                <th className="p-3">{language === 'tr' ? 'ArayÃ¼z' : 'Interface'}</th>
+                <th className="p-3">{language === 'tr' ? 'Arayüz' : 'Interface'}</th>
                 <th className="p-3">{language === 'tr' ? 'Rol' : 'Role'}</th>
                 <th className="p-3">{language === 'tr' ? 'Durum' : 'State'}</th>
                 <th className="p-3">{language === 'tr' ? 'Maliyet' : 'Cost'}</th>
-                <th className="p-3">{language === 'tr' ? 'Ã–ncelik' : 'Priority'}</th>
+                <th className="p-3">{language === 'tr' ? 'Öncelik' : 'Priority'}</th>
               </tr>
             </thead>
             <tbody>
@@ -280,11 +280,11 @@ export function UnifiedStpTab({
                   const state = portStp.state;
 
                   const roleLabels: Record<string, string> = language === 'tr' ? {
-                    root: 'KÃ¶k Port (RP)',
-                    designated: 'AtanmÄ±ÅŸ Port (DP)',
+                    root: 'Kök Port (RP)',
+                    designated: 'Atanmış Port (DP)',
                     alternate: 'Alternatif Port (AP)',
                     backup: 'Yedek Port (BP)',
-                    disabled: 'Devre DÄ±ÅŸÄ±'
+                    disabled: 'Devre Dışı'
                   } : {
                     root: 'Root Port (RP)',
                     designated: 'Designated Port (DP)',
@@ -294,11 +294,11 @@ export function UnifiedStpTab({
                   };
 
                   const stateLabels: Record<string, string> = language === 'tr' ? {
-                    forwarding: 'Ä°letiyor (FWD)',
+                    forwarding: 'İletiyor (FWD)',
                     blocking: 'Engelliyor (BLK)',
-                    learning: 'Ã–ÄŸreniyor (LRN)',
+                    learning: 'Öğreniyor (LRN)',
                     listening: 'Dinliyor (LIS)',
-                    disabled: 'Devre DÄ±ÅŸÄ±'
+                    disabled: 'Devre Dışı'
                   } : {
                     forwarding: 'Forwarding (FWD)',
                     blocking: 'Blocking (BLK)',
@@ -344,7 +344,7 @@ export function UnifiedStpTab({
               ) : (
                 <tr>
                   <td colSpan={5} className="p-6 text-center text-muted-foreground italic">
-                    {language === 'tr' ? 'STP takibi yapÄ±lan aktif port bulunmuyor.' : 'No ports tracked under STP.'}
+                    {language === 'tr' ? 'STP takibi yapılan aktif port bulunmuyor.' : 'No ports tracked under STP.'}
                   </td>
                 </tr>
               )}

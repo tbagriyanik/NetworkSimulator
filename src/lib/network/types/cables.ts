@@ -1,4 +1,4 @@
-﻿// Cable and Physical Link Types
+// Cable and Physical Link Types
 
 import type { DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
@@ -57,6 +57,13 @@ function isConsolePort(portId: string | undefined): boolean {
   return port === 'console' || port === 'com1' || port === 'com';
 }
 
+// Serial portu olup olmadığını kontrol et
+function isSerialPort(portId: string | undefined): boolean {
+  if (!portId) return false;
+  const port = portId.toLowerCase();
+  return port.startsWith('se') || port.includes('serial');
+}
+
 export function isCableCompatible(cable: CableInfo): boolean {
   if (!cable.connected) return false;
 
@@ -79,6 +86,24 @@ export function isCableCompatible(cable: CableInfo): boolean {
     if (cable.cableType !== 'console') return false;
     // Bir taraf console portu ise diğer taraf da console portu olmalı
     return sourceIsConsole && targetIsConsole;
+  }
+
+  // Serial port bağlantıları için özel kontrol: Sadece Serial kablosu ve her iki taraf da Serial port olmalı
+  const sourceIsSerial = isSerialPort(cable.sourcePort);
+  const targetIsSerial = isSerialPort(cable.targetPort);
+
+  if (sourceIsSerial || targetIsSerial) {
+    if (cable.cableType !== 'serial') return false;
+    return sourceIsSerial && targetIsSerial;
+  }
+
+  if (cable.cableType === 'serial') {
+    return sourceIsSerial && targetIsSerial;
+  }
+
+  // Fiber optik kablo tüm Ethernet/Fiber ağ arayüzlerinde geçerlidir
+  if (cable.cableType === 'fiber') {
+    return true;
   }
 
   // Normal Ethernet bağlantıları için standart kurallar
