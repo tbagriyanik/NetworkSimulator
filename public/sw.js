@@ -1,4 +1,14 @@
 // Service Worker for Network Simulator Offline Functionality
+if (typeof self !== 'undefined' && self.location && (self.location.protocol.startsWith('tauri') || self.location.hostname === 'tauri.localhost')) {
+  self.addEventListener('install', () => self.skipWaiting());
+  self.addEventListener('activate', (event) => {
+    event.waitUntil(
+      caches.keys().then((keys) => Promise.all(keys.map((k) => caches.delete(k))))
+        .then(() => self.registration.unregister())
+    );
+  });
+}
+
 const CACHE_VERSION = 'v4';
 const STATIC_CACHE = `netsim-static-${CACHE_VERSION}`;
 const DYNAMIC_CACHE = `netsim-dynamic-${CACHE_VERSION}`;

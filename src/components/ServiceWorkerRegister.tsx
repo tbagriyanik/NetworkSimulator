@@ -47,28 +47,27 @@ function sendResourcesToSW(_registration: ServiceWorkerRegistration) {
 
 export function ServiceWorkerRegister() {
   useEffect(() => {
-    if (
-      typeof window === 'undefined' ||
-      !('serviceWorker' in navigator) ||
-      process.env.NEXT_PUBLIC_IS_DESKTOP === 'true' ||
-      window.location.protocol.startsWith('tauri') ||
-      window.location.hostname === 'tauri.localhost'
-    ) {
-      return;
-    }
+    const isDesktop =
+      typeof window !== 'undefined' &&
+      (process.env.NEXT_PUBLIC_IS_DESKTOP === 'true' ||
+        window.location.protocol.startsWith('tauri') ||
+        window.location.hostname === 'tauri.localhost' ||
+        window.location.protocol === 'file:');
 
-    // Keep dev stable: a previously installed SW can cache stale HMR chunks
-    // and break Turbopack reloads with ChunkLoadError.
-    if (process.env.NODE_ENV !== 'production') {
-      navigator.serviceWorker.getRegistrations().then((registrations) => {
-        registrations.forEach((registration) => registration.unregister());
-      }).catch((error) => {
-        logger.warn('Service Worker cleanup in dev failed:', error);
-      });
+    // In desktop app or dev mode: actively unregister any SW and clear caches
+    // so WebView2 never serves stale/cached JS chunks from previous builds.
+    if (isDesktop || process.env.NODE_ENV !== 'production') {
+      if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then((registrations) => {
+          registrations.forEach((registration) => registration.unregister());
+        }).catch((error) => {
+          logger.warn('Service Worker cleanup in desktop failed:', error);
+        });
+      }
 
-      if ('caches' in window) {
+      if (typeof window !== 'undefined' && 'caches' in window) {
         caches.keys().then((keys) => Promise.all(keys.map((key) => caches.delete(key)))).catch((error) => {
-          logger.warn('Cache cleanup in dev failed:', error);
+          logger.warn('Cache cleanup in desktop failed:', error);
         });
       }
 
