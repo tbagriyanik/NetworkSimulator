@@ -20,6 +20,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { cn } from '@/lib/utils';
+import { isDesktopApp } from '@/lib/utils/desktopDetection';
 import {
   Menu, Plus, Save, FolderOpen, Languages, Sun, Moon, File, BookOpen, Leaf, Compass, Info, Sparkles, Cloud, Trophy,
   Mail, GraduationCap, ImageDown, FileText, Wand2, Gamepad2
@@ -105,9 +106,16 @@ export function AppHeader({
                 <Image src="/icon192.svg" alt="Logo" width={28} height={28} loading="eager" className="w-7 h-7 object-contain" />
               </div>
               <div className="hidden md:flex flex-col text-left py-0.5">
-                <h2 className="text-lg font-bold tracking-tight bg-gradient-to-r from-accent-400 to-primary-500 bg-clip-text text-transparent leading-none">
-                  {t.title}
-                </h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-lg font-bold tracking-tight bg-gradient-to-r from-accent-400 to-primary-500 bg-clip-text text-transparent leading-none">
+                    {t.title}
+                  </h2>
+                  {isDesktopApp() && (
+                    <span className="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-primary-500/10 text-primary-400 border border-primary-500/30">
+                      Ctrl Shift R to start
+                    </span>
+                  )}
+                </div>
                 <p className="text-xs font-medium mt-1 text-secondary-600 dark:text-secondary-200 leading-normal pb-0.5">{t.subtitle}</p>
               </div>
             </Button>

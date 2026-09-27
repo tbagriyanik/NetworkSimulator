@@ -187,13 +187,14 @@ export default function RootLayout({
               }
               
               function encode(data) {
+                if (typeof data !== 'string') return data;
                 try {
                   return PREFIX + btoa(xorCipher(encodeURIComponent(data), SECRET_KEY));
                 } catch(e) { return data; }
               }
               
               function decode(data) {
-                if (!data.startsWith(PREFIX)) return data;
+                if (typeof data !== 'string' || !data.startsWith(PREFIX)) return data;
                 try {
                   return decodeURIComponent(xorCipher(atob(data.substring(PREFIX.length)), SECRET_KEY));
                 } catch(e) { return data; }
@@ -229,19 +230,27 @@ export default function RootLayout({
               }
               
               window.localStorage.setItem = function(key, value) {
-                if (IGNORED_KEYS.includes(key)) {
+                try {
+                  if (IGNORED_KEYS.includes(key)) {
+                    originalSetItem.call(this, key, value);
+                  } else {
+                    originalSetItem.call(this, key, encode(value));
+                  }
+                } catch (e) {
                   originalSetItem.call(this, key, value);
-                } else {
-                  originalSetItem.call(this, key, encode(value));
                 }
               };
               
               window.localStorage.getItem = function(key) {
-                var value = originalGetItem.call(this, key);
-                if (value === null) return null;
-                
-                var decoded = IGNORED_KEYS.includes(key) ? value : decode(value);
-                return sanitize(key, decoded);
+                try {
+                  var value = originalGetItem.call(this, key);
+                  if (value === null || value === undefined) return value;
+                  
+                  var decoded = IGNORED_KEYS.includes(key) ? value : decode(value);
+                  return sanitize(key, decoded);
+                } catch (e) {
+                  return null;
+                }
               };
             } catch (e) {
               console.error('Failed to initialize secure storage interceptor', e);

@@ -47,7 +47,15 @@ function sendResourcesToSW(_registration: ServiceWorkerRegistration) {
 
 export function ServiceWorkerRegister() {
   useEffect(() => {
-    if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return;
+    if (
+      typeof window === 'undefined' ||
+      !('serviceWorker' in navigator) ||
+      process.env.NEXT_PUBLIC_IS_DESKTOP === 'true' ||
+      window.location.protocol.startsWith('tauri') ||
+      window.location.hostname === 'tauri.localhost'
+    ) {
+      return;
+    }
 
     // Keep dev stable: a previously installed SW can cache stale HMR chunks
     // and break Turbopack reloads with ChunkLoadError.

@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import { isDesktopApp } from '@/lib/utils/desktopDetection';
 
 interface AppLoadingScreenProps {
   isAppLoading: boolean;
@@ -27,10 +28,15 @@ export function AppLoadingScreen({ isAppLoading, t }: AppLoadingScreenProps) {
           NETWORK SIMULATOR
         </h1>
 
-        <div className="flex items-center gap-2 mt-2">
+        <div className="flex flex-col items-center gap-2 mt-2">
           <span className="text-xs font-medium tracking-widest text-slate-400">
             {t.initializingSystem || 'Yükleniyor...'}
           </span>
+          {isDesktopApp() && (
+            <span className="text-[11px] font-mono font-medium text-amber-400/90 bg-amber-500/10 px-2.5 py-1 rounded-md border border-amber-500/20">
+              Ctrl Shift R to start
+            </span>
+          )}
         </div>
       </div>
     </div>
