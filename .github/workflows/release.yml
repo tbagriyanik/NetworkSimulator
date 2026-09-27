@@ -2,6 +2,11 @@ name: Release Desktop App
 
 on:
   workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release Tag (e.g. v6.7.1)'
+        required: false
+        type: string
   push:
     tags:
       - 'v*'
@@ -30,7 +35,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 9
+          version: 10
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -51,13 +56,27 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
+      - name: Determine Release Tag
+        id: tag
+        shell: bash
+        run: |
+          if [ -n "${{ inputs.tag }}" ]; then
+            TAG_NAME="${{ inputs.tag }}"
+          elif [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            TAG_NAME="${{ github.ref_name }}"
+          else
+            VERSION=$(node -p "require('./package.json').version")
+            TAG_NAME="v${VERSION}"
+          fi
+          echo "tag_name=${TAG_NAME}" >> $GITHUB_OUTPUT
+
       - name: Build Desktop and Publish Release
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: ${{ github.ref_name }}
-          releaseName: 'Network Simulator ${{ github.ref_name }}'
+          tagName: ${{ steps.tag.outputs.tag_name }}
+          releaseName: 'Network Simulator ${{ steps.tag.outputs.tag_name }}'
           releaseBody: 'Cross-platform Desktop releases for Windows (.exe), macOS (.dmg), and Linux (.deb, .AppImage).'
           releaseDraft: false
           prerelease: false
