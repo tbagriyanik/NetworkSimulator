@@ -13,8 +13,9 @@ A comprehensive, client-side, browser-based network simulator for learning switc
 **Live App:** [network2026.vercel.app](https://network2026.vercel.app) · **Alternative:** [tuzlanet.vercel.app](https://tuzlanet.vercel.app)
 
 ### Demo & Videos / Tanıtım Videoları
-- 📺 **Tanıtım 1:** [https://www.youtube.com/watch?v=2Xo-ZP5qgXI](https://www.youtube.com/watch?v=2Xo-ZP5qgXI)
+- 📺 **Tanıtım 3:** [https://youtu.be/w9XYxws-thw](https://youtu.be/w9XYxws-thw)
 - 📺 **Tanıtım 2:** [https://www.youtube.com/watch?v=rSW3LiQa290](https://www.youtube.com/watch?v=rSW3LiQa290)
+- 📺 **Tanıtım 1:** [https://www.youtube.com/watch?v=2Xo-ZP5qgXI](https://www.youtube.com/watch?v=2Xo-ZP5qgXI)
 
 ---
 
