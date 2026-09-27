@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, type MutableRefObject } from 'react';
-import { Printer, ChevronDown } from 'lucide-react';
+import { Printer, ChevronDown, ChevronLeft, ChevronRight, RotateCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -82,6 +82,43 @@ export function HttpBrowserWindow({
   onBrowserWindowChange,
 }: HttpBrowserWindowProps) {
   const [printSuccess, setPrintSuccess] = useState(false);
+  const [history, setHistory] = useState<string[]>([]);
+  const [historyIndex, setHistoryIndex] = useState<number>(-1);
+
+  useEffect(() => {
+    if (!url) return;
+    setHistory(prev => {
+      if (historyIndex >= 0 && prev[historyIndex] === url) {
+        return prev;
+      }
+      const next = prev.slice(0, historyIndex + 1);
+      next.push(url);
+      setHistoryIndex(next.length - 1);
+      return next;
+    });
+  }, [url]);
+
+  const canGoBack = historyIndex > 0;
+  const canGoForward = historyIndex >= 0 && historyIndex < history.length - 1;
+
+  const handleGoBack = () => {
+    if (canGoBack) {
+      const targetUrl = history[historyIndex - 1];
+      setHistoryIndex(historyIndex - 1);
+      onUrlChange(targetUrl);
+      onOpenWebPage(targetUrl);
+    }
+  };
+
+  const handleGoForward = () => {
+    if (canGoForward) {
+      const targetUrl = history[historyIndex + 1];
+      setHistoryIndex(historyIndex + 1);
+      onUrlChange(targetUrl);
+      onOpenWebPage(targetUrl);
+    }
+  };
+
   const devices = useAppStore(state => state.topology?.devices || []);
   const setDevices = useAppStore(state => state.setDevices);
 
@@ -288,7 +325,7 @@ export function HttpBrowserWindow({
             ? (language === 'tr' ? 'Ağda kullanılabilir aktif yazıcı bulunamadı' : 'No active printer found on network')
             : (language === 'tr' ? 'Sayfayı Yazdır (Ağ Yazıcısına Gönder)' : 'Print Page (Send to Network Printer)')
         }
-        className={`shrink-0 flex items-center gap-1 text-xs px-2.5 py-1 font-medium transition-all ${
+        className={`shrink-0 self-end mb-0.5 h-7 flex items-center gap-1 text-xs px-2.5 py-1 font-medium transition-all ${
           isNoPrinter
             ? 'opacity-50 cursor-not-allowed bg-secondary-100 text-secondary-400 border-secondary-300 dark:bg-secondary-800 dark:text-secondary-500 dark:border-secondary-700'
             : printSuccess
@@ -343,8 +380,48 @@ export function HttpBrowserWindow({
       onKeyDown={(e) => {
         e.stopPropagation();
       }}
-      className="flex items-center gap-2 flex-1 min-w-0"
+      className="flex items-center gap-1.5 flex-1 min-w-0"
     >
+      {/* Back and Forward navigation buttons before address input */}
+      <div className="flex items-center gap-1 shrink-0 self-end mb-0.5">
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          disabled={!canGoBack}
+          onClick={handleGoBack}
+          title={language === 'tr' ? 'Geri' : 'Back'}
+          aria-label={language === 'tr' ? 'Geri' : 'Back'}
+          className={`h-7 w-7 p-0 flex items-center justify-center rounded-md border text-xs transition-colors ${
+            !canGoBack
+              ? 'opacity-40 cursor-not-allowed border-secondary-300 dark:border-secondary-700 text-secondary-400 bg-transparent'
+              : isDark
+              ? 'bg-secondary-800 border-secondary-700 text-secondary-200 hover:bg-secondary-700 hover:text-white'
+              : 'bg-white border-secondary-300 text-secondary-700 hover:bg-secondary-100'
+          }`}
+        >
+          <ChevronLeft className="w-4 h-4" />
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          disabled={!canGoForward}
+          onClick={handleGoForward}
+          title={language === 'tr' ? 'İleri' : 'Forward'}
+          aria-label={language === 'tr' ? 'İleri' : 'Forward'}
+          className={`h-7 w-7 p-0 flex items-center justify-center rounded-md border text-xs transition-colors ${
+            !canGoForward
+              ? 'opacity-40 cursor-not-allowed border-secondary-300 dark:border-secondary-700 text-secondary-400 bg-transparent'
+              : isDark
+              ? 'bg-secondary-800 border-secondary-700 text-secondary-200 hover:bg-secondary-700 hover:text-white'
+              : 'bg-white border-secondary-300 text-secondary-700 hover:bg-secondary-100'
+          }`}
+        >
+          <ChevronRight className="w-4 h-4" />
+        </Button>
+      </div>
+
       <div className="flex flex-col flex-1 min-w-0 relative">
         <span className="text-[10px] sm:text-sm font-semibold truncate">{title}</span>
         <input
@@ -420,9 +497,11 @@ export function HttpBrowserWindow({
         size="sm"
         type="submit"
         variant="default"
-        className="shrink-0 bg-primary-600 hover:bg-primary-700 text-white"
+        title={language === 'tr' ? 'Yenile' : 'Refresh'}
+        aria-label={language === 'tr' ? 'Yenile' : 'Refresh'}
+        className="shrink-0 self-end mb-0.5 h-7 w-7 p-0 flex items-center justify-center bg-primary-600 hover:bg-primary-700 text-white"
       >
-        {language === 'tr' ? 'Git' : 'Go'}
+        <RotateCw className="w-3.5 h-3.5" />
       </Button>
       {renderPrintButton()}
     </form>
@@ -448,7 +527,7 @@ export function HttpBrowserWindow({
       isOpen={isOpen}
       onClose={onClose}
       title={title}
-      icon={<span className="w-2.5 h-2.5 rounded-full bg-success-500 animate-pulse shrink-0" />}
+      icon={null}
       isDark={isDark}
       isMobile={isMobile}
       windowState={browserWindow}

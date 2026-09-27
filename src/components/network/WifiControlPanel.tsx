@@ -51,9 +51,16 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
   const safeSsid = sanitizeHTML(wifi.ssid || '');
   const safeWifiPassword = sanitizeHTML(wifi.password || '');
   const onlyIotConnectedDevices = (connectedIotDevices || []).filter(d =>
-    d.sensorType !== 'Laptop/PC' &&
-    !String(d.id).toLowerCase().startsWith('pc-') &&
-    !String(d.id).toLowerCase().startsWith('laptop-')
+    (d as { type?: string }).type ? (d as { type?: string }).type === 'iot' : (
+      d.sensorType !== 'Laptop/PC' &&
+      d.sensorType !== 'pc' &&
+      d.sensorType !== 'mobile' &&
+      d.sensorType !== 'printer' &&
+      !String(d.id).toLowerCase().startsWith('pc-') &&
+      !String(d.id).toLowerCase().startsWith('laptop-') &&
+      !String(d.id).toLowerCase().startsWith('mobile-') &&
+      !String(d.id).toLowerCase().startsWith('printer-')
+    )
   );
   const dhcpPool = device?.services?.dhcp?.pools?.[0] || runtimeState?.services?.dhcp?.pools?.[0];
   const dhcpServerEnabled = device?.services?.dhcp?.enabled ?? runtimeState?.services?.dhcp?.enabled ?? true;
@@ -132,6 +139,19 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
     <div id="main-content" style="display:${isAuthenticated ? 'block' : 'none'};">
   `;
 
+  const routerSvg = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:8px;"><circle cx="12" cy="12" r="9"/><path d="M12 5v14M5 12h14M12 5l-2 2m2-2l2 2m-2 12l-2-2m2 2l2-2M5 12l2-2m-2 2l2 2M19 12l-2-2m2 2l-2 2"/></svg>`;
+  const iotSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:6px;"><path d="M16.247 7.761a6 6 0 0 1 0 8.478"/><path d="M19.075 4.933a10 10 0 0 1 0 14.134"/><path d="M4.925 19.067a10 10 0 0 1 0-14.134"/><path d="M7.753 16.239a6 6 0 0 1 0-8.478"/><circle cx="12" cy="12" r="2"/></svg>`;
+  const wifiSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:6px;"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"/></svg>`;
+  const statusSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:6px;"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`;
+  const settingsSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:6px;"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`;
+  const userSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:6px;"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+  const logoutSvg = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:4px;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>`;
+  const saveSvg = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:6px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>`;
+  const resetSvg = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:6px;"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>`;
+  const plusSvg = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:6px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
+  const shieldSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:6px;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`;
+  const serverSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:6px;"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>`;
+
   return `
 <!DOCTYPE html>
 <html lang="${language}">
@@ -149,24 +169,24 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
   <div class="container">
     <div class="header" style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
       <div>
-        <h1>🔧 ${safeDeviceName}</h1>
+        <h1 style="display:flex;align-items:center;">${routerSvg}<span>${safeDeviceName}</span></h1>
         <div class="subtitle">${isTurkish ? 'Kablosuz Ağ Yönetimi & Çoklu SSID Kapısı' : 'Wireless Network Administration & Multi-SSID Portal'}</div>
         <div class="device-info">
           <span>📍 IP: ${safeDeviceIp}</span>
-          <span>📡 WLAN Interface: wlan0</span>
+          <span style="display:flex;align-items:center;">${wifiSvg}WLAN Interface: wlan0</span>
         </div>
       </div>
-      <button type="button" class="btn btn-secondary" id="btn-logout" style="padding:8px 16px;font-size:12px;background:${colors.common.white};border:1px solid var(--color-secondary-300);color:var(--color-secondary-700);cursor:pointer;shrink:0;border-radius:6px;" title="${isTurkish ? 'Oturumu Kapat' : 'Logout'}">
-        🚪 ${isTurkish ? 'Çıkış Yap' : 'Logout'}
+      <button type="button" class="btn btn-secondary" id="btn-logout" style="padding:8px 16px;font-size:12px;background:${colors.common.white};border:1px solid var(--color-secondary-300);color:var(--color-secondary-700);cursor:pointer;shrink:0;border-radius:6px;display:flex;align-items:center;" title="${isTurkish ? 'Oturumu Kapat' : 'Logout'}">
+        ${logoutSvg}<span>${isTurkish ? 'Çıkış Yap' : 'Logout'}</span>
       </button>
     </div>
     
     <div class="nav-tabs">
-      <button type="button" class="nav-tab${activeTab === 'wireless' ? ' active' : ''}" data-tab="wireless">📶 ${isTurkish ? 'Kablosuz & Çoklu SSID' : 'Wireless & Multi-SSID'}</button>
-      <button type="button" class="nav-tab${activeTab === 'status' ? ' active' : ''}" data-tab="status">📊 ${isTurkish ? 'Durum & Bağlı Cihazlar' : 'Status & Connected Clients'}</button>
-      <button type="button" class="nav-tab${activeTab === 'advanced' ? ' active' : ''}" data-tab="advanced">⚙️ ${isTurkish ? 'Gelişmiş' : 'Advanced'}</button>
-      <button type="button" class="nav-tab${activeTab === 'iot' ? ' active' : ''}" data-tab="iot">🛠️ ${isTurkish ? 'IoT Cihazları' : 'IoT Devices'}</button>
-      <button type="button" class="nav-tab${activeTab === 'admin' ? ' active' : ''}" data-tab="admin">👤 ${isTurkish ? 'Yönetici' : 'Admin'}</button>
+      <button type="button" class="nav-tab${activeTab === 'wireless' ? ' active' : ''}" data-tab="wireless">${wifiSvg}<span>${isTurkish ? 'Kablosuz & Çoklu SSID' : 'Wireless & Multi-SSID'}</span></button>
+      <button type="button" class="nav-tab${activeTab === 'status' ? ' active' : ''}" data-tab="status">${statusSvg}<span>${isTurkish ? 'Durum & Bağlı Cihazlar' : 'Status & Connected Clients'}</span></button>
+      <button type="button" class="nav-tab${activeTab === 'advanced' ? ' active' : ''}" data-tab="advanced">${settingsSvg}<span>${isTurkish ? 'Gelişmiş' : 'Advanced'}</span></button>
+      <button type="button" class="nav-tab${activeTab === 'iot' ? ' active' : ''}" data-tab="iot">${iotSvg}<span>${isTurkish ? 'IoT Cihazları' : 'IoT Devices'}</span></button>
+      <button type="button" class="nav-tab${activeTab === 'admin' ? ' active' : ''}" data-tab="admin">${userSvg}<span>${isTurkish ? 'Yönetici' : 'Admin'}</span></button>
     </div>
     
     <!-- Wireless Tab -->
@@ -233,13 +253,13 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
         </div>
         
         <div class="actions">
-          <button type="submit" class="btn btn-primary">💾 ${isTurkish ? 'Ana Ayarları Kaydet' : 'Save Primary Settings'}</button>
-          <button type="button" class="btn btn-secondary" id="btn-reset-primary">↺ ${isTurkish ? 'Sıfırla' : 'Reset'}</button>
+          <button type="submit" class="btn btn-primary">${saveSvg}${isTurkish ? 'Ana Ayarları Kaydet' : 'Save Primary Settings'}</button>
+          <button type="button" class="btn btn-secondary" id="btn-reset-primary">${resetSvg}${isTurkish ? 'Sıfırla' : 'Reset'}</button>
         </div>
       </form>
 
       <!-- Multi-SSID Section -->
-      <h2 class="panel-title" style="margin-top:32px;">🌐 ${isTurkish ? 'Çoklu SSID &amp; Misafir Ağ Profilleri' : 'Multi-SSID &amp; Guest Network Profiles'}</h2>
+      <h2 class="panel-title" style="margin-top:32px;">${wifiSvg} ${isTurkish ? 'Çoklu SSID &amp; Misafir Ağ Profilleri' : 'Multi-SSID &amp; Guest Network Profiles'}</h2>
       <p style="color:var(--color-secondary-500);margin-bottom:16px;font-size:13px;">
         ${isTurkish ? 'Erişim noktası üzerinde ek kablosuz yayınlar (Misafir Ağı, IoT Ağı, 5G Yüksek Hız) oluşturun ve yönetin.' : 'Create and manage additional wireless broadcasts (Guest Network, IoT Network, 5G High Speed) on this Access Point.'}
       </p>
@@ -248,7 +268,7 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
 
       <div style="background:${colors.common.white};padding:20px;border-radius:10px;border:1px solid var(--color-secondary-200);margin-bottom:25px;">
         <h3 style="margin:0 0 12px 0;font-size:14px;color:var(--color-secondary-900);" id="ssid-form-title">
-          ➕ ${isTurkish ? 'Yeni SSID Profili Ekle' : 'Add New SSID Profile'}
+          ${plusSvg}${isTurkish ? 'Yeni SSID Profili Ekle' : 'Add New SSID Profile'}
         </h3>
         <input type="hidden" id="edit-ssid-id" value="">
         
@@ -285,7 +305,12 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
 
         <div class="form-group" id="profile-password-wrap" style="margin-bottom:12px;">
           <label for="profile-password">${isTurkish ? 'Wi-Fi Parolası' : 'Wi-Fi Password'}</label>
-          <input type="password" id="profile-password" placeholder="${isTurkish ? 'En az 8 karakter' : 'Minimum 8 characters'}" value="guestpass123">
+          <div class="password-input-wrapper">
+            <input type="password" id="profile-password" placeholder="${isTurkish ? 'En az 8 karakter' : 'Minimum 8 characters'}" value="guestpass123">
+            <button type="button" class="toggle-password-btn" onclick="window.togglePasswordVisibility('profile-password', this)" aria-label="${isTurkish ? 'Şifreyi göster' : 'Show password'}" title="${isTurkish ? 'Şifreyi göster' : 'Show password'}">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
         </div>
 
         <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;">
@@ -301,10 +326,10 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
 
         <div style="display:flex;gap:10px;">
           <button type="button" class="btn btn-primary" id="btn-save-ssid-profile">
-            💾 ${isTurkish ? 'SSID Profilini Kaydet' : 'Save SSID Profile'}
+            ${saveSvg}${isTurkish ? 'SSID Profilini Kaydet' : 'Save SSID Profile'}
           </button>
           <button type="button" class="btn btn-secondary" id="btn-reset-ssid-form">
-            ↺ ${isTurkish ? 'Formu Temizle' : 'Clear Form'}
+            ${resetSvg}${isTurkish ? 'Formu Temizle' : 'Clear Form'}
           </button>
         </div>
       </div>
@@ -341,7 +366,7 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
       </div>
 
       <!-- Connected Wireless Clients List Section -->
-      <h3 style="margin-bottom:12px;font-size:15px;color:var(--color-secondary-900);">${isTurkish ? '📶 Bağlı Kablosuz İstemciler Listesi' : '📶 Connected Wireless Clients List'}</h3>
+      <h3 style="margin-bottom:12px;font-size:15px;color:var(--color-secondary-900);display:flex;align-items:center;">${wifiSvg}<span>${isTurkish ? 'Bağlı Kablosuz İstemciler Listesi' : 'Connected Wireless Clients List'}</span></h3>
       <p style="color:var(--color-secondary-500);margin-bottom:16px;font-size:13px;">
         ${isTurkish ? 'Bu erişim noktasına (AP/Router) bağlı tüm kablosuz istemcilerin (PC, Laptop, Akıllı Cihaz, Sensör) canlı listesi:' : 'Live list of all wireless clients (PC, Laptop, Smart Device, Sensor) currently connected to this Access Point:'}
       </p>
@@ -368,7 +393,7 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
       <div style="background:${colors.common.white};border:1px solid var(--color-secondary-200);border-radius:10px;padding:20px;margin-bottom:24px;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
           <div>
-            <h3 style="margin:0 0 4px 0;font-size:16px;color:var(--color-secondary-900);">🛡️  ${isTurkish ? 'Kablosuz MAC Adresi Filtreleme' : 'Wireless MAC Address Filtering'}</h3>
+            <h3 style="margin:0 0 4px 0;font-size:16px;color:var(--color-secondary-900);">${shieldSvg}${isTurkish ? 'Kablosuz MAC Adresi Filtreleme' : 'Wireless MAC Address Filtering'}</h3>
             <p style="margin:0;font-size:13px;color:var(--color-secondary-500);">${isTurkish ? 'Kablosuz ağa yalnızca izin verilen cihazların erişmesini sağlayın veya belirli cihazları engelleyin.' : 'Allow only permitted devices to access the wireless network or block specific devices.'}</p>
           </div>
           <label class="switch">
@@ -396,7 +421,7 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
             <label style="display:block;font-weight:600;font-size:13px;margin-bottom:6px;">${isTurkish ? 'MAC Adresi Ekle:' : 'Add MAC Address:'}</label>
             <div style="display:flex;gap:8px;">
               <input type="text" id="manual-mac-input" placeholder="00:11:22:33:44:55">
-              <button type="button" class="btn btn-secondary" id="btn-add-manual-mac">➕ ${isTurkish ? 'Ekle' : 'Add'}</button>
+              <button type="button" class="btn btn-secondary" id="btn-add-manual-mac">${plusSvg}${isTurkish ? 'Ekle' : 'Add'}</button>
             </div>
           </div>
 
@@ -413,7 +438,7 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
       <div style="background:${colors.common.white};border:1px solid var(--color-secondary-200);border-radius:10px;padding:20px;margin-bottom:24px;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
           <div>
-            <h3 style="margin:0 0 4px 0;font-size:16px;color:var(--color-secondary-900);">🌐 ${isTurkish ? 'DHCP Sunucusu Ayarları' : 'DHCP Server Settings'}</h3>
+            <h3 style="margin:0 0 4px 0;font-size:16px;color:var(--color-secondary-900);">${serverSvg}${isTurkish ? 'DHCP Sunucusu Ayarları' : 'DHCP Server Settings'}</h3>
             <p style="margin:0;font-size:13px;color:var(--color-secondary-500);">${isTurkish ? 'Ağa bağlanan cihazlara otomatik IP adresi dağıtımını ve ağ parametrelerini yapılandırın.' : 'Configure automatic IP assignment and network parameters for connected devices.'}</p>
           </div>
           <label class="switch">
@@ -459,7 +484,7 @@ function generateWifiControlPanelHTML(config: RouterWebConfig, activeTab: string
       </div>
 
       <div class="actions">
-        <button type="button" class="btn btn-primary" id="save-advanced-btn">💾 ${isTurkish ? 'Gelişmiş Ayarları Kaydet' : 'Save Advanced Settings'}</button>
+        <button type="button" class="btn btn-primary" id="save-advanced-btn">${saveSvg}${isTurkish ? 'Gelişmiş Ayarları Kaydet' : 'Save Advanced Settings'}</button>
       </div>
     </div>
   </div>

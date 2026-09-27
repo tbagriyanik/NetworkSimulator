@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Radio, Laptop, Trash2, Power, Edit3 } from 'lucide-react';
+import { Radio, Laptop, Trash2, Power, Edit3, Eye, EyeOff } from 'lucide-react';
 import type { SwitchState } from '@/lib/network/types';
 import type { CanvasDevice } from './NetworkTopology/types/networkTopology.types';
 import { getDeviceWifiConfig, wifiMacFilterMatches } from '@/lib/network/wireless';
@@ -38,6 +38,7 @@ export function WlcWirelessPanel({
     const [wlanVlan, setWlanVlan] = useState('1');
     const [wlanSecurity, setWlanSecurity] = useState<'open' | 'wpa2' | 'wpa3' | '802.1x'>('open');
     const [wlanPassword, setWlanPassword] = useState('');
+    const [showWlanPassword, setShowWlanPassword] = useState(false);
     const [busy, setBusy] = useState(false);
 
     const wlans = state.wlcWlans || {};
@@ -173,13 +174,29 @@ export function WlcWirelessPanel({
                         </div>
                         <div>
                             <label className="text-[11px] font-medium block mb-1">{tr('Pre-Shared Key / Secret', 'Ön Paylaşımlı Parola')}</label>
-                            <Input
-                                type="password"
-                                placeholder={wlanSecurity === 'open' ? tr('(Not applicable)', '(Gerekli Değil)') : (wlanSecurity === '802.1x' ? tr('RADIUS Secret Key', 'RADIUS Gizli Anahtarı') : tr('Min 8 characters', 'En az 8 karakter'))}
-                                value={wlanPassword}
-                                onChange={(e) => setWlanPassword(e.target.value)}
-                                disabled={isDevicePoweredOff || busy || wlanSecurity === 'open'}
-                            />
+                            <div className="relative">
+                                <Input
+                                    type={showWlanPassword ? 'text' : 'password'}
+                                    placeholder={wlanSecurity === 'open' ? tr('(Not applicable)', '(Gerekli Değil)') : (wlanSecurity === '802.1x' ? tr('RADIUS Secret Key', 'RADIUS Gizli Anahtarı') : tr('Min 8 characters', 'En az 8 karakter'))}
+                                    value={wlanPassword}
+                                    onChange={(e) => setWlanPassword(e.target.value)}
+                                    disabled={isDevicePoweredOff || busy || wlanSecurity === 'open'}
+                                    className="pr-9"
+                                />
+                                {wlanSecurity !== 'open' && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowWlanPassword(v => !v)}
+                                        disabled={isDevicePoweredOff || busy}
+                                        className="absolute right-2 top-1/2 -translate-y-1/2 text-secondary-400 hover:text-secondary-100 disabled:opacity-50 focus:outline-none"
+                                        tabIndex={-1}
+                                        aria-label={showWlanPassword ? tr('Hide password', 'Şifreyi gizle') : tr('Show password', 'Şifreyi göster')}
+                                        title={showWlanPassword ? tr('Hide password', 'Şifreyi gizle') : tr('Show password', 'Şifreyi göster')}
+                                    >
+                                        {showWlanPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     </div>
                     <Button

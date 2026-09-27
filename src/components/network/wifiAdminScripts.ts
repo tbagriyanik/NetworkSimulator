@@ -71,6 +71,20 @@ export function getWifiControlPanelScripts(params: WifiAdminScriptParams): strin
       if (pWrap) pWrap.style.display = val === 'open' ? 'none' : 'block';
     };
 
+    window.togglePasswordVisibility = function(inputId, btn) {
+      var input = document.getElementById(inputId);
+      if (!input) return;
+      var isPassword = input.type === 'password';
+      input.type = isPassword ? 'text' : 'password';
+      var hideLabel = isTurkish ? 'Şifreyi gizle' : 'Hide password';
+      var showLabel = isTurkish ? 'Şifreyi göster' : 'Show password';
+      btn.setAttribute('aria-label', isPassword ? hideLabel : showLabel);
+      btn.setAttribute('title', isPassword ? hideLabel : showLabel);
+      btn.innerHTML = isPassword
+        ? '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499A10.75 10.75 0 0 1 2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 2.725-3.692"/><line x1="2" x2="22" y1="2" y2="22"/></svg>'
+        : '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0z"/><circle cx="12" cy="12" r="3"/></svg>';
+    };
+
     window.toggleMacFilterSection = function() {
       var enabled = !!document.getElementById('mac-filter-enabled')?.checked;
       var body = document.getElementById('mac-filter-body');
@@ -96,9 +110,11 @@ export function getWifiControlPanelScripts(params: WifiAdminScriptParams): strin
 
       container.innerHTML = list.map(function(mac, idx) {
         var safeMac = String(mac).replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        var shieldSvg = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:6px;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>';
+        var trashSvg = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>';
         return '<div class="mono" style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:${colors.common.white};border:1px solid var(--color-secondary-200);border-radius:6px;margin-bottom:6px;font-size:13px;color:var(--color-secondary-800);">' +
-          '<span>🛡️ ' + safeMac + '</span>' +
-          '<button type="button" class="btn btn-danger" style="padding:2px 8px;font-size:11px;" onclick="removeMacFromFilter(' + idx + ')" title="' + (isTurkish ? 'Sil' : 'Remove') + '">🗑️</button>' +
+          '<span style="display:inline-flex;align-items:center;">' + shieldSvg + safeMac + '</span>' +
+          '<button type="button" class="btn btn-danger" style="padding:2px 8px;font-size:11px;" onclick="removeMacFromFilter(' + idx + ')" title="' + (isTurkish ? 'Sil' : 'Remove') + '">' + trashSvg + '</button>' +
         '</div>';
       }).join('');
     };
@@ -242,7 +258,8 @@ export function getWifiControlPanelScripts(params: WifiAdminScriptParams): strin
       
       const btn = document.getElementById('save-iot-btn');
       if (btn) {
-        btn.innerHTML = '💾 ' + (isTurkish ? 'Bağlanıyor...' : 'Connecting...');
+        var saveSvgIcon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:6px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>';
+        btn.innerHTML = saveSvgIcon + (isTurkish ? 'Bağlanıyor...' : 'Connecting...');
         btn.disabled = true;
       }
 
@@ -422,12 +439,18 @@ export function getWifiControlPanelScripts(params: WifiAdminScriptParams): strin
         var safeSecText = escH(secText);
         var safeBandText = escH(bandText);
 
-        return '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:${colors.common.white};border:1px solid var(--color-secondary-200);border-radius:8px;margin-bottom:8px;gap:12px;">' +
+          var wifiIcon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:4px;"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"/></svg>';
+          var hiddenIcon = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:3px;"><path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499A10.75 10.75 0 0 1 2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 2.725-3.692"/><line x1="2" x2="22" y1="2" y2="22"/></svg>';
+          var editIcon = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:4px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
+          var powerIcon = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>';
+          var trashIcon = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>';
+
+          return '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:${colors.common.white};border:1px solid var(--color-secondary-200);border-radius:8px;margin-bottom:8px;gap:12px;">' +
           '<div style="min-w-0;">' +
             '<div style="font-weight:600;font-size:14px;color:var(--color-secondary-900);display:flex;align-items:center;gap:8px;">' +
-              '<span>📶 ' + safeDisplayName + '</span>' +
+              '<span style="display:inline-flex;align-items:center;">' + wifiIcon + safeDisplayName + '</span>' +
               (isPrimary ? '<span class="badge badge-primary">' + (isTurkish ? 'Ana Yayın' : 'Primary') + '</span>' : '') +
-              (item.hidden ? '<span class="badge badge-warning">🙈 ' + (isTurkish ? 'Gizli' : 'Hidden') + '</span>' : '') +
+              (item.hidden ? '<span class="badge badge-warning" style="display:inline-flex;align-items:center;">' + hiddenIcon + (isTurkish ? 'Gizli' : 'Hidden') + '</span>' : '') +
             '</div>' +
             '<div style="font-size:12px;color:var(--color-secondary-500);margin-top:2px;">' +
               'SSID: <strong style="color:var(--color-primary-600);">' + safeSsid + '</strong> · ' +
@@ -437,9 +460,9 @@ export function getWifiControlPanelScripts(params: WifiAdminScriptParams): strin
           '</div>' +
           '<div style="display:flex;align-items:center;gap:6px;shrink:0;">' +
             statusBadge +
-            '<button type="button" class="btn btn-secondary" style="padding:4px 10px;font-size:12px;" onclick="editSsidProfile(' + idx + ')">✏️ ' + (isTurkish ? 'Düzenle' : 'Edit') + '</button>' +
-            '<button type="button" class="btn btn-secondary" style="padding:4px 10px;font-size:12px;" title="' + (isTurkish ? 'Etkinleştir / Devre Dışı Bırak' : 'Enable / Disable') + '" aria-label="' + (isTurkish ? 'Etkinleştir / Devre Dışı Bırak: ' : 'Enable / Disable: ') + safeSsid + '" onclick="toggleSsidProfile(' + idx + ')">⚡</button>' +
-            (!isPrimary ? '<button type="button" class="btn btn-danger" style="padding:4px 10px;font-size:12px;" title="' + (isTurkish ? 'Sil' : 'Delete') + '" aria-label="' + (isTurkish ? 'Sil: ' : 'Delete: ') + safeSsid + '" onclick="deleteSsidProfile(' + idx + ')">🗑️</button>' : '') +
+            '<button type="button" class="btn btn-secondary" style="padding:4px 10px;font-size:12px;display:inline-flex;align-items:center;" onclick="editSsidProfile(' + idx + ')">' + editIcon + (isTurkish ? 'Düzenle' : 'Edit') + '</button>' +
+            '<button type="button" class="btn btn-secondary" style="padding:4px 10px;font-size:12px;display:inline-flex;align-items:center;" title="' + (isTurkish ? 'Etkinleştir / Devre Dışı Bırak' : 'Enable / Disable') + '" aria-label="' + (isTurkish ? 'Etkinleştir / Devre Dışı Bırak: ' : 'Enable / Disable: ') + safeSsid + '" onclick="toggleSsidProfile(' + idx + ')">' + powerIcon + '</button>' +
+            (!isPrimary ? '<button type="button" class="btn btn-danger" style="padding:4px 10px;font-size:12px;display:inline-flex;align-items:center;" title="' + (isTurkish ? 'Sil' : 'Delete') + '" aria-label="' + (isTurkish ? 'Sil: ' : 'Delete: ') + safeSsid + '" onclick="deleteSsidProfile(' + idx + ')">' + trashIcon + '</button>' : '') +
           '</div>' +
         '</div>';
       }).join('');
@@ -518,7 +541,8 @@ export function getWifiControlPanelScripts(params: WifiAdminScriptParams): strin
       var pWrap = document.getElementById('profile-password-wrap');
       if (pWrap) pWrap.style.display = profile.security === 'open' ? 'none' : 'block';
 
-      document.getElementById('ssid-form-title').innerHTML = '✏️ ' + (isTurkish ? 'SSID Profilini Düzenle' : 'Edit SSID Profile');
+      var editIcon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:6px;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
+      document.getElementById('ssid-form-title').innerHTML = editIcon + (isTurkish ? 'SSID Profilini Düzenle' : 'Edit SSID Profile');
     };
 
     window.toggleSsidProfile = function(idx) {
@@ -531,10 +555,10 @@ export function getWifiControlPanelScripts(params: WifiAdminScriptParams): strin
 
     window.deleteSsidProfile = function(idx) {
       if (idx === 0) {
-        alert('❌ ' + (isTurkish ? 'Ana SSID profili silinemez' : 'Primary SSID profile cannot be deleted'));
+        alert(isTurkish ? 'Ana SSID profili silinemez' : 'Primary SSID profile cannot be deleted');
         return;
       }
-      if (confirm('⚠️ ' + (isTurkish ? 'Bu SSID profilini silmek istediğinizden emin misiniz?' : 'Are you sure you want to delete this SSID profile?'))) {
+      if (confirm(isTurkish ? 'Bu SSID profilini silmek istediğinizden emin misiniz?' : 'Are you sure you want to delete this SSID profile?')) {
         currentSsidList.splice(idx, 1);
         renderSsidList();
         saveAllWifiSettings();
@@ -550,7 +574,8 @@ export function getWifiControlPanelScripts(params: WifiAdminScriptParams): strin
       document.getElementById('profile-password').value = 'password123';
       document.getElementById('profile-enabled').checked = true;
       document.getElementById('profile-hidden').checked = false;
-      document.getElementById('ssid-form-title').innerHTML = '➕ ' + (isTurkish ? 'Yeni SSID Profili Ekle' : 'Add New SSID Profile');
+      var plusIcon = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:6px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
+      document.getElementById('ssid-form-title').innerHTML = plusIcon + (isTurkish ? 'Yeni SSID Profili Ekle' : 'Add New SSID Profile');
     };
 
     // --- Connected Wireless Clients Table Handler ---
@@ -571,16 +596,35 @@ export function getWifiControlPanelScripts(params: WifiAdminScriptParams): strin
 
       if (!connectedClientsData || connectedClientsData.length === 0) {
         container.innerHTML = '<div style="text-align:center;padding:24px;background:${colors.topology.deviceText};border-radius:8px;border:1px solid var(--color-secondary-200);color:var(--color-secondary-500);">' +
-          '<div style="font-size:36px;margin-bottom:8px;">📶</div>' +
+          '<div style="font-size:32px;margin-bottom:8px;color:var(--color-secondary-400);display:flex;align-items:center;justify-content:center;"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"/></svg></div>' +
           '<div>' + (isTurkish ? 'Şu anda bu erişim noktasına bağlı aktif kablosuz istemci yok.' : 'No active wireless clients currently connected to this AP.') + '</div>' +
         '</div>';
         return;
       }
 
+      var pcSvg = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2z"/></svg>';
+      var iotSvg = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16.247 7.761a6 6 0 0 1 0 8.478"/><path d="M19.075 4.933a10 10 0 0 1 0 14.134"/><path d="M4.925 19.067a10 10 0 0 1 0-14.134"/><path d="M7.753 16.239a6 6 0 0 1 0-8.478"/><circle cx="12" cy="12" r="2"/></svg>';
+      var printerSvg = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z"/></svg>';
+      var mobileSvg = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2" width="10" height="20" rx="2"/><line x1="11" y1="18" x2="13" y2="18"/></svg>';
+      var wiredSvg = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22v-5"/><path d="M9 8V2"/><path d="M15 2v6"/><path d="M6 8h12a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2z"/></svg>';
+
+      var wifiSignalSvg = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:4px;"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"/></svg>';
+      var wiredSignalSvg = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:4px;"><path d="M12 22v-5"/><path d="M9 8V2"/><path d="M15 2v6"/><path d="M6 8h12a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2z"/></svg>';
+      var refreshSvg = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>';
+      var disconnectSvg = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+
       container.innerHTML = connectedClientsData.map(function(client) {
-        var isSensor = client.sensorType === 'temperature' || client.sensorType === 'humidity' || client.sensorType === 'motion' || client.sensorType === 'light' || client.sensorType === 'sound';
-        var icon = client.isWired ? '🔌' : (isSensor ? '🛜' : '💻');
-        var ipDisplay = client.ip || (isTurkish ? 'Dinamik / DHCP' : 'Dynamic / DHCP');
+        var devType = (client.type || '').toLowerCase();
+        var sensorType = (client.sensorType || '').toLowerCase();
+        var isIot = devType === 'iot' || (sensorType && sensorType !== 'laptop/pc' && sensorType !== 'pc' && sensorType !== 'mobile' && sensorType !== 'printer');
+        var isPrinter = devType === 'printer' || sensorType === 'printer';
+        var isMobile = devType === 'mobile' || sensorType === 'mobile';
+
+        var icon = client.isWired
+          ? wiredSvg
+          : (isPrinter ? printerSvg : (isMobile ? mobileSvg : (isIot ? iotSvg : pcSvg)));
+
+        var ipDisplay = client.ip || (isTurkish ? 'Atanmamış' : 'Not assigned');
         var macDisplay = client.mac || 'Auto';
         var clientSsid = client.ssid || ${jsSsid} || 'WiFi';
         var jsId = JSON.stringify(client.id || '').replace(/"/g, '&quot;');
@@ -589,24 +633,32 @@ export function getWifiControlPanelScripts(params: WifiAdminScriptParams): strin
         var sigPct = typeof client.signalPercent === 'number' ? client.signalPercent : 90;
         var sigDbm = typeof client.rssiDbm === 'number' ? client.rssiDbm : Math.round(-95 + (sigPct * 0.65));
         var sigBadgeClass = client.isWired ? 'badge-success' : (sigPct > 60 ? 'badge-success' : (sigPct > 30 ? 'badge-warning' : 'badge-danger'));
-        var sigDisplay = client.isWired ? '🔌 1 Gbps' : ('📶 ' + sigDbm + ' dBm (%' + sigPct + ')');
+        var sigDisplay = client.isWired ? (wiredSignalSvg + (isTurkish ? 'Kablolu (1 Gbps)' : 'Wired (1 Gbps)')) : (wifiSignalSvg + sigDbm + ' dBm (%' + sigPct + ')');
+
+        var connectionBadge = client.isWired
+          ? '<span class="badge badge-secondary" style="margin-left:6px;">' + (isTurkish ? '🔌 Kablolu' : '🔌 Wired') + '</span>'
+          : '<span class="badge badge-primary" style="margin-left:6px;">SSID: ' + escH(clientSsid) + '</span>';
+
+        var statusBadgeText = client.connected
+          ? (client.isWired ? (isTurkish ? '● Bağlı (Kablolu)' : '● Connected (Wired)') : (isTurkish ? '● Bağlı (Kablosuz)' : '● Connected (Wireless)'))
+          : (isTurkish ? '● Bağlantı Yok' : '● Disconnected');
 
         return '<div class="client-card">' +
           '<div style="display:flex;align-items:center;gap:12px;min-width:0;">' +
             '<div class="client-icon">' + icon + '</div>' +
             '<div class="client-details">' +
               '<div class="client-title">' +
-                '<span>' + escH(client.name) + '</span>' +
-                '<span class="badge badge-primary">SSID: ' + escH(clientSsid) + '</span>' +
+                '<span>' + escH(client.name || client.id) + '</span>' +
+                connectionBadge +
               '</div>' +
-              '<div class="client-sub">IP: ' + escH(ipDisplay) + ' · MAC: ' + escH(macDisplay) + '</div>' +
+              '<div class="client-sub">IP: <span style="font-family:var(--font-geist-mono, monospace);">' + escH(ipDisplay) + '</span> · MAC: <span style="font-family:var(--font-geist-mono, monospace);">' + escH(macDisplay) + '</span></div>' +
             '</div>' +
           '</div>' +
           '<div class="client-badges">' +
-            '<span class="badge ' + sigBadgeClass + '">' + sigDisplay + '</span>' +
-            '<span class="badge ' + (client.connected ? 'badge-success"' : 'badge-danger"') + '>' + (client.connected ? (isTurkish ? '● Bağlı' : '● Connected') : (isTurkish ? '● Bağlı Değil' : '● Disconnected')) + '</span>' +
-            '<button type="button" class="btn btn-secondary" style="padding:4px 8px;font-size:11px;" onclick="renewIotDevice(' + jsId + ')" title="' + (isTurkish ? 'IP Yenile' : 'Renew IP') + '">🔄</button>' +
-            '<button type="button" class="btn btn-danger" style="padding:4px 8px;font-size:11px;" onclick="disconnectIotDevice(' + jsId + ')" title="' + (isTurkish ? 'Bağlantıyı Kes' : 'Disconnect') + '">🔌</button>' +
+            '<span class="badge ' + sigBadgeClass + '" style="display:inline-flex;align-items:center;">' + sigDisplay + '</span>' +
+            '<span class="badge ' + (client.connected ? 'badge-success' : 'badge-danger') + '">' + statusBadgeText + '</span>' +
+            '<button type="button" class="btn btn-secondary" style="padding:4px 8px;font-size:11px;display:inline-flex;align-items:center;" onclick="renewIotDevice(' + jsId + ')" title="' + (isTurkish ? 'IP Yenile' : 'Renew IP') + '">' + refreshSvg + '</button>' +
+            '<button type="button" class="btn btn-danger" style="padding:4px 8px;font-size:11px;display:inline-flex;align-items:center;" onclick="disconnectIotDevice(' + jsId + ')" title="' + (isTurkish ? 'Bağlantıyı Kes' : 'Disconnect') + '">' + disconnectSvg + '</button>' +
           '</div>' +
         '</div>';
       }).join('');

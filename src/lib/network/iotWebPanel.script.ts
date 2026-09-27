@@ -59,6 +59,23 @@ export function generateIotPanelScript(isAuthenticated: boolean = false): string
       }
     };
 
+    window.togglePasswordVisibility = function(inputId, btn, evt) {
+      if (evt && typeof evt.stopPropagation === 'function') {
+        evt.stopPropagation();
+      } else if (window.event && typeof window.event.stopPropagation === 'function') {
+        window.event.stopPropagation();
+      }
+      var input = document.getElementById(inputId);
+      if (!input) return;
+      var isPassword = input.type === 'password';
+      input.type = isPassword ? 'text' : 'password';
+      btn.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
+      btn.setAttribute('title', isPassword ? 'Hide password' : 'Show password');
+      btn.innerHTML = isPassword
+        ? '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499A10.75 10.75 0 0 1 2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 2.725-3.692"/><line x1="2" x2="22" y1="2" y2="22"/></svg>'
+        : '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0z"/><circle cx="12" cy="12" r="3"/></svg>';
+    };
+
     window.checkPassword = function(e) {
       try {
         if (e) {
@@ -232,11 +249,21 @@ export function generateIotPanelScript(isAuthenticated: boolean = false): string
         // Close popup when clicking outside
         document.addEventListener('click', function(e) {
           const popup = document.getElementById('settingsPopup');
-          const settingsIcon = document.querySelector('.settings-icon');
+          const settingsIcon = document.getElementById('settingsToggle') || document.querySelector('.settings-icon');
           try {
             if (popup && settingsIcon) {
+              if (typeof e.composedPath === 'function') {
+                const path = e.composedPath();
+                if (path.includes(popup) || path.includes(settingsIcon)) {
+                  return;
+                }
+              }
               const target = e.target;
               if (target instanceof Node) {
+                if (!document.contains(target)) {
+                  // Element was removed/detached during click (e.g. innerHTML changed on eye toggle)
+                  return;
+                }
                 if (!popup.contains(target) && !settingsIcon.contains(target)) {
                   popup.classList.remove('show');
                 }

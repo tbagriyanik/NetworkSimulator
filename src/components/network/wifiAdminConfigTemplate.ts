@@ -16,7 +16,12 @@ export function renderWifiConfigFieldTemplates(
     passwordField: `
     <div class="form-group">
       <label for="wifi-password">${isTurkish ? 'Kablosuz Ağ Parolası' : 'Wireless Network Password'}</label>
-      <input type="password" id="wifi-password" name="password" value="${safeWifiPassword}" placeholder="${isWepMode ? (isTurkish ? 'WEP anahtarı girin' : 'Enter WEP key') : (isTurkish ? 'En az 8 karakter girin' : 'Enter at least 8 characters')}" minlength="${isWepMode ? 5 : 8}" aria-describedby="wifi-password-hint">
+      <div class="password-input-wrapper">
+        <input type="password" id="wifi-password" name="password" value="${safeWifiPassword}" placeholder="${isWepMode ? (isTurkish ? 'WEP anahtarı girin' : 'Enter WEP key') : (isTurkish ? 'En az 8 karakter girin' : 'Enter at least 8 characters')}" minlength="${isWepMode ? 5 : 8}" aria-describedby="wifi-password-hint">
+        <button type="button" class="toggle-password-btn" onclick="window.togglePasswordVisibility('wifi-password', this)" aria-label="${isTurkish ? 'Şifreyi göster' : 'Show password'}" title="${isTurkish ? 'Şifreyi göster' : 'Show password'}">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
       <span class="hint" id="wifi-password-hint">${isTurkish ? 'WPA2/WPA3 güvenliği için güçlü bir parola kullanın' : 'Use a strong password for WPA2/WPA3 security'}</span>
     </div>
   `,

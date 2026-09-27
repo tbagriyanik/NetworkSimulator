@@ -80,6 +80,32 @@ export function generateIotPanelStyles(): string {
       box-sizing: border-box;
       font-size: 16px;
     }
+    .password-input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      width: 100%;
+    }
+    .password-input-wrapper input {
+      width: 100%;
+      padding-right: 36px !important;
+    }
+    .toggle-password-btn {
+      position: absolute;
+      right: 8px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-secondary-600);
+      transition: color 0.2s ease;
+    }
+    .toggle-password-btn:hover {
+      color: ${colors.neutral.dark};
+    }
     .login-button {
       background-color: var(--color-success-500);
       color: ${colors.common.white};

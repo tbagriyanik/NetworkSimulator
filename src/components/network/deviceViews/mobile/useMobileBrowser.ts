@@ -133,11 +133,15 @@ export function useMobileBrowser({
       setBrowserTitle(targetDev.name || 'Printer Web');
       setBrowserContent(printerPage);
     } else if (hostOrIp === '8.8.8.8' || hostOrIp === '8.8.4.4' || hostOrIp === '1.1.1.1' || targetDev?.type === 'cloud') {
+      const cloudSvg = '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;"><path d="M3 15a4 4 0 0 1 4-4 5 5 0 0 1 9.9-1 4 4 0 0 1 2.1 7.9H7a4 4 0 0 1-4-2.9z"/></svg>';
+      const portalCloudSvg = '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:8px;"><path d="M3 15a4 4 0 0 1 4-4 5 5 0 0 1 9.9-1 4 4 0 0 1 2.1 7.9H7a4 4 0 0 1-4-2.9z"/></svg>';
+      const searchSvg = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:6px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>';
+
       if (!cloudDevice) {
         setBrowserTitle(isTr ? 'Cihaz Bulunamadı' : 'Device Not Found');
         setBrowserContent(`
           <main style="padding:32px;font-family:'Inria Sans',sans-serif;text-align:center;">
-            <div style="font-size:48px;margin-bottom:12px;">🌐 ⚡</div>
+            <div style="margin-bottom:12px;color:var(--color-danger-500);display:flex;align-items:center;justify-content:center;">${cloudSvg}</div>
             <h1 style="margin:0 0 8px;font-size:22px;color:var(--color-danger-500);">${isTr ? 'Bulut (WAN) Cihazı Bulunamadı' : 'Cloud (WAN) Device Not Found'}</h1>
             <p style="margin:0 0 12px;font-size:14px;color:var(--color-secondary-500);">${isTr ? 'Ağda bağlı bir Bulut (Cloud/WAN) cihazı bulunmuyor!' : 'No Cloud (WAN) device exists on the network!'}</p>
             <code style="display:inline-block;padding:6px 12px;border-radius:8px;background:var(--color-danger-100);color:var(--color-danger-800);font-size:12px;">${displayUrl}</code>
@@ -149,7 +153,7 @@ export function useMobileBrowser({
         setBrowserTitle(isTr ? 'Bulut Kapalı' : 'Cloud Offline');
         setBrowserContent(`
           <main style="padding:32px;font-family:'Inria Sans',sans-serif;text-align:center;">
-            <div style="font-size:48px;margin-bottom:12px;">☁️ ⚡</div>
+            <div style="margin-bottom:12px;color:var(--color-danger-500);display:flex;align-items:center;justify-content:center;">${cloudSvg}</div>
             <h1 style="margin:0 0 8px;font-size:22px;color:var(--color-danger-500);">${isTr ? 'Bulut Hizmeti Kapalı' : 'Cloud Service Offline'}</h1>
             <p style="margin:0 0 12px;font-size:14px;color:var(--color-secondary-500);">${isTr ? 'Hedef Bulut (WAN) cihazının gücü kapalı (Power Off) durumda!' : 'Target Cloud (WAN) device is powered off!'}</p>
             <code style="display:inline-block;padding:6px 12px;border-radius:8px;background:var(--color-danger-100);color:var(--color-danger-800);font-size:12px;">${displayUrl}</code>
@@ -160,9 +164,9 @@ export function useMobileBrowser({
       setBrowserTitle(isTr ? 'Genel Arama Kapısı - WAN' : 'Public Search Portal - WAN');
       setBrowserContent(`
         <main style="padding:32px;font-family:'Inria Sans',sans-serif;text-align:center;">
-          <div style="font-size:36px;font-weight:bold;color:var(--color-primary-500);margin-bottom:8px;">🌐  ${isTr ? 'Arama Kapısı' : 'Web Portal'}</div>
+          <div style="font-size:28px;font-weight:bold;color:var(--color-primary-500);margin-bottom:8px;display:flex;align-items:center;justify-content:center;">${portalCloudSvg}<span>${isTr ? 'Arama Kapısı' : 'Web Portal'}</span></div>
           <p style="font-size:14px;color:var(--color-secondary-500);margin-bottom:20px;">${isTr ? 'Genel WAN İnternet Geçidi (8.8.8.8)' : 'Public WAN Internet Gateway (8.8.8.8)'}</p>
-          <div style="border:1px solid var(--color-secondary-300);border-radius:24px;padding:10px 20px;max-width:320px;margin:0 auto 20px;font-size:13px;color:var(--color-secondary-700);">🔍 ${isTr ? 'Arama yapın veya URL girin' : 'Search or type URL'}</div>
+          <div style="border:1px solid var(--color-secondary-300);border-radius:24px;padding:10px 20px;max-width:320px;margin:0 auto 20px;font-size:13px;color:var(--color-secondary-700);display:flex;align-items:center;justify-content:center;">${searchSvg}<span>${isTr ? 'Arama yapın veya URL girin' : 'Search or type URL'}</span></div>
           <div style="background:var(--color-secondary-100);padding:16px;border-radius:12px;font-size:12px;color:var(--color-secondary-800);text-align:left;max-width:400px;margin:0 auto;">
             <strong style="color:var(--color-secondary-900);">${isTr ? 'İnternet Bağlantısı Aktif' : 'Internet Connection Active'}</strong><br/>
             ${isTr ? 'WAN Köprüsü ve Genel DNS Sunucusu başarıyla yanıt verdi.' : 'WAN Transit Bridge and Public DNS Server responded successfully.'}

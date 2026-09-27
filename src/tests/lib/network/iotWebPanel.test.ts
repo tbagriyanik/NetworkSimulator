@@ -1,4 +1,4 @@
-﻿import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { generateIotWebPanelContent, generateIotDevicePageContent } from '@/lib/network/iotWebPanel';
 import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { IotRule } from '@/lib/network/iotWebPanel';
@@ -380,10 +380,24 @@ describe('iotWebPanel', () => {
       expect(result).toContain('cooler-1:ON');
     });
 
-    it('should handle empty allDevices gracefully', () => {
-      const result = generateIotDevicePageContent('sensor-1', 'Test', 'en', true, false, 'sensor', [], 'temperature', [], 'input', []);
+    it('should display IP and MAC address in device info', () => {
+      const devices = [
+        createIotDevice({
+          id: 'iot-1',
+          name: 'IOT-1',
+          ip: '192.168.1.50',
+          macAddress: '00:11:22:33:44:55',
+        }),
+      ];
+      const resultTr = generateIotDevicePageContent('iot-1', 'IOT-1', 'tr', true, false, 'sensor', [], 'temperature', devices, 'input', devices);
+      expect(resultTr).toContain('IP Adresi');
+      expect(resultTr).toContain('192.168.1.50');
+      expect(resultTr).toContain('MAC Adresi');
+      expect(resultTr).toContain('00:11:22:33:44:55');
 
-      expect(result).toContain('This Device');
+      const resultEn = generateIotDevicePageContent('iot-1', 'IOT-1', 'en', true, false, 'sensor', [], 'temperature', devices, 'input', devices);
+      expect(resultEn).toContain('IP Address');
+      expect(resultEn).toContain('MAC Address');
     });
   });
 });

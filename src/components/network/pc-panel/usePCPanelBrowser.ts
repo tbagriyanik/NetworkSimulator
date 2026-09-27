@@ -231,7 +231,9 @@ export function usePCPanelBrowser({
         setHttpAppTitle('404 Not Found');
         setHttpAppContent(`
           <main style="padding:32px;font-family:'Inria Sans',sans-serif;text-align:center;">
-            <div style="font-size:48px;margin-bottom:12px;">🌐 ⚡</div>
+            <div style="font-size:48px;margin-bottom:12px;display:flex;align-items:center;justify-content:center;color:var(--color-error-500);">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15a4 4 0 0 1 4-4 5 5 0 0 1 9.9-1 4 4 0 0 1 2.1 7.9H7a4 4 0 0 1-4-2.9z"/></svg>
+            </div>
             <h1 style="margin:0 0 8px;font-size:22px;color:var(--color-error-500);">${language === 'tr' ? 'Bulut (WAN) Cihazı Bulunamadı' : 'Cloud (WAN) Device Not Found'}</h1>
             <p style="margin:0 0 12px;font-size:14px;color:var(--color-muted-foreground);">${language === 'tr' ? 'Ağda bağlı bir Bulut (Cloud/WAN) cihazı bulunmuyor!' : 'No Cloud (WAN) device exists on the network!'}</p>
             <code style="display:inline-block;padding:6px 10px;border-radius:8px;background:var(--color-error-100);color:var(--color-error-800);font-size:12px;">${displayUrl}</code>
@@ -248,7 +250,9 @@ export function usePCPanelBrowser({
         setHttpAppTitle(language === 'tr' ? 'Bulut Bağlantısız' : 'Cloud Disconnected');
         setHttpAppContent(`
           <main style="padding:32px;font-family:'Inria Sans',sans-serif;text-align:center;">
-            <div style="font-size:64px;margin-bottom:16px;">☁️ 🔌</div>
+            <div style="margin-bottom:16px;display:flex;align-items:center;justify-content:center;color:var(--color-error-500);">
+              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15a4 4 0 0 1 4-4 5 5 0 0 1 9.9-1 4 4 0 0 1 2.1 7.9H7a4 4 0 0 1-4-2.9z"/></svg>
+            </div>
             <h1 style="margin:0 0 8px;font-size:24px;color:var(--color-error-500);">${language === 'tr' ? 'Bulut Cihazı Bağlı Değil' : 'Cloud Device Not Connected'}</h1>
             <p style="margin:0 0 12px;font-size:16px;color:var(--color-muted-foreground);">${language === 'tr' ? 'Topolojideki Bulut (Cloud/WAN) cihazına bağlı bir kablo bulunmuyor!' : 'The Cloud (WAN) device on the topology is not connected with any cable!'}</p>
             <code style="display:inline-block;padding:6px 10px;border-radius:8px;background:var(--color-error-100);color:var(--color-error-800);font-size:13px;">${displayUrl}</code>
@@ -262,7 +266,9 @@ export function usePCPanelBrowser({
         setHttpAppTitle(language === 'tr' ? 'Bulut Kapalı' : 'Cloud Offline');
         setHttpAppContent(`
           <main style="padding:32px;font-family:'Inria Sans',sans-serif;text-align:center;">
-            <div style="font-size:64px;margin-bottom:16px;">☁️ ⚡</div>
+            <div style="margin-bottom:16px;display:flex;align-items:center;justify-content:center;color:var(--color-error-500);">
+              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15a4 4 0 0 1 4-4 5 5 0 0 1 9.9-1 4 4 0 0 1 2.1 7.9H7a4 4 0 0 1-4-2.9z"/></svg>
+            </div>
             <h1 style="margin:0 0 8px;font-size:24px;color:var(--color-error-500);">${language === 'tr' ? 'Bulut Hizmeti Kapalı' : 'Cloud Service Offline'}</h1>
             <p style="margin:0 0 12px;font-size:16px;color:var(--color-muted-foreground);">${language === 'tr' ? 'Hedef Bulut (WAN) cihazının gücü kapalı (Power Off) durumda!' : 'Target Cloud (WAN) device is powered off!'}</p>
             <code style="display:inline-block;padding:6px 10px;border-radius:8px;background:var(--color-error-100);color:var(--color-error-800);font-size:13px;">${displayUrl}</code>
@@ -275,9 +281,15 @@ export function usePCPanelBrowser({
       setHttpAppTitle(language === 'tr' ? 'Genel Arama Kapısı - WAN' : 'Public Search Portal - WAN');
       setHttpAppContent(`
         <main style="padding:32px;font-family:'Inria Sans',sans-serif;text-align:center;">
-          <div style="font-size:36px;font-weight:bold;color:var(--color-primary-500);margin-bottom:8px;">🌐  ${language === 'tr' ? 'Arama Kapısı' : 'Web Portal'}</div>
+          <div style="font-size:32px;font-weight:bold;color:var(--color-primary-500);margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:10px;">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15a4 4 0 0 1 4-4 5 5 0 0 1 9.9-1 4 4 0 0 1 2.1 7.9H7a4 4 0 0 1-4-2.9z"/></svg>
+            <span>${language === 'tr' ? 'Arama Kapısı' : 'Web Portal'}</span>
+          </div>
           <p style="font-size:14px;color:var(--color-secondary-500);margin-bottom:20px;">${language === 'tr' ? 'Genel WAN İnternet Geçidi (1.1.1.1)' : 'Public WAN Internet Gateway (1.1.1.1)'}</p>
-          <div style="border:1px solid var(--color-secondary-300);border-radius:24px;padding:10px 20px;max-width:320px;margin:0 auto 20px;font-size:13px;color:var(--color-secondary-700);">🔍 ${language === 'tr' ? 'Arama yapın veya URL girin' : 'Search or type URL'}</div>
+          <div style="border:1px solid var(--color-secondary-300);border-radius:24px;padding:10px 20px;max-width:320px;margin:0 auto 20px;font-size:13px;color:var(--color-secondary-700);display:flex;align-items:center;justify-content:center;gap:8px;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <span>${language === 'tr' ? 'Arama yapın veya URL girin' : 'Search or type URL'}</span>
+          </div>
           <div style="background:var(--color-secondary-100);padding:16px;border-radius:12px;font-size:12px;color:var(--color-secondary-800);text-align:left;max-width:400px;margin:0 auto;">
             <strong style="color:var(--color-secondary-900);">${language === 'tr' ? 'İnternet Bağlantısı Aktif' : 'Internet Connection Active'}</strong><br/>
             ${language === 'tr' ? 'WAN Köprüsü ve Genel DNS Sunucusu başarıyla yanıt verdi.' : 'WAN Transit Bridge and Public DNS Server responded successfully.'}

@@ -80,7 +80,16 @@ export const generateIotWebPanelContent = (
       return `
       <div class="iot-device-card ${cardClass}">
         <div class="device-info">
-          <span class="device-name">${safeName}</span>
+          <span class="device-name" style="display:flex;align-items:center;gap:6px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
+              <path d="M16.247 7.761a6 6 0 0 1 0 8.478"/>
+              <path d="M19.075 4.933a10 10 0 0 1 0 14.134"/>
+              <path d="M4.925 19.067a10 10 0 0 1 0-14.134"/>
+              <path d="M7.753 16.239a6 6 0 0 1 0-8.478"/>
+              <circle cx="12" cy="12" r="2"/>
+            </svg>
+            ${safeName}
+          </span>
           <div class="device-details">
             <span class="device-ip">${isTurkish ? 'IP' : 'IP'}: ${sanitizeHTML(device.ip || '-')}</span>
             <span class="device-mac">${isTurkish ? 'MAC' : 'MAC'}: ${sanitizeHTML(device.macAddress || '-')}</span>
@@ -444,7 +453,16 @@ export const generateIotWebPanelContent = (
       </head>
       <body>
         <div class="container">
-          <h1>${isTurkish ? 'IoT Web Paneli' : 'IoT Web Panel'}</h1>
+          <h1 style="display:flex;align-items:center;justify-content:center;gap:10px;">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
+              <path d="M16.247 7.761a6 6 0 0 1 0 8.478"/>
+              <path d="M19.075 4.933a10 10 0 0 1 0 14.134"/>
+              <path d="M4.925 19.067a10 10 0 0 1 0-14.134"/>
+              <path d="M7.753 16.239a6 6 0 0 1 0-8.478"/>
+              <circle cx="12" cy="12" r="2"/>
+            </svg>
+            <span>${isTurkish ? 'IoT Web Paneli' : 'IoT Web Panel'}</span>
+          </h1>
           
           <form id="loginSection" class="login-form ${isAuth ? 'hidden' : ''}" action="javascript:void(0);">
             <div class="form-group">
@@ -453,7 +471,12 @@ export const generateIotWebPanelContent = (
             </div>
             <div class="form-group">
               <label for="password">${isTurkish ? 'Parola' : 'Password'}:</label>
-              <input type="password" id="password" placeholder="${isTurkish ? 'Parola girin' : 'Enter password'}" autocapitalize="none" autocorrect="off" />
+              <div class="password-input-wrapper">
+                <input type="password" id="password" placeholder="${isTurkish ? 'Parola girin' : 'Enter password'}" autocapitalize="none" autocorrect="off" />
+                <button type="button" class="toggle-password-btn" onclick="window.togglePasswordVisibility('password', this, event)" aria-label="${isTurkish ? 'Şifreyi göster' : 'Show password'}" title="${isTurkish ? 'Şifreyi göster' : 'Show password'}">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
             </div>
             <button type="submit" id="iotLoginButton" class="login-button">
               ${isTurkish ? 'Giriş Yap' : 'Login'}
@@ -465,14 +488,24 @@ export const generateIotWebPanelContent = (
 
           <div id="deviceSection" class="${isAuth ? '' : 'hidden'}">
             <button type="button" class="settings-icon" id="settingsToggle" title="${isTurkish ? 'Ayarlar' : 'Settings'}" aria-label="${isTurkish ? 'Ayarları aç' : 'Open settings'}">
-              ⚙️ 
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
             </button>
             <div id="settingsPopup" class="settings-popup">
               <div class="settings-popup-title">${isTurkish ? 'Ayarlar' : 'Settings'}</div>
               <div class="settings-option">
                 <label>${isTurkish ? 'Parola Değiştir' : 'Change Password'}</label>
-                <input type="password" id="newPassword" class="settings-input" placeholder="${isTurkish ? 'Yeni parola' : 'New password'}" />
-                <input type="password" id="confirmPassword" class="settings-input" style="margin-top: 5px;" placeholder="${isTurkish ? 'Parolayı onayla' : 'Confirm password'}" />
+                <div class="password-input-wrapper" style="margin-bottom: 5px;">
+                  <input type="password" id="newPassword" class="settings-input" placeholder="${isTurkish ? 'Yeni parola' : 'New password'}" />
+                  <button type="button" class="toggle-password-btn" onclick="window.togglePasswordVisibility('newPassword', this, event)" aria-label="${isTurkish ? 'Şifreyi göster' : 'Show password'}" title="${isTurkish ? 'Şifreyi göster' : 'Show password'}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                </div>
+                <div class="password-input-wrapper">
+                  <input type="password" id="confirmPassword" class="settings-input" placeholder="${isTurkish ? 'Parolayı onayla' : 'Confirm password'}" />
+                  <button type="button" class="toggle-password-btn" onclick="window.togglePasswordVisibility('confirmPassword', this, event)" aria-label="${isTurkish ? 'Şifreyi göster' : 'Show password'}" title="${isTurkish ? 'Şifreyi göster' : 'Show password'}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                </div>
                 <button type="button" class="settings-button" id="changePasswordButton">
                   ${isTurkish ? 'Değiştir' : 'Change'}
                 </button>

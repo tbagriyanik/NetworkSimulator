@@ -88,6 +88,11 @@ export function getWifiControlPanelStyles(): string {
     .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--color-primary-500); box-shadow: 0 0 0 3px ${withAlpha(colors.status.info, 0.15)}; }
     .hint { display: block; font-size: 11px; color: var(--color-secondary-500); margin-top: 4px; }
     
+    .password-input-wrapper { position: relative; display: flex; align-items: center; width: 100%; }
+    .password-input-wrapper input { width: 100%; padding-right: 36px !important; }
+    .toggle-password-btn { position: absolute; right: 8px; background: transparent; border: none; cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center; color: var(--color-secondary-500); transition: color 0.2s; }
+    .toggle-password-btn:hover { color: var(--color-secondary-900); }
+
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
     
     .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 20px; font-weight: 600; border-radius: 6px; border: none; cursor: pointer; transition: all 0.2s; font-size: 13px; }

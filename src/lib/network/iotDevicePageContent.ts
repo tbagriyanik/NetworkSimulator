@@ -2,7 +2,8 @@ import { CanvasDevice } from '@/components/network/NetworkTopology/types/network
 import { sanitizeHTML, safeJSONForHTML } from '@/lib/security/sanitizer';
 import { colors, withAlpha } from '@/lib/design-tokens/colors';
 import { IotRule } from './iotWebPanel.types';
-import { IFRAME_FONT_FACES_CSS, INRIA_SANS_STACK } from '@/lib/design-tokens/iframeFonts';
+import { IFRAME_FONT_FACES_CSS, INRIA_SANS_STACK, GEIST_MONO_STACK } from '@/lib/design-tokens/iframeFonts';
+import { getDeviceMacAddress } from '@/lib/network/wireless';
 
 export const generateIotDevicePageContent = (
   deviceId: string,
@@ -22,6 +23,22 @@ export const generateIotDevicePageContent = (
   const safeId = sanitizeHTML(deviceId);
   // Use safeJSONForHTML for embedding strings in <script> blocks to prevent XSS and logic corruption.
   const jsId = safeJSONForHTML(deviceId);
+
+  const currentDevice = allDevices.find(d => d.id === deviceId) || _iotDevices.find(d => d.id === deviceId);
+  const resolvedDevice: CanvasDevice = currentDevice || {
+    id: deviceId,
+    name: deviceName,
+    type: 'iot',
+    ip: '',
+    x: 0,
+    y: 0,
+    status: 'online',
+    ports: [],
+  };
+  const rawIp = currentDevice?.ip || currentDevice?.ports?.find(p => p.ipAddress)?.ipAddress || '';
+  const rawMac = getDeviceMacAddress(resolvedDevice) || currentDevice?.macAddress || '';
+  const safeIp = rawIp && rawIp !== '0.0.0.0' ? sanitizeHTML(rawIp) : (isTurkish ? 'Atanmamış' : 'Not assigned');
+  const safeMac = rawMac ? sanitizeHTML(rawMac) : (isTurkish ? 'Yok' : 'N/A');
   const sensorTypeLabels: Record<string, string> = {
     temperature: isTurkish ? 'Isı (Sıcaklık)' : 'Temperature',
     light: isTurkish ? 'Işık' : 'Light',
@@ -120,7 +137,10 @@ export const generateIotDevicePageContent = (
           .device-info strong {
             color: var(--color-secondary-600);
             display: inline-block;
-            width: 120px;
+            width: 130px;
+          }
+          .mono {
+            font-family: ${GEIST_MONO_STACK};
           }
           .toggle-section {
             margin-bottom: 25px;
@@ -283,18 +303,29 @@ export const generateIotDevicePageContent = (
       </head>
       <body>
         <div class="device-panel">
-          <h1>${safeName} ${isTurkish ? 'Yönetimi' : 'Management'}</h1>
+          <h1 style="display:flex;align-items:center;justify-content:center;gap:8px;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
+              <path d="M16.247 7.761a6 6 0 0 1 0 8.478"/>
+              <path d="M19.075 4.933a10 10 0 0 1 0 14.134"/>
+              <path d="M4.925 19.067a10 10 0 0 1 0-14.134"/>
+              <path d="M7.753 16.239a6 6 0 0 1 0-8.478"/>
+              <circle cx="12" cy="12" r="2"/>
+            </svg>
+            <span>${safeName} ${isTurkish ? 'Yönetimi' : 'Management'}</span>
+          </h1>
           
           <div class="device-info">
             <p><strong>${isTurkish ? 'Cihaz ID' : 'Device ID'}:</strong> ${safeId}</p>
             <p><strong>${isTurkish ? 'Cihaz Adı' : 'Device Name'}:</strong> ${safeName}</p>
+            <p><strong>${isTurkish ? 'IP Adresi' : 'IP Address'}:</strong> <span class="mono">${safeIp}</span></p>
+            <p><strong>${isTurkish ? 'MAC Adresi' : 'MAC Address'}:</strong> <span class="mono">${safeMac}</span></p>
             <p><strong>${isTurkish ? 'Güç Durumu' : 'Power Status'}:</strong> ${isPoweredOff ? (isTurkish ? 'Kapalı' : 'Off') : (isTurkish ? 'Açık' : 'On')}</p>
             <p><strong>${isTurkish ? 'Durum' : 'Status'}:</strong> <span id="statusText" class="${isActive ? 'status-active' : 'status-inactive'}">${isActive ? (isTurkish ? 'Aktif' : 'Active') : (isTurkish ? 'Pasif' : 'Inactive')}</span></p>
           </div>
 
           ${isPoweredOff ? `
           <div class="power-off-message">
-            ${isTurkish ? '⚠️  Cihaz kapalı. Ayarları değiştirmek için önce cihazı açın.' : '⚠️  Device is powered off. Turn on the device to change settings.'}
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block;vertical-align:middle;margin-right:6px;"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>${isTurkish ? 'Cihaz kapalı. Ayarları değiştirmek için önce cihazı açın.' : 'Device is powered off. Turn on the device to change settings.'}
           </div>
           ` : ''}
 
@@ -312,7 +343,7 @@ export const generateIotDevicePageContent = (
           ${`
           <div class="programming-section ${isPoweredOff ? 'toggle-disabled' : ''}">
             <div class="programming-title">
-              <span>⚙️ ${isTurkish ? 'Basit Programlama' : 'Simple Programming'}</span>
+              <span style="display:flex;align-items:center;gap:6px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>${isTurkish ? 'Basit Programlama' : 'Simple Programming'}</span>
             </div>
 
             <div class="rule-form">

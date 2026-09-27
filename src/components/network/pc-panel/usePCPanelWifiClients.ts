@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useCallback } from 'react';
 import type { CanvasDevice } from '../NetworkTopology/types/networkTopology.types';
@@ -184,6 +184,7 @@ export function usePCPanelWifiClients({
         return {
           id: d.id,
           name: d.name,
+          type: d.type,
           sensorType: (d.iot?.sensorType || (d.type === 'pc' ? 'Laptop/PC' : d.type)) as 'temperature' | 'sound' | 'motion' | 'humidity' | 'light',
           connected: !!(isWiredConnected || isAssociated),
           ip: deviceIp || d.ip,

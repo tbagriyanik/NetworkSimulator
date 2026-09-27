@@ -360,7 +360,7 @@ export function ResizablePortalWindow({
             }}
           >
             <div className="flex items-center gap-3 flex-1 min-w-0">
-              {icon || <span className={`w-2.5 h-2.5 rounded-full bg-success-500 ${isLowGraphics ? '' : 'animate-pulse'} shrink-0`} />}
+              {icon !== undefined ? icon : <span className={`w-2.5 h-2.5 rounded-full bg-success-500 ${isLowGraphics ? '' : 'animate-pulse'} shrink-0`} />}
               {headerContent ? (
                 headerContent
               ) : (
