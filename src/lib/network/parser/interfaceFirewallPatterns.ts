@@ -175,13 +175,13 @@ export const interfaceFirewallPatterns: Record<string, CommandPattern> = {
     pattern: /^default\s+interface\s+(.+)$/i,
     modes: ['config'],
     minArgs: 1,
-    maxArgs: 1
+    maxArgs: 2
   },
   'no interface': {
     pattern: /^no\s+interface\s+(.+)$/i,
     modes: ['config'],
     minArgs: 1,
-    maxArgs: 1
+    maxArgs: 2
   },
   'ipv6 address': {
     pattern: /^ipv6\s+address\s+([0-9a-fA-F:]+)(?:\/(\d+))?(?:\s+(eui-64))?$/i,

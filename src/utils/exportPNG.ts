@@ -470,11 +470,40 @@ export function exportTopologyToPNG(options: ExportPNGOptions): void {
     ctx.drawImage(img, 0, 0);
     URL.revokeObjectURL(url);
 
-    // Download
+    // Download / Native Save
     canvas.toBlob(async (blob) => {
       if (!blob) return;
 
       const filename = `topology-${new Date().getTime()}.png`;
+
+      // Native Save File Picker Dialog (Desktop Web & WebViews)
+      if (typeof window !== 'undefined' && 'showSaveFilePicker' in window) {
+        try {
+          const handle = await (window as unknown as {
+            showSaveFilePicker: (options?: {
+              suggestedName?: string;
+              types?: { description: string; accept: Record<string, string[]> }[];
+            }) => Promise<FileSystemFileHandle>;
+          }).showSaveFilePicker({
+            suggestedName: filename,
+            types: [
+              {
+                description: 'PNG Image (*.png)',
+                accept: { 'image/png': ['.png'] }
+              }
+            ]
+          });
+          const writable = await handle.createWritable();
+          await writable.write(blob);
+          await writable.close();
+          return;
+        } catch (err: unknown) {
+          if (err && typeof err === 'object' && 'name' in err && (err as { name: string }).name === 'AbortError') {
+            return; // User cancelled the save dialog
+          }
+          logger.warn('Native save dialog failed or cancelled, falling back to download:', err);
+        }
+      }
 
       if (typeof navigator !== 'undefined' && navigator.canShare) {
         try {

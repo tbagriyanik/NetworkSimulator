@@ -141,8 +141,9 @@ export function applyToSelectedPorts(state: SwitchState, updater: (port: Port) =
       : [];
 
   targets.forEach((portId: string) => {
-    if (newPorts[portId]) {
-      newPorts[portId] = updater(newPorts[portId]);
+    const directKey = Object.keys(newPorts).find(k => k.toLowerCase() === portId.toLowerCase()) || portId;
+    if (newPorts[directKey]) {
+      newPorts[directKey] = updater(newPorts[directKey]);
     }
   });
 

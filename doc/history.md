@@ -1,5 +1,40 @@
 # 📅 Network Simulator — Proje Geçmişi
 
+## v6.8.0 — 2026-09-28
+
+- **⚙️ Motor Derinliği & Protokol `no` Matrisi (`cmd.redundancy.ts`, `globalConfigNetworkCommands.ts`, `bgpRouterCommands.ts`, `globalConfigSecurityCommands.ts`, `cmd.spanningTree.ts`, `noCommandE2EMatrix.test.ts`)**:
+  - **FHRP (HSRP / VRRP) Teardown**: `no standby <group> [ip|priority|preempt|ipv6]` ve `no vrrp <group> [ip|priority|preempt]` komutlarıyla HSRP/VRRP sanal IP, öncelik ve preempt yapılandırmalarının arayüzlerden arındırılması sağlandı.
+  - **EtherChannel Teardown**: `no channel-group` ile üye portun demetten çıkarılması ve `no interface Port-channel <id>` (veya `po <id>`) ile sanal port kanalının silinerek bağlı tüm fiziksel portların otomatik çözülmesi sağlandı.
+  - **NAT Overload & Statik NAT Teardown**: `no ip nat inside source list <acl> interface <iface> overload`, `no ip nat inside source list <acl> pool <pool> overload`, `no ip nat inside source static <local> <global>`, `no ip nat pool <name>` ve arayüz `no ip nat inside/outside` komutları eksiksiz çalışır hale getirildi.
+  - **BGP Komşuluk & Süreç Teardown**: `no neighbor <ip>`, `no neighbor <ip> remote-as`, `no neighbor <ip> route-map`, `no neighbor <ip> weight` ve `no router bgp` ile tüm BGP durum ve komşuluklarının temizlenmesi sağlandı.
+
+- **🔍 PDU Panel Hop Özeti Preset Filtreleri (`PacketCapturePanel.tsx`, `PacketTraceInspector.tsx`)**:
+  - Canlı paket yakalama ve paket izleme seanslarında tek tıkla filtrelenebilir hızlı preset butonları eklendi: "Tümü", "Sadece Drop", "Sadece OSPF", "Sadece BGP", "Sadece ICMP", "Sadece STP".
+
+- **⚠️ `show run` & Cihaz Ayarlarında Runtime State Diff Uyarısı (`showSystemDisplay.ts`, `DeviceConfigModal.tsx`)**:
+  - Aktif `runningConfig` durumu ile kaydedilmiş `savedConfig` (startup-config) durumu arasındaki uyumsuzluklar anlık tespit edilerek `show running-config` çıktısında ve Cihaz Yapılandırma panelinde sarı uyarı banner'ı (`Runtime State Diff Warning`) görüntülendi.
+
+- **💾 Masaüstü (Desktop) Native Save Dialog ile Gerçek PNG Dışa Aktarma (`exportPNG.ts`, `AppHeader.tsx`)**:
+  - Modern File System Access API (`window.showSaveFilePicker`) ve yerel dosya iletişim kutusu entegrasyonu ile masaüstü kullanıcılarının topoloji diyagramlarını doğrudan dosya sistemlerine PNG formatında kaydetmesi sağlandı. Araç çubuğu PNG dışa aktarma butonu tüm platformlarda aktifleştirildi.
+
+- **🧵 Spline Kablo Geometrisi & Dinamik Çizim Senkronizasyonu (`ConnectionLine.tsx`, `ConnectionHandle.tsx`, `useTopologyMouse.ts`, `PingAnimationOverlay.tsx`, `exportPNG.ts`)**:
+  - **Kesintisiz Kübik Bezier Spline Çizimi**: Kablo hatları hem sabit (normal) durumda hem de sürükleme (dragging) anında birebir aynı esnek S-spline kavis geometrisi ile çizilecek şekilde senkronize edildi.
+  - **Tutarlı Bağlantı Elemanları**: Silme tutamacı (`ConnectionHandle`), paket akış animasyonları (`PingAnimationOverlay`) ve vektörel dışa aktarım rotaları spline kavis matematiğiyle tam uyumlu hale getirildi.
+
+- **📡 Gelişmiş Multicast İletim Motoru & Kapsamlı Test Paketi (`multicastEngine.ts`, `packetPipelineResolution.ts`, `multicastForwarding.test.ts`)**:
+  - **L2 IGMP Snooping & Mrouter Port Flooding**: L2 anahtarlarda IGMP yönlendirici portu (`isMrouterPort`) desteği ve çoklu VLAN arası multicast akış izolasyonu sağlandı.
+  - **PIM-SM (*, G) & PIM-DM Budama Desteği**: Rendezvous Point (*, G) ağaç yönlendirmesi, PIM-Dense Mode dinamik budama (`prunedInterfaces`) ve IGMP Leave port arındırma testleri eklendi.
+
+- **⚡ CI Pipeline Performans Benchmark Entegrasyonu (`ci.yml`, `package.json`, `device-scale-500.test.ts`)**:
+  - GitHub Actions CI iş akışına 500 cihazlık topoloji ölçeğinde `< 3s` paket iletim süresi eşikli performans testi adımı (`test:perf`) eklendi.
+
+- **🌐 SDN Controller Etkileşim Motoru & Intent-Based Networking (`sdnController.ts`, `sdnController.test.ts`)**:
+  - **Topoloji Envanter Keşfi (`discoverInventory`)**: Yönetilen ağdaki anahtarları, yönlendiricileri, uç cihazları ve VLAN dağılımını otomatik keşfeden API motoru.
+  - **Sekmeli Yol Analiz Motoru (`computePathTrace`)**: Uç noktalar arasında sekmeli (hop-by-hop) yol analizi, gecikme (latency), giriş/çıkış portları ve ACL izin durumlarının hesaplanması.
+  - **Niyet Tabanlı Politika Dağıtımı (`applyIntentPolicy`)**: VoIP QoS önceliklendirmesi, IoT VLAN izolasyonu ve bant genişliği sınırlama politikalarının ağ cihazlarına otomatik uygulanması.
+  - **OpenFlow / RESTCONF Akış Yönetimi**: Öncelik tabanlı RESTCONF ve akış kuralı yönetimi.
+
+
 ## v6.7.1 — 2026-09-27
 
 - **🎯 Davranış Regresyon Sistemi & E2E Test Matrisi (`behavioralRegressionEngine.ts`, `cliBehavioralRegression.test.ts`, `noCommandE2EMatrix.test.ts`)**:

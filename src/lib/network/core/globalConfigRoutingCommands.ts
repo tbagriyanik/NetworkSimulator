@@ -336,7 +336,7 @@ export function cmdNoRouterBgp(state: SwitchState, input: string, _ctx: CommandC
     return { success: false, error: cliModeError() };
   }
 
-  const match = input.match(/^no\s+router\s+bgp\s+(\d+)$/i);
+  const match = input.match(/^no\s+router\s+bgp(?:\s+(\d+))?$/i);
   if (!match) return { success: false, error: CLI_ERRORS.incomplete };
 
   return {
@@ -345,7 +345,14 @@ export function cmdNoRouterBgp(state: SwitchState, input: string, _ctx: CommandC
     newState: {
       routingProtocol: 'none',
       dynamicRoutes: [],
-      bgpAs: undefined
+      bgpAs: undefined,
+      bgpNeighbors: [],
+      routerId: undefined,
+      bgpLocalPreference: undefined,
+      bgpConfederationId: undefined,
+      bgpConfederationPeers: [],
+      bgpAlwaysCompareMed: undefined,
+      bgpBestpathConfig: undefined
     }
   };
 }

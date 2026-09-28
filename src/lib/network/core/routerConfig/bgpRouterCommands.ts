@@ -83,6 +83,34 @@ export function cmdNeighborRouteMap(state: SwitchState, input: string): CommandR
     };
 }
 
+export function cmdNoNeighborRouteMap(state: SwitchState, input: string): CommandResult {
+    if (state.routingProtocol !== 'bgp') return { success: false, error: cliModeError() };
+    const match = input.match(/^no\s+neighbor\s+([0-9.]+)\s+route-map(?:\s+\S+)?(?:\s+(in|out))?$/i);
+    if (!match) return { success: false, error: '% Invalid command. Usage: no neighbor <ip> route-map [map] [in|out]' };
+
+    const [_, neighborIp, dir] = match;
+    const bgpNeighbors = state.bgpNeighbors || [];
+    const existing = bgpNeighbors.find((n: BgpNeighbor) => n.ip === neighborIp);
+    if (!existing) return { success: true, newState: { bgpNeighbors } };
+
+    const updated = { ...existing };
+    if (!dir) {
+        delete updated.routeMapIn;
+        delete updated.routeMapOut;
+    } else if (dir.toLowerCase() === 'in') {
+        delete updated.routeMapIn;
+    } else {
+        delete updated.routeMapOut;
+    }
+
+    const newNeighbors = [...bgpNeighbors.filter((n: BgpNeighbor) => n.ip !== neighborIp), updated];
+    return {
+        success: true,
+        output: `BGP neighbor ${neighborIp} route-map reset`,
+        newState: { bgpNeighbors: newNeighbors }
+    };
+}
+
 export function cmdNeighborWeight(state: SwitchState, input: string): CommandResult {
     if (state.routingProtocol !== 'bgp') return { success: false, error: cliModeError() };
     const match = input.match(/^neighbor\s+([0-9.]+)\s+weight\s+(\d+)$/i);
@@ -101,6 +129,21 @@ export function cmdNeighborWeight(state: SwitchState, input: string): CommandRes
         newState: { bgpNeighbors: newNeighbors }
     };
 }
+
+export function cmdNoNeighborWeight(state: SwitchState, input: string): CommandResult {
+    if (state.routingProtocol !== 'bgp') return { success: false, error: cliModeError() };
+    const match = input.match(/^no\s+neighbor\s+([0-9.]+)\s+weight(?:\s+\d+)?$/i);
+    if (!match) return { success: false, error: '% Invalid command' };
+
+    const neighborIp = match[1];
+    const { neighbors } = patchBgpNeighbor(state, neighborIp, { weight: undefined });
+    return {
+        success: true,
+        output: `BGP neighbor ${neighborIp} weight reset`,
+        newState: { bgpNeighbors: neighbors }
+    };
+}
+
 
 export function cmdBgpRouterId(_state: SwitchState, input: string): CommandResult {
     const match = input.match(/^bgp\s+router-id\s+([0-9.]+)$/i);
@@ -620,6 +663,8 @@ export const bgpRouterHandlers: Record<string, CommandHandler> = {
     'neighbor as-override': cmdNeighborAsOverride,
     'neighbor soft-reconfiguration': cmdNeighborSoftReconfig,
     'neighbor med': cmdNeighborMed,
+    'no neighbor route-map': cmdNoNeighborRouteMap,
+    'no neighbor weight': cmdNoNeighborWeight,
     'no neighbor med': cmdNoNeighborMed,
     'no neighbor next-hop-self': cmdNoNeighborNextHopSelf,
     'no neighbor ebgp-multihop': cmdNoNeighborEbgpMultihop,

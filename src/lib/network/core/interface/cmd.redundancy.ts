@@ -154,6 +154,44 @@ export function cmdVrrpPreempt(state: SwitchState, input: string, _ctx: CommandC
 }
 
 /**
+ * no standby <group> [ip|priority|preempt|ipv6]
+ */
+export function cmdNoStandby(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  if (!isInInterfaceMode(state) || !state.currentInterface) return { success: false, error: cliModeError() };
+  const match = input.match(/^no\s+standby\s+(\d+)(?:\s+(ip|priority|preempt|ipv6)(?:\s+\S+)?)?$/i);
+  if (!match) return { success: false, error: '% Invalid standby command' };
+
+  const group = parseInt(match[1], 10);
+  const sub = match[2] ? match[2].toLowerCase() : undefined;
+
+  const updatePort = (port: Port) => {
+    const hsrp = port.hsrp || { groups: {} };
+    const groups = { ...hsrp.groups };
+    const existing = groups[group];
+
+    if (!sub) {
+      delete groups[group];
+    } else if (existing) {
+      if (sub === 'ip') {
+        const { virtualIp: _removed, ...rest } = existing;
+        groups[group] = { ...rest, state: 'Initial' };
+      } else if (sub === 'ipv6') {
+        const { ipv6VirtualIp: _removed, ...rest } = existing;
+        groups[group] = { ...rest };
+      } else if (sub === 'priority') {
+        groups[group] = { ...existing, priority: 100 };
+      } else if (sub === 'preempt') {
+        groups[group] = { ...existing, preempt: false };
+      }
+    }
+    return { ...port, hsrp: { ...hsrp, groups } };
+  };
+
+  const newPorts = applyToSelectedPorts(state, updatePort);
+  return { success: true, newState: { ports: newPorts } };
+}
+
+/**
  * no vrrp <group> [ip|priority|preempt]
  */
 export function cmdNoVrrp(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
@@ -198,3 +236,4 @@ function noVrrpImpl(state: SwitchState, input: string): CommandResult {
   const newPorts = applyToSelectedPorts(state, updatePort);
   return { success: true, newState: { ports: newPorts } };
 }
+

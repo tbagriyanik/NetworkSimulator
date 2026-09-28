@@ -6,25 +6,25 @@ export const interfaceBasePatterns: Record<string, CommandPattern> = {
     pattern: /^interface\s+(?!r(?:ange)?\s)(f(?:a(?:st(?:ethernet)?)?)?|g(?:i(?:g(?:abit(?:ethernet)?)?)?)?|e(?:thernet)?|se(?:rial)?|po(?:\s*port-channel)?|vlan|loopback|lo)?\s*(.+)$/i,
     modes: ['config', 'interface', 'config-if-range'],
     minArgs: 1,
-    maxArgs: 1
+    maxArgs: 2
   },
   'interface range': {
     pattern: /^interface\s+r(?:ange)?\s+(?:(?:f(?:a(?:st(?:ethernet)?)?)?|g(?:i(?:g(?:abit(?:ethernet)?)?)?)?|e(?:thernet)?|se(?:rial)?|po(?:\s*port-channel)?|vlan)\s*)?(.+)$/i,
     modes: ['config'],
     minArgs: 1,
-    maxArgs: 1
+    maxArgs: 2
   },
   'default interface': {
     pattern: /^default\s+interface\s+(.+)$/i,
     modes: ['config'],
     minArgs: 1,
-    maxArgs: 1
+    maxArgs: 2
   },
   'no interface': {
     pattern: /^no\s+interface\s+(.+)$/i,
     modes: ['config'],
     minArgs: 1,
-    maxArgs: 1
+    maxArgs: 2
   },
   'no shutdown': {
     pattern: /^no\s+shutdown$/i,

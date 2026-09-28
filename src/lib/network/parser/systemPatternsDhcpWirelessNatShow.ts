@@ -200,18 +200,6 @@ export const systemPatternsDhcpWirelessNatShow: Record<string, CommandPattern> =
     minArgs: 0,
     maxArgs: 0
   },
-  'no neighbor': {
-    pattern: /^no\s+neighbor\s+([0-9.]+)(?:\s+remote-as(?:\s+\d+)?)?$/i,
-    modes: ['router-config'],
-    minArgs: 1,
-    maxArgs: 2
-  },
-  'no neighbor remote-as': {
-    pattern: /^no\s+neighbor\s+([0-9.]+)\s+remote-as(?:\s+\d+)?$/i,
-    modes: ['router-config'],
-    minArgs: 1,
-    maxArgs: 2
-  },
 
   // DHCP config negation commands
   'no default-router': {
@@ -252,6 +240,31 @@ export const systemPatternsDhcpWirelessNatShow: Record<string, CommandPattern> =
     minArgs: 2,
     maxArgs: 2
   },
+  'ip nat inside source list': {
+    pattern: /^ip\s+nat\s+inside\s+source\s+list\s+(\d+)\s+(?:interface\s+\S+|pool\s+\S+)(?:\s+overload)?$/i,
+    modes: ['config'],
+    minArgs: 3,
+    maxArgs: 5
+  },
+  'no ip nat pool': {
+    pattern: /^no\s+ip\s+nat\s+pool\s+(\S+)$/i,
+    modes: ['config'],
+    minArgs: 1,
+    maxArgs: 1
+  },
+  'no ip nat inside source static': {
+    pattern: /^no\s+ip\s+nat\s+inside\s+source\s+static\s+(\d+\.\d+\.\d+\.\d+)(?:\s+(\d+\.\d+\.\d+\.\d+))?$/i,
+    modes: ['config'],
+    minArgs: 1,
+    maxArgs: 2
+  },
+  'no ip nat inside source list': {
+    pattern: /^no\s+ip\s+nat\s+inside\s+source\s+list\s+(\d+)(?:\s+(?:interface\s+\S+|pool\s+\S+))?(?:\s+overload)?$/i,
+    modes: ['config'],
+    minArgs: 1,
+    maxArgs: 5
+  },
+
 
   // Firewall commands
   'no nameif': {

@@ -1,7 +1,7 @@
 import type { CommandHandler } from './commandTypes';
 import { cmdAccessList, cmdNoAccessList } from './interface/cmd.misc';
 import { cmdIpDhcpPool, cmdNoIpDhcpPool, cmdIpv6DhcpPool, cmdIpDhcpExcludedAddress, cmdNoIpDhcpExcludedAddress, cmdIpDhcpSnoopingVlan, cmdNoIpDhcpSnooping, cmdIpDhcpSnoopingInformationOption } from './globalConfigDhcpCommands';
-import { cmdIpNatPool, cmdIpNatInsideSourceStatic, cmdIpNatInsideSourceList, cmdLoggingHost, cmdLoggingTrap, cmdNtpServer, cmdNtpMaster, cmdNoNtpServer, cmdClockTimezone, cmdIpNameServer, cmdIpHost, cmdAliasExec, cmdNoAliasExec, cmdIpSla, cmdTrack, cmdLldpTlvSelect, cmdSpanningTreeMst, cmdIpPrefixList, cmdRouteMap, cmdIpv6RouterEigrp, cmdSpanningTreeLoopguardDefault, cmdIpFlowExport, cmdNoIpPrefixList, cmdNoIpv6PrefixList, cmdNoRouteMap, cmdVrfDefinition, cmdVrfRd, cmdVrfRouteTarget, cmdMplsLdpRouterId, cmdMplsLdpGracefulRestart, cmdMplsLdpSessionProtection, cmdVxlanInterface, cmdZoneSecurity, cmdZonePairSecurity, cmdRestconfEnable, cmdMplsIpGlobal, cmdArchive, cmdMacroName, cmdMacroApply, cmdConfigureReplace, cmdMacAccessList, cmdTemplate, cmdLispRouter, cmdLispEidTable, cmdControlPlane } from './globalConfigNetworkCommands';
+import { cmdIpNatPool, cmdIpNatInsideSourceStatic, cmdIpNatInsideSourceList, cmdNoIpNatPool, cmdNoIpNatInsideSourceStatic, cmdNoIpNatInsideSourceList, cmdLoggingHost, cmdLoggingTrap, cmdNtpServer, cmdNtpMaster, cmdNoNtpServer, cmdClockTimezone, cmdIpNameServer, cmdIpHost, cmdAliasExec, cmdNoAliasExec, cmdIpSla, cmdTrack, cmdLldpTlvSelect, cmdSpanningTreeMst, cmdIpPrefixList, cmdRouteMap, cmdIpv6RouterEigrp, cmdSpanningTreeLoopguardDefault, cmdIpFlowExport, cmdNoIpPrefixList, cmdNoIpv6PrefixList, cmdNoRouteMap, cmdVrfDefinition, cmdVrfRd, cmdVrfRouteTarget, cmdMplsLdpRouterId, cmdMplsLdpGracefulRestart, cmdMplsLdpSessionProtection, cmdVxlanInterface, cmdZoneSecurity, cmdZonePairSecurity, cmdRestconfEnable, cmdMplsIpGlobal, cmdArchive, cmdMacroName, cmdMacroApply, cmdConfigureReplace, cmdMacAccessList, cmdTemplate, cmdLispRouter, cmdLispEidTable, cmdControlPlane } from './globalConfigNetworkCommands';
 
 import { cmdClassMap, cmdPolicyMap, cmdClass, cmdSetDscp, cmdSetCoS, cmdPolice, cmdNoClassMap, cmdNoPolicyMap } from './qosMqcCommands';
 import { cmdAaaNewModel, cmdNoAaaNewModel, cmdAaaAuthentication, cmdRadiusServerHost, cmdTacacsServerHost, cmdRadiusServerKey, cmdTacacsServerKey, cmdDot1xSystem } from './globalConfigAaaCommands';
@@ -388,8 +388,11 @@ export const globalConfigHandlers: Record<string, CommandHandler> = {
   'no ipv6 dhcp pool': cmdNoIpv6DhcpPool,
 
   'ip nat pool': cmdIpNatPool,
+  'no ip nat pool': cmdNoIpNatPool,
   'ip nat inside source static': cmdIpNatInsideSourceStatic,
+  'no ip nat inside source static': cmdNoIpNatInsideSourceStatic,
   'ip nat inside source list': cmdIpNatInsideSourceList,
+  'no ip nat inside source list': cmdNoIpNatInsideSourceList,
   'logging host': cmdLoggingHost,
   'logging trap': cmdLoggingTrap,
   'ip sla': cmdIpSla,

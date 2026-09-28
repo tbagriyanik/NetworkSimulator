@@ -1,4 +1,4 @@
-﻿import type { CommandContext } from './commandTypes';
+import type { CommandContext } from './commandTypes';
 import type { SwitchState, CommandResult } from '../types';
 import type { CanvasDevice } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { getSwitchDisplayProfile } from './showHelpers';
@@ -24,6 +24,11 @@ export function cmdShowRunningConfig(
   let output = '\nBuilding configuration...\n\n';
   const lines = buildRunningConfig(state);
   const configText = lines.join('\n');
+  const hasDiff = state.savedConfig && state.savedConfig.trim() !== configText.trim();
+  if (hasDiff) {
+    output += '! % Warning: Active running-config differs from startup-config (unsaved changes present)\n';
+    output += "! % Execute 'write memory' or 'copy running-config startup-config' to persist.\n!\n";
+  }
   output += `Current configuration : ${configText.length} bytes\n\n`;
   output += configText;
 

@@ -81,11 +81,61 @@ export function cmdNoUsername(state: SwitchState, input: string, _ctx: CommandCo
 }
 
 /**
- * No Interface - Delete interface config (for VLAN interfaces)
+ * No Interface - Delete interface config (Port-channel, VLAN, Loopback, Tunnel)
  */
 export function cmdNoInterface(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
   if (state.currentMode !== 'config') {
     return { success: false, error: cliModeError() };
+  }
+
+  // Port-channel interface
+  const poMatch = input.match(/^no\s+interface\s+(?:port-channel|po)\s*(\d+)$/i);
+  if (poMatch) {
+    const groupId = parseInt(poMatch[1], 10);
+    const poKeyLower = `port-channel${groupId}`;
+    const poKeyShort = `po${groupId}`;
+    const newPorts = { ...state.ports };
+
+    Object.keys(newPorts).forEach(k => {
+      const lower = k.toLowerCase();
+      if (lower === poKeyLower || lower === poKeyShort) {
+        delete newPorts[k];
+      } else if (newPorts[k]?.channelGroup === groupId) {
+        newPorts[k] = {
+          ...newPorts[k],
+          channelGroup: undefined,
+          channelMode: undefined,
+          channelProtocol: undefined,
+        };
+      }
+    });
+
+    return {
+      success: true,
+      newState: { ports: newPorts }
+    };
+  }
+
+  // Loopback interface
+  const loopbackMatch = input.match(/^no\s+interface\s+(?:loopback|lo)\s*(\d+)$/i);
+  if (loopbackMatch) {
+    const id = loopbackMatch[1];
+    const newPorts = { ...state.ports };
+    delete newPorts[`Loopback${id}`];
+    delete newPorts[`loopback${id}`];
+    delete newPorts[`Lo${id}`];
+    delete newPorts[`lo${id}`];
+    return { success: true, newState: { ports: newPorts } };
+  }
+
+  // Tunnel interface
+  const tunnelMatch = input.match(/^no\s+interface\s+tunnel\s*(\d+)$/i);
+  if (tunnelMatch) {
+    const id = tunnelMatch[1];
+    const newPorts = { ...state.ports };
+    delete newPorts[`Tunnel${id}`];
+    delete newPorts[`tunnel${id}`];
+    return { success: true, newState: { ports: newPorts } };
   }
 
   const match = input.match(/^no\s+interface\s+vlan\s+(\d+)$/i);
@@ -118,6 +168,7 @@ export function cmdNoInterface(state: SwitchState, input: string, _ctx: CommandC
     newState: { ports: newPorts, vlans: newVlans }
   };
 }
+
 
 /**
  * Spanning-Tree VLAN - Enable STP on VLAN or configure priority/root

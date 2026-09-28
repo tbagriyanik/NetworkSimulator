@@ -80,6 +80,7 @@ export const PacketTraceView: React.FC<{
 }> = ({ pipelineResult, onSelectHop, isDark = true, language = 'tr' }) => {
   const [activeHopIndex, setActiveHopIndex] = useState<number>(0);
   const [activeStageIndex, setActiveStageIndex] = useState<number | null>(null);
+  const [hopPresetFilter, setHopPresetFilter] = useState<'all' | 'drop' | 'ospf' | 'bgp' | 'icmp'>('all');
 
   const t = language === 'en' ? en : tr;
 
@@ -94,6 +95,17 @@ export const PacketTraceView: React.FC<{
   const { hopResults, success, dropReason } = pipelineResult;
   const activeHop: HopResult | undefined = hopResults[activeHopIndex];
   const hopTraces = activeHop?.traces || [];
+
+  const filteredHopIndices = hopResults
+    .map((hop, idx) => ({ hop, idx }))
+    .filter(({ hop }) => {
+      if (hopPresetFilter === 'drop') return hop.traces.some(a => a.action === 'drop');
+      if (hopPresetFilter === 'ospf') return hop.traces.some(t => t.frameSnapshot?.protocol?.toLowerCase() === 'ospf' || t.reason?.toLowerCase().includes('ospf'));
+      if (hopPresetFilter === 'bgp') return hop.traces.some(t => t.frameSnapshot?.protocol?.toLowerCase() === 'bgp' || t.reason?.toLowerCase().includes('bgp'));
+      if (hopPresetFilter === 'icmp') return hop.traces.some(t => t.frameSnapshot?.protocol?.toLowerCase() === 'icmp' || t.reason?.toLowerCase().includes('icmp') || t.reason?.toLowerCase().includes('echo'));
+      return true;
+    })
+    .map(({ idx }) => idx);
 
   const getActionBadgeClass = (action: string) => {
     switch (action) {
@@ -141,11 +153,42 @@ export const PacketTraceView: React.FC<{
         {/* Hop Stepper Navigation (Left Panel) */}
         <div className={`md:col-span-4 p-3 overflow-y-auto space-y-2 min-h-0 ${isDark ? 'bg-slate-950/40' : 'bg-slate-50/50'
           }`}>
-          <div className={`text-[10px] font-bold uppercase tracking-wider mb-2 ${isDark ? 'text-slate-400' : 'text-slate-500'
-            }`}>
-            {t.hopSection}
+          <div className="flex items-center justify-between gap-1 mb-2">
+            <div className={`text-[10px] font-bold uppercase tracking-wider ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+              {t.hopSection}
+            </div>
           </div>
-          {hopResults.map((hop, idx) => {
+
+          {/* Quick Hop Presets */}
+          <div className="flex items-center gap-1 overflow-x-auto no-scrollbar pb-1">
+            {[
+              { label: language === 'tr' ? 'Tümü' : 'All', val: 'all' as const },
+              { label: language === 'tr' ? '🚨 Sadece Drop' : '🚨 Drops Only', val: 'drop' as const },
+              { label: language === 'tr' ? '🌐 Sadece OSPF' : '🌐 OSPF', val: 'ospf' as const },
+              { label: language === 'tr' ? '🔀 Sadece BGP' : '🔀 BGP', val: 'bgp' as const },
+              { label: language === 'tr' ? '📡 Sadece ICMP' : '📡 ICMP', val: 'icmp' as const },
+            ].map(p => (
+              <button
+                key={p.val}
+                type="button"
+                onClick={() => setHopPresetFilter(p.val)}
+                className={`px-1.5 py-0.5 rounded text-[9.5px] font-mono font-semibold border transition-all shrink-0 ${
+                  hopPresetFilter === p.val
+                    ? p.val === 'drop'
+                      ? 'bg-rose-600 text-white border-rose-400 font-bold'
+                      : 'bg-emerald-500 text-slate-950 border-emerald-400 font-bold'
+                    : isDark
+                    ? 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
+                    : 'bg-white border-slate-300 text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+
+          {filteredHopIndices.map((idx) => {
+            const hop = hopResults[idx];
             const hasDrop = hop.traces.some(a => a.action === 'drop');
             const isSelected = idx === activeHopIndex;
             return (

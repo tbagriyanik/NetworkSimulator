@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { CanvasDevice } from './NetworkTopology/types/networkTopology.types';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { normalizeMAC } from '../../lib/utils';
@@ -318,6 +318,13 @@ export function DeviceConfigModal({
     }
   };
 
+  const switchState = useAppStore(state => state.deviceStates.switchStates[device.id]);
+  const isDiff = useMemo(() => {
+    if (!switchState || !switchState.savedConfig) return false;
+    const currentRun = buildRunningConfig(switchState).join('\n').trim();
+    return switchState.savedConfig.trim() !== currentRun;
+  }, [switchState]);
+
   return (
     <div
       role="presentation"
@@ -366,6 +373,23 @@ export function DeviceConfigModal({
         </div>
 
         <div className={`flex-1 overflow-y-auto overscroll-contain custom-scrollbar ${isMobile ? 'p-4 space-y-4' : 'p-6 space-y-6'}`}>
+          {/* Runtime State Diff Banner */}
+          {isDiff && (
+            <div className={`p-3 rounded-2xl border flex items-start gap-2.5 text-xs ${isDark ? 'bg-amber-950/40 border-amber-500/40 text-amber-200' : 'bg-amber-50 border-amber-300 text-amber-900'}`}>
+              <span className="text-sm shrink-0">⚠️</span>
+              <div className="min-w-0 flex-1">
+                <div className="font-bold">
+                  {language === 'tr' ? 'Çalışma Zamanı Uyumsuzluğu (Runtime State Diff)' : 'Runtime State Diff Warning'}
+                </div>
+                <div className="text-[11px] opacity-90 mt-0.5">
+                  {language === 'tr'
+                    ? 'Aktif running-config ile kaydedilmiş startup-config arasında fark var. CLI terminalinde "write memory" çalıştırarak kaydedebilirsiniz.'
+                    : 'Active running-config differs from saved startup-config. Run "write memory" in CLI to persist changes.'}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Hostname */}
           <div className="space-y-2">
             <label className={`text-[10px] font-black tracking-widest ml-1 ${isDark ? 'text-secondary-500' : 'text-secondary-400'}`}>

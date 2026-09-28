@@ -4,6 +4,20 @@
 
 MPLS/LDP, IPSec, SNMP, NETCONF/RESTCONF, EEM, MST, IP SLA, QoS MQC, 802.1X, CAPWAP, sFlow/NetFlow, MQTT ve CoAP akışları ortak state/packet pipeline ile doğrulanır. Telemetry export’ları collector frame olarak, MQTT/CoAP/NETCONF işlemleri servis portlarına bağlı request-response frame olarak modellenir.
 
+## Spline Kablolar, SDN Controller, Protokol no Matrisi, PDU Filtreleri & Masaüstü Dışa Aktarma (2026-09-28 - v6.8.0)
+
+| Özellik | Güncel kapsam ve sınır |
+|---|---|
+| **Protokol `no` Komut Matrisi (`cmd.redundancy.ts`, `globalConfigNetworkCommands.ts`, `bgpRouterCommands.ts`, `globalConfigSecurityCommands.ts`)** | `no standby [ip\|priority\|preempt\|ipv6]`, `no vrrp`, `no channel-group`, `no interface Port-channel <id>`, `no ip nat inside source list ... overload`, `no ip nat inside source static`, `no ip nat pool`, `no neighbor <ip>`, `no router bgp` komutlarının durum ve bellek temizliği uçtan uca sağlandı. |
+| **PDU Panel Hop Özeti Preset Filtreleri (`PacketCapturePanel.tsx`, `PacketTraceInspector.tsx`)** | Canlı paket yakalama ve paket izleme seanslarında tek tıkla filtrelenebilir hızlı preset butonları ("Tümü", "Sadece Drop", "Sadece OSPF", "Sadece BGP", "Sadece ICMP", "Sadece STP"). |
+| **`show run` & Cihaz Ayarlarında Runtime State Diff Uyarısı (`showSystemDisplay.ts`, `DeviceConfigModal.tsx`)** | Aktif `runningConfig` durumu ile kaydedilmiş `savedConfig` (startup-config) arasındaki farkların algılanması, `show running-config` ve Cihaz Yapılandırma panelinde sarı uyarı banner'ı (`Runtime State Diff Warning`). |
+| **Masaüstü (Desktop) Native Save Dialog ile Gerçek PNG Dışa Aktarma (`exportPNG.ts`, `AppHeader.tsx`)** | Modern File System Access API (`window.showSaveFilePicker`) ve yerel dosya iletişim kutusu entegrasyonu ile masaüstü kullanıcılarının topoloji diyagramlarını doğrudan dosya sistemlerine PNG formatında kaydetmesi sağlandı. |
+| **Kübik Bezier Spline Kablo Motoru (`ConnectionLine.tsx`, `ConnectionHandle.tsx`, `useTopologyMouse.ts`)** | Bağlantı hatları hem statik görünümde hem de sürükleme anında kusursuz S-spline kavis geometrisi ile çizilir. Silme tutamacı ve paket animasyonları eğriyi tam takip eder. |
+| **SDN Controller & Intent-Based Networking Motoru (`sdnController.ts`, `sdnController.test.ts`)** | Topoloji envanter keşfi (`discoverInventory`), sekmeli yol analizi (`computePathTrace`), niyet tabanlı politika dağıtımı (`applyIntentPolicy` - VoIP QoS, IoT VLAN izolasyonu, rate-limiting) ve OpenFlow/RESTCONF akış kuralları. |
+| **Genişletilmiş Multicast İletim Motoru (`multicastEngine.ts`, `packetPipelineResolution.ts`)** | IGMP Snooping mrouter port flooding, VLAN sınır izolasyonu, PIM-SM (*, G) Rendezvous Point ağaç yönlendirmesi ve PIM-DM dinamik budama (`prunedInterfaces`). |
+| **CI Performans Benchmark Pipeline (`ci.yml`, `device-scale-500.test.ts`)** | 500 cihazlık büyük ölçekli ağ topolojisinde `< 3s` paket iletim süresi eşikli otomatik GitHub Actions CI performans adımı (`test:perf`). |
+
+
 ## Davranış Regresyonu, Arıza Enjeksiyonu, CLI Ototamlama & Hop Paket Yolculuğu (2026-09-27 - v6.7.1)
 
 | Özellik | Güncel kapsam ve sınır |

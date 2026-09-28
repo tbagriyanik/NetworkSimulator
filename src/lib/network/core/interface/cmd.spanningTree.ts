@@ -100,14 +100,11 @@ export function cmdChannelGroup(state: SwitchState, input: string, _ctx: Command
 
   const updatePort = (port: Port) => ({ ...port, channelGroup: group, channelMode: mode });
 
-  if (state.selectedInterfaces?.length) {
-    return { success: true, newState: { ports: applyToSelectedPorts(state, updatePort) } };
+  if (!state.currentInterface && (!state.selectedInterfaces || state.selectedInterfaces.length === 0)) {
+    return { success: false, error: '% No interface selected' };
   }
 
-  if (!state.currentInterface) return { success: false, error: '% No interface selected' };
-
-  const newPorts = { ...state.ports };
-  newPorts[state.currentInterface] = updatePort(newPorts[state.currentInterface] || {} as Port);
+  const newPorts = applyToSelectedPorts(state, updatePort);
   return { success: true, output: `Channel-group ${group} mode ${mode} configured`, newState: { ports: newPorts } };
 }
 
@@ -119,6 +116,7 @@ export function cmdNoChannelGroup(state: SwitchState, _input: string, _ctx: Comm
   const newPorts = applyToSelectedPorts(state, (port: Port) => ({
     ...port,
     channelGroup: undefined,
+    channelMode: undefined,
     channelProtocol: undefined
   }));
 

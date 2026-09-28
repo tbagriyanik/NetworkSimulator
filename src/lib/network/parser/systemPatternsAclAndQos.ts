@@ -290,5 +290,12 @@ export const systemPatternsAclAndQos: Record<string, CommandPattern> = {
     modes: ['interface', 'config-if-range'],
     minArgs: 1,
     maxArgs: 1
+  },
+  'no standby': {
+    pattern: /^no\s+standby\s+(\d+)(?:\s+(ip|priority|preempt|ipv6)(?:\s+\S+)?)?$/i,
+    modes: ['interface', 'config-if-range'],
+    minArgs: 1,
+    maxArgs: 3
   }
 };
+

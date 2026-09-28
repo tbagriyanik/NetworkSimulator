@@ -29,6 +29,7 @@ import { SwitchState } from '@/lib/network/types';
 import { SCENARIOS, CATEGORY_LABELS, type ScenarioType, type ScenarioCategory } from './topologyScenarios';
 import { generateTopology } from './scenarioGenerators';
 import { TEST_TOPOLOGY_SCENARIOS, type TestTopologyScenario } from './testTopologyScenarios';
+import { exampleProjects, type ExampleProject } from '@/lib/network/exampleProjects';
 import { addTopologyRecord } from '@/utils/achievementRecords';
 
 interface TopologyGeneratorDialogProps {
@@ -43,8 +44,9 @@ interface TopologyGeneratorDialogProps {
   }) => void;
 }
 
-type GeneratorTab = 'architectures' | 'testLabs';
+type GeneratorTab = 'architectures' | 'testLabs' | 'demoProjects';
 type TestCategoryFilter = 'all' | 'switching' | 'routing' | 'e2e' | 'security' | 'ipv6' | 'wireless' | 'diagnostics';
+type DemoLevelFilter = 'all' | 'basic' | 'intermediate' | 'advanced';
 
 export function TopologyGeneratorDialog({
   open,
@@ -60,8 +62,10 @@ export function TopologyGeneratorDialog({
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<ScenarioCategory | 'all'>('all');
   const [selectedTestCategory, setSelectedTestCategory] = useState<TestCategoryFilter>('all');
+  const [selectedDemoLevel, setSelectedDemoLevel] = useState<DemoLevelFilter>('all');
   const [scenario, setScenario] = useState<ScenarioType>('soho');
   const [selectedTestId, setSelectedTestId] = useState<string>('test-stp-triangle');
+  const [selectedDemoId, setSelectedDemoId] = useState<string>('basic-secure');
   const [pcCount, setPcCount] = useState<number>(2);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -70,6 +74,11 @@ export function TopologyGeneratorDialog({
     return TEST_TOPOLOGY_SCENARIOS;
   }, []);
 
+  // List of demo projects
+  const demoProjects = useMemo<ExampleProject[]>(() => {
+    return exampleProjects(language);
+  }, [language]);
+
   const selectedDef = useMemo(() => {
     return SCENARIOS.find(s => s.id === scenario) ?? SCENARIOS[0];
   }, [scenario]);
@@ -77,6 +86,10 @@ export function TopologyGeneratorDialog({
   const selectedTest = useMemo(() => {
     return testScenarios.find(p => p.id === selectedTestId) ?? testScenarios[0];
   }, [testScenarios, selectedTestId]);
+
+  const selectedDemo = useMemo(() => {
+    return demoProjects.find(p => p.id === selectedDemoId) ?? demoProjects[0];
+  }, [demoProjects, selectedDemoId]);
 
   const handleClose = useCallback(() => {
     if (!isLoading) onOpenChange(false);
@@ -103,6 +116,14 @@ export function TopologyGeneratorDialog({
     ipv6: { tr: 'IPv6', en: 'IPv6' },
     wireless: { tr: 'Kablosuz (WLC)', en: 'Wireless (WLC)' },
     diagnostics: { tr: 'Teşhis (Diagnostics)', en: 'Diagnostics' },
+  };
+
+  // Level labels for demo projects
+  const demoLevelLabels: Record<DemoLevelFilter, { tr: string; en: string }> = {
+    all: { tr: 'Tüm Seviyeler', en: 'All Levels' },
+    basic: { tr: 'Temel', en: 'Basic' },
+    intermediate: { tr: 'Orta', en: 'Intermediate' },
+    advanced: { tr: 'İleri', en: 'Advanced' },
   };
 
   // Filtered standard scenarios
@@ -138,6 +159,21 @@ export function TopologyGeneratorDialog({
       );
     });
   }, [testScenarios, selectedTestCategory, searchQuery]);
+
+  // Filtered demo projects
+  const filteredDemoProjects = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    return demoProjects.filter(p => {
+      if (selectedDemoLevel !== 'all' && p.level !== selectedDemoLevel) return false;
+      if (!q) return true;
+      return (
+        p.title.toLowerCase().includes(q) ||
+        p.description.toLowerCase().includes(q) ||
+        p.id.toLowerCase().includes(q) ||
+        p.tag.toLowerCase().includes(q)
+      );
+    });
+  }, [demoProjects, selectedDemoLevel, searchQuery]);
 
   const allCategories: ScenarioCategory[] = [
     'basic',
@@ -177,7 +213,7 @@ export function TopologyGeneratorDialog({
               ? `${name} başarıyla oluşturuldu ve tuvale aktarıldı.`
               : `${name} successfully generated and added to canvas.`,
           });
-        } else {
+        } else if (activeTab === 'testLabs') {
           // Generate Test scenario
           if (!selectedTest) return;
 
@@ -208,6 +244,28 @@ export function TopologyGeneratorDialog({
               ? `"${title}" başarıyla tuvale aktarıldı.`
               : `"${title}" successfully loaded.`,
           });
+        } else {
+          // Generate Demo project
+          if (!selectedDemo) return;
+
+          const deviceStates = new Map(selectedDemo.data.devices.map(d => [d.id, d.state]));
+          const formattedDescription = selectedDemo.data.topology.notes[0]?.text || selectedDemo.description;
+
+          onGenerate({
+            devices: selectedDemo.data.topology.devices,
+            connections: selectedDemo.data.topology.connections,
+            deviceStates: deviceStates,
+            projectName: selectedDemo.title,
+            projectDescription: formattedDescription,
+          });
+          addTopologyRecord(selectedDemo.title, 'basic');
+
+          toast({
+            title: isTr ? 'Demo Projesi Yüklendi! 📦' : 'Demo Project Loaded! 📦',
+            description: isTr
+              ? `"${selectedDemo.title}" başarıyla tuvale aktarıldı.`
+              : `"${selectedDemo.title}" successfully loaded.`,
+          });
         }
         onOpenChange(false);
       } catch {
@@ -220,7 +278,7 @@ export function TopologyGeneratorDialog({
         setIsLoading(false);
       }
     }, 150);
-  }, [activeTab, scenario, pcCount, selectedDef, selectedTest, isTr, onGenerate, onOpenChange]);
+  }, [activeTab, scenario, pcCount, selectedDef, selectedTest, selectedDemo, isTr, onGenerate, onOpenChange]);
 
   // Enter key trigger
   useEffect(() => {
@@ -262,7 +320,9 @@ export function TopologyGeneratorDialog({
             </DialogTitle>
             <div className="flex items-center gap-1.5 shrink-0">
               <span className="text-[10px] sm:text-[11px] font-semibold px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20">
-                {activeTab === 'architectures' ? `${SCENARIOS.length} ${isTr ? 'Mimari' : 'Architectures'}` : `${testScenarios.length} ${isTr ? 'Test Topolojisi' : 'Test Topologies'}`}
+                {activeTab === 'architectures' ? `${SCENARIOS.length} ${isTr ? 'Mimari' : 'Architectures'}` :
+                 activeTab === 'testLabs' ? `${testScenarios.length} ${isTr ? 'Test Topolojisi' : 'Test Topologies'}` :
+                 `${demoProjects.length} ${isTr ? 'Demo Projesi' : 'Demo Projects'}`}
               </span>
             </div>
           </div>
@@ -275,7 +335,7 @@ export function TopologyGeneratorDialog({
 
         {/* Top Tab Switcher */}
         <div className="shrink-0 pt-2 pb-1.5">
-          <div className={`grid grid-cols-2 p-1 rounded-xl border ${isDark ? 'bg-secondary-950/70 border-secondary-800' : 'bg-secondary-100 border-secondary-200'}`}>
+          <div className={`grid grid-cols-3 p-1 rounded-xl border ${isDark ? 'bg-secondary-950/70 border-secondary-800' : 'bg-secondary-100 border-secondary-200'}`}>
             <button
               onClick={() => setActiveTab('architectures')}
               className={`flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${activeTab === 'architectures'
@@ -307,6 +367,22 @@ export function TopologyGeneratorDialog({
                 {testScenarios.length}
               </span>
             </button>
+
+            <button
+              onClick={() => setActiveTab('demoProjects')}
+              className={`flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${activeTab === 'demoProjects'
+                  ? 'bg-purple-600 text-white shadow-md shadow-purple-900/30'
+                  : isDark
+                    ? 'text-secondary-400 hover:text-secondary-200 hover:bg-secondary-800/60'
+                    : 'text-secondary-600 hover:text-secondary-900 hover:bg-white/60'
+                }`}
+            >
+              <Monitor className="w-3.5 h-3.5" />
+              <span>{isTr ? 'Demo Projeler' : 'Demo Projects'}</span>
+              <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-white/20 ml-0.5">
+                {demoProjects.length}
+              </span>
+            </button>
           </div>
         </div>
 
@@ -321,7 +397,9 @@ export function TopologyGeneratorDialog({
               placeholder={
                 activeTab === 'architectures'
                   ? (isTr ? 'Mimari ara (Spine-Leaf, OSPF, BGP, SOHO, DMZ)...' : 'Search scenario (Spine-Leaf, OSPF, BGP)...')
-                  : (isTr ? 'Test senaryosu ara (STP, VXLAN EVPN, OSPF, HSRP)...' : 'Search test scenario (STP, VXLAN EVPN, OSPF)...')
+                  : activeTab === 'testLabs'
+                    ? (isTr ? 'Test senaryosu ara (STP, VXLAN EVPN, OSPF, HSRP)...' : 'Search test scenario (STP, VXLAN EVPN, OSPF)...')
+                    : (isTr ? 'Demo projesi ara (VLAN, OSPF, NAT, Firewall)...' : 'Search demo project (VLAN, OSPF, NAT, Firewall)...')
               }
               className={`pl-8 pr-7 h-8 text-[11px] sm:text-xs rounded-lg ${isDark
                   ? 'bg-secondary-800/80 border-secondary-700 text-white placeholder:text-secondary-500 focus-visible:ring-purple-500/40'
@@ -374,7 +452,7 @@ export function TopologyGeneratorDialog({
                   );
                 })}
               </>
-            ) : (
+            ) : activeTab === 'testLabs' ? (
               (Object.keys(testCategoryLabels) as TestCategoryFilter[]).map(cat => {
                 const count = cat === 'all' ? testScenarios.length : testScenarios.filter(p => p.category === cat).length;
                 const isSelected = selectedTestCategory === cat;
@@ -390,6 +468,25 @@ export function TopologyGeneratorDialog({
                       }`}
                   >
                     {isTr ? testCategoryLabels[cat].tr : testCategoryLabels[cat].en} ({count})
+                  </button>
+                );
+              })
+            ) : (
+              (Object.keys(demoLevelLabels) as DemoLevelFilter[]).map(level => {
+                const count = level === 'all' ? demoProjects.length : demoProjects.filter(p => p.level === level).length;
+                const isSelected = selectedDemoLevel === level;
+                return (
+                  <button
+                    key={level}
+                    onClick={() => setSelectedDemoLevel(level)}
+                    className={`px-2 py-0.5 rounded-md text-[11px] font-medium whitespace-nowrap transition-all ${isSelected
+                        ? 'bg-purple-600 text-white shadow-sm'
+                        : isDark
+                          ? 'bg-secondary-800 text-secondary-400 hover:text-secondary-200 hover:bg-secondary-700/60'
+                          : 'bg-secondary-100 text-secondary-600 hover:text-secondary-900 hover:bg-secondary-200'
+                      }`}
+                  >
+                    {isTr ? demoLevelLabels[level].tr : demoLevelLabels[level].en} ({count})
                   </button>
                 );
               })
@@ -463,7 +560,7 @@ export function TopologyGeneratorDialog({
                 <span>{isTr ? 'Aradığınız kriterlere uygun mimari bulunamadı.' : 'No scenarios match your search.'}</span>
               </div>
             )
-          ) : (
+          ) : activeTab === 'testLabs' ? (
             filteredTestScenarios.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full min-w-0">
                 {filteredTestScenarios.map(p => {
@@ -529,6 +626,77 @@ export function TopologyGeneratorDialog({
                 <span>{isTr ? 'Aradığınız kriterlere uygun test senaryosu bulunamadı.' : 'No test scenarios match your search.'}</span>
               </div>
             )
+          ) : (
+            filteredDemoProjects.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full min-w-0">
+                {filteredDemoProjects.map(p => {
+                  const isSelected = selectedDemoId === p.id;
+                  const levelColors = {
+                    basic: 'bg-green-500/20 text-green-400',
+                    intermediate: 'bg-yellow-500/20 text-yellow-400',
+                    advanced: 'bg-red-500/20 text-red-400',
+                  };
+
+                  return (
+                    <button
+                      key={p.id}
+                      onClick={() => setSelectedDemoId(p.id)}
+                      className={`flex flex-col justify-between p-2.5 rounded-xl text-left transition-all duration-150 border relative group w-full min-w-0 box-border ${isSelected
+                          ? isDark
+                            ? 'border-purple-500 bg-purple-500/15 ring-1 ring-purple-500/50 shadow-md shadow-purple-950/20'
+                            : 'border-purple-500 bg-purple-50/90 ring-1 ring-purple-400/50 shadow-sm'
+                          : isDark
+                            ? 'border-secondary-800 hover:border-secondary-700 bg-secondary-800/40 hover:bg-secondary-800/80'
+                            : 'border-secondary-200/90 hover:border-secondary-300 bg-secondary-50/60 hover:bg-secondary-100/80'
+                        }`}
+                    >
+                      <div className="flex items-start gap-2.5 w-full min-w-0">
+                        <div className={`p-2 rounded-lg shrink-0 transition-colors ${isSelected
+                            ? 'bg-purple-500 text-white'
+                            : 'bg-emerald-500/20 text-emerald-400'
+                          }`}>
+                          <Monitor className="w-4 h-4" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-1 justify-between min-w-0">
+                            <div className={`text-xs font-bold truncate min-w-0 flex-1 ${isSelected
+                                ? isDark ? 'text-purple-200' : 'text-purple-900'
+                                : isDark ? 'text-white' : 'text-secondary-900'
+                              }`}>
+                              {p.title}
+                            </div>
+                            <span className={`text-[8px] px-1.5 py-0.2 rounded-full font-semibold shrink-0 ml-1 ${levelColors[p.level]}`}>
+                              {p.level}
+                            </span>
+                          </div>
+                          <p className={`text-[10px] leading-tight mt-1 line-clamp-2 ${isDark ? 'text-secondary-400' : 'text-secondary-600'
+                            }`}>
+                            {p.description}
+                          </p>
+                          <div className="flex items-center gap-1 mt-1.5">
+                            <span className={`text-[8px] px-1 py-0.2 rounded font-mono ${isDark ? 'bg-secondary-800 text-secondary-400' : 'bg-secondary-200 text-secondary-600'
+                              }`}>
+                              #{p.tag}
+                            </span>
+                            {p.injectedFaults && p.injectedFaults.length > 0 && (
+                              <span className={`text-[8px] px-1 py-0.2 rounded font-mono ${isDark ? 'bg-red-900/30 text-red-400' : 'bg-red-100 text-red-600'
+                                }`}>
+                                🔧 Fault
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className={`text-center py-8 text-xs flex flex-col items-center justify-center gap-1.5 ${isDark ? 'text-secondary-500' : 'text-secondary-400'}`}>
+                <Info className="w-5 h-5 opacity-60" />
+                <span>{isTr ? 'Aradığınız kriterlere uygun demo projesi bulunamadı.' : 'No demo projects match your search.'}</span>
+              </div>
+            )
           )}
         </div>
 
@@ -548,13 +716,22 @@ export function TopologyGeneratorDialog({
                       {isTr ? selectedDef.descTr : selectedDef.descEn}
                     </span>
                   </>
-                ) : (
+                ) : activeTab === 'testLabs' ? (
                   <>
                     <span className="font-semibold text-purple-400">
                       {isTr ? selectedTest?.titleTr : selectedTest?.titleEn}:{' '}
                     </span>
                     <span className={isDark ? 'text-secondary-300' : 'text-secondary-600'}>
                       {isTr ? selectedTest?.descTr : selectedTest?.descEn}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <span className="font-semibold text-purple-400">
+                      {selectedDemo?.title}:{' '}
+                    </span>
+                    <span className={isDark ? 'text-secondary-300' : 'text-secondary-600'}>
+                      {selectedDemo?.description}
                     </span>
                   </>
                 )}

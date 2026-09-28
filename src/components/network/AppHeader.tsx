@@ -20,7 +20,6 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { cn } from '@/lib/utils';
-import { isDesktopApp } from '@/lib/utils/desktopDetection';
 import {
   Menu, Plus, Save, FolderOpen, Languages, Sun, Moon, File, BookOpen, Leaf, Compass, Info, Sparkles, Cloud, Trophy,
   Mail, GraduationCap, ImageDown, FileText, Wand2, Gamepad2
@@ -200,24 +199,20 @@ export function AppHeader({
                       <ShortcutBadge shortcut="Ctrl+S" variant="success" />
                     </TooltipContent>
                   </Tooltip>
-                  {!isDesktopApp() && (
-                    <>
-                      <div className={cn("w-px h-5 mx-1", isDark ? "bg-secondary-700" : "bg-secondary-300")} />
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <button aria-label={t.saveAsPNG}
-                            className={cn("h-8 w-8 flex items-center justify-center transition-all hover:bg-secondary-200/50", isDark ? 'text-secondary-300 hover:text-success-400 hover:bg-secondary-700/50' : 'text-secondary-600 hover:text-success-600')}
-                            onClick={() => window.dispatchEvent(new CustomEvent('trigger-topology-export-png'))}
-                          >
-                            <ImageDown className="w-4 h-4" />
-                          </button>
-                        </TooltipTrigger>
-                        <TooltipContent className="flex items-center gap-2">
-                          <span>{t.saveAsPNG}</span>
-                        </TooltipContent>
-                      </Tooltip>
-                    </>
-                  )}
+                  <div className={cn("w-px h-5 mx-1", isDark ? "bg-secondary-700" : "bg-secondary-300")} />
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button aria-label={t.saveAsPNG}
+                        className={cn("h-8 w-8 flex items-center justify-center transition-all hover:bg-secondary-200/50", isDark ? 'text-secondary-300 hover:text-success-400 hover:bg-secondary-700/50' : 'text-secondary-600 hover:text-success-600')}
+                        onClick={() => window.dispatchEvent(new CustomEvent('trigger-topology-export-png'))}
+                      >
+                        <ImageDown className="w-4 h-4" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent className="flex items-center gap-2">
+                      <span>{t.saveAsPNG}</span>
+                    </TooltipContent>
+                  </Tooltip>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <button aria-label={t.topologyGenerator}
@@ -441,16 +436,14 @@ export function AppHeader({
 
                   {/* Group: Exports */}
                   <div className={`p-3 rounded-xl border ${isDark ? 'bg-secondary-800/30 border-secondary-800/50' : 'bg-secondary-50 border-secondary-200'}`}>
-                    <div className={cn("grid gap-2", !isDesktopApp() ? "grid-cols-2" : "grid-cols-1")}>
-                      {!isDesktopApp() && (
-                        <Button
-                          variant="outline"
-                          className={cn("justify-start gap-2 h-11 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover", isDark ? "hover:text-success-400" : "hover:text-success-600")}
-                          onClick={() => { window.dispatchEvent(new CustomEvent('trigger-topology-export-png')); setShowMobileMenu(false); }}
-                        >
-                          <ImageDown className="w-3.5 h-3.5 flex-shrink-0" /> <span>{t.saveAsPNG}</span>
-                        </Button>
-                      )}
+                    <div className="grid gap-2 grid-cols-2">
+                      <Button
+                        variant="outline"
+                        className={cn("justify-start gap-2 h-11 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover", isDark ? "hover:text-success-400" : "hover:text-success-600")}
+                        onClick={() => { window.dispatchEvent(new CustomEvent('trigger-topology-export-png')); setShowMobileMenu(false); }}
+                      >
+                        <ImageDown className="w-3.5 h-3.5 flex-shrink-0" /> <span>{t.saveAsPNG}</span>
+                      </Button>
                       <Button
                         variant="outline"
                         disabled={isExamActive}

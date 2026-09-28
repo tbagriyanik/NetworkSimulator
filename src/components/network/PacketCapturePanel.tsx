@@ -1,4 +1,4 @@
-﻿import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Trash2, Eraser, Search, ChevronLeft, ChevronRight, ChevronDown, X } from 'lucide-react';
 import { useAppStore } from '@/lib/store/appStore';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -288,8 +288,11 @@ export const PacketCapturePanel = ({
           <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5">
             {[
               { label: language === 'tr' ? 'Tümü' : 'All', val: '' },
-              { label: language === 'tr' ? '🚨 DROP' : '🚨 DROP', val: 'drop' },
-              { label: 'ICMP', val: 'icmp' },
+              { label: language === 'tr' ? '🚨 Sadece Drop' : '🚨 Drops Only', val: 'drop' },
+              { label: language === 'tr' ? '🌐 Sadece OSPF' : '🌐 OSPF Only', val: 'ospf' },
+              { label: language === 'tr' ? '🔀 Sadece BGP' : '🔀 BGP Only', val: 'bgp' },
+              { label: language === 'tr' ? '📡 Sadece ICMP' : '📡 ICMP Only', val: 'icmp' },
+              { label: language === 'tr' ? '🌳 Sadece STP' : '🌳 STP Only', val: 'stp' },
               { label: 'ARP', val: 'arp' },
               { label: 'TCP', val: 'tcp' },
               { label: 'UDP', val: 'udp' },
@@ -297,7 +300,6 @@ export const PacketCapturePanel = ({
               { label: 'HTTP', val: 'http' },
               { label: 'DHCP', val: 'dhcp' },
               { label: 'MQTT', val: 'mqtt' },
-              { label: 'OSPF', val: 'ospf' },
             ].map(p => (
               <button
                 key={p.label}

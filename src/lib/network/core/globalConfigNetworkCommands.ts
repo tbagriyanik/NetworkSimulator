@@ -270,6 +270,56 @@ export function cmdIpNatInsideSourceList(state: SwitchState, input: string, _ctx
   return { success: false, error: '% Invalid dynamic NAT command' };
 }
 
+export function cmdNoIpNatPool(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
+  const match = input.match(/^(?:no\s+)?ip\s+nat\s+pool\s+(\S+)/i);
+  if (!match) return { success: false, error: '% Invalid NAT pool command' };
+
+  const poolName = match[1];
+  const pools = { ...state.natPools };
+  delete pools[poolName];
+
+  return { success: true, newState: { natPools: pools } };
+}
+
+export function cmdNoIpNatInsideSourceStatic(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
+  const match = input.match(/^(?:no\s+)?ip\s+nat\s+inside\s+source\s+static\s+([0-9.]+)(?:\s+([0-9.]+))?$/i);
+  if (!match) return { success: false, error: '% Invalid static NAT command' };
+
+  const localIp = match[1];
+  const globalIp = match[2];
+  const staticTranslations = (state.natStaticTranslations || []).filter(t => {
+    if (globalIp) {
+      return !(t.localIp === localIp && t.globalIp === globalIp);
+    }
+    return t.localIp !== localIp;
+  });
+
+  return { success: true, newState: { natStaticTranslations: staticTranslations } };
+}
+
+export function cmdNoIpNatInsideSourceList(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
+  if (state.currentMode !== 'config') return { success: false, error: cliModeError() };
+  const match = input.match(/^(?:no\s+)?ip\s+nat\s+inside\s+source\s+list\s+(\d+)(?:\s+(interface|pool)\s+(\S+))?(?:\s+overload)?$/i);
+  if (!match) return { success: false, error: '% Invalid dynamic NAT command' };
+
+  const aclId = match[1];
+  const type = match[2]?.toLowerCase();
+  const target = match[3];
+
+  const dynamicRules = (state.natDynamicRules || []).filter(r => {
+    if (r.aclId !== aclId) return true;
+    if (!type || !target) return false;
+    if (type === 'interface' && r.interface?.toLowerCase() === target.toLowerCase()) return false;
+    if (type === 'pool' && r.poolName?.toLowerCase() === target.toLowerCase()) return false;
+    return true;
+  });
+
+  return { success: true, newState: { natDynamicRules: dynamicRules } };
+}
+
+
 /**
  * Logging host & trap commands (Syslog support)
  */

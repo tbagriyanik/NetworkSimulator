@@ -63,15 +63,15 @@ export const routingCorePatterns: Record<string, CommandPattern> = {
     maxArgs: 1
   },
   'no router eigrp': {
-    pattern: /^no\s+router\s+eigrp\s*(\d*)$/i,
+    pattern: /^no\s+router\s+eigrp(?:\s+(\d+))?$/i,
     modes: ['config'],
-    minArgs: 1,
+    minArgs: 0,
     maxArgs: 1
   },
   'no router bgp': {
-    pattern: /^no\s+router\s+bgp\s*(\d*)$/i,
+    pattern: /^no\s+router\s+bgp(?:\s+(\d+))?$/i,
     modes: ['config'],
-    minArgs: 1,
+    minArgs: 0,
     maxArgs: 1
   },
   'network': {
@@ -282,6 +282,42 @@ export const routingCorePatterns: Record<string, CommandPattern> = {
     pattern: /^no\s+neighbor\s+[0-9.]+\s+med$/i,
     modes: ['router-config'],
     minArgs: 2,
+    maxArgs: 2
+  },
+  'neighbor weight': {
+    pattern: /^neighbor\s+[0-9.]+\s+weight\s+\d+$/i,
+    modes: ['router-config'],
+    minArgs: 2,
+    maxArgs: 2
+  },
+  'no neighbor weight': {
+    pattern: /^no\s+neighbor\s+[0-9.]+\s+weight(?:\s+\d+)?$/i,
+    modes: ['router-config'],
+    minArgs: 2,
+    maxArgs: 3
+  },
+  'neighbor route-map': {
+    pattern: /^neighbor\s+[0-9.]+\s+route-map\s+\S+\s+(?:in|out)$/i,
+    modes: ['router-config'],
+    minArgs: 3,
+    maxArgs: 3
+  },
+  'no neighbor route-map': {
+    pattern: /^no\s+neighbor\s+[0-9.]+\s+route-map(?:\s+\S+)?(?:\s+(?:in|out))?$/i,
+    modes: ['router-config'],
+    minArgs: 2,
+    maxArgs: 4
+  },
+  'no neighbor': {
+    pattern: /^no\s+neighbor\s+([0-9.]+)(?:\s+remote-as(?:\s+\d+)?)?$/i,
+    modes: ['router-config'],
+    minArgs: 1,
+    maxArgs: 2
+  },
+  'no neighbor remote-as': {
+    pattern: /^no\s+neighbor\s+([0-9.]+)\s+remote-as(?:\s+\d+)?$/i,
+    modes: ['router-config'],
+    minArgs: 1,
     maxArgs: 2
   },
   'aggregate-address': {

@@ -73,10 +73,10 @@ export const interfaceServicesPatterns: Record<string, CommandPattern> = {
     capability: 'routing'
   },
   'no channel-group': {
-    pattern: /^no\s+channel-group\s+(\d+)$/i,
+    pattern: /^no\s+channel-group(?:\s+\d+)?(?:\s+mode\s+\w+)?$/i,
     modes: ['interface', 'config-if-range'],
-    minArgs: 1,
-    maxArgs: 1
+    minArgs: 0,
+    maxArgs: 3
   },
   'channel-protocol': {
     pattern: /^channel-protocol\s+(lacp|pagp)$/i,
