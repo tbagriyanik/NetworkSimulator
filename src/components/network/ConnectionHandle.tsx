@@ -40,16 +40,27 @@ const ConnectionHandle = memo(function ConnectionHandle({
     ? (sameConnIndex - (totalSameConns - 1) / 2) * baseSpacing
     : 0;
 
+  const midY = (source.y + target.y) / 2;
+
   const perpX = (-dy / len) * offset;
   const perpY = (dx / len) * offset;
 
-  const controlPoint1 = {
-    x: source.x + (dx * 0.28) + perpX * 1.15,
-    y: source.y + (dy * 0.28) + perpY * 1.15,
+  const isHorizontal = Math.abs(dx) >= Math.abs(dy);
+
+  const controlPoint1 = isHorizontal ? {
+    x: midX + perpX,
+    y: source.y + perpY
+  } : {
+    x: source.x + perpX,
+    y: midY + perpY
   };
-  const controlPoint2 = {
-    x: target.x - (dx * 0.28) + perpX * 1.15,
-    y: target.y - (dy * 0.28) + perpY * 1.15,
+
+  const controlPoint2 = isHorizontal ? {
+    x: midX + perpX,
+    y: target.y + perpY
+  } : {
+    x: target.x + perpX,
+    y: midY + perpY
   };
 
   const tTrash = 0.5;

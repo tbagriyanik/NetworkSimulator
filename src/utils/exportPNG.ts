@@ -1,4 +1,4 @@
-﻿import { CanvasDevice, CanvasConnection, CanvasNote } from '@/components/network/NetworkTopology/types/networkTopology.types';
+import { CanvasDevice, CanvasConnection, CanvasNote } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { isCableCompatible, SwitchState } from '@/lib/network/types';
 import { CABLE_COLORS } from '@/components/network/NetworkTopology/utils/networkTopology.constants';
 import { logger } from '../lib/logger';
@@ -182,10 +182,23 @@ export function exportTopologyToPNG(options: ExportPNGOptions): void {
 
       const srcPort = getPortPosition(src, conn.sourcePort);
       const tgtPort = getPortPosition(dst, conn.targetPort);
-      const midX = (srcPort.x + tgtPort.x) / 2;
+      const dx = tgtPort.x - srcPort.x;
+      const dy = tgtPort.y - srcPort.y;
+      const len = Math.sqrt(dx * dx + dy * dy) || 1;
+      const defaultCurve = Math.min(32, Math.max(18, len * 0.10));
+      const perpX = (-dy / len) * defaultCurve;
+      const perpY = (dx / len) * defaultCurve;
 
-      const pathD = 'M ' + srcPort.x + ' ' + srcPort.y +
-        ' C ' + midX + ' ' + srcPort.y + ', ' + midX + ' ' + tgtPort.y + ', ' + tgtPort.x + ' ' + tgtPort.y;
+      const cp1 = {
+        x: srcPort.x + (dx * 0.28) + perpX * 1.15,
+        y: srcPort.y + (dy * 0.28) + perpY * 1.15,
+      };
+      const cp2 = {
+        x: tgtPort.x - (dx * 0.28) + perpX * 1.15,
+        y: tgtPort.y - (dy * 0.28) + perpY * 1.15,
+      };
+
+      const pathD = `M ${srcPort.x} ${srcPort.y} C ${cp1.x} ${cp1.y}, ${cp2.x} ${cp2.y}, ${tgtPort.x} ${tgtPort.y}`;
 
       // Check compatibility, shutdown status, offline status, and STP blocking
       const srcPortObj = src.ports.find(p => p.id === conn.sourcePort);
@@ -237,8 +250,8 @@ export function exportTopologyToPNG(options: ExportPNGOptions): void {
       const bezierPoint = (t: number) => {
         const mt = 1 - t;
         return {
-          x: mt * mt * mt * srcPort.x + 3 * mt * mt * t * midX + 3 * mt * t * t * midX + t * t * t * tgtPort.x,
-          y: mt * mt * mt * srcPort.y + 3 * mt * mt * t * srcPort.y + 3 * mt * t * t * tgtPort.y + t * t * t * tgtPort.y,
+          x: mt * mt * mt * srcPort.x + 3 * mt * mt * t * cp1.x + 3 * mt * t * t * cp2.x + t * t * t * tgtPort.x,
+          y: mt * mt * mt * srcPort.y + 3 * mt * mt * t * cp1.y + 3 * mt * t * t * cp2.y + t * t * t * tgtPort.y,
         };
       };
       const srcLabelPos = bezierPoint(0.42);

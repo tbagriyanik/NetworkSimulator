@@ -424,24 +424,35 @@ export function useTopologyMouse(props: UseTopologyMouseProps) {
                 const meta = connectionMetaRef.current.get(conn.id) || { index: 0, total: 1 };
                 const sameConnIndex = meta.index;
                 const totalSameConns = meta.total;
-                const maxOffset = 20;
-                const offset = totalSameConns > 1
-                  ? (sameConnIndex - (totalSameConns - 1) / 2) * (maxOffset / Math.max(totalSameConns - 1, 1))
-                  : 0;
-
                 const dxVal = tgtPort.x - srcPort.x;
                 const dyVal = tgtPort.y - srcPort.y;
                 const len = Math.sqrt(dxVal * dxVal + dyVal * dyVal) || 1;
-                const perpX = -dyVal / len * offset;
-                const perpY = dxVal / len * offset;
+                const baseSpacing = Math.min(36, Math.max(24, len * 0.12));
+                const offset = totalSameConns > 1
+                  ? (sameConnIndex - (totalSameConns - 1) / 2) * baseSpacing
+                  : 0;
 
-                const controlPoint1 = {
+                const midY = (srcPort.y + tgtPort.y) / 2;
+
+                const perpX = (-dyVal / len) * offset;
+                const perpY = (dxVal / len) * offset;
+
+                const isHorizontal = Math.abs(dxVal) >= Math.abs(dyVal);
+
+                const controlPoint1 = isHorizontal ? {
                   x: midX + perpX,
-                  y: srcPort.y + perpY + Math.abs(offset) * 0.5
+                  y: srcPort.y + perpY
+                } : {
+                  x: srcPort.x + perpX,
+                  y: midY + perpY
                 };
-                const controlPoint2 = {
+
+                const controlPoint2 = isHorizontal ? {
                   x: midX + perpX,
-                  y: tgtPort.y + perpY - Math.abs(offset) * 0.5
+                  y: tgtPort.y + perpY
+                } : {
+                  x: tgtPort.x + perpX,
+                  y: midY + perpY
                 };
 
                 const buildWavePath = (sx: number, sy: number, tx: number, ty: number) => {

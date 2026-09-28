@@ -102,26 +102,32 @@ export const PingAnimationOverlay: React.FC<PingAnimationOverlayProps> = ({
     target = getDeviceCenter(toDevice);
   }
 
-  const midX = (source.x + target.x) / 2;
   const sameDeviceConnections = connections.filter(
     c => (c.sourceDeviceId === fromDevice.id && c.targetDeviceId === toDevice.id) ||
       (c.sourceDeviceId === toDevice.id && c.targetDeviceId === fromDevice.id)
   );
   const sameConnIndex = conn ? sameDeviceConnections.findIndex(c => c.id === conn.id) : 0;
   const totalSameConns = sameDeviceConnections.length;
-  const maxOffset = 20;
-  const offset = totalSameConns > 1
-    ? (sameConnIndex - (totalSameConns - 1) / 2) * (maxOffset / Math.max(totalSameConns - 1, 1))
-    : 0;
-
   const dx = target.x - source.x;
   const dy = target.y - source.y;
   const len = Math.sqrt(dx * dx + dy * dy) || 1;
-  const perpX = -dy / len * offset;
-  const perpY = dx / len * offset;
+  const baseSpacing = Math.min(36, Math.max(24, len * 0.12));
+  const defaultCurve = Math.min(32, Math.max(18, len * 0.10));
+  const offset = totalSameConns > 1
+    ? (sameConnIndex - (totalSameConns - 1) / 2) * baseSpacing
+    : defaultCurve;
 
-  const controlPoint1 = { x: midX + perpX, y: source.y + perpY + Math.abs(offset) * 0.5 };
-  const controlPoint2 = { x: midX + perpX, y: target.y + perpY - Math.abs(offset) * 0.5 };
+  const perpX = (-dy / len) * offset;
+  const perpY = (dx / len) * offset;
+
+  const controlPoint1 = {
+    x: source.x + (dx * 0.28) + perpX * 1.15,
+    y: source.y + (dy * 0.28) + perpY * 1.15,
+  };
+  const controlPoint2 = {
+    x: target.x - (dx * 0.28) + perpX * 1.15,
+    y: target.y - (dy * 0.28) + perpY * 1.15,
+  };
 
   const progressVal = progress;
   const p2 = progressVal * progressVal; const p3 = p2 * progressVal;
