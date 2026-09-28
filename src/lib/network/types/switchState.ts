@@ -645,6 +645,7 @@ export interface SwitchState {
     group: string;
     incomingInterface: string;
     outgoingInterfaces: string[];
+    prunedInterfaces?: string[];
     flags?: string;
     uptime?: number;          // creation timestamp (ms)
     expires?: number;         // expiry timestamp (ms)

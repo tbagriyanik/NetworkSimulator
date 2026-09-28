@@ -9,6 +9,7 @@
     "start": "next start",
     "lint": "oxlint",
     "test": "vitest run",
+    "test:perf": "vitest run src/tests/performance",
     "update-readme": "node scripts/update-readme-badges.cjs",
     "check": "tsc --noEmit && next build && oxlint && vitest run",
     "build:desktop": "node scripts/build-desktop.cjs",

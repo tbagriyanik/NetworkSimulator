@@ -6,7 +6,7 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-7.0.2-3178C6?logo=typescript&logoColor=white)
 ![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-4.3.3-06B6D4?logo=tailwindcss&logoColor=white)
 ![FOSS](https://img.shields.io/badge/FOSS-Free%20Open%20Source-brightgreen)
-![Total Lines](https://img.shields.io/badge/total--lines-~228k-lightgrey)
+![Total Lines](https://img.shields.io/badge/total--lines-~230k-lightgrey)
 
 A comprehensive, client-side, browser-based network simulator for learning switching, routing, wireless, security, IoT, CLI terminal workflows.
 
@@ -106,8 +106,9 @@ git push origin main --tags
 - **🐍 Python Yorumlayıcısı, Dosya & GUI/Ses/3D İşlemleri:** PC terminalinde OOP, Decorator, Generator, `open()` ile sanal dosya I/O; `tkinter`/`form` ile görsel pencereli form uygulamaları; Web Audio API tabanlı dinamik nota/akor/müzik ve ses efekti (`audio`/`music`/`synth`) sentezleme; `scene3d`/`three3d` ile interaktif 3D sahne, katı geometri (CSG) ve ışıklandırma motoru; soket ağ programlama.
 - **🖥️ Çapraz Platform Özellik Eşitliği:** macOS (`Cmd`) ve Windows/Linux (`Ctrl`) kısayol standardizasyonu, native dosya diyalogları ve çevrimdışı çalışma doğrulamaları.
 - **🔍 Gelişmiş Teşhis & Sağlık Denetimi:** Native VLAN mismatch, çakışan IP/MAC tespiti, routing loop tespiti, orphan port denetimi ve tek komutla `show network health` raporu.
+- **🔌 Kontrol Düzlemi Protokol Enjeksiyonu (NETCONF / MQTT / CoAP):** Privileged modda `netconf hello|get|edit-config|close-session`, `mqtt connect|subscribe|publish`, `coap get|put|delete` komutları gerçek bir `NetworkPacketFrame` üretip forwarding engine'in `processControlPlaneProtocols` girişinden geçirir; oturum, client ve resource durumu `show netconf sessions`, `show mqtt clients|topics`, `show coap resources` ile okunur. NETCONF'ta RFC 6241 capability exchange zorunluluğu uygulanır: oturumsuz `get` isteği `<rpc-error> session-not-established` ile reddedilir.
 
-> **Kapsam notu:** README’de listelenen CLI, parser, state, paket yakalama ve forwarding özellikleri her protokolde aynı olgunluk seviyesinde değildir. NetFlow/sFlow, MQTT, CoAP, NETCONF-YANG ve RESTCONF için mevcut davranışlar eğitim amaçlı simülasyon kapsamındadır; “destekleniyor” ifadesi tek başına tam üretim protokol uygulaması veya gerçek harici collector/server uyumluluğu anlamına gelmez.
+> **Kapsam notu:** README’de listelenen CLI, parser, state, paket yakalama ve forwarding özellikleri her protokolde aynı olgunluk seviyesinde değildir. NetFlow/sFlow, MQTT, CoAP, NETCONF-YANG ve RESTCONF için mevcut davranışlar eğitim amaçlı simülasyon kapsamındadır; “destekleniyor” ifadesi tek başına tam üretim protokol uygulaması veya gerçek harici collector/server uyumluluğu anlamına gelmez. Kontrol düzlemi komutları çerçeve düzeyinde çalışır: frame'ler süreç içinde sentezlenir, sokete veya kabloya yazılmaz; `netconfTransport.ts` XML yerine düz bir nesne işler ve bu sonuçlar `realismLevel: sim-only` olarak işaretlenir. Bu nedenle harici bir NETCONF/RESTCONF yöneticisiyle veya MQTT/CoAP broker ile birlikte kullanılamazlar.
 
 ---
 
@@ -116,8 +117,8 @@ git push origin main --tags
 | Metrik / Metric | Değer / Value |
 | --- | --- |
 | Version / Sürüm | 6.8.0 |
-| Total Lines / Toplam Satır (`src/`) | ~227,995 |
-| Source Files / Kaynak Dosya | 1110 |
+| Total Lines / Toplam Satır (`src/`) | ~229,729 |
+| Source Files / Kaynak Dosya | 1113 |
 | Documentation Files / Dokümantasyon Dosya | 30 |
 | Example Projects / Örnek Proje | 49 |
 | Guided Lessons / Rehberli Ders | 19 |

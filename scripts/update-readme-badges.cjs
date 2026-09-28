@@ -33,7 +33,7 @@ let readme = fs.readFileSync(README_PATH, 'utf-8');
 
 console.log(`Found ${files} source files with ${formatted} total lines in src/`);
 
-// Match total--lines-~170k-lightgrey or similar shield badge URLs
+// Match total--lines-~228k-lightgrey or similar shield badge URLs
 const badgeRegex = /(total--lines-)[^-\s")]+/;
 if (badgeRegex.test(readme)) {
   readme = readme.replace(badgeRegex, `$1~${Math.round(total / 1000)}k`);
@@ -45,7 +45,7 @@ if (tableRegex.test(readme)) {
   readme = readme.replace(tableRegex, `$1~${formatted} `);
 }
 
-// Match Source Files in Markdown Table: | Source Files / Kaynak Dosya | 729 |
+// Match Source Files in Markdown Table: | Source Files / Kaynak Dosya | 1110 |
 const sourceFilesRegex = /(\|\s*Source Files[^|]*\|\s*)[^|\r\n]+(?=\|)/i;
 if (sourceFilesRegex.test(readme)) {
   readme = readme.replace(sourceFilesRegex, `$1${files} `);

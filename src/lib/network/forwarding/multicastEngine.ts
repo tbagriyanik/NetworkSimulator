@@ -277,5 +277,9 @@ export function checkRpf(
  * Returns ports that are dense-mode pruned for the given multicast group.
  */
 export function getPrunedPorts(state: SwitchState, group: string): string[] {
-  return state.pimPrunedInterfaces?.[group] ?? [];
+  const globalPruned = state.pimPrunedInterfaces?.[group] ?? [];
+  const entryPruned = (state.mrouteEntries ?? [])
+    .filter(e => e.group === group || e.group === '*')
+    .flatMap(e => e.prunedInterfaces ?? []);
+  return Array.from(new Set([...globalPruned, ...entryPruned]));
 }

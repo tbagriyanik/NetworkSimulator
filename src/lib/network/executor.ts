@@ -37,6 +37,7 @@ import { dhcpConfigHandlers } from './core/dhcpConfigCommands';
 import { firewallHandlers } from './core/firewallCommands';
 import { wirelessHandlers } from './core/wirelessCommands';
 import { flowSubmodeHandlers } from './core/flowCommands';
+import { controlPlaneProtocolHandlers } from './core/controlPlaneProtocolCommands';
 
 // --- Command handler types & context ---
 import { CommandContext, CommandHandler } from './core/commandTypes';
@@ -440,7 +441,10 @@ export const commandHandlers: Record<string, CommandHandler> = {
     existing[mapName] = clauses;
     const newState = { routeMaps: existing, currentMode: state.currentMode, currentRouteMap: state.currentRouteMap };
     return { success: true, output: '', newState: { ...newState, runningConfig: buildRunningConfig({ ...state, ...newState }) } };
-  }
+  },
+
+  // NETCONF / MQTT / CoAP control-plane ingress handlers
+  ...controlPlaneProtocolHandlers,
 };
 
 // Re-export getPrompt and commandHelp for backward compatibility

@@ -52,6 +52,8 @@ export interface Port {
   ipAddress?: string;           // For L3 ports or SVI
   subnetMask?: string;
   stpCost?: number;             // Manual STP path cost
+  bandwidthLimitMbps?: number;  // Rate-limiting bandwidth cap (Mbps)
+  isMrouterPort?: boolean;       // IGMP Snooping multicast router port flag
   arpTimeout?: string;          // ARP timeout setting
   macAddress?: string;         // Per-port MAC address (for router ports)
   allowedVlans?: number[] | string; // For trunk ports ('all', '10,20' or number[])

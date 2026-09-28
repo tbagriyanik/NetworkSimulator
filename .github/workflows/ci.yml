@@ -45,5 +45,8 @@ jobs:
       - name: Run Unit Tests
         run: pnpm test
 
+      - name: Run Performance Benchmarks (500 Devices Threshold < 3s)
+        run: pnpm test:perf
+
       - name: Build Project
         run: pnpm build

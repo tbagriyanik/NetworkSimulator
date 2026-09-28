@@ -10,16 +10,16 @@ permissions:
 
 jobs:
   update-badges:
-    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
       contents: write
 
     steps:
+      # No `ref:` pin — `github.head_ref` is only populated for `pull_request`
+      # events and is always empty on `push`/`workflow_dispatch`, so pinning it
+      # fell back to the default ref by accident rather than by intent.
       - name: Checkout Repository
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4

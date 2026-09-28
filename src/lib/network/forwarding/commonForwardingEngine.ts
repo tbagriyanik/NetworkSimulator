@@ -128,6 +128,12 @@ export function processControlPlaneProtocols(
   if (frame.netconfPayload && (frame.dstPort === undefined || frame.dstPort === 830)) {
     handled = true;
     const netconf = processNetconfFrame(state, frame.srcIp || frame.srcMac, frame.netconfPayload);
+    // RFC 6241: a non-hello operation outside an established session is
+    // rejected with <rpc-error>/<session-not-established>. Surfacing it as a
+    // rejected frame keeps the caller from reading a bogus OK back.
+    if (netconf.error) {
+      return { handled, rejected: true, updatedState: netconf.state };
+    }
     responseFrame = { ...frame, id: `netconf-response-${Date.now()}`, srcMac: frame.dstMac, dstMac: frame.srcMac,
       srcIp: frame.dstIp, dstIp: frame.srcIp, srcPort: 830, dstPort: frame.srcPort, netconfPayload: netconf.response,
       info: `NETCONF ${netconf.response.operation}` };

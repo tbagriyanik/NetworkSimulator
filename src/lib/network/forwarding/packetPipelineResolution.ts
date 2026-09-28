@@ -35,8 +35,11 @@ export function resolveEgress(
       // Multicast forwarding to joined IGMP receiver ports or PIM interfaces
       Object.values(state.ports || {}).forEach((port) => {
         const joined = port.igmpGroups?.includes(frame.dstIp as string);
-        const pimForwarding = Boolean(port.pimMode);
-        if (port.id !== frame.ingressPortId && !port.shutdown && port.status === 'connected' && (joined || pimForwarding)) {
+        const pimForwarding = Boolean(port.pimMode) || Boolean(port.isMrouterPort);
+        const portVlan = port.vlan ?? port.accessVlan ?? 1;
+        const frameVlan = frame.vlanId ?? 1;
+        const sameVlan = Number(portVlan) === Number(frameVlan);
+        if (port.id !== frame.ingressPortId && !port.shutdown && port.status === 'connected' && sameVlan && (joined || pimForwarding)) {
           egressPorts.push(port.id);
         }
       });
@@ -47,7 +50,7 @@ export function resolveEgress(
         if (conn) {
           nextDeviceId = conn.sourceDeviceId === device.id ? conn.targetDeviceId : conn.sourceDeviceId;
         }
-      } else if (state.multicastRoutingEnabled) {
+      } else if (state.multicastRoutingEnabled || state.igmpSnoopingEnabled) {
         routeDecision = `L2 Multicast drop: No active IGMP members or PIM neighbors for group ${frame.dstIp}`;
       } else {
         // Plain L2 broadcast flood fallback for un-snooped multicast
