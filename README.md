@@ -117,7 +117,7 @@ git push origin main --tags
 | Metrik / Metric | Değer / Value |
 | --- | --- |
 | Version / Sürüm | 6.8.1 |
-| Total Lines / Toplam Satır (`src/`) | ~230,799 |
+| Total Lines / Toplam Satır (`src/`) | ~230,853 |
 | Source Files / Kaynak Dosya | 1114 |
 | Documentation Files / Dokümantasyon Dosya | 25 |
 | Example Projects / Örnek Proje | 49 |
