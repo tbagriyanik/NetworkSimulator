@@ -232,6 +232,7 @@ doc/
 │
 ├── development/
 │   ├── ERROR_HANDLING_GUIDE.md     (Detaylı hata kontrolü & entegrasyon rehberi)
+│   ├── LOW_RESOURCE_OPTIMIZATIONS.md (Düşük donanımlı PC optimizasyon rehberi)
 │   └── CONTRIBUTING.md             (Katkı rehberi + agent konv.)
 │
 ├── training/
