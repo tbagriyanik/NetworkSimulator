@@ -104,6 +104,7 @@ export function MobileDeviceView({
     deviceStates,
     language,
     isTr,
+    isDark,
   });
 
   const voip = useMobileVoipState({

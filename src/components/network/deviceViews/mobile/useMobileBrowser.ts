@@ -14,6 +14,7 @@ interface UseMobileBrowserProps {
   deviceStates: Map<string, SwitchState>;
   language: string;
   isTr: boolean;
+  isDark: boolean;
 }
 
 export function useMobileBrowser({
@@ -23,6 +24,7 @@ export function useMobileBrowser({
   deviceStates,
   language,
   isTr,
+  isDark,
 }: UseMobileBrowserProps) {
   const [isBrowserOpen, setIsBrowserOpen] = useState(false);
   const [browserUrl, setBrowserUrl] = useState(device.gateway || '192.168.1.1');
@@ -129,7 +131,7 @@ export function useMobileBrowser({
       setBrowserTitle(targetDev.name || 'Router Admin');
       setBrowserContent(adminPage);
     } else if (targetDev && targetDev.type === 'printer') {
-      const printerPage = generatePrinterWebPanelContent(targetDev, language);
+      const printerPage = generatePrinterWebPanelContent(targetDev, language, isDark);
       setBrowserTitle(targetDev.name || 'Printer Web');
       setBrowserContent(printerPage);
     } else if (hostOrIp === '8.8.8.8' || hostOrIp === '8.8.4.4' || hostOrIp === '1.1.1.1' || targetDev?.type === 'cloud') {

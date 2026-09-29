@@ -258,7 +258,7 @@ export const SnapshotManagerModal: React.FC<SnapshotManagerModalProps> = ({
       <div
         className={`w-full max-w-4xl max-h-[90vh] h-[650px] rounded-2xl flex flex-col shadow-2xl border overflow-hidden ${isDark
           ? 'bg-secondary-950 !border-secondary-800 text-secondary-100 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.7)]'
-          : 'bg-white !border-secondary-200 text-secondary-800 shadow-2xl'
+          : 'bg-white !border-secondary-200 text-slate-900 shadow-2xl'
           }`}
       >
         {/* Modal Header */}
@@ -279,7 +279,7 @@ export const SnapshotManagerModal: React.FC<SnapshotManagerModalProps> = ({
                   {isTr ? 'Geri Yükleme Noktası' : 'Checkpoint'}
                 </span>
               </div>
-              <p className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+              <p className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
                 {isTr
                   ? 'Ağ topolojinizin anlık durumunu dondurun, kaydedin ve istediğiniz an tek tıkla geri yükleyin.'
                   : 'Freeze, save, and restore your network topology state instantly at any point in time.'}
@@ -288,8 +288,11 @@ export const SnapshotManagerModal: React.FC<SnapshotManagerModalProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
-            <label className="cursor-pointer px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-700 hover:bg-slate-800 text-slate-300 flex items-center gap-1.5 transition active:scale-95 shadow-sm">
-              <Upload className="w-3.5 h-3.5 text-indigo-400" />
+            <label className={`cursor-pointer px-3 py-1.5 text-xs font-semibold rounded-lg border flex items-center gap-1.5 transition active:scale-95 shadow-sm ${isDark
+              ? 'border-slate-700 hover:bg-slate-800 text-slate-300'
+              : 'border-slate-300 hover:bg-slate-100 text-slate-700'
+              }`}>
+              <Upload className={`w-3.5 h-3.5 ${isDark ? 'text-indigo-400' : 'text-indigo-600'}`} />
               <span>{isTr ? 'JSON İçe Aktar' : 'Import JSON'}</span>
               <input type="file" accept=".json" onChange={handleImportJson} className="hidden" />
             </label>
@@ -297,7 +300,7 @@ export const SnapshotManagerModal: React.FC<SnapshotManagerModalProps> = ({
               onClick={onClose}
               aria-label={isTr ? 'Kapat' : 'Close'}
               title={isTr ? 'Kapat' : 'Close'}
-              className={`p-1.5 rounded-lg border transition ${isDark ? 'border-slate-700 hover:bg-slate-800 text-slate-400 hover:text-white' : 'border-slate-300 hover:bg-slate-100 text-slate-600'
+              className={`p-1.5 rounded-lg border transition ${isDark ? 'border-slate-700 hover:bg-slate-800 text-slate-400 hover:text-white' : 'border-slate-300 hover:bg-slate-100 text-slate-700'
                 }`}
             >
               <X className="w-4 h-4" aria-hidden="true" />
@@ -421,15 +424,15 @@ export const SnapshotManagerModal: React.FC<SnapshotManagerModalProps> = ({
         {/* Checkpoint List */}
         <div className="flex-1 overflow-y-auto p-6 space-y-3 min-h-0">
           {filteredCheckpoints.length === 0 ? (
-            <div className="text-center py-20 text-slate-500 text-xs space-y-3">
-              <div className="w-12 h-12 rounded-2xl bg-slate-800/50 border border-slate-700 flex items-center justify-center mx-auto text-slate-400">
+            <div className={`text-center py-20 text-xs space-y-3 ${isDark ? 'text-slate-500' : 'text-slate-600'}`}>
+              <div className={`w-12 h-12 rounded-2xl border flex items-center justify-center mx-auto ${isDark ? 'bg-slate-800/50 border-slate-700 text-slate-400' : 'bg-slate-100 border-slate-300 text-slate-500'}`}>
                 <HardDrive className="w-6 h-6" />
               </div>
               <div>
-                <div className="font-bold text-sm text-slate-300">
+                <div className={`font-bold text-sm ${isDark ? 'text-slate-300' : 'text-slate-800'}`}>
                   {isTr ? 'Kayıtlı Topoloji Bulunamadı' : 'No Saved Snapshots Found'}
                 </div>
-                <p className="max-w-md mx-auto mt-1 text-slate-400 leading-relaxed">
+                <p className={`max-w-md mx-auto mt-1 leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
                   {isTr
                     ? 'Ağ üzerinde değişiklik yapmadan önce "Yeni Kayıt Al" diyerek topolojinin o anki halini dondurabilir ve bir sorun çıktığında tek tıkla o ana geri dönebilirsiniz.'
                     : 'Take a snapshot before making network changes to freeze topology state and instantly roll back if any issue occurs.'}
@@ -447,14 +450,17 @@ export const SnapshotManagerModal: React.FC<SnapshotManagerModalProps> = ({
               >
                 <div className="space-y-1.5 flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-bold text-sm text-slate-100">{cp.name}</span>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 font-mono">
+                    <span className={`font-bold text-sm ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>{cp.name}</span>
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full border font-mono ${isDark
+                      ? 'bg-indigo-500/10 border-indigo-500/30 text-indigo-400'
+                      : 'bg-indigo-50 border-indigo-200 text-indigo-700'
+                      }`}>
                       {cp.deviceCount} {isTr ? 'Cihaz' : 'Devices'} • {cp.connectionCount} {isTr ? 'Bağlantı' : 'Links'}
                     </span>
                   </div>
-                  {cp.description && <p className="text-xs text-slate-400 truncate">{cp.description}</p>}
-                  <div className="flex items-center gap-1.5 text-[11px] text-slate-500 font-mono">
-                    <Clock className="w-3 h-3 text-slate-400" />
+                  {cp.description && <p className={`text-xs truncate ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>{cp.description}</p>}
+                  <div className={`flex items-center gap-1.5 text-[11px] font-mono ${isDark ? 'text-slate-500' : 'text-slate-600'}`}>
+                    <Clock className={`w-3 h-3 ${isDark ? 'text-slate-400' : 'text-slate-500'}`} />
                     <span>{new Date(cp.createdAt).toLocaleString(isTr ? 'tr-TR' : 'en-US')}</span>
                   </div>
                 </div>
@@ -465,7 +471,7 @@ export const SnapshotManagerModal: React.FC<SnapshotManagerModalProps> = ({
                     title={isTr ? 'JSON Olarak İndir' : 'Export as JSON'}
                     className={`p-2 rounded-lg border text-xs transition ${isDark
                       ? 'border-slate-800 hover:bg-slate-800 text-slate-400 hover:text-slate-200'
-                      : 'border-slate-300 hover:bg-slate-100 text-slate-600'
+                      : 'border-slate-300 hover:bg-slate-100 text-slate-700'
                       }`}
                   >
                     <Download className="w-3.5 h-3.5" />
@@ -473,7 +479,10 @@ export const SnapshotManagerModal: React.FC<SnapshotManagerModalProps> = ({
                   <button
                     onClick={() => handleDelete(cp.id, cp.name)}
                     title={isTr ? 'Kaydı Sil' : 'Delete Snapshot'}
-                    className="p-2 rounded-lg border border-rose-500/20 hover:bg-rose-500/10 text-rose-400 transition"
+                    className={`p-2 rounded-lg border transition ${isDark
+                      ? 'border-rose-500/20 hover:bg-rose-500/10 text-rose-400'
+                      : 'border-rose-200 hover:bg-rose-50 text-rose-700'
+                      }`}
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
@@ -497,18 +506,18 @@ export const SnapshotManagerModal: React.FC<SnapshotManagerModalProps> = ({
         {showConfirmRollback && selectedCheckpoint && (
           <div className="absolute inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
             <div
-              className={`max-w-md w-full p-5 rounded-2xl border shadow-2xl space-y-4 animate-in zoom-in-95 duration-150 ${isDark ? 'bg-slate-900 border-slate-700 text-slate-100' : 'bg-white border-slate-200 text-slate-800'
+              className={`max-w-md w-full p-5 rounded-2xl border shadow-2xl space-y-4 animate-in zoom-in-95 duration-150 ${isDark ? 'bg-slate-900 border-slate-700 text-slate-100' : 'bg-white border-slate-200 text-slate-900'
                 }`}
             >
-              <div className="flex items-center gap-3 text-amber-400">
+              <div className={`flex items-center gap-3 ${isDark ? 'text-amber-400' : 'text-amber-600'}`}>
                 <AlertCircle className="w-6 h-6 shrink-0" />
                 <div>
                   <h4 className="font-bold text-sm">{isTr ? 'Geri Yüklemeyi Onayla' : 'Confirm Restoration'}</h4>
-                  <span className="text-[10px] text-slate-400 font-mono">{isTr ? 'Hedef: ' : 'Target: '}{selectedCheckpoint.name}</span>
+                  <span className={`text-[10px] font-mono ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>{isTr ? 'Hedef: ' : 'Target: '}{selectedCheckpoint.name}</span>
                 </div>
               </div>
 
-              <p className="text-xs text-slate-300 leading-relaxed">
+              <p className={`text-xs leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
                 {isTr
                   ? <>Mevcut topoloji ve tüm cihazların port/IP konfigürasyonları <strong>"{selectedCheckpoint.name}"</strong> anındaki durumuna geri yüklenecektir.</>
                   : <>Current topology and device configs will be restored to state <strong>"{selectedCheckpoint.name}"</strong>.</>}
@@ -517,7 +526,7 @@ export const SnapshotManagerModal: React.FC<SnapshotManagerModalProps> = ({
               <div className="flex justify-end gap-2 pt-2">
                 <button
                   onClick={() => setShowConfirmRollback(false)}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-lg border ${isDark ? 'border-slate-700 hover:bg-slate-800 text-slate-400' : 'border-slate-300 text-slate-600'
+                  className={`px-3 py-1.5 text-xs font-medium rounded-lg border ${isDark ? 'border-slate-700 hover:bg-slate-800 text-slate-400' : 'border-slate-300 hover:bg-slate-100 text-slate-700'
                     }`}
                 >
                   {isTr ? 'Vazgeç' : 'Cancel'}

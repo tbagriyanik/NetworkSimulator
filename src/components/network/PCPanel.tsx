@@ -617,6 +617,7 @@ export function PCPanel({
     getAvailableIotDevices,
     addPcArpEntry,
     t,
+    isDark,
   });
 
   usePCPanelRouterAdmin({

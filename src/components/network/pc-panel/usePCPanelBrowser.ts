@@ -54,6 +54,7 @@ interface UsePCPanelBrowserOptions {
   getAvailableIotDevices: (routerId: string) => AvailableIoTDevice[];
   addPcArpEntry?: (targetIp: string, targetMac: string, isIot?: boolean) => void;
   t: Record<string, string>;
+  isDark: boolean;
 }
 
 export function usePCPanelBrowser({
@@ -83,6 +84,7 @@ export function usePCPanelBrowser({
   getAvailableIotDevices,
   addPcArpEntry,
   t,
+  isDark,
 }: UsePCPanelBrowserOptions) {
 
   const openWebPage = useCallback((rawTarget?: string, rawUrl?: string) => {
@@ -309,7 +311,7 @@ export function usePCPanelBrowser({
       `);
       addLocalOutput('error', `404 Not Found: ${target}`);
     } else if (httpServer.type === 'printer') {
-      const printerPage = generatePrinterWebPanelContent(httpServer, language);
+      const printerPage = generatePrinterWebPanelContent(httpServer, language, isDark);
       setHttpAppDeviceId(httpServer.id);
       setHttpAppContent(printerPage);
       setHttpAppTitle(`${httpServer.name || httpServer.id} - ${language === 'tr' ? 'Yazıcı Yönetimi' : 'Printer Management'}`);
