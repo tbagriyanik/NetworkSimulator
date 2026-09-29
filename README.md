@@ -119,7 +119,7 @@ git push origin main --tags
 | Version / Sürüm | 6.8.1 |
 | Total Lines / Toplam Satır (`src/`) | ~230,799 |
 | Source Files / Kaynak Dosya | 1114 |
-| Documentation Files / Dokümantasyon Dosya | 24 |
+| Documentation Files / Dokümantasyon Dosya | 25 |
 | Example Projects / Örnek Proje | 49 |
 | Guided Lessons / Rehberli Ders | 19 |
 | Exams / Sınavlar | 6 |
