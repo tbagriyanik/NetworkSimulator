@@ -19,34 +19,29 @@ jobs:
       - name: Checkout Code Repository
         uses: actions/checkout@v4
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10
-
       - name: Setup Node.js Environment
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'pnpm'
+          cache: 'npm'
 
       - name: Install Dependencies
-        run: pnpm install --frozen-lockfile
+        run: npm ci
 
       - name: Lint
-        run: pnpm lint
+        run: npm run lint
 
       - name: TypeScript Type Check
-        run: pnpm exec tsc --noEmit
+        run: npx tsc --noEmit
 
       - name: npm Audit (fail on high/critical)
-        run: pnpm audit --audit-level=high
+        run: npm audit --audit-level=high
 
       - name: Run Unit Tests
-        run: pnpm test
+        run: npm run test
 
       - name: Run Performance Benchmarks (500 Devices Threshold < 3s)
-        run: pnpm test:perf
+        run: npm run test:perf
 
       - name: Build Project
-        run: pnpm build
+        run: npm run build
