@@ -67,11 +67,15 @@ export function findOptimalFreePort(
   if (!device.ports || device.ports.length === 0) return null;
 
   // Filter out console, management, wireless, and already connected ports
+  // But keep serial ports for router-router connections
   const availablePorts = device.ports.filter(port => {
     const pId = port.id.toLowerCase();
     const isSpecial = pId === 'console' || pId === 'rs232' || pId === 'com1' || pId === 'com2' ||
       pId.startsWith('wlan') || port.type === 'console' || port.type === 'wireless';
-    if (isSpecial) return false;
+    // Allow serial ports (s0/*, s1/*, s2/*, se*, serial*)
+    const isSerial = pId.startsWith('s0/') || pId.startsWith('s1/') || pId.startsWith('s2/') || 
+                    pId.startsWith('se') || pId.startsWith('serial') || port.type === 'serial';
+    if (isSpecial && !isSerial) return false;
     if (connectedPortIds.has(`${device.id}-${port.id}`)) return false;
     if (port.status === 'connected') return false;
     return true;

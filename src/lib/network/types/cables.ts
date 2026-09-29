@@ -61,7 +61,9 @@ function isConsolePort(portId: string | undefined): boolean {
 function isSerialPort(portId: string | undefined): boolean {
   if (!portId) return false;
   const port = portId.toLowerCase();
-  return port.startsWith('se') || port.includes('serial');
+  // Serial port formats: s0/0/0, s1/0/0, s2/0/0, se0/0/0, serial0/0/0
+  return port.startsWith('s0/') || port.startsWith('s1/') || port.startsWith('s2/') || 
+         port.startsWith('se') || port.startsWith('serial');
 }
 
 export function isCableCompatible(cable: CableInfo): boolean {
@@ -98,6 +100,8 @@ export function isCableCompatible(cable: CableInfo): boolean {
   }
 
   if (cable.cableType === 'serial') {
+    // Serial kablo için en az bir taraf serial port olmalı
+    // Router-router serial bağlantıları için her iki taraf da serial port olmalı
     return sourceIsSerial && targetIsSerial;
   }
 

@@ -381,7 +381,7 @@ function createInitialRouterPorts(baseMac?: string): Record<string, Port> {
       voiceVlan: 'none',
       duplex: 'full',
       speed: 'auto',
-      shutdown: true,
+      shutdown: false, // Changed to false to enable serial ports by default
       type: 'serial',
       serialEncapsulation: 'hdlc',
       clockRate: 2000000,

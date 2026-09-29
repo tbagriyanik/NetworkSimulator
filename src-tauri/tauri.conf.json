@@ -19,13 +19,7 @@
         "fullscreen": false,
         "devtools": false,
         "transparent": false,
-        "decorations": true,
-        "webview": {
-          "allow_scripts": true,
-          "html": false,
-          "js": false,
-          "http_scheme": true
-        }
+        "decorations": true
       }
     ],
     "security": {
