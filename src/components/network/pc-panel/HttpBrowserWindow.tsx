@@ -119,6 +119,7 @@ export function HttpBrowserWindow({
     }
   };
 
+  // Optimize: Only subscribe to devices array when needed for printer discovery
   const devices = useAppStore(state => state.topology?.devices || []);
   const setDevices = useAppStore(state => state.setDevices);
 

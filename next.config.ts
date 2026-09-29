@@ -94,12 +94,48 @@ const config = async () => {
     productionBrowserSourceMaps: false,
     experimental: {
       optimizePackageImports: ["lucide-react"],
+      // Memory optimization for low-resource builds
+      webpackMemoryOptimizations: true,
     },
     typescript: {
       ignoreBuildErrors: false,
     },
     reactStrictMode: true,
     devIndicators: false,
+    // Performance optimizations for low-resource desktop builds
+    compress: true,
+    // Reduce memory footprint during build
+    webpack: (config, { isServer }) => {
+      if (!isServer) {
+        config.optimization = {
+          ...config.optimization,
+          splitChunks: {
+            chunks: 'all',
+            cacheGroups: {
+              default: false,
+              vendors: false,
+              // Vendor chunk optimization
+              vendor: {
+                name: 'vendor',
+                chunks: 'all',
+                test: /node_modules/,
+                priority: 20
+              },
+              // Common chunk optimization
+              common: {
+                name: 'common',
+                minChunks: 2,
+                chunks: 'all',
+                priority: 10,
+                reuseExistingChunk: true,
+                enforce: true
+              }
+            }
+          }
+        };
+      }
+      return config;
+    },
     ...(!isExport ? {
       async headers() {
         return [

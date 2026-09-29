@@ -17,6 +17,7 @@ interface NetworkEventLogPanelProps {
 }
 
 export function NetworkEventLogPanel({ isOpen, onClose, isDark }: NetworkEventLogPanelProps) {
+  // Optimize: useNetworkEventLogs is already optimized via custom hook
   const logs = useNetworkEventLogs();
   const clearLogs = useAppStore(state => state.clearNetworkEventLogs);
   const removeLog = useAppStore(state => state.removeNetworkEventLog);

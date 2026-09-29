@@ -137,7 +137,14 @@ export function TerminalOutputLines({
                   "font-bold tracking-widest opacity-80",
                   line.realismLevel === 'stub' ? "text-warning-500" :
                     line.realismLevel === 'sim-only' ? "text-primary-500" : "text-accent-500"
-                )}>{highlightText(line.content)}</span>
+                )}>
+                  {highlightText(line.content)}
+                  {line.realismLevel === 'sim-only' && (
+                    <span className="ml-2 inline-block px-1.5 py-0.2 rounded text-[10px] font-mono font-bold bg-sky-500/20 text-sky-400 border border-sky-500/30">
+                      [sim-only]
+                    </span>
+                  )}
+                </span>
               )}
               {line.type === 'password-prompt' && (
                 <div className={cn(isDark ? 'text-secondary-300' : 'text-secondary-700', "whitespace-pre-wrap")}>

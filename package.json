@@ -13,8 +13,10 @@
     "update-readme": "node scripts/update-readme-badges.cjs",
     "check": "tsc --noEmit && next build && oxlint && vitest run",
     "build:desktop": "node scripts/build-desktop.cjs",
+    "build:low-resource": "node scripts/build-low-resource.cjs",
     "tauri": "tauri",
     "build:exe": "tauri build",
+    "build:exe-low-resource": "tauri build --config src-tauri/tauri-low-resource.conf.json",
     "clean": "node -e \"['.next','out'].forEach(d=>fs.rmSync(d,{recursive:true,force:true}))\"",
     "clean:desktop": "node -e \"fs.rmSync('src-tauri/target',{recursive:true,force:true})\"",
     "clean:all": "node -e \"['.next','out','src-tauri/target'].forEach(d=>fs.rmSync(d,{recursive:true,force:true}))\""

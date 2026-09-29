@@ -318,6 +318,7 @@ export function DeviceConfigModal({
     }
   };
 
+  // Optimize: Only subscribe to specific device state instead of all switchStates
   const switchState = useAppStore(state => state.deviceStates.switchStates[device.id]);
   const isDiff = useMemo(() => {
     if (!switchState || !switchState.savedConfig) return false;

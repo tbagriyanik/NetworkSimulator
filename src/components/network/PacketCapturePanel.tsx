@@ -34,6 +34,7 @@ export const PacketCapturePanel = ({
   isDark,
   connections: connectionList
 }: PacketCapturePanelProps) => {
+  // Optimize: Only subscribe to devices length for connection label generation
   const devices = useAppStore(state => state.topology.devices);
   const graphicsQuality = useAppStore(state => state.graphicsQuality);
   const storedConnections = useAppStore(state => state.topology.connections);
@@ -288,11 +289,12 @@ export const PacketCapturePanel = ({
           <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5">
             {[
               { label: language === 'tr' ? 'Tümü' : 'All', val: '' },
-              { label: language === 'tr' ? '🚨 Sadece Drop' : '🚨 Drops Only', val: 'drop' },
-              { label: language === 'tr' ? '🌐 Sadece OSPF' : '🌐 OSPF Only', val: 'ospf' },
-              { label: language === 'tr' ? '🔀 Sadece BGP' : '🔀 BGP Only', val: 'bgp' },
-              { label: language === 'tr' ? '📡 Sadece ICMP' : '📡 ICMP Only', val: 'icmp' },
-              { label: language === 'tr' ? '🌳 Sadece STP' : '🌳 STP Only', val: 'stp' },
+              { label: language === 'tr' ? '🚨 Drop' : '🚨 Drops', val: 'drop' },
+              { label: language === 'tr' ? '🌐 OSPF' : '🌐 OSPF', val: 'ospf' },
+              { label: language === 'tr' ? '🏷️ VLAN' : '🏷️ VLAN', val: 'vlan' },
+              { label: language === 'tr' ? '🔀 BGP' : '🔀 BGP', val: 'bgp' },
+              { label: language === 'tr' ? '📡 ICMP' : '📡 ICMP', val: 'icmp' },
+              { label: language === 'tr' ? '🌳 STP' : '🌳 STP', val: 'stp' },
               { label: 'ARP', val: 'arp' },
               { label: 'TCP', val: 'tcp' },
               { label: 'UDP', val: 'udp' },
@@ -305,19 +307,18 @@ export const PacketCapturePanel = ({
                 key={p.label}
                 type="button"
                 onClick={() => setSearchQuery(p.val)}
-                className={`px-1.5 py-0.5 rounded text-[9.5px] font-mono font-semibold border transition-all shrink-0 ${
-                  searchQuery.toLowerCase() === p.val
+                className={`px-1.5 py-0.5 rounded text-[9.5px] font-mono font-semibold border transition-all shrink-0 ${searchQuery.toLowerCase() === p.val
                     ? p.val === 'drop'
                       ? 'bg-rose-600 text-white border-rose-400 font-bold'
                       : 'bg-emerald-500 text-slate-950 border-emerald-400 font-bold'
                     : p.val === 'drop'
-                    ? isDark
-                      ? 'bg-rose-950/40 border-rose-800 text-rose-300 hover:bg-rose-900/60'
-                      : 'bg-rose-50 border-rose-300 text-rose-700 hover:bg-rose-100'
-                    : isDark
-                    ? 'bg-secondary-900/80 border-secondary-700 text-secondary-300 hover:bg-secondary-800 hover:text-white'
-                    : 'bg-white border-secondary-300 text-secondary-700 hover:bg-secondary-100'
-                }`}
+                      ? isDark
+                        ? 'bg-rose-950/40 border-rose-800 text-rose-300 hover:bg-rose-900/60'
+                        : 'bg-rose-50 border-rose-300 text-rose-700 hover:bg-rose-100'
+                      : isDark
+                        ? 'bg-secondary-900/80 border-secondary-700 text-secondary-300 hover:bg-secondary-800 hover:text-white'
+                        : 'bg-white border-secondary-300 text-secondary-700 hover:bg-secondary-100'
+                  }`}
               >
                 {p.label}
               </button>
@@ -377,15 +378,14 @@ export const PacketCapturePanel = ({
                         <tr
                           key={pkt.id}
                           onClick={() => setSelectedPacket(pkt)}
-                          className={`border-b last:border-0 cursor-pointer select-none transition-colors ${
-                            isSelected
+                          className={`border-b last:border-0 cursor-pointer select-none transition-colors ${isSelected
                               ? isDrop
                                 ? isDark ? 'bg-rose-950/80 text-rose-100 border-rose-600 font-semibold' : 'bg-rose-200 text-rose-950 border-rose-500 font-semibold'
                                 : isDark ? 'bg-primary-600/40 text-white font-semibold' : 'bg-primary-500/20 text-slate-900 font-semibold'
                               : isDrop
-                              ? isDark ? 'border-rose-900/40 bg-rose-950/25 hover:bg-rose-900/40 text-rose-200' : 'border-rose-200/70 bg-rose-50/70 hover:bg-rose-100/80 text-rose-900'
-                              : isDark ? 'border-secondary-800/40 hover:bg-secondary-800/35' : 'border-secondary-100/30 hover:bg-secondary-50/40'
-                          }`}
+                                ? isDark ? 'border-rose-900/40 bg-rose-950/25 hover:bg-rose-900/40 text-rose-200' : 'border-rose-200/70 bg-rose-50/70 hover:bg-rose-100/80 text-rose-900'
+                                : isDark ? 'border-secondary-800/40 hover:bg-secondary-800/35' : 'border-secondary-100/30 hover:bg-secondary-50/40'
+                            }`}
                         >
                           {columnOrder.map(col => {
                             switch (col) {

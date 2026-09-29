@@ -55,6 +55,7 @@ export function useLoadProjectData({
 }: UseLoadProjectDataProps) {
   const { toast } = useToast();
   const { language, t } = useLanguage();
+  // Optimize: Only subscribe to actions, not state data
   const setTopologyDevices = useAppStore(state => state.setDevices);
   const setTopologyConnections = useAppStore(state => state.setConnections);
   const setTopologyNotes = useAppStore(state => state.setNotes);
