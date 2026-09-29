@@ -1,64 +1,86 @@
 "use client"
 
 import * as React from "react"
-import * as TooltipPrimitive from "@radix-ui/react-tooltip"
-
 import { cn } from "@/lib/utils"
 
-function TooltipProvider({
-  delayDuration = 0,
-  ...props
-}: React.ComponentProps<typeof TooltipPrimitive.Provider>) {
+function TooltipProvider({ children }: { children?: React.ReactNode; delayDuration?: number }) {
+  return <>{children}</>
+}
+
+interface TooltipContextValue {
+  open: boolean
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>
+}
+
+const TooltipContext = React.createContext<TooltipContextValue>({ open: false, setOpen: () => {} })
+
+export interface TooltipProps {
+  children?: React.ReactNode
+  open?: boolean
+  defaultOpen?: boolean
+  delayDuration?: number
+  onOpenChange?: (open: boolean) => void
+}
+
+function Tooltip({ children }: TooltipProps) {
+  const [open, setOpen] = React.useState(false)
+
   return (
-    <TooltipPrimitive.Provider
-      data-slot="tooltip-provider"
-      delayDuration={delayDuration}
-      {...props}
-    />
+    <TooltipContext.Provider value={{ open, setOpen }}>
+      <div className="relative inline-block" onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}>
+        {children}
+      </div>
+    </TooltipContext.Provider>
   )
 }
 
-function Tooltip({
-  ...props
-}: React.ComponentProps<typeof TooltipPrimitive.Root>) {
+function TooltipTrigger({ className, children, asChild: _asChild, ...props }: React.HTMLAttributes<HTMLDivElement> & { asChild?: boolean }) {
   return (
-    <TooltipProvider>
-      <TooltipPrimitive.Root data-slot="tooltip" {...props} />
-    </TooltipProvider>
+    <div className={cn("inline-block", className)} {...props}>
+      {children}
+    </div>
   )
 }
 
-function TooltipTrigger({
-  ...props
-}: React.ComponentProps<typeof TooltipPrimitive.Trigger>) {
-  return <TooltipPrimitive.Trigger data-slot="tooltip-trigger" {...props} />
+export interface TooltipContentProps extends React.HTMLAttributes<HTMLDivElement> {
+  side?: "top" | "bottom" | "left" | "right" | string;
+  sideOffset?: number;
+  hideArrow?: boolean;
 }
 
 function TooltipContent({
   className,
-  sideOffset = 0,
-  hideArrow = false,
+  side = "top",
+  sideOffset: _sideOffset = 4,
+  hideArrow: _hideArrow = false,
   children,
   ...props
-}: React.ComponentProps<typeof TooltipPrimitive.Content> & { hideArrow?: boolean }) {
+}: TooltipContentProps) {
+  const { open } = React.useContext(TooltipContext)
+
+  if (!open) return null
+
+  const sideClasses =
+    side === "bottom"
+      ? "top-full left-1/2 -translate-x-1/2 mt-1.5"
+      : side === "left"
+      ? "right-full top-1/2 -translate-y-1/2 mr-1.5"
+      : side === "right"
+      ? "left-full top-1/2 -translate-y-1/2 ml-1.5"
+      : "bottom-full left-1/2 -translate-x-1/2 mb-1.5"
+
   return (
-    <TooltipPrimitive.Portal>
-      <TooltipPrimitive.Content
-        data-slot="tooltip-content"
-        sideOffset={sideOffset}
-        className={cn(
-          "bg-popover text-popover-foreground shadow-md animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-[10001] w-fit origin-(--radix-tooltip-content-transform-origin) rounded-lg border border-border/50 px-4 py-1.5 text-xs text-balance dark:border-secondary-700 dark:shadow-[0_2px_6px_rgba(255,255,255,0.03)] liquid-glass-light tooltip-framed",
-          className
-        )}
-        side="bottom"
-        {...props}
-      >
-        {children}
-        {!hideArrow && (
-          <TooltipPrimitive.Arrow className="z-[10001] size-3 fill-popover stroke-border/70 stroke-[1.25] drop-shadow-[0_1px_1px_rgba(0,0,0,0.08)] dark:stroke-secondary-600" />
-        )}
-      </TooltipPrimitive.Content>
-    </TooltipPrimitive.Portal>
+    <div
+      data-slot="tooltip-content"
+      className={cn(
+        "absolute z-[10001] w-fit whitespace-nowrap rounded-lg border border-border/50 bg-popover px-3 py-1.5 text-xs text-popover-foreground shadow-md transition-all duration-150 dark:border-secondary-700 dark:shadow-[0_2px_6px_rgba(255,255,255,0.03)] liquid-glass-light tooltip-framed pointer-events-none",
+        sideClasses,
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </div>
   )
 }
 
