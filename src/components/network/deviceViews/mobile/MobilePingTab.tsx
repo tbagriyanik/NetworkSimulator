@@ -24,8 +24,8 @@ export function MobilePingTab({
 }: MobilePingTabProps) {
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between font-bold border-b border-slate-800 pb-2">
-        <span className="flex items-center gap-1.5 text-sky-400">
+      <div className={cn("flex items-center justify-between font-bold border-b pb-2", isDark ? "border-slate-800" : "border-slate-200")}>
+        <span className={cn("flex items-center gap-1.5", isDark ? "text-sky-400" : "text-sky-600")}>
           <Send className="w-4 h-4" />
           {isTr ? 'Ping Teşhis Uygulaması' : 'Ping Diagnostics App'}
         </span>
@@ -59,7 +59,7 @@ export function MobilePingTab({
       </div>
 
       {pingResults.length > 0 && (
-        <div className="p-2.5 rounded-lg bg-black font-mono text-[10px] text-emerald-400 space-y-1 overflow-x-auto border border-slate-800 max-h-[140px]">
+        <div className={cn("p-2.5 rounded-lg font-mono text-[10px] space-y-1 overflow-x-auto border max-h-[140px]", isDark ? "bg-black text-emerald-400 border-slate-800" : "bg-slate-900 text-emerald-300 border-slate-700")}>
           {pingResults.map((line, idx) => (
             <div key={`ping-${idx}-${line.slice(0, 15)}`}>{line}</div>
           ))}

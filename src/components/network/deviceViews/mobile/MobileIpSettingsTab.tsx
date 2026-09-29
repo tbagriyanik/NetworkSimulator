@@ -38,17 +38,17 @@ export function MobileIpSettingsTab({
 }: MobileIpSettingsTabProps) {
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between font-bold border-b border-slate-800 pb-2">
-        <span className="flex items-center gap-1.5 text-sky-400">
+      <div className={cn("flex items-center justify-between font-bold border-b pb-2", isDark ? "border-slate-800" : "border-slate-200")}>
+        <span className={cn("flex items-center gap-1.5", isDark ? "text-sky-400" : "text-sky-600")}>
           <Server className="w-4 h-4" />
           {isTr ? 'IP Yapılandırması' : 'IP Configuration'}
         </span>
-        <div className="flex gap-1 bg-slate-950 p-0.5 rounded-lg border border-slate-800">
+        <div className={cn("flex gap-1 p-0.5 rounded-lg border", isDark ? "bg-slate-950 border-slate-800" : "bg-slate-200 border-slate-300")}>
           <button
             onClick={() => setIpMode('dhcp')}
             className={cn(
               "px-2 py-0.5 rounded-md text-[10px] font-semibold transition-colors",
-              ipMode === 'dhcp' ? "bg-sky-600 text-white" : "text-slate-400 hover:text-white"
+              ipMode === 'dhcp' ? "bg-sky-600 text-white" : (isDark ? "text-slate-400 hover:text-white" : "text-slate-600 hover:text-slate-900")
             )}
           >
             DHCP
@@ -57,7 +57,7 @@ export function MobileIpSettingsTab({
             onClick={() => setIpMode('static')}
             className={cn(
               "px-2 py-0.5 rounded-md text-[10px] font-semibold transition-colors",
-              ipMode === 'static' ? "bg-sky-600 text-white" : "text-slate-400 hover:text-white"
+              ipMode === 'static' ? "bg-sky-600 text-white" : (isDark ? "text-slate-400 hover:text-white" : "text-slate-600 hover:text-slate-900")
             )}
           >
             {isTr ? 'Statik' : 'Static'}

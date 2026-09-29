@@ -1,5 +1,19 @@
 # 📅 Network Simulator — Proje Geçmişi
 
+## v6.8.1 — 2026-09-29
+
+- **🎨 Kapsamlı Uygulama Açık/Koyu Tema Senkronizasyonu (`isDark`)**:
+  - **IP Voice / VoIP Phone (`MobileVoipTab.tsx`)**: Dialpad tuş takımı, arama geçmişi, telefon rehberi ve canlı RTP ses/ağ metrik göstergeleri açık ve koyu temalara tam uyumlu hale getirildi.
+  - **WebGL 3D Görselleştirici & Tema Seçici (`pcPython3DRenderer.ts`, `pcPython3DStyles.ts`, `Python3DWindow.tsx`)**: WebGL araç çubukları, dinamik tema seçici (Dark Cyber, Light Clean, Neon Synth, Blueprint) ve pencere kontrolleri uygulamanın genel temasına bağlandı.
+  - **Python GUI Form Penceresi (`generateFormHtml`, `pcPythonFormModule.ts`, `PythonFormWindow.tsx`)**: Çalıştırılan Python GUI arayüzlerinin CSS değişkenleri uygulamanın açık/koyu temasını otomatik yansıtacak şekilde güncellendi.
+  - **Switch/Router Donanım Yuvaları (`PhysicalDeviceView.tsx`)**: Şasi görselleştirici, slot 0 anakart portları, WIC/HWIC/SFP boş yuvaları, kart kataloğu ve aktif port envanter tablosu açık/koyu temaya uyarlandı.
+  - **NetDevOps & RESTCONF Otomasyonu (`NetworkAutomationPanel.tsx`)**: RESTCONF (YANG) istek oluşturucu, şablon seçim butonları, Python editörü ve JSON/Konsol çıktı pencereleri tema renklerine bağlandı.
+  - **Global Autonomous System Cloud (`CloudDeviceView.tsx`)**: AS15169 WAN Transit Cloud penceresi, DNS/NTP genel servis kartları, gecikme/trafik monitörü ve ISP Ethernet arayüzleri açık/koyu temaya duyarlı kılındı.
+  - **Mobil OS & Teşhis Ekranları (`MobileIpSettingsTab.tsx`, `MobilePingTab.tsx`, `MobileWifiTab.tsx`)**: IP yapılandırma, Ping teşhis uygulaması ve Wi-Fi SSID arama ekranları tema uyumlu hale getirildi.
+
+- **🔤 Türkçe Karakter & Tipografi Standartlaştırması**:
+  - Proje genelindeki metinlerde Türkçe karakter uyumu sağlandı (`Baglanti Hatasi` -> `Bağlantı Hatası`).
+
 ## v6.8.0 — 2026-09-28
 
 - **⚙️ Motor Derinliği & Protokol `no` Matrisi (`cmd.redundancy.ts`, `globalConfigNetworkCommands.ts`, `bgpRouterCommands.ts`, `globalConfigSecurityCommands.ts`, `cmd.spanningTree.ts`, `noCommandE2EMatrix.test.ts`)**:

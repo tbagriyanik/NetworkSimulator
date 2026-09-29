@@ -1,6 +1,27 @@
 import { colors, withAlpha } from '@/lib/design-tokens/colors';
 
-export function get3DSceneStyles(): string {
+export function get3DSceneStyles(isDark: boolean = true): string {
+  const bgBody = isDark ? colors.terminal.bg : '#f8fafc';
+  const textBody = isDark ? colors.topology.noteText : '#0f172a';
+  const bgGroup = isDark ? withAlpha(colors.topology.bg, 0.75) : 'rgba(255, 255, 255, 0.92)';
+  const borderGroup = isDark ? withAlpha(colors.common.white, 0.12) : 'rgba(203, 213, 225, 0.9)';
+  const shadowGroup = isDark ? withAlpha(colors.common.black, 0.5) : 'rgba(15, 23, 42, 0.12)';
+  
+  const bgBtn = isDark ? withAlpha(colors.common.white, 0.06) : 'rgba(241, 245, 249, 0.9)';
+  const borderBtn = isDark ? withAlpha(colors.common.white, 0.1) : 'rgba(203, 213, 225, 0.8)';
+  const textBtn = isDark ? colors.topology.noteText : '#1e293b';
+  const bgBtnHover = isDark ? withAlpha(colors.common.white, 0.14) : '#e2e8f0';
+  
+  const bgSelect = isDark ? withAlpha(colors.common.black, 0.4) : '#ffffff';
+  const borderSelect = isDark ? withAlpha(colors.common.white, 0.15) : '#cbd5e1';
+  const textSelect = isDark ? colors.theme.accent : '#0284c7';
+  
+  const bgFooter = isDark ? withAlpha(colors.topology.bg, 0.7) : 'rgba(255, 255, 255, 0.9)';
+  const borderFooter = isDark ? withAlpha(colors.common.white, 0.08) : 'rgba(203, 213, 225, 0.8)';
+  const textFooter = isDark ? colors.topology.subText : '#475569';
+  const bgKbd = isDark ? withAlpha(colors.common.white, 0.12) : '#e2e8f0';
+  const textKbd = isDark ? colors.terminal.fg : '#0f172a';
+
   return `
     * {
       box-sizing: border-box;
@@ -13,9 +34,9 @@ export function get3DSceneStyles(): string {
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background-color: ${colors.terminal.bg};
+      background-color: ${bgBody};
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      color: ${colors.topology.noteText};
+      color: ${textBody};
     }
     #viewport-container {
       position: absolute;
@@ -46,20 +67,20 @@ export function get3DSceneStyles(): string {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: ${withAlpha(colors.topology.bg, 0.75)};
-      border: 1px solid ${withAlpha(colors.common.white, 0.12)};
+      background: ${bgGroup};
+      border: 1px solid ${borderGroup};
       border-radius: 12px;
       padding: 6px 10px;
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
-      box-shadow: 0 10px 25px -5px ${withAlpha(colors.common.black, 0.5)};
+      box-shadow: 0 10px 25px -5px ${shadowGroup};
       pointer-events: auto;
     }
     .btn {
       appearance: none;
-      border: 1px solid ${withAlpha(colors.common.white, 0.1)};
-      background: ${withAlpha(colors.common.white, 0.06)};
-      color: ${colors.topology.noteText};
+      border: 1px solid ${borderBtn};
+      background: ${bgBtn};
+      color: ${textBtn};
       padding: 5px 9px;
       border-radius: 8px;
       font-size: 11px;
@@ -71,9 +92,9 @@ export function get3DSceneStyles(): string {
       transition: all 0.15s ease;
     }
     .btn:hover {
-      background: ${withAlpha(colors.common.white, 0.14)};
-      border-color: ${withAlpha(colors.common.white, 0.25)};
-      color: ${colors.common.white};
+      background: ${bgBtnHover};
+      border-color: ${isDark ? withAlpha(colors.common.white, 0.25) : '#94a3b8'};
+      color: ${isDark ? colors.common.white : '#0f172a'};
       transform: translateY(-1px);
     }
     .btn:active {
@@ -90,8 +111,30 @@ export function get3DSceneStyles(): string {
       padding: 2px 6px;
       border-radius: 6px;
       background: ${withAlpha(colors.common.white, 0.08)};
-      color: ${colors.theme.accent};
+      color: ${isDark ? colors.theme.accent : colors.theme.primary};
       border: 1px solid ${withAlpha(colors.sky['400'], 0.2)};
+    }
+    .theme-select {
+      appearance: none;
+      -webkit-appearance: none;
+      border: 1px solid ${borderSelect};
+      background: ${bgSelect};
+      color: ${textSelect};
+      padding: 4px 8px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      outline: none;
+      transition: all 0.15s ease;
+    }
+    .theme-select:hover {
+      background: ${isDark ? withAlpha(colors.common.black, 0.6) : '#f1f5f9'};
+      border-color: ${colors.theme.accent};
+    }
+    .theme-select option {
+      background: ${bgBody};
+      color: ${textBody};
     }
     .footer-help {
       position: absolute;
@@ -101,11 +144,11 @@ export function get3DSceneStyles(): string {
       align-items: center;
       gap: 8px;
       padding: 6px 12px;
-      background: ${withAlpha(colors.topology.bg, 0.7)};
-      border: 1px solid ${withAlpha(colors.common.white, 0.08)};
+      background: ${bgFooter};
+      border: 1px solid ${borderFooter};
       border-radius: 10px;
       font-size: 10px;
-      color: ${colors.topology.subText};
+      color: ${textFooter};
       backdrop-filter: blur(8px);
       pointer-events: none;
       z-index: 20;
@@ -116,10 +159,10 @@ export function get3DSceneStyles(): string {
       gap: 4px;
     }
     .footer-help kbd {
-      background: ${withAlpha(colors.common.white, 0.12)};
+      background: ${bgKbd};
       border-radius: 4px;
       padding: 1px 4px;
-      color: ${colors.terminal.fg};
+      color: ${textKbd};
       font-family: monospace;
       font-size: 9px;
     }

@@ -270,11 +270,11 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
       id="netdevops-automation-window"
       title={
         <div className="flex items-center gap-2">
-          <div className="w-5 h-5 rounded-md bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+          <div className={`w-5 h-5 rounded-md flex items-center justify-center ${isDark ? 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-400' : 'bg-emerald-50 border border-emerald-300 text-emerald-600'}`}>
             <Terminal className="w-3.5 h-3.5" />
           </div>
-          <span className="font-bold text-xs">NetDevOps & RESTCONF Otomasyon</span>
-          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-semibold">
+          <span className={`font-bold text-xs ${isDark ? 'text-slate-100' : 'text-slate-900'}`}>NetDevOps & RESTCONF Otomasyon</span>
+          <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded-full font-semibold border ${isDark ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' : 'bg-emerald-100 text-emerald-700 border-emerald-300'}`}>
             API / Python
           </span>
         </div>
@@ -290,12 +290,12 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
       onEscapeKeyDown={onClose}
       escapeRestoreWindowId={defaultDeviceId}
       headerActions={
-        <div className="flex rounded-lg p-0.5 border border-slate-700/60 bg-slate-950/40 text-xs mr-2">
+        <div className={`flex rounded-lg p-0.5 border text-xs mr-2 ${isDark ? 'border-slate-700/60 bg-slate-950/40' : 'border-slate-300 bg-slate-100'}`}>
           <button
             onClick={() => setActiveTab('restconf')}
             className={`flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[11px] font-semibold transition-all ${activeTab === 'restconf'
-                ? 'bg-emerald-500 text-slate-950 font-bold shadow-sm'
-                : 'text-slate-400 hover:text-slate-200'
+                ? (isDark ? 'bg-emerald-500 text-slate-950 font-bold shadow-sm' : 'bg-emerald-600 text-white font-bold shadow-sm')
+                : (isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-600 hover:text-slate-900')
               }`}
           >
             <Globe className="w-3 h-3" />
@@ -304,8 +304,8 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
           <button
             onClick={() => setActiveTab('python')}
             className={`flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[11px] font-semibold transition-all ${activeTab === 'python'
-                ? 'bg-emerald-500 text-slate-950 font-bold shadow-sm'
-                : 'text-slate-400 hover:text-slate-200'
+                ? (isDark ? 'bg-emerald-500 text-slate-950 font-bold shadow-sm' : 'bg-emerald-600 text-white font-bold shadow-sm')
+                : (isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-600 hover:text-slate-900')
               }`}
           >
             <Code className="w-3 h-3" />
@@ -314,18 +314,18 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
         </div>
       }
     >
-      <div className={`flex-1 min-h-0 overflow-hidden flex flex-col ${isDark ? 'bg-slate-900 text-slate-100' : 'bg-white text-slate-800'}`}>
+      <div className={`flex-1 min-h-0 overflow-hidden flex flex-col ${isDark ? 'bg-slate-900 text-slate-100' : 'bg-slate-50 text-slate-800'}`}>
         {activeTab === 'restconf' && (
           <div ref={restconfSplitRef} className="flex-1 flex flex-col md:grid min-h-0 overflow-hidden" style={{ gridTemplateColumns: `${restconfSplitPercent}% 6px minmax(0, ${100 - restconfSplitPercent}%)` }}>
             {/* Left: Request Builder */}
             <div className="w-full md:w-auto p-4 overflow-y-auto space-y-3.5 min-h-0">
               <div className="flex items-center justify-between">
-                <div className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                  <Server className="w-3.5 h-3.5 text-emerald-400" />
+                <div className={`text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                  <Server className="w-3.5 h-3.5 text-emerald-500" />
                   RESTCONF İstek Oluşturucu (Request Builder)
                 </div>
                 {targetState && (
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  <span className={`text-[10px] font-mono px-2 py-0.5 rounded border ${isDark ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-emerald-50 text-emerald-700 border-emerald-300'}`}>
                     Hostname: {targetState.hostname || targetDev?.name}
                   </span>
                 )}
@@ -333,38 +333,38 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
 
               {/* Preset Buttons */}
               <div className="space-y-1">
-                <span className="text-[10px] font-semibold text-slate-400 flex items-center gap-1">
-                  <Sparkles className="w-3 h-3 text-amber-400" />
+                <span className={`text-[10px] font-semibold flex items-center gap-1 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                  <Sparkles className="w-3 h-3 text-amber-500" />
                   Hazır YANG RESTCONF Şablonları:
                 </span>
                 <div className="flex flex-wrap gap-1.5">
                   <button
                     onClick={() => handleSelectRestconfPreset('get_interfaces')}
-                    className="text-[10px] px-2 py-0.5 rounded border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-emerald-300 font-mono transition"
+                    className={`text-[10px] px-2 py-0.5 rounded border font-mono transition ${isDark ? 'border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-emerald-300' : 'border-slate-300 bg-white hover:bg-slate-100 text-emerald-700 shadow-xs'}`}
                   >
                     GET ietf-interfaces
                   </button>
                   <button
                     onClick={() => handleSelectRestconfPreset('get_native')}
-                    className="text-[10px] px-2 py-0.5 rounded border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-emerald-300 font-mono transition"
+                    className={`text-[10px] px-2 py-0.5 rounded border font-mono transition ${isDark ? 'border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-emerald-300' : 'border-slate-300 bg-white hover:bg-slate-100 text-emerald-700 shadow-xs'}`}
                   >
                     GET netsim-native
                   </button>
                   <button
                     onClick={() => handleSelectRestconfPreset('patch_ip')}
-                    className="text-[10px] px-2 py-0.5 rounded border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-amber-300 font-mono transition"
+                    className={`text-[10px] px-2 py-0.5 rounded border font-mono transition ${isDark ? 'border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-amber-300' : 'border-slate-300 bg-white hover:bg-slate-100 text-amber-700 shadow-xs'}`}
                   >
                     PATCH Interface IP
                   </button>
                   <button
                     onClick={() => handleSelectRestconfPreset('put_hostname')}
-                    className="text-[10px] px-2 py-0.5 rounded border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-sky-300 font-mono transition"
+                    className={`text-[10px] px-2 py-0.5 rounded border font-mono transition ${isDark ? 'border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-sky-300' : 'border-slate-300 bg-white hover:bg-slate-100 text-sky-700 shadow-xs'}`}
                   >
                     PUT Hostname
                   </button>
                   <button
                     onClick={() => handleSelectRestconfPreset('delete_ip')}
-                    className="text-[10px] px-2 py-0.5 rounded border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-rose-300 font-mono transition"
+                    className={`text-[10px] px-2 py-0.5 rounded border font-mono transition ${isDark ? 'border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-rose-300' : 'border-slate-300 bg-white hover:bg-slate-100 text-rose-700 shadow-xs'}`}
                   >
                     DELETE Interface IP
                   </button>
@@ -373,12 +373,12 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
 
               <div className="grid grid-cols-3 gap-2">
                 <div className="col-span-1">
-                  <label htmlFor="restconf-method-select" className="text-[11px] font-semibold text-slate-400 mb-1 block">Metod</label>
+                  <label htmlFor="restconf-method-select" className={`text-[11px] font-semibold mb-1 block ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>Metod</label>
                   <select
                     id="restconf-method-select"
                     value={restconfMethod}
                     onChange={(e) => setRestconfMethod(e.target.value as 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE')}
-                    className={`w-full px-2.5 py-1.5 text-xs font-bold rounded-lg border focus:outline-none ${isDark ? 'bg-slate-950 border-slate-700 text-emerald-400' : 'bg-white border-slate-300 text-emerald-600'
+                    className={`w-full px-2.5 py-1.5 text-xs font-bold rounded-lg border focus:outline-none ${isDark ? 'bg-slate-950 border-slate-700 text-emerald-400' : 'bg-white border-slate-300 text-emerald-700 shadow-xs'
                       }`}
                   >
                     <option value="GET">GET</option>
@@ -390,12 +390,12 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
                 </div>
 
                 <div className="col-span-2">
-                  <label htmlFor="restconf-device-select" className="text-[11px] font-semibold text-slate-400 mb-1 block">Hedef Cihaz</label>
+                  <label htmlFor="restconf-device-select" className={`text-[11px] font-semibold mb-1 block ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>Hedef Cihaz</label>
                   <select
                     id="restconf-device-select"
                     value={selectedDeviceId}
                     onChange={(e) => setSelectedDeviceId(e.target.value)}
-                    className={`w-full px-2.5 py-1.5 text-xs rounded-lg border focus:outline-none cursor-pointer relative z-10 no-drag ${isDark ? 'bg-slate-950 border-slate-700 text-slate-200 hover:border-emerald-500/50' : 'bg-white border-slate-300 hover:border-emerald-500/50'
+                    className={`w-full px-2.5 py-1.5 text-xs rounded-lg border focus:outline-none cursor-pointer relative z-10 no-drag ${isDark ? 'bg-slate-950 border-slate-700 text-slate-200 hover:border-emerald-500/50' : 'bg-white border-slate-300 text-slate-900 hover:border-emerald-500/50 shadow-xs'
                       }`}
                   >
                     {devices.map((d) => (
@@ -408,26 +408,26 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
               </div>
 
               <div>
-                <label htmlFor="restconf-uri-input" className="text-[11px] font-semibold text-slate-400 mb-1 block">YANG Endpoint URI</label>
+                <label htmlFor="restconf-uri-input" className={`text-[11px] font-semibold mb-1 block ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>YANG Endpoint URI</label>
                 <input
                   id="restconf-uri-input"
                   type="text"
                   value={restconfUri}
                   onChange={(e) => setRestconfUri(e.target.value)}
-                  className={`w-full px-3 py-1.5 text-xs font-mono rounded-lg border focus:outline-none ${isDark ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300'
+                  className={`w-full px-3 py-1.5 text-xs font-mono rounded-lg border focus:outline-none ${isDark ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-900 shadow-xs'
                     }`}
                 />
               </div>
 
               {restconfMethod !== 'GET' && restconfMethod !== 'DELETE' && (
                 <div>
-                  <label htmlFor="restconf-body-textarea" className="text-[11px] font-semibold text-slate-400 mb-1 block">Request Body (JSON Payload)</label>
+                  <label htmlFor="restconf-body-textarea" className={`text-[11px] font-semibold mb-1 block ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>Request Body (JSON Payload)</label>
                   <textarea
                     id="restconf-body-textarea"
                     value={restconfBody}
                     onChange={(e) => setRestconfBody(e.target.value)}
                     rows={7}
-                    className={`w-full p-2.5 text-xs font-mono rounded-lg border focus:outline-none ${isDark ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300'
+                    className={`w-full p-2.5 text-xs font-mono rounded-lg border focus:outline-none ${isDark ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-900 shadow-xs'
                       }`}
                   />
                 </div>
@@ -435,44 +435,44 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
 
               <button
                 onClick={handleSendRestconf}
-                className="w-full py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-slate-950 text-xs font-bold flex items-center justify-center gap-1.5 transition shadow active:scale-[0.99]"
+                className="w-full py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition shadow active:scale-[0.99]"
               >
                 <Send className="w-3.5 h-3.5" />
                 RESTCONF İsteği Gönder (Send Request)
               </button>
             </div>
 
-            <div role="separator" aria-label="RESTCONF istek ve yanıt bölmesi genişliğini ayarla" onPointerDown={startRestconfSplitResize} className="hidden md:block w-1.5 mx-1 rounded-full bg-slate-700/60 hover:bg-emerald-500/70 cursor-col-resize transition-colors" />
+            <div role="separator" aria-label="RESTCONF istek ve yanıt bölmesi genişliğini ayarla" onPointerDown={startRestconfSplitResize} className={`hidden md:block w-1.5 mx-1 rounded-full cursor-col-resize transition-colors ${isDark ? 'bg-slate-700/60 hover:bg-emerald-500/70' : 'bg-slate-300 hover:bg-emerald-500'}`} />
 
             {/* Right: Response Viewer */}
             <div className="w-full md:w-auto p-4 overflow-y-auto space-y-3 min-h-0 flex flex-col">
               <div className="flex items-center justify-between">
-                <div className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                <div className={`text-xs font-bold uppercase tracking-wider ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
                   Sunucu Yanıtı (YANG JSON Output)
                 </div>
                 {restconfResponse && (
                   <div className="flex items-center gap-2">
                     <span
                       className={`text-[10px] font-mono px-2 py-0.5 rounded-full font-bold border ${restconfResponse.status >= 200 && restconfResponse.status < 300
-                          ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
-                          : 'bg-rose-500/10 border-rose-500/30 text-rose-400'
+                          ? (isDark ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'bg-emerald-100 border-emerald-300 text-emerald-800')
+                          : (isDark ? 'bg-rose-500/10 border-rose-500/30 text-rose-400' : 'bg-rose-100 border-rose-300 text-rose-800')
                         }`}
                     >
                       {restconfResponse.status} {restconfResponse.statusText}
                     </span>
                     <button
                       onClick={handleCopyJson}
-                      className="p-1 rounded text-slate-400 hover:text-slate-200"
+                      className={`p-1 rounded ${isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-900'}`}
                       title="JSON Kopyala"
                     >
-                      {isCopied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                      {isCopied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
                     </button>
                   </div>
                 )}
               </div>
 
               <pre
-                className={`flex-1 p-4 rounded-lg border font-mono text-xs overflow-auto leading-relaxed custom-scrollbar ${isDark ? 'bg-slate-950 border-slate-800 text-emerald-400' : 'bg-slate-900 text-emerald-300'
+                className={`flex-1 p-4 rounded-lg border font-mono text-xs overflow-auto leading-relaxed custom-scrollbar ${isDark ? 'bg-slate-950 border-slate-800 text-emerald-400' : 'bg-slate-900 text-emerald-300 shadow-inner'
                   }`}
               >
                 {restconfResponse
@@ -488,8 +488,8 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
             {/* Left: Code Editor */}
             <div className="w-full md:w-auto p-4 overflow-y-auto space-y-3 min-h-0 flex flex-col">
               <div className="flex items-center justify-between">
-                <div className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                  <Code className="w-3.5 h-3.5 text-emerald-400" />
+                <div className={`text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                  <Code className="w-3.5 h-3.5 text-emerald-500" />
                   Python Script Editörü
                 </div>
                 <div className="flex items-center gap-2">
@@ -502,7 +502,7 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
                         setPythonScript(PYTHON_TEMPLATES[key]);
                       }
                     }}
-                    className={`text-[11px] px-2 py-1 rounded border outline-none font-mono ${isDark ? 'bg-slate-950 border-slate-700 text-emerald-400' : 'bg-white border-slate-300 text-emerald-700'
+                    className={`text-[11px] px-2 py-1 rounded border outline-none font-mono ${isDark ? 'bg-slate-950 border-slate-700 text-emerald-400' : 'bg-white border-slate-300 text-emerald-700 shadow-xs'
                       }`}
                   >
                     <option value="netmiko_provision">Netmiko Toplu Yapılandırma</option>
@@ -512,7 +512,7 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
                   </select>
                   <button
                     onClick={() => setPythonScript(PYTHON_TEMPLATES[selectedPythonPreset as keyof typeof PYTHON_TEMPLATES] || PYTHON_TEMPLATES.netmiko_provision)}
-                    className="text-[11px] text-slate-400 hover:text-slate-200 p-1"
+                    className={`text-[11px] p-1 ${isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-800'}`}
                     title="Şablonu Sıfırla"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
@@ -523,33 +523,33 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
               <textarea
                 value={pythonScript}
                 onChange={(e) => setPythonScript(e.target.value)}
-                className={`flex-1 p-3 text-xs font-mono rounded-lg border focus:outline-none resize-none leading-relaxed ${isDark ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300'
+                className={`flex-1 p-3 text-xs font-mono rounded-lg border focus:outline-none resize-none leading-relaxed ${isDark ? 'bg-slate-950 border-slate-700 text-slate-200' : 'bg-white border-slate-300 text-slate-900 shadow-xs'
                   }`}
               />
 
               <button
                 onClick={handleRunPython}
                 disabled={isRunningScript}
-                className="w-full py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-slate-950 text-xs font-bold flex items-center justify-center gap-1.5 transition shadow disabled:opacity-50 active:scale-[0.99]"
+                className="w-full py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition shadow disabled:opacity-50 active:scale-[0.99]"
               >
                 <Play className="w-3.5 h-3.5" />
                 {isRunningScript ? 'Yürütülüyor...' : 'Python Betiğini Çalıştır (Run NetDevOps Script)'}
               </button>
             </div>
 
-            <div role="separator" aria-label="Python editör ve konsol genişliğini ayarla" onPointerDown={startPythonSplitResize} className="hidden md:block w-1.5 mx-1 rounded-full bg-slate-700/60 hover:bg-emerald-500/70 cursor-col-resize transition-colors" />
+            <div role="separator" aria-label="Python editör ve konsol genişliğini ayarla" onPointerDown={startPythonSplitResize} className={`hidden md:block w-1.5 mx-1 rounded-full cursor-col-resize transition-colors ${isDark ? 'bg-slate-700/60 hover:bg-emerald-500/70' : 'bg-slate-300 hover:bg-emerald-500'}`} />
 
             {/* Right: Execution Console Output */}
             <div className="w-full md:w-auto p-4 overflow-y-auto space-y-3 min-h-0 flex flex-col">
               <div className="flex items-center justify-between">
-                <div className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                <div className={`text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
                   Konsol Çıktısı (NetDevOps Console Output)
                 </div>
               </div>
 
               <pre
-                className={`flex-1 p-4 rounded-lg border font-mono text-xs overflow-auto leading-relaxed custom-scrollbar ${isDark ? 'bg-slate-950 border-slate-800 text-slate-200' : 'bg-slate-900 text-slate-200'
+                className={`flex-1 p-4 rounded-lg border font-mono text-xs overflow-auto leading-relaxed custom-scrollbar ${isDark ? 'bg-slate-950 border-slate-800 text-slate-200' : 'bg-slate-900 text-slate-200 shadow-inner'
                   }`}
               >
                 {pythonOutput || '// Betiği çalıştırmak için "Python Betiğini Çalıştır" butonuna basın.'}

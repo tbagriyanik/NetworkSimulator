@@ -24,17 +24,17 @@ export function MobileWifiTab({
 }: MobileWifiTabProps) {
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between font-bold border-b border-slate-800 pb-2">
-        <span className="flex items-center gap-1.5 text-sky-400">
+      <div className={cn("flex items-center justify-between font-bold border-b pb-2", isDark ? "border-slate-800" : "border-slate-200")}>
+        <span className={cn("flex items-center gap-1.5", isDark ? "text-sky-400" : "text-sky-600")}>
           <Wifi className="w-4 h-4" />
           {isTr ? 'Kablosuz Ağlar (Wi-Fi)' : 'Available Wi-Fi SSIDs'}
         </span>
         {isWifiConnected ? (
-          <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-semibold border border-emerald-500/30">
+          <span className={cn("text-[10px] px-2 py-0.5 rounded-full font-semibold border", isDark ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" : "bg-emerald-100 text-emerald-800 border-emerald-300")}>
             {isTr ? 'Ağ Aktif' : 'Link Active'}
           </span>
         ) : (
-          <span className="text-[10px] text-slate-500">802.11ax Ready</span>
+          <span className={cn("text-[10px]", isDark ? "text-slate-500" : "text-slate-400")}>802.11ax Ready</span>
         )}
       </div>
 

@@ -69,29 +69,34 @@ export function MobileVoipTab({
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between font-bold border-b border-slate-800 pb-2">
-        <span className="flex items-center gap-1.5 text-emerald-400">
+      <div className={cn("flex items-center justify-between font-bold border-b pb-2", isDark ? "border-slate-800" : "border-slate-200")}>
+        <span className={cn("flex items-center gap-1.5", isDark ? "text-emerald-400" : "text-emerald-600")}>
           <PhoneCall className="w-4 h-4" />
           {isTr ? 'IP Voice / VoIP Phone' : 'IP Voice / VoIP Phone'}
         </span>
-        <span className="text-[10px] text-slate-400 font-mono">SIP/RTP 802.1Q</span>
+        <span className={cn("text-[10px] font-mono", isDark ? "text-slate-400" : "text-slate-500")}>SIP/RTP 802.1Q</span>
       </div>
 
       {/* Incoming or Active VoIP Call Screen */}
       {device.activeVoipCall && device.activeVoipCall.callerId !== device.id && device.activeVoipCall.status === 'ringing' ? (
         /* Callee (Ringing) View: Answer / Decline */
         <div className="space-y-4 py-4 text-center">
-          <div className="w-16 h-16 rounded-full mx-auto flex items-center justify-center bg-emerald-950/60 border-2 border-emerald-500 text-emerald-400 animate-bounce shadow-lg shadow-emerald-500/30">
+          <div className={cn(
+            "w-16 h-16 rounded-full mx-auto flex items-center justify-center border-2 animate-bounce shadow-lg",
+            isDark
+              ? "bg-emerald-950/60 border-emerald-500 text-emerald-400 shadow-emerald-500/30"
+              : "bg-emerald-100 border-emerald-600 text-emerald-700 shadow-emerald-600/20"
+          )}>
             <PhoneCall className="w-7 h-7" />
           </div>
           <div>
-            <div className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider animate-pulse">
+            <div className={cn("text-[10px] font-bold uppercase tracking-wider animate-pulse", isDark ? "text-emerald-400" : "text-emerald-600")}>
               {isTr ? 'Gelen Sesli Çağrı...' : 'Incoming Voice Call...'}
             </div>
-            <div className="font-bold text-base text-white mt-1">
+            <div className={cn("font-bold text-base mt-1", isDark ? "text-white" : "text-slate-900")}>
               {device.activeVoipCall.callerName}
             </div>
-            <div className="text-xs font-mono text-slate-400">
+            <div className={cn("text-xs font-mono", isDark ? "text-slate-400" : "text-slate-500")}>
               {device.activeVoipCall.callerIp || 'SIP Client'}
             </div>
           </div>
@@ -138,13 +143,15 @@ export function MobileVoipTab({
               placeholder={isTr ? "IP veya Dahili No Girin (192.168.1.50)..." : "Enter IP or Extension (192.168.1.50)..."}
               className={cn(
                 "w-full pr-8 pl-3 py-2 rounded-xl border font-mono outline-none text-center text-sm font-semibold tracking-wider transition-colors",
-                isDark ? "bg-slate-950 border-slate-800 text-emerald-400 placeholder:text-slate-600" : "bg-white border-slate-300 text-slate-900 placeholder:text-slate-400"
+                isDark
+                  ? "bg-slate-950 border-slate-800 text-emerald-400 placeholder:text-slate-600"
+                  : "bg-white border-slate-300 text-emerald-700 placeholder:text-slate-400"
               )}
             />
             {dialNumber && (
               <button
                 onClick={onDialDelete}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-xs font-mono px-1 py-0.5"
+                className={cn("absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-mono px-1 py-0.5", isDark ? "text-slate-400 hover:text-white" : "text-slate-500 hover:text-slate-900")}
                 title="Sil"
               >
                 ✕
@@ -153,16 +160,21 @@ export function MobileVoipTab({
           </div>
 
           {/* Keypad Grid (3x4 Layout) */}
-          <div className="grid grid-cols-3 gap-1.5 p-1 rounded-2xl bg-slate-950/60 border border-slate-800/80">
+          <div className={cn("grid grid-cols-3 gap-1.5 p-1 rounded-2xl border", isDark ? "bg-slate-950/60 border-slate-800/80" : "bg-slate-100/90 border-slate-300")}>
             {dialButtons.map(({ key, sub }) => (
               <button
                 key={key}
                 onClick={() => onDialKeyPress(key)}
-                className="h-10 rounded-xl bg-slate-900 hover:bg-slate-800 active:scale-95 border border-slate-800/60 flex flex-col items-center justify-center transition-all group shadow-sm"
+                className={cn(
+                  "h-10 rounded-xl active:scale-95 border flex flex-col items-center justify-center transition-all group shadow-sm",
+                  isDark
+                    ? "bg-slate-900 hover:bg-slate-800 border-slate-800/60 text-slate-100"
+                    : "bg-white hover:bg-slate-200 border-slate-300 text-slate-900"
+                )}
               >
-                <span className="font-bold text-sm text-slate-100 group-hover:text-emerald-400">{key}</span>
+                <span className={cn("font-bold text-sm", isDark ? "text-slate-100 group-hover:text-emerald-400" : "text-slate-800 group-hover:text-emerald-600")}>{key}</span>
                 {sub ? (
-                  <span className="text-[8px] tracking-widest text-slate-500 font-mono -mt-1">{sub}</span>
+                  <span className={cn("text-[8px] tracking-widest font-mono -mt-1", isDark ? "text-slate-500" : "text-slate-400")}>{sub}</span>
                 ) : (
                   <span className="text-[8px] text-transparent leading-none select-none">.</span>
                 )}
@@ -183,8 +195,8 @@ export function MobileVoipTab({
           </div>
 
           {/* Network Directory / Quick Dial List */}
-          <div className="pt-2 border-t border-slate-800/80 space-y-1.5">
-            <div className="text-[10px] font-semibold text-slate-400 flex items-center gap-1">
+          <div className={cn("pt-2 border-t space-y-1.5", isDark ? "border-slate-800/80" : "border-slate-200")}>
+            <div className={cn("text-[10px] font-semibold flex items-center gap-1", isDark ? "text-slate-400" : "text-slate-600")}>
               <User className="w-3 h-3 text-sky-400" />
               {isTr ? 'Ağdaki Cihaz Rehberi' : 'Network Directory'}
             </div>
@@ -194,7 +206,7 @@ export function MobileVoipTab({
                 const devSubnet = device.subnet || '255.255.255.0';
                 return isSameSubnet(device.ip, d.ip, devSubnet) || Boolean(device.gateway && device.gateway !== '0.0.0.0');
               }).length === 0 ? (
-                <div className="text-[10px] text-slate-500 italic text-center py-1.5">
+                <div className={cn("text-[10px] italic text-center py-1.5", isDark ? "text-slate-500" : "text-slate-400")}>
                   {isTr ? 'Aynı ağda ulaşılan başka telefon yok' : 'No reachable phones in same network'}
                 </div>
               ) : (
@@ -227,12 +239,12 @@ export function MobileVoipTab({
                         className={cn(
                           "p-1.5 rounded-lg border flex items-center justify-between cursor-pointer transition-colors",
                           isReachOk
-                            ? "bg-slate-950/60 hover:bg-slate-800 border-slate-800/60"
-                            : "bg-rose-950/30 hover:bg-rose-900/40 border-rose-800/40"
+                            ? isDark ? "bg-slate-950/60 hover:bg-slate-800 border-slate-800/60" : "bg-white hover:bg-slate-100 border-slate-200"
+                            : isDark ? "bg-rose-950/30 hover:bg-rose-900/40 border-rose-800/40" : "bg-rose-50 hover:bg-rose-100 border-rose-200"
                         )}
                       >
                         <div className="truncate flex-1 mr-2">
-                          <div className="font-medium text-[11px] text-slate-200 truncate flex items-center gap-1.5">
+                          <div className={cn("font-medium text-[11px] truncate flex items-center gap-1.5", isDark ? "text-slate-200" : "text-slate-800")}>
                             <span>{d.name}</span>
                             {!isReachOk && (
                               <span className="text-[9px] px-1.5 py-0.2 rounded bg-rose-500/20 text-rose-300 font-normal">
@@ -242,15 +254,15 @@ export function MobileVoipTab({
                               </span>
                             )}
                           </div>
-                          <div className={cn("text-[9px] font-mono", isReachOk ? "text-emerald-400/80" : "text-rose-400/80")}>
+                          <div className={cn("text-[9px] font-mono", isReachOk ? (isDark ? "text-emerald-400/80" : "text-emerald-700") : "text-rose-400/80")}>
                             {d.ip}
                           </div>
                         </div>
                         <span className={cn(
                           "text-[10px] px-2 py-0.5 rounded-md border flex items-center gap-1 shrink-0 font-medium",
                           isReachOk
-                            ? "text-emerald-400 bg-emerald-950/60 border-emerald-800/50"
-                            : "text-rose-300 bg-rose-950/60 border-rose-800/50"
+                            ? isDark ? "text-emerald-400 bg-emerald-950/60 border-emerald-800/50" : "text-emerald-700 bg-emerald-50 border-emerald-300"
+                            : isDark ? "text-rose-300 bg-rose-950/60 border-rose-800/50" : "text-rose-700 bg-rose-50 border-rose-300"
                         )}>
                           <PhoneCall className="w-2.5 h-2.5" />
                           {isReachOk ? (isTr ? 'Ara' : 'Call') : (isTr ? 'Ağ Sorunlu' : 'Issue')}
@@ -263,10 +275,10 @@ export function MobileVoipTab({
           </div>
 
           {/* VoIP Call History Log */}
-          <div className="pt-2 border-t border-slate-800/60">
-            <div className="text-[10px] font-semibold text-slate-400 mb-1.5 flex items-center justify-between">
+          <div className={cn("pt-2 border-t", isDark ? "border-slate-800/60" : "border-slate-200")}>
+            <div className={cn("text-[10px] font-semibold mb-1.5 flex items-center justify-between", isDark ? "text-slate-400" : "text-slate-600")}>
               <span className="flex items-center gap-1">
-                <PhoneCall className="w-3 h-3 text-emerald-400" />
+                <PhoneCall className={cn("w-3 h-3", isDark ? "text-emerald-400" : "text-emerald-600")} />
                 {isTr ? 'Arama Geçmişi' : 'Call History'}
               </span>
               {device.voipHistory && device.voipHistory.length > 0 && (
@@ -282,27 +294,27 @@ export function MobileVoipTab({
             </div>
             <div className="space-y-1 max-h-[110px] overflow-y-auto pr-1 custom-scrollbar">
               {!device.voipHistory || device.voipHistory.length === 0 ? (
-                <div className="text-[10px] text-slate-500 italic text-center py-2">
+                <div className={cn("text-[10px] italic text-center py-2", isDark ? "text-slate-500" : "text-slate-400")}>
                   {isTr ? 'Henüz arama kaydı yok' : 'No recent calls'}
                 </div>
               ) : (
                 device.voipHistory.map((item) => (
-                  <div key={item.id} className="p-1.5 rounded-lg bg-slate-950/40 border border-slate-800/40 flex items-center justify-between text-[10px]">
+                  <div key={item.id} className={cn("p-1.5 rounded-lg border flex items-center justify-between text-[10px]", isDark ? "bg-slate-950/40 border-slate-800/40" : "bg-white border-slate-200")}>
                     <div className="truncate">
-                      <div className="font-medium text-slate-200 flex items-center gap-1 truncate">
+                      <div className={cn("font-medium flex items-center gap-1 truncate", isDark ? "text-slate-200" : "text-slate-800")}>
                         <span className={item.type === 'outgoing' ? "text-sky-400 font-bold" : "text-emerald-400 font-bold"}>
                           {item.type === 'outgoing' ? '↗' : '↙'}
                         </span>
                         {item.peerName}
                       </div>
-                      <div className="text-[9px] text-slate-400 font-mono">
+                      <div className={cn("text-[9px] font-mono", isDark ? "text-slate-400" : "text-slate-500")}>
                         {item.timestamp} {item.peerIp ? `• ${item.peerIp}` : ''}
                       </div>
                     </div>
                     <div className="text-right shrink-0 font-mono">
                       <div className={cn(
                         "font-semibold text-[9px]",
-                        item.status === 'answered' ? "text-emerald-400" : "text-rose-400"
+                        item.status === 'answered' ? (isDark ? "text-emerald-400" : "text-emerald-600") : "text-rose-400"
                       )}>
                         {item.status === 'answered' ? formatDuration(item.durationSeconds) : (isTr ? 'Cevapsız' : 'Missed')}
                       </div>
@@ -320,7 +332,7 @@ export function MobileVoipTab({
             <div className={cn(
               "w-16 h-16 rounded-full mx-auto flex items-center justify-center border-2 transition-all",
               callState === 'calling' ? "bg-amber-950/40 border-amber-500 text-amber-400 animate-pulse" :
-                callState === 'connected' ? "bg-emerald-950/60 border-emerald-500 text-emerald-400 shadow-lg shadow-emerald-500/20" :
+                callState === 'connected' ? (isDark ? "bg-emerald-950/60 border-emerald-500 text-emerald-400 shadow-lg shadow-emerald-500/20" : "bg-emerald-100 border-emerald-600 text-emerald-700 shadow-lg shadow-emerald-600/10") :
                   "bg-rose-950/40 border-rose-500 text-rose-400"
             )}>
               <PhoneCall className="w-7 h-7" />
@@ -328,14 +340,14 @@ export function MobileVoipTab({
           </div>
 
           <div>
-            <div className="font-bold text-sm text-white">
+            <div className={cn("font-bold text-sm", isDark ? "text-white" : "text-slate-900")}>
               {activeCallTarget ? activeCallTarget.name : (device.activeVoipCall?.callerName || dialNumber || 'VoIP Peer')}
             </div>
-            <div className="text-[11px] font-mono text-emerald-400 mt-0.5">
+            <div className={cn("text-[11px] font-mono mt-0.5", isDark ? "text-emerald-400" : "text-emerald-600")}>
               {callStatusMessage || (callState === 'connected' ? (isTr ? 'Bağlantı Aktif' : 'Call Connected') : '')}
             </div>
             {callState === 'connected' && (
-              <div className="text-xs font-mono font-semibold text-slate-300 mt-1">
+              <div className={cn("text-xs font-mono font-semibold mt-1", isDark ? "text-slate-300" : "text-slate-700")}>
                 {formatDuration(callDuration)}
               </div>
             )}
@@ -343,18 +355,18 @@ export function MobileVoipTab({
 
           {/* Real-Time RTP Quality Metrics */}
           {callState === 'connected' && (
-            <div className="p-2.5 rounded-xl bg-slate-950 border border-slate-800 grid grid-cols-3 gap-2 text-[10px] font-mono">
+            <div className={cn("p-2.5 rounded-xl border grid grid-cols-3 gap-2 text-[10px] font-mono", isDark ? "bg-slate-950 border-slate-800" : "bg-slate-100 border-slate-300")}>
               <div>
-                <div className="text-slate-500">RTT (Latency)</div>
-                <div className="text-emerald-400 font-bold">{rtpMetrics.rtt} ms</div>
+                <div className={isDark ? "text-slate-500" : "text-slate-600"}>RTT (Latency)</div>
+                <div className={cn("font-bold", isDark ? "text-emerald-400" : "text-emerald-600")}>{rtpMetrics.rtt} ms</div>
               </div>
               <div>
-                <div className="text-slate-500">Jitter</div>
-                <div className="text-emerald-400 font-bold">{rtpMetrics.jitter} ms</div>
+                <div className={isDark ? "text-slate-500" : "text-slate-600"}>Jitter</div>
+                <div className={cn("font-bold", isDark ? "text-emerald-400" : "text-emerald-600")}>{rtpMetrics.jitter} ms</div>
               </div>
               <div>
-                <div className="text-slate-500">Loss</div>
-                <div className="text-emerald-400 font-bold">{rtpMetrics.loss}%</div>
+                <div className={isDark ? "text-slate-500" : "text-slate-600"}>Loss</div>
+                <div className={cn("font-bold", isDark ? "text-emerald-400" : "text-emerald-600")}>{rtpMetrics.loss}%</div>
               </div>
             </div>
           )}

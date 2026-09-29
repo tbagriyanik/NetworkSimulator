@@ -1,6 +1,7 @@
 import { colors } from '@/lib/design-tokens/colors';
 
-export function get3DSceneScript(sceneDataJson: string): string {
+export function get3DSceneScript(sceneDataJson: string, isDark: boolean = true): string {
+  const defaultTheme = isDark ? 'dark' : 'light';
   return `
     const sceneData = ${sceneDataJson};
 
@@ -555,6 +556,41 @@ export function get3DSceneScript(sceneDataJson: string): string {
         sceneData.objects.forEach(processObject);
       }
 
+      const WEBGL_THEMES = {
+        dark: {
+          sky: [0.05, 0.08, 0.15, 1.0],
+          grid: [0.3, 0.4, 0.5, 0.4],
+          ambient: [0.25, 0.28, 0.35],
+          sun: [0.9, 0.9, 0.95]
+        },
+        light: {
+          sky: [0.92, 0.94, 0.97, 1.0],
+          grid: [0.5, 0.55, 0.6, 0.5],
+          ambient: [0.75, 0.75, 0.8],
+          sun: [1.0, 0.98, 0.9]
+        },
+        neon: {
+          sky: [0.08, 0.02, 0.16, 1.0],
+          grid: [0.9, 0.2, 0.8, 0.5],
+          ambient: [0.4, 0.15, 0.5],
+          sun: [1.0, 0.4, 0.8]
+        },
+        blueprint: {
+          sky: [0.05, 0.14, 0.28, 1.0],
+          grid: [0.8, 0.9, 1.0, 0.6],
+          ambient: [0.3, 0.45, 0.65],
+          sun: [0.85, 0.95, 1.0]
+        }
+      };
+
+      let activeThemeKey = '${defaultTheme}';
+      const selectTheme = document.getElementById('select-theme');
+      if (selectTheme) {
+        selectTheme.addEventListener('change', (e) => {
+          activeThemeKey = e.target.value || '${defaultTheme}';
+        });
+      }
+
       let skyTop = [0.05, 0.08, 0.15, 1.0];
       if (sceneData.environment && sceneData.environment.sky) {
         const sky = sceneData.environment.sky;
@@ -587,8 +623,11 @@ export function get3DSceneScript(sceneDataJson: string): string {
         camTarget[1] += (targetPan[1] - camTarget[1]) * lerpFactor;
         camTarget[2] += (targetPan[2] - camTarget[2]) * lerpFactor;
 
+        const activeTheme = WEBGL_THEMES[activeThemeKey] || WEBGL_THEMES.dark;
+        const currentSky = selectTheme && activeThemeKey !== 'dark' ? activeTheme.sky : skyTop;
+
         gl.viewport(0, 0, canvas.width, canvas.height);
-        gl.clearColor(skyTop[0], skyTop[1], skyTop[2], 1.0);
+        gl.clearColor(currentSky[0], currentSky[1], currentSky[2], 1.0);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
         gl.enable(gl.DEPTH_TEST);
         gl.depthFunc(gl.LEQUAL);
@@ -604,7 +643,7 @@ export function get3DSceneScript(sceneDataJson: string): string {
           gl.useProgram(lineProg);
           gl.uniformMatrix4fv(lineLoc.uView, false, viewMat);
           gl.uniformMatrix4fv(lineLoc.uProjection, false, projMat);
-          gl.uniform4f(lineLoc.uLineColor, 0.3, 0.4, 0.5, 0.4);
+          gl.uniform4f(lineLoc.uLineColor, activeTheme.grid[0], activeTheme.grid[1], activeTheme.grid[2], activeTheme.grid[3]);
 
           gl.bindBuffer(gl.ARRAY_BUFFER, gridBuffers.pb);
           gl.enableVertexAttribArray(lineLoc.aPosition);
@@ -617,10 +656,10 @@ export function get3DSceneScript(sceneDataJson: string): string {
         gl.uniformMatrix4fv(progLoc.uProjection, false, projMat);
 
         gl.uniform3f(progLoc.uSunDir, 5.0, 10.0, 5.0);
-        gl.uniform3f(progLoc.uSunColor, 0.9, 0.9, 0.95);
+        gl.uniform3f(progLoc.uSunColor, activeTheme.sun[0], activeTheme.sun[1], activeTheme.sun[2]);
         gl.uniform3f(progLoc.uLampPos, 0.0, 5.0, 0.0);
         gl.uniform3f(progLoc.uLampColor, 1.0, 0.85, 0.6);
-        gl.uniform3f(progLoc.uAmbientColor, 0.25, 0.28, 0.35);
+        gl.uniform3f(progLoc.uAmbientColor, activeTheme.ambient[0], activeTheme.ambient[1], activeTheme.ambient[2]);
 
         gl.enableVertexAttribArray(progLoc.aPosition);
         gl.enableVertexAttribArray(progLoc.aNormal);

@@ -43,8 +43,21 @@ function notifyFormChange(deviceId: string, form: PythonFormState | null) {
 }
 
 /** Generate standalone interactive HTML for displaying the form inside PCBrowser */
-export function generateFormHtml(form: PythonFormState): string {
+export function generateFormHtml(form: PythonFormState, isDark: boolean = true): string {
   const title = form.title || 'Python Form Application';
+  const bgCol = isDark ? colors.topology.bg : '#f8fafc';
+  const cardBg = isDark ? withAlpha(colors.slate['800'], 0.85) : '#ffffff';
+  const textCol = isDark ? colors.terminal.fg : '#0f172a';
+  const textMuted = isDark ? colors.topology.subText : '#475569';
+  const borderCol = isDark ? withAlpha(colors.slate['700'], 0.8) : '#cbd5e1';
+  const primaryCol = isDark ? colors.theme.accent : '#0284c7';
+  const primaryHover = isDark ? colors.sky[500] : '#0369a1';
+  const primaryFg = isDark ? colors.topology.bg : '#ffffff';
+  const inputBg = isDark ? colors.topology.canvasBg : '#f1f5f9';
+  const cardShadow = isDark
+    ? `0 10px 25px -5px ${withAlpha(colors.common.black, 0.5)}, 0 8px 10px -6px ${withAlpha(colors.common.black, 0.4)}`
+    : `0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 4px 6px -2px rgba(15, 23, 42, 0.04)`;
+
   return `<!doctype html>
 <html lang="tr">
 <head>
@@ -53,15 +66,15 @@ export function generateFormHtml(form: PythonFormState): string {
   <title>${escapeHtml(title)}</title>
   <style>
     :root {
-      --bg-color: ${colors.topology.bg};
-      --card-bg: ${withAlpha(colors.slate['800'], 0.85)};
-      --text-color: ${colors.terminal.fg};
-      --text-muted: ${colors.topology.subText};
-      --border-color: ${withAlpha(colors.slate['700'], 0.8)};
-      --primary: ${colors.theme.accent};
-      --primary-hover: ${colors.sky[500]};
-      --primary-fg: ${colors.topology.bg};
-      --input-bg: ${colors.topology.canvasBg};
+      --bg-color: ${bgCol};
+      --card-bg: ${cardBg};
+      --text-color: ${textCol};
+      --text-muted: ${textMuted};
+      --border-color: ${borderCol};
+      --primary: ${primaryCol};
+      --primary-hover: ${primaryHover};
+      --primary-fg: ${primaryFg};
+      --input-bg: ${inputBg};
       --accent: ${colors.indigo[500]};
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -82,7 +95,7 @@ export function generateFormHtml(form: PythonFormState): string {
       backdrop-filter: blur(12px);
       border: 1px solid var(--border-color);
       border-radius: 12px;
-      box-shadow: 0 10px 25px -5px ${withAlpha(colors.common.black, 0.5)}, 0 8px 10px -6px ${withAlpha(colors.common.black, 0.4)};
+      box-shadow: ${cardShadow};
       padding: 24px;
       display: flex;
       flex-direction: column;

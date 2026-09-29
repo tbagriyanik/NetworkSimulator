@@ -59,14 +59,14 @@ txt = tk.Text(root, height=3)
 txt.insert("1.0", "Hazir.")
 print("T1=" + txt.get("1.0", "end"))
 txt.delete("1.0", "end")
-txt.insert("1.0", "BAGLANTI HATASI test")
+txt.insert("1.0", "BAĞLANTI HATASI test")
 print("T2=" + txt.get("1.0", "end"))
 root.mainloop()
 `;
         const res = executePythonScript(script, [], undefined, uniqueDev());
         expect(res.error).toBeUndefined();
         expect(res.output).toContain('T1=Hazir.');
-        expect(res.output).toContain('T2=BAGLANTI HATASI test');
+        expect(res.output).toContain('T2=BAĞLANTI HATASI test');
     });
 
     it('Listbox.insert/get works', () => {
@@ -158,7 +158,7 @@ root = tk.Tk()
 root.title("Ag Kontrol Paneli")
 root.geometry("460x560")
 
-lbl_title = ttk.Label(root, text="Ag Cihazi Kontrol ve Yapilandirma Formu")
+lbl_title = ttk.Label(root, text="Ağ Cihazı Kontrol ve Yapılandırma Formu")
 lbl_title.pack(pady=4)
 sep1 = ttk.Separator(root, orient="horizontal")
 sep1.pack(fill="x", pady=4)
@@ -170,7 +170,7 @@ ent_ip.pack(pady=4)
 cmb_proto = ttk.Combobox(root, values=["SSH (Port 22)", "Telnet (Port 23)", "HTTP (Port 80)", "HTTPS (Port 443)"])
 cmb_proto.pack(pady=4)
 
-chk_secure = ttk.Checkbutton(root, text="Guvenli Baglanti (SSL/TLS)", checked=True)
+chk_secure = ttk.Checkbutton(root, text="Güvenli Bağlantı (SSL/TLS)", checked=True)
 chk_secure.pack(pady=4)
 
 rad_mode1 = ttk.Radiobutton(root, text="Normal Mod", value="normal", checked=True)
@@ -208,30 +208,30 @@ def on_connect():
     txt_log.delete("1.0", "end")
 
     if ip == "":
-        txt_log.insert("1.0", "BAGLANTI HATASI: IP adresi bos birakilamaz!")
-        lbl_status.set("Durum: BAGLANTI HATASI (Bos IP)")
+        txt_log.insert("1.0", "BAĞLANTI HATASI: IP adresi bos birakilamaz!")
+        lbl_status.set("Durum: BAĞLANTI HATASI (Bos IP)")
         return
 
     if not ip_gecerli_mi(ip):
-        txt_log.insert("1.0", "BAGLANTI HATASI: Gecersiz IP adresi -> " + ip)
-        lbl_status.set("Durum: BAGLANTI HATASI (Gecersiz IP)")
+        txt_log.insert("1.0", "BAĞLANTI HATASI: Gecersiz IP adresi -> " + ip)
+        lbl_status.set("Durum: BAĞLANTI HATASI (Gecersiz IP)")
         return
 
     if proto == "":
-        txt_log.insert("1.0", "BAGLANTI HATASI: Lutfen bir protokol secin!")
-        lbl_status.set("Durum: BAGLANTI HATASI (Protokol Yok)")
+        txt_log.insert("1.0", "BAĞLANTI HATASI: Lutfen bir protokol secin!")
+        lbl_status.set("Durum: BAĞLANTI HATASI (Protokol Yok)")
         return
 
     erisilebilirler = ["192.168.1.1", "192.168.1.10"]
     if ip not in erisilebilirler:
-        txt_log.insert("1.0", "BAGLANTI HATASI: Hedef cihaza ulasilamadi (zaman asimi) -> " + ip)
-        lbl_status.set("Durum: BAGLANTI HATASI (Zaman Asimi)")
+        txt_log.insert("1.0", "BAĞLANTI HATASI: Hedef cihaza ulasilamadi (zaman asimi) -> " + ip)
+        lbl_status.set("Durum: BAĞLANTI HATASI (Zaman Asimi)")
         return
 
-    txt_log.insert("1.0", "Baglanti basarili -> " + ip + " (" + proto + ")")
-    lbl_status.set("Durum: Baglanti Basarili")
+    txt_log.insert("1.0", "Bağlantı başarılı -> " + ip + " (" + proto + ")")
+    lbl_status.set("Durum: Bağlantı Başarılı")
 
-btn_action = ttk.Button(root, text="Baglantiyi Baslat", command=on_connect)
+btn_action = ttk.Button(root, text="Bağlantıyı Başlat", command=on_connect)
 btn_action.pack(pady=6)
 
 def test_et(durum, ip, proto):
@@ -253,14 +253,14 @@ root.mainloop()
 `;
         const res = executePythonScript(script, [], undefined, uniqueDev());
         expect(res.error).toBeUndefined();
-        expect(res.output).toContain('[1-BosIP] => BAGLANTI HATASI: IP adresi bos birakilamaz!');
-        expect(res.output).toContain('[2-Gecersiz999] => BAGLANTI HATASI: Gecersiz IP adresi -> 999.1.1.1');
-        expect(res.output).toContain('[2-GecersizAbc] => BAGLANTI HATASI: Gecersiz IP adresi -> 192.168.1.abc');
-        expect(res.output).toContain('[2-Gecersiz3Part] => BAGLANTI HATASI: Gecersiz IP adresi -> 192.168.1');
-        expect(res.output).toContain('[3-ProtokolYok] => BAGLANTI HATASI: Lutfen bir protokol secin!');
-        expect(res.output).toContain('[4-ZamanAsimi] => BAGLANTI HATASI: Hedef cihaza ulasilamadi (zaman asimi) -> 10.0.0.5');
-        expect(res.output).toContain('[5-Basarili] => Baglanti basarili -> 192.168.1.1 (SSH (Port 22))');
-        expect(res.output).toContain('[5-BasariliHttps] => Baglanti basarili -> 192.168.1.10 (HTTPS (Port 443))');
+        expect(res.output).toContain('[1-BosIP] => BAĞLANTI HATASI: IP adresi bos birakilamaz!');
+        expect(res.output).toContain('[2-Gecersiz999] => BAĞLANTI HATASI: Gecersiz IP adresi -> 999.1.1.1');
+        expect(res.output).toContain('[2-GecersizAbc] => BAĞLANTI HATASI: Gecersiz IP adresi -> 192.168.1.abc');
+        expect(res.output).toContain('[2-Gecersiz3Part] => BAĞLANTI HATASI: Gecersiz IP adresi -> 192.168.1');
+        expect(res.output).toContain('[3-ProtokolYok] => BAĞLANTI HATASI: Lutfen bir protokol secin!');
+        expect(res.output).toContain('[4-ZamanAsimi] => BAĞLANTI HATASI: Hedef cihaza ulasilamadi (zaman asimi) -> 10.0.0.5');
+        expect(res.output).toContain('[5-Basarili] => Bağlantı başarılı -> 192.168.1.1 (SSH (Port 22))');
+        expect(res.output).toContain('[5-BasariliHttps] => Bağlantı başarılı -> 192.168.1.10 (HTTPS (Port 443))');
     });
 
     it('GUI Form template: ip_gecerli_mi edge cases', () => {

@@ -70,7 +70,7 @@ export const PythonFormWindow: React.FC<PythonFormWindowProps> = ({
 
   const handleOpenBrowser = () => {
     if (onOpenInBrowser) {
-      const html = generateFormHtml(form);
+      const html = generateFormHtml(form, isDark);
       onOpenInBrowser(html, form.title);
     }
   };

@@ -22,10 +22,20 @@ function escapeHtml(str: string): string {
  * Generates an interactive, standalone HTML5 3D WebGL application
  * that can run inside an iframe (PCBrowser) or saved as a .html file.
  */
-export function generate3DSceneHtml(scene: Python3DSceneState): string {
+export function generate3DSceneHtml(scene: Python3DSceneState, isDark: boolean = true): string {
   const sceneDataJson = JSON.stringify(scene).replace(/</g, '\\u003c');
-  const styles = get3DSceneStyles();
-  const script = get3DSceneScript(sceneDataJson);
+  const styles = get3DSceneStyles(isDark);
+  const script = get3DSceneScript(sceneDataJson, isDark);
+
+  const initialThemeOption = isDark
+    ? `<option value="dark" selected>🌙 Dark Cyber</option>
+        <option value="light">☀️ Light Clean</option>
+        <option value="neon">🟣 Neon Synth</option>
+        <option value="blueprint">📐 Blueprint</option>`
+    : `<option value="light" selected>☀️ Light Clean</option>
+        <option value="dark">🌙 Dark Cyber</option>
+        <option value="neon">🟣 Neon Synth</option>
+        <option value="blueprint">📐 Blueprint</option>`;
 
   return `<!DOCTYPE html>
 <html lang="tr">
@@ -42,10 +52,13 @@ export function generate3DSceneHtml(scene: Python3DSceneState): string {
 
   <header class="toolbar">
     <div class="toolbar-group">
-      <span style="font-weight: 700; font-size: 12px; color: ${colors.theme.accent}; margin-right: 4px;">🧊 ${escapeHtml(scene.title || '3D Sahne')}</span>
+      <span style="font-weight: 700; font-size: 12px; color: ${isDark ? colors.theme.accent : colors.theme.primary}; margin-right: 4px;">🧊 ${escapeHtml(scene.title || '3D Sahne')}</span>
       <span class="badge" id="obj-count-badge">${scene.objects.length} Nesne</span>
     </div>
     <div class="toolbar-group">
+      <select class="theme-select" id="select-theme" title="WebGL Tema Seçimi">
+        ${initialThemeOption}
+      </select>
       <button class="btn" id="btn-wireframe" title="Tel Çerçeve Modu">🌐 Tel Kafes</button>
       <button class="btn" id="btn-grid" title="Zemin Izgarasını Göster/Gizle">▦ Izgara</button>
       <button class="btn" id="btn-rotate" title="Otomatik Dönüşü Aç/Kapat">🔄 Döndür</button>
