@@ -93,8 +93,8 @@ export function get3DSceneStyles(isDark: boolean = true): string {
     }
     .btn:hover {
       background: ${bgBtnHover};
-      border-color: ${isDark ? withAlpha(colors.common.white, 0.25) : '#94a3b8'};
-      color: ${isDark ? colors.common.white : '#0f172a'};
+      border-color: ${isDark ? withAlpha(colors.common.white, 0.25) : colors.cables.default};
+      color: ${isDark ? colors.common.white : colors.slate['900']};
       transform: translateY(-1px);
     }
     .btn:active {
@@ -129,7 +129,7 @@ export function get3DSceneStyles(isDark: boolean = true): string {
       transition: all 0.15s ease;
     }
     .theme-select:hover {
-      background: ${isDark ? withAlpha(colors.common.black, 0.6) : '#f1f5f9'};
+      background: ${isDark ? withAlpha(colors.common.black, 0.6) : colors.terminal.fg};
       border-color: ${colors.theme.accent};
     }
     .theme-select option {
