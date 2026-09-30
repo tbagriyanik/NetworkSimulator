@@ -1,12 +1,12 @@
 # Network Simulator
 
-![Version](https://img.shields.io/badge/version-7.0.0-blue)
+![Version](https://img.shields.io/badge/version-7.1.0-blue)
 ![Next.js](https://img.shields.io/badge/Next.js-16.3.7-black?logo=next.js)
 ![React](https://img.shields.io/badge/React-19.3.0-61DAFB?logo=react&logoColor=black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-7.0.2-3178C6?logo=typescript&logoColor=white)
 ![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-4.3.3-06B6D4?logo=tailwindcss&logoColor=white)
 ![FOSS](https://img.shields.io/badge/FOSS-Free%20Open%20Source-brightgreen)
-![Total Lines](https://img.shields.io/badge/total--lines-~240k-lightgrey)
+![Total Lines](https://img.shields.io/badge/total--lines-~241k-lightgrey)
 
 A comprehensive, client-side, browser-based network simulator for learning switching, routing, wireless, security, IoT, CLI terminal workflows.
 
@@ -75,9 +75,9 @@ Simülatör, standart komut formatının yanı sıra yaygın olarak kullanılan 
 
 | Metrik / Metric | Değer / Value |
 | --- | --- |
-| Version / Sürüm | 7.0.0 |
-| Total Lines / Toplam Satır (`src/`) | ~240,368 |
-| Source Files / Kaynak Dosya | 1156 |
+| Version / Sürüm | 7.1.0 |
+| Total Lines / Toplam Satır (`src/`) | ~240,621 |
+| Source Files / Kaynak Dosya | 1159 |
 | Test Files / Test Dosyaları | 233 |
 | Tests / Testler | 2096 |
 | Documentation Files / Dokümantasyon Dosya | 25 |
