@@ -17,6 +17,8 @@ A comprehensive, client-side, browser-based network simulator for learning switc
 - 📺 **Tanıtım 2:** [https://youtu.be/rSW3LiQa290](https://youtu.be/rSW3LiQa290)
 - 📺 **Tanıtım 1:** [https://youtu.be/2Xo-ZP5qgXI](https://youtu.be/2Xo-ZP5qgXI)
 
+![Network Simulator](app.png)
+
 ---
 
 ## ⚡ Quick Start / Hızlı Başlangıç
@@ -45,7 +47,7 @@ Simülatör, standart komut formatının yanı sıra yaygın olarak kullanılan 
 
 | Rol / Platform | Gereksinimler | Açıklama |
 | :--- | :--- | :--- |
-| **Son Kullanıcı (Windows)** | Windows 10/11 | Microsoft Edge WebView2 yerleşiktir. Ekstra hiçbir kurulum gerekmez. |
+| **Son Kullanıcı (Windows)** | Windows 10/11 | Edge WebView2 yerleşiktir. Ekstra hiçbir kurulum gerekmez. |
 | **Son Kullanıcı (macOS)** | macOS 10.15+ | WebKit yerleşiktir. `.dmg` çift tıklanarak doğrudan kurulur. |
 | **Son Kullanıcı (Linux)** | Ubuntu, Debian, Fedora, Arch vb. | `webkit2gtk` kütüphanesi gerekir. `.AppImage` doğrudan çalışır. |
 | **Son Kullanıcı (Mobil/PWA)** | iOS Safari / Android Chrome | Tarayıcıdan "Ana Ekrana Ekle" ile anında uygulama gibi kurulur. |

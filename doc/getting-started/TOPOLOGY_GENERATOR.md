@@ -55,7 +55,7 @@
 | NAT Dynamic | 1 Router + 3 PC | Dinamik NAT |
 | NAT PAT | 1 Router + 4 PC | PAT/Overload |
 | Port Security | 1 Switch + 3 PC | MAC kısıtlaması |
-| Firewall Basic | 1 Firewall + 2 PC | ASA temel yapılandırması |
+| Firewall Basic | 1 Firewall + 2 PC | Güvenlik Duvarı (Firewall) temel yapılandırması |
 | Basic Secure | 2 Router + 2 PC + 1 Switch | SSH + ACL + Port Security |
 
 ### 📡 Wireless Senaryoları

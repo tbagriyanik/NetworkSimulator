@@ -4,6 +4,7 @@ import React, { useMemo, useEffect } from 'react';
 import { DragPosition as ModalPosition, DragSize as ModalSize } from '@/hooks/useDrag';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DraggableWindowWrapper } from './DraggableWindowWrapper';
+import { useWindowStore } from '@/hooks/useWindowStore';
 
 import {
     Terminal as TerminalIcon,
@@ -121,16 +122,21 @@ export function UnifiedDevicePanel({
     const [isAutomationWindowOpen, setIsAutomationWindowOpen] = React.useState(false);
     const isNarrow = modalSize.width < 1100;
 
+    const openNetdevopsWindow = React.useCallback(() => {
+        useWindowStore.getState().setActiveWindow('netdevops-automation-window');
+        setIsAutomationWindowOpen(true);
+    }, []);
+
     useEffect(() => {
         const handleOpenNetdevops = (e: Event) => {
             const customEvent = e as CustomEvent<{ deviceId?: string }>;
             if (!customEvent.detail?.deviceId || customEvent.detail.deviceId === deviceId) {
-                setIsAutomationWindowOpen(true);
+                openNetdevopsWindow();
             }
         };
         window.addEventListener('open-netdevops-window', handleOpenNetdevops);
         return () => window.removeEventListener('open-netdevops-window', handleOpenNetdevops);
-    }, [deviceId]);
+    }, [deviceId, openNetdevopsWindow]);
 
     const currentDevice = useMemo(() => {
         return topologyDevices?.find(d => d.id === deviceId);
@@ -258,7 +264,10 @@ export function UnifiedDevicePanel({
             headerActions={
                 (deviceType === 'switchL2' || deviceType === 'switchL3' || deviceType === 'router') ? (
                     <button
-                        onClick={() => setIsAutomationWindowOpen(true)}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            openNetdevopsWindow();
+                        }}
                         className={cn(
                             "flex items-center gap-1.5 px-2 py-0.5 rounded text-[11px] font-semibold border transition-all mr-1.5",
                             isDark

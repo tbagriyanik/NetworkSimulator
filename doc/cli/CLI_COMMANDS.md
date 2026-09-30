@@ -967,6 +967,25 @@ The simulator automatically parses and maps alternative network operating system
 | `netconf-yang` | Config | Initialize and enable NETCONF-YANG model-driven management |
 | `netconf ssh` | Config | Enable NETCONF SSH listening server on standard port 830 |
 | `show netconf-yang status` | Privileged | Display NETCONF-YANG engine and SSH server operational status |
+| `netconf <hello\|get\|edit-config\|close-session>` | Privileged | Execute RFC 6241 NETCONF RPC exchange over control plane |
+| `show netconf sessions` | Privileged | Display active NETCONF sessions and client capabilities |
+| `mqtt connect <broker-ip> [port]` | Privileged | Connect to simulated MQTT broker (port 1883/8883) |
+| `mqtt subscribe <topic>` | Privileged | Subscribe to an MQTT telemetry topic |
+| `mqtt publish <topic> <message>` | Privileged | Publish QoS 1 payload message to MQTT topic |
+| `show mqtt clients` / `show mqtt topics` | Privileged | Display active MQTT broker clients and topic subscriptions |
+| `coap get <uri>` / `coap put <uri> <data>` | Privileged | Execute CoAP RFC 7252 RESTful request over UDP (port 5683) |
+| `coap delete <uri>` | Privileged | Delete resource via CoAP transaction |
+| `show coap resources` | Privileged | Display registered CoAP endpoints and resource attributes |
+
+### SDN & Intent-Based Networking Controller (v6.9.0)
+
+| Feature / Command | Context | Description |
+|-------------------|---------|-------------|
+| `SDN Controller Modal` | UI Toolbar / Menu | Open SDN & Intent-Based Networking management console |
+| `discoverInventory()` | Controller Engine | Auto-discover switches, routers, endpoints, and VLAN allocations |
+| `computePathTrace(src, dst)` | Controller Engine | Compute hop-by-hop path trace with latency, ingress/egress ports, and ACL checks |
+| `applyIntentPolicy(policy)` | Controller Engine | Deploy high-level policies (VoIP QoS prioritization, IoT VLAN isolation, rate-limiting) |
+
 
 ## Command Modes
 - **User Mode** (`>`) - Basic monitoring commands

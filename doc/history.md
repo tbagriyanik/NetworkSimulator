@@ -757,7 +757,7 @@ Görev yöneticisi pencere listesi modernleştirildi; eksik örnek açıklamalar
 | 2026-06-21 | **EIGRP Dinamik Yönlendirme** — Named/config modu ile EIGRP |
 | 2026-06-21 | **IPv6 Gelişmiş Lab** — IPv6 adresleme, DHCPv6 havuzları, OSPFv3 |
 | 2026-06-21 | **Tüm Servisler Laboratuvarı** — DNS, HTTP, DHCP, FTP, MAIL ve NTP servislerini içeren kapsamlı lab |
-| 2026-06-21 | **Google Sheets Entegrasyonu** — Apps Script API ile iletişim formu verilerinin Google Sheets'e aktarımı |
+| 2026-06-21 | **Elektronik Tablo / Sheets Entegrasyonu** — Apps Script API ile iletişim formu verilerinin elektronik tabloya aktarımı |
 | 2026-06-21 | **Redis / KV Depolama** — Upstash Redis ile oda takibi oturum kalıcılığı ve gerçek zamanlı senkronizasyon |
 
 ---

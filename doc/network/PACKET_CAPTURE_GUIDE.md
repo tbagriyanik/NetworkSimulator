@@ -71,6 +71,15 @@ OSPF, EIGRP, RIP   → Routing protokol paketlerini gizle
 ```
 > **İpucu:** Dışlama filtresi büyük/küçük harf duyarsızdır.
 
+### ⚡ Hızlı Filtre Butonları (Preset Filters)
+Panel üzerinde tek tıkla en sık kullanılan filtreler arasında anında geçiş yapabilirsiniz:
+- **Tümü (All):** Filtreyi temizler ve tüm trafiği listeler.
+- **Sadece Drop:** Güvenlik duvarı, ACL veya port hatası nedeniyle düşen (`DROPPED`) paketleri filtreler.
+- **Sadece OSPF:** Yalnızca OSPF Hello, LSU, LSA paketlerini görüntüler.
+- **Sadece BGP:** BGP OPEN, UPDATE ve Keepalive akışlarını izler.
+- **Sadece ICMP:** Ping Echo Request/Reply mesajlarını listeler.
+- **Sadece STP:** Spanning Tree BPDU çerçevelerine odaklanır.
+
 ---
 
 ## 📄 Sayfalama (Pagination)

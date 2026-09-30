@@ -23,8 +23,20 @@ A browser-based network simulator for learning switching, routing, wireless, IoT
 
 Bu kitapçık projenin tüm kullanıcı, CLI, protokol, laboratuvar ve özellik bilgilerinin birincil kaynağıdır. Diğer Markdown dosyaları yalnızca kısa başvuru, kurulum veya geliştirici ayrıntısı içerir; aynı bilginin güncel sürümü burada tutulmalıdır.
 
-### Güncel özellik durumu (v6.6.1)
+### Güncel özellik durumu (v6.9.0)
 
+- **🌐 SDN & Intent-Based Networking Controller (v6.9.0):**
+  - **Topoloji & Envanter Keşfi:** Yönetilen anahtar, yönlendirici, uç cihaz ve VLAN dağılımının otomatik keşfi.
+  - **Sekmeli Yol İzleme (Path Trace):** Kaynak-hedef arası atlama-atlama (hop-by-hop) gecikme, port ve ACL analizi.
+  - **Niyet Tabanlı Politika Dağıtımı (Intent-Based Policies):** VoIP QoS önceliklendirme, IoT VLAN izolasyonu ve rate limiting politikalarını tek tıkla ağa uygulama.
+  - **YANG & NETCONF:** Model-driven ağ yönetimi ve `<rpc>` yürütme doğrulamaları.
+  - **Multicast İletim Derinleştirmesi:** 25 senaryolu PIM-SM/DM, RPF ve IGMP test matrisi.
+- **🎨 Kapsamlı Açık/Koyu Tema Senkronizasyonu (v6.8.1):**
+  - VoIP Phone, 3D WebGL araç çubuğu, Python GUI form pencereleri, Donanım Yuvaları ve Mobil OS arayüzlerinde tam açık/koyu tema uyumu.
+- **🧵 Kübik Bezier Spline Kablolar & Native PNG Dışa Aktarma (v6.8.0):**
+  - Dinamik S-spline kablo eğrileri, native sistem dosya seçicisi ile 300 DPI PNG export, `show run` runtime diff uyarı banner'ı ve PDU preset filtreleri.
+- **🛠️ Davranış Regresyonu, Arıza Enjeksiyonu & Ototamlama (v6.7.1):**
+  - Uçtan uca `no` komut regresyon matrisi, otomatik arıza enjeksiyonu (`wrongVlan`, `brokenTrunk`, `shutdownPort`, `aclDeny`) ve kademeli ipucu motoru. Caret (`^`) imleçli otantik CLI hata mesajları ve TAB ototamlama.
 - **🧪 Kurumsal CLI Regresyon Matrisi & Sorun Giderme Modu (v6.6.1):**
   - **CLI `no` Komut Regresyon Matrisi:** `no shutdown`, `no ip address`, `no ip route`, `no access-group`, `no switchport access vlan`, `no ip nat`, OSPF/EIGRP/BGP sıfırlamaları için uçtan uca E2E testleri (`cliBehaviorRegressionMatrix.test.ts`).
   - **Gelişmiş Arıza Enjeksiyonu (Fault Injection):** Öğrenciler için bozuk topoloji üretimi ve arıza teşhisi (`wrongVlan`, `wrongGateway`, `shutdownPort`, `aclDeny`, `brokenTrunk`, `ospfIssue`, `natIssue`, `stpIssue`).
@@ -334,14 +346,14 @@ npm install && npm run dev
 | [WIRELESS_CONFIGURATION_GUIDE.md](../network/WIRELESS_CONFIGURATION_GUIDE.md) | Kablosuz ağ / Wireless configuration |
 | [L3_SWITCH_CONFIGURATION.md](../network/L3_SWITCH_CONFIGURATION.md) | L3 switch yapılandırma / L3 switch guide |
 | [PACKET_CAPTURE_GUIDE.md](../network/PACKET_CAPTURE_GUIDE.md) | Paket yakalama paneli / Packet capture guide |
-| [GOOGLE_SHEETS_SETUP.md](../network/GOOGLE_SHEETS_SETUP.md) | Google Sheets entegrasyonu / Google Sheets setup |
+| [GOOGLE_SHEETS_SETUP.md](../network/GOOGLE_SHEETS_SETUP.md) | Elektronik Tablo (Sheets) entegrasyonu / Spreadsheet (Sheets) setup |
 | [ROOM_TRACKING_SETUP.md](../network/ROOM_TRACKING_SETUP.md) | Oda takip sistemi / Room tracking setup |
 | [DOCUMENTATION_INDEX.md](../DOCUMENTATION_INDEX.md) | Tüm belgeler indeksi / Full documentation index |
 | [CONTRIBUTING.md](../development/CONTRIBUTING.md) | Katkı rehberi / Contribution guide |
 | [ERROR_HANDLING_GUIDE.md](../development/ERROR_HANDLING_GUIDE.md) | Hata kontrol rehberi / Error handling guide |
-| [INTEGRATION_GUIDE.md](../development/INTEGRATION_GUIDE.md) | Entegrasyon rehberi / Integration guide |
+| [LOW_RESOURCE_OPTIMIZATIONS.md](../development/LOW_RESOURCE_OPTIMIZATIONS.md) | Düşük kaynaklı donanım optimizasyonları / Low-resource build guide |
+| [RELEASE_CHECKLIST.md](../RELEASE_CHECKLIST.md) | Sürüm yayınlama ve senkronizasyon kontrol listesi |
 | [examples.md](../reference/examples.md) | Adım adım örnek projeler / Example projects |
-| [details.md](../reference/details.md) | Sürüm detayları / Version details |
 
 ## Architecture / Mimari
 

@@ -187,7 +187,7 @@ export default function RootLayout({
               }
               
               function encode(data) {
-                if (typeof data !== 'string') return data;
+                if (typeof data !== 'string' || data.startsWith(PREFIX)) return data;
                 try {
                   return PREFIX + btoa(xorCipher(encodeURIComponent(data), SECRET_KEY));
                 } catch(e) { return data; }

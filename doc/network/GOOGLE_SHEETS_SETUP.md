@@ -1,9 +1,9 @@
-# Google Sheets İletişim Formu Kurulumu
+# Elektronik Tablo (Sheets) İletişim Formu Kurulumu
 
-Bu rehber, ağ simülasyonundaki iletişim formunu Google Sheets'e nasıl bağlayacağınızı açıklar.
+Bu rehber, ağ simülasyonundaki iletişim formunu bulut elektronik tabloya (Sheets) nasıl bağlayacağınızı açıklar.
 
-## 1. Google Sayfası Oluşturun
-1. [Google Sheets](https://sheets.google.com)'e gidin ve yeni bir boş sayfa oluşturun.
+## 1. Elektronik Tablo Sayfası Oluşturun
+1. Tablo servisine gidin ve yeni bir boş sayfa oluşturun.
 2. İlk satıra (başlıklar) şu sütun adlarını ekleyin:
    - `Timestamp`
    - `Name`
@@ -12,7 +12,7 @@ Bu rehber, ağ simülasyonundaki iletişim formunu Google Sheets'e nasıl bağla
    - `Message`
    - `UserAgent`
 
-## 2. Google Apps Script'i Hazırlayın
+## 2. Apps Script Kodunu Hazırlayın
 1. Üst menüden **Uzantılar** > **Apps Script**'i seçin.
 2. Açılan editöre aşağıdaki kodu yapıştırın:
 
@@ -84,11 +84,11 @@ GOOGLE_SHEETS_CONTACT_URL=https://script.google.com/macros/s/AKfycb.../exec
 ```
 
 ## 4. Test Edin
-Hakkında modalındaki iletişim sekmesini kullanarak bir mesaj gönderin. Mesaj anında Google Sheets sayfanıza düşecektir.
+Hakkında modalındaki iletişim sekmesini kullanarak bir mesaj gönderin. Mesaj anında elektronik tablo sayfanıza düşecektir.
 
 ## 💡 Sorun Giderme (Troubleshooting)
 
-### 1. "Failed to send to Google Sheets" (500 Hatası)
+### 1. "Failed to send to Sheets" (500 Hatası)
 Eğer terminalde bu hatayı alıyorsanız, genellikle şu iki sebepten biridir:
 - **Erişim Ayarı**: Apps Script'i dağıtırken "Erişimi olanlar" kısmını **"Herkes" (Anyone)** yapmamış olabilirsiniz. (Sadece siz yaparsanız, API sunucu üzerinden erişemez).
 - **URL Yanlış**: `.env.local` dosyasına yapıştırdığınız URL'nin başında veya sonunda boşluk olmadığından ve `/exec` ile bittiğinden emin olun.

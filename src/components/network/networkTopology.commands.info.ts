@@ -27,6 +27,11 @@ export function getInfoCategories(isTR: boolean): CommandDefinition[] {
         ['STP', isTR ? 'Spanning Tree - Loop önleme' : 'Spanning Tree - Loop prevention'],
         ['OSPF', isTR ? 'Open Shortest Path First yönlendirme' : 'Link-state routing protocol'],
         ['BGP', isTR ? 'Border Gateway Protocol - Internet routing' : 'Exterior gateway routing protocol'],
+        ['SDN / IBN', isTR ? 'Yazılım Tanımlı Ağ & Niyet Tabanlı Politika Yönetimi' : 'Software-Defined & Intent-Based Networking'],
+        ['NETCONF / YANG', isTR ? 'Model tabanlı cihaz yönetimi ve veri modelleme' : 'Model-driven device management & data modeling'],
+        ['MQTT / CoAP', isTR ? 'Hafif IoT mesajlaşma ve RESTful UDP servisleri' : 'Lightweight IoT messaging & RESTful UDP services'],
+        ['FHRP (HSRP/VRRP)', isTR ? 'İlk atlama ağ geçidi yedeklilik protokolleri' : 'First Hop Redundancy Protocols'],
+        ['ACL', isTR ? 'Erişim kontrol listesi ve paket filtreleme' : 'Access Control List & packet filtering'],
       ]
     }
   ];

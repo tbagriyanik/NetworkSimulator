@@ -19,7 +19,7 @@ Tüm sürüm ve metrik bilgileri doğrudan `package.json` ve `src/` altındaki g
 Yeni bir sürüm (`vX.Y.Z`) hazırlanırken aşağıdaki adımları sırasıyla uygulayın:
 
 ### Adım 1: Sürüm Numarasını Güncelleyin
-* `package.json` dosyasındaki `"version"` alanını yeni sürüme yükseltin (ör. `6.8.0`).
+* `package.json` dosyasındaki `"version"` alanını yeni sürüme yükseltin (ör. `6.9.0`).
 * `src-tauri/tauri.conf.json` dosyasındaki `"version"` alanını eşitleyin.
 
 ### Adım 2: Rozetleri ve Metrik Tablosunu Otomatik Senkronize Edin

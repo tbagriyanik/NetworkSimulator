@@ -35,8 +35,8 @@ Depoda `.github/workflows/release.yml` iş akışı bulunmaktadır. Yeni bir sü
 
 ```bash
 git add .
-git commit -m "chore: release v6.6.0"
-git tag v6.6.0
+git commit -m "chore: release v6.9.0"
+git tag v6.9.0
 git push origin main --tags
 ```
 
@@ -57,8 +57,8 @@ Tarayıcıda açın: [http://localhost:3000](http://localhost:3000)
 ### Masaüstü Sürümleri (Desktop: Windows, macOS, Linux)
 
 #### 1. Son Kullanıcı Bilgisayarı
-- **Windows:** Windows 10 (güncel) veya Windows 11 (64-bit). Microsoft Edge WebView2 yerleşiktir. Setup (.exe / .msi) ile doğrudan kurulur.
-- **macOS:** macOS 10.15+ (Intel & Apple Silicon). `.dmg` dosyası açılarak Applications klasörüne sürüklenir.
+- **Windows:** Windows 10 (güncel) veya Windows 11 (64-bit). Edge WebView2 yerleşiktir. Setup (.exe / .msi) ile doğrudan kurulur.
+- **macOS:** macOS 10.15+ (Intel & ARM64). `.dmg` dosyası açılarak Applications klasörüne sürüklenir.
 - **Linux:** Ubuntu, Debian, Fedora, Arch vb. `.deb` paketi kurulabilir veya `.AppImage` doğrudan çift tıklanarak çalıştırılır.
 - *Son kullanıcının bilgisayarında Node.js, Rust veya Git bulunmasına gerek yoktur.*
 
@@ -116,8 +116,8 @@ Projede `.github/workflows/release.yml` GitHub Actions iş akışı tanımlıdı
 
 ```bash
 git add .
-git commit -m "chore: release v6.5.0"
-git tag v6.5.0
+git commit -m "chore: release v6.9.0"
+git tag v6.9.0
 git push origin main --tags
 ```
 
@@ -191,7 +191,7 @@ src/
 └── tests/            # Unit, integration, accessibility and performance tests (Vitest)
 
 public/              # Static files (icons, device images)
-doc/                 # Project documentation (23 files)
+doc/                 # Project documentation (25 files)
 examples/            # Feature demo docs
 ```
 
@@ -239,14 +239,12 @@ examples/            # Feature demo docs
 - ✅ İzlenebilir kilometre taşları ve ödül bildirimleri
 - ✅ Profil ilerleme takibi
 
-### 🆕 v4.1.0 Yeni Özellikler
-- **🖥️ 4 Yeni Cihaz Tipi:** Hub (Layer-1 Multiport), Cloud/WAN (Dış İnternet), Smartphone/Tablet (Mobil), Printer (Ağ Yazıcısı)
-- **🌲 MSTP Bölge İzolasyonu:** IEEE 802.1s ile bölge adı, revizyon ve digest eşleşmesi
-- **🔒 IPsec Site-to-Site & GRE:** ISAKMP, ESP şifreleme, crypto-map
-- **🔐 802.1X EAPOL:** Port erişim kontrolü ve RADIUS kimlik doğrulama
-- **⚡ QoS Token Bucket:** Bandwidth policing (`police`) ve shaping (`shape`)
-- **🧹 DHCP Snooping Option 82:** Circuit ID injection ve rate-limiting
-- **🌐 BGP Politikaları:** Route-map filtering ve weight assignment
+### 🆕 v6.9.0 & v6.8.0 Öne Çıkan Yetenekler
+- **🌐 SDN & Intent-Based Networking Controller:** Path Trace (hop-by-hop yol izleme), niyet tabanlı politika dağıtımı (VoIP QoS, IoT izolasyonu, rate limiting) ve YANG/NETCONF RPC entegrasyonu
+- **🧪 Kurumsal CLI Regresyon Matrisi & Sorun Giderme:** Uçtan uca `no` komut matrisi, otomatik arıza enjeksiyonu (`wrongVlan`, `brokenTrunk`, `aclDeny` vb.) ve kademeli ipucu motoru
+- **🧵 Kübik Bezier Spline Kablo Geometrisi:** Dinamik kablo bükülmeleri, paralel hat kavisleri ve akıllı RS-232/Console otomatik eşleme
+- **🐍 Python GUI Form, Web Audio Sentetörü & 3D Sahne:** `tkinter`/`form` pencereli uygulamalar, Web Audio sentezleyici ve `scene3d` interaktif 3D katı modelleme
+- **🖥️ Çapraz Platform Masaüstü & Native Export:** Tauri v2 masaüstü (.exe/.dmg/.deb), yüksek çözünürlüklü vektörel PNG ve sistem dosya yöneticisi entegrasyonu
 
 ### Gelişmiş Özellikler
 - ✅ Zoom ve pan (fare tekerleği / klavye)
@@ -260,7 +258,7 @@ examples/            # Feature demo docs
 - ✅ Canlı uygulama: [network2026.vercel.app](https://network2026.vercel.app)
 - ✅ Alternatif canlı uygulama: [tuzlanet.vercel.app](https://tuzlanet.vercel.app)
 - ✅ Oda takip sistemi (öğrenci oturum takibi)
-- ✅ Google Sheets entegrasyonu
+- ✅ Elektronik Tablo (Sheets) entegrasyonu
 - ✅ OSPF Multi-Area (Area 0/10/20)
 - ✅ STP PVST yük dengeleme
 - ✅ 2 L3 Switch VLAN Routing
@@ -277,13 +275,18 @@ Detaylı belgelendirme `doc/` klasöründe bulunur:
 - **CLI_COMMANDS.md** - CLI komut referansı
 - **L3_SWITCH_CONFIGURATION.md** - L3 Switch yapılandırma rehberi
 - **QUICK_REFERENCE.md** - Hızlı referans ve kod parçacıkları
+- **PC_CMD_REFERENCE.md** - PC CMD terminal ve Python komut referansı
+- **PYTHON_PROGRAMMING_GUIDE.md** - Python programlama, GUI, ses ve 3D rehberi
 - **WIRELESS_CONFIGURATION_GUIDE.md** - Kablosuz ağ yapılandırma rehberi
-- **GOOGLE_SHEETS_SETUP.md** - Google Sheets entegrasyonu kurulumu
+- **GOOGLE_SHEETS_SETUP.md** - Elektronik Tablo (Sheets) entegrasyonu kurulumu
 - **ROOM_TRACKING_SETUP.md** - Oda takip sistemi kurulumu
+- **PACKET_CAPTURE_GUIDE.md** - Paket yakalama ve PDU inceleyici kılavuzu
+- **TOPOLOGY_GENERATOR.md** - Otomatik topoloji üretici kılavuzu
 - **CONTRIBUTING.md** - Katkı rehberi ve agent konvansiyonları
-- **ERROR_HANDLING_GUIDE.md** - Hata kontrol rehberi
-- **INTEGRATION_GUIDE.md** - Entegrasyon rehberi
-- **DOCUMENTATION_INDEX.md** - Dokümantasyon haritası
+- **ERROR_HANDLING_GUIDE.md** - Hata kontrol ve entegrasyon rehberi
+- **LOW_RESOURCE_OPTIMIZATIONS.md** - Düşük kaynaklı donanım optimizasyonları
+- **RELEASE_CHECKLIST.md** - Sürüm yayınlama ve senkronizasyon kontrol listesi
+- **DOCUMENTATION_INDEX.md** - Dokümantasyon haritası ve indeksi
 
 ## 🚀 Deployment
 

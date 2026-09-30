@@ -4,6 +4,17 @@
 
 MPLS/LDP, IPSec, SNMP, NETCONF/RESTCONF, EEM, MST, IP SLA, QoS MQC, 802.1X, CAPWAP, sFlow/NetFlow, MQTT ve CoAP akışları ortak state/packet pipeline ile doğrulanır. Telemetry export’ları collector frame olarak, MQTT/CoAP/NETCONF işlemleri servis portlarına bağlı request-response frame olarak modellenir.
 
+## SDN & Intent-Based Networking Controller, Multicast Pipeline, Performans Eşikleri & Tema Senkronizasyonu (2026-09-30 - v6.9.0 & v6.8.1)
+
+| Özellik | Güncel kapsam ve sınır |
+|---|---|
+| **SDN & Intent-Based Networking Controller (`SdnControllerModal.tsx`, `sdnController.ts`)** | Ağ envanteri ve VLAN keşfi, atlama-atlama (hop-by-hop) yol izleme (Path Trace), gecikme (latency) ve ACL kural denetimi. Niyet Tabanlı Ağ (IBN) ile VoIP QoS önceliklendirme, IoT VLAN izolasyonu ve rate-limiting politikalarının tek tıkla cihazlara dağıtımı. YANG 1.1 model ayrıştırıcısı ve NETCONF `<rpc>` mesaj yürütme/doğrulama motoru. |
+| **Multicast İletim Pipeline & PIM/IGMP Test Paketi (`multicastForwarding.test.ts`)** | Test kapsamı 25 senaryoya çıkarıldı; IP multicast adres doğrulama, RPF (Reverse Path Forwarding) kontrolleri, PIM Hello paket üretimi, IGMP General Query yayımı, dinamik `(*, G)` ve `(S, G)` mroute geçişleri ve PIM-DM arayüz budama doğrulamaları. |
+| **Performans Test Eşik Değerleri (Regression Budgets) (`ci.yml`, `device-scale-500.test.ts`)** | 500 cihazlık topoloji inşası (`< 3000ms`, heap artışı `< 50MB`), 1000 döngülü bellek sızıntısı taraması (`< 15MB`), render ikon/koordinat dönüştürme (`< 50ms`) ve CI eşikleri somut kurallara bağlandı. |
+| **StoryModePanel Birim Test Paketi (`StoryModePanel.test.ts`)** | 15+ test senaryosu ile rank derecelendirme (Trainee → Lead Cyber Operator), dil değişimleri, senaryo resetleme, adım atlama ve topoloji hedeflerinin doğrulanması güvence altına alındı. |
+| **Radix UI & Erişilebilirlik Restorasyonu (`package.json`)** | `@radix-ui/react-tooltip`, `@radix-ui/react-tabs` ve `@radix-ui/react-scroll-area` paketleri ile klavye odaklanması, WAI-ARIA semantikleri ve roving tabindex davranışları korundu. |
+| **Kapsamlı Açık/Koyu Tema Senkronizasyonu (`isDark`)** | VoIP Phone tuş takımı, WebGL 3D araç çubuğu, Python GUI form pencereleri, Donanım Yuvaları (PhysicalDeviceView), RESTCONF Otomasyonu, WAN Cloud ve Mobil OS ekranlarında tam tema uyumu. |
+
 ## Spline Kablolar, SDN Controller, Protokol no Matrisi, PDU Filtreleri & Masaüstü Dışa Aktarma (2026-09-28 - v6.8.0)
 
 | Özellik | Güncel kapsam ve sınır |

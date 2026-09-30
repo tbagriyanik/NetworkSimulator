@@ -364,7 +364,7 @@ export function AboutModal({ isOpen, onClose, onStartTour, isExamActive = false 
                       {isTR ? 'Sürüm' : 'Version'}
                     </span>
                     <span className="text-xs font-semibold text-secondary-800 dark:text-secondary-200">
-                      {process.env.APP_VERSION || '6.8.0'}
+                      {process.env.APP_VERSION || '6.9.0'}
                     </span>
                   </div>
                   <div className="flex flex-col">
@@ -372,7 +372,7 @@ export function AboutModal({ isOpen, onClose, onStartTour, isExamActive = false 
                       {isTR ? 'Commit Sayısı' : 'Commits'}
                     </span>
                     <span className="text-xs font-semibold text-secondary-800 dark:text-secondary-200">
-                      {process.env.NEXT_PUBLIC_GIT_COMMIT_COUNT || '1656'}
+                      {process.env.NEXT_PUBLIC_GIT_COMMIT_COUNT || '2934'}
                     </span>
                   </div>
                   <div className="flex flex-col">
@@ -380,7 +380,7 @@ export function AboutModal({ isOpen, onClose, onStartTour, isExamActive = false 
                       {isTR ? 'Kod Satırı' : 'Lines of Code'}
                     </span>
                     <span className="text-xs font-semibold text-secondary-800 dark:text-secondary-200">
-                      {Number(process.env.NEXT_PUBLIC_LOC || '104709').toLocaleString(isTR ? 'tr-TR' : 'en-US')}
+                      {Number(process.env.NEXT_PUBLIC_LOC || '232251').toLocaleString(isTR ? 'tr-TR' : 'en-US')}
                     </span>
                   </div>
                 </div>

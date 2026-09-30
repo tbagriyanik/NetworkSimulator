@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Layers, Network, Search, Code } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getRoutingTable } from '@/lib/network/routing';
+import { useWindowStore } from '@/hooks/useWindowStore';
 import type { DeviceType, CanvasDevice, CanvasConnection } from '../NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 import dynamic from 'next/dynamic';
@@ -153,7 +154,11 @@ export function UnifiedStpTab({
               <span>{language === 'tr' ? 'NetDevOps & RESTCONF Otomasyonu' : 'NetDevOps & RESTCONF Automation'}</span>
             </div>
             <button
-              onClick={() => setIsAutomationWindowOpen(true)}
+              onClick={(e) => {
+                e.stopPropagation();
+                useWindowStore.getState().setActiveWindow('netdevops-automation-window');
+                setIsAutomationWindowOpen(true);
+              }}
               className="px-3 py-1 text-xs font-bold rounded-lg bg-emerald-600 hover:bg-emerald-500 text-slate-950 shadow-sm transition-colors flex items-center gap-1.5"
             >
               <Code className="w-3.5 h-3.5" />

@@ -9,6 +9,9 @@ import { useLanguage } from '@/contexts/LanguageContext';
 
 interface DraggableWindowWrapperProps {
   id: string;
+  parentWindowId?: string;
+  alwaysOnTop?: boolean;
+  minZIndex?: number;
   title: string | React.ReactNode;
   icon?: React.ReactNode;
   isOpen: boolean;
@@ -35,6 +38,9 @@ interface DraggableWindowWrapperProps {
 
 export function DraggableWindowWrapper({
   id,
+  parentWindowId,
+  alwaysOnTop = false,
+  minZIndex,
   title,
   icon,
   isOpen,
@@ -65,7 +71,13 @@ export function DraggableWindowWrapper({
 
   const activeWindowId = useWindowStore(state => state.activeWindowId);
   const setActiveWindow = useWindowStore(state => state.setActiveWindow);
-  const zIndex = useWindowStore(state => state.windowZIndices[id] || 100);
+  const rawZIndex = useWindowStore(state => state.windowZIndices[id] || 100);
+  const parentZIndex = useWindowStore(state => parentWindowId ? (state.windowZIndices[parentWindowId] || 100) : 0);
+
+  // If this window is a child of a parent window, ensure its zIndex is ALWAYS strictly above the parent window
+  const zIndex = parentWindowId
+    ? Math.max(rawZIndex, parentZIndex + 25)
+    : (alwaysOnTop ? Math.max(rawZIndex, 500) : (minZIndex ? Math.max(rawZIndex, minZIndex) : rawZIndex));
 
   const isActive = activeWindowId === id;
 
@@ -90,7 +102,7 @@ export function DraggableWindowWrapper({
   // Handle escape key and mobile back button
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen && isActive) {
+      if (e.key === 'Escape' && isOpen && (isActive || (parentWindowId && activeWindowId !== parentWindowId))) {
         e.stopImmediatePropagation();
         if (onEscapeKeyDown) {
           onEscapeKeyDown();
@@ -102,7 +114,7 @@ export function DraggableWindowWrapper({
     };
 
     const handleMobileBack = () => {
-      if (isOpen && isActive) {
+      if (isOpen && (isActive || (parentWindowId && activeWindowId !== parentWindowId))) {
         onClose();
         if (escapeRestoreWindowId) setActiveWindow(escapeRestoreWindowId);
       }
@@ -114,7 +126,7 @@ export function DraggableWindowWrapper({
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('mobile-back-pressed', handleMobileBack);
     };
-  }, [isOpen, isActive, onClose, onEscapeKeyDown, escapeRestoreWindowId, setActiveWindow]);
+  }, [isOpen, isActive, parentWindowId, activeWindowId, onClose, onEscapeKeyDown, escapeRestoreWindowId, setActiveWindow]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

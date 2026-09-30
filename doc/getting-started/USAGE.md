@@ -106,7 +106,8 @@ Simülatör, tek bir standart komut modelini korurken yaygın alternatif CLI bi�
 | `Ctrl + P` | Print topology | Topolojiyi yazdır |
 | `Ctrl + Scroll` | Zoom in / out | Yakınlaştır / Uzaklaştır |
 | `Ctrl + V` | Paste | Yapıştır |
-| `F1` / `Shift + ?` | Open / close help panel | Yardım panelini aç / kapat |
+| `F1` | Open / close Help & About dialog | Yardım & Hakkında penceresini aç / kapat |
+| `Shift + ?` | Open Keyboard Shortcuts guide modal | Klavye ve Kısayol kılavuzunu aç |
 | `Alt + N` | New project | Yeni proje |
 | `Ctrl + Y` | Redo | Yeniden yap |
 | `Double-click (Window Title)` | Collapse / expand floating panel | Yüzen pencereyi daralt / genişlet |
@@ -167,13 +168,18 @@ Tüm parametreler ve detaylı kullanım için → [PC_CMD_REFERENCE.md](PC_CMD_R
 - High/Low quality toggle is available in the top menu to improve performance on large topologies.
 
 ### Topology Generator / Topoloji Üretici
-- **"Topoloji Üret"** butonu ile 40+ hazır senaryodan ağ topolojisi oluşturun.
+- **"Topoloji Üret"** butonu ile 49+ hazır örnek proje kataloğu ve 28 mimari senaryodan ağ topolojisi oluşturun.
 - Arama kutusuna senaryo adı yazarak filtreleme yapabilirsiniz (`ospf`, `vlan`, `nat`, `iot`).
 - Detaylı bilgi için → [TOPOLOGY_GENERATOR.md](TOPOLOGY_GENERATOR.md)
+
+### SDN Controller & Intent-Based Networking
+- **SDN Controller Paneli** ile ağ envanteri keşfi, atlama-atlama (hop-by-hop) yol izleme (Path Trace), gecikme ve ACL denetimi yapın.
+- **Niyet Tabanlı Politika Dağıtımı (Intent-Based Policies):** VoIP QoS önceliklendirmesi, IoT VLAN izolasyonu ve rate limiting politikalarını tek tıkla ağ cihazlarına uygulayın.
 
 ### Packet Capture / Paket Yakalama
 - **Paket Yakalama Paneli** ile ağ trafiğini gerçek zamanlı izleyin.
 - Çoklu dışlama filtresi: `cdp, stp, arp` gibi virgülle ayrılmış terimler girin.
+- Hızlı Preset Butonları: "Tümü", "Sadece Drop", "Sadece OSPF", "Sadece BGP", "Sadece ICMP", "Sadece STP".
 - Arka plan trafik (DHCP DORA, STP BPDU, CDP, OSPF Hello vb.) otomatik yakalanır.
 - Detaylı bilgi için → [PACKET_CAPTURE_GUIDE.md](../network/PACKET_CAPTURE_GUIDE.md)
 

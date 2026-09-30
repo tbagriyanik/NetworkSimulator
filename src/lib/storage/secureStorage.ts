@@ -35,18 +35,58 @@ function getDeviceSalt(): string {
   }
 }
 
-function getSecretKey(): string {
-  if (typeof window === 'undefined') return LEGACY_SECRET_KEY;
-  const fingerprint = [
+function getBaseFingerprint(): string {
+  if (typeof window === 'undefined') return 'server';
+  return [
     navigator.userAgent,
     navigator.platform,
     navigator.language,
     Intl.DateTimeFormat().resolvedOptions().timeZone,
-    window.screen?.width,
-    window.screen?.height,
-    window.devicePixelRatio,
   ].join('|');
-  return hashKey(`${LEGACY_SECRET_KEY}|${fingerprint}|${getDeviceSalt()}`);
+}
+
+function getCandidateKeys(): string[] {
+  const keys: string[] = [LEGACY_SECRET_KEY];
+
+  if (typeof window !== 'undefined') {
+    const salt = getDeviceSalt();
+    const baseFingerprint = getBaseFingerprint();
+
+    // 1. Primary stable key (base fingerprint + device salt)
+    keys.push(hashKey(`${LEGACY_SECRET_KEY}|${baseFingerprint}|${salt}`));
+
+    // 2. Legacy key with screen metrics & current devicePixelRatio (if previously encoded this way)
+    if (window.screen) {
+      const screenFingerprint = [
+        baseFingerprint,
+        window.screen.width,
+        window.screen.height,
+        window.devicePixelRatio,
+      ].join('|');
+      keys.push(hashKey(`${LEGACY_SECRET_KEY}|${screenFingerprint}|${salt}`));
+
+      // 3. Screen metrics with 100% zoom (devicePixelRatio = 1)
+      const unzoomedFingerprint = [
+        baseFingerprint,
+        window.screen.width,
+        window.screen.height,
+        1,
+      ].join('|');
+      keys.push(hashKey(`${LEGACY_SECRET_KEY}|${unzoomedFingerprint}|${salt}`));
+    }
+
+    // 4. Fallback salt keys
+    keys.push(hashKey(`${LEGACY_SECRET_KEY}|${baseFingerprint}|fallback-device-salt`));
+    keys.push(hashKey(`${LEGACY_SECRET_KEY}|${salt}`));
+    keys.push(hashKey(`${LEGACY_SECRET_KEY}|fallback-device-salt`));
+  }
+
+  // Deduplicate while preserving trial order
+  return Array.from(new Set(keys));
+}
+
+function getSecretKey(): string {
+  return LEGACY_SECRET_KEY;
 }
 
 function xorCipher(text: string, key: string): string {
@@ -57,25 +97,34 @@ function xorCipher(text: string, key: string): string {
   return result;
 }
 
+function safeDecodeURIComponent(uri: string): string | null {
+  try {
+    return decodeURIComponent(uri);
+  } catch {
+    return null;
+  }
+}
+
 function encode(data: string): string {
   try {
-    // Use encodeURIComponent to handle non-ascii (e.g., Turkish) characters properly.
-    // This turns all characters into ASCII.
+    // Use encodeURIComponent to handle non-ascii characters properly.
     const uriEncoded = encodeURIComponent(data);
-    // XORing ASCII with ASCII (our secret key) keeps the output in the 0-127 range.
     const xorData = xorCipher(uriEncoded, getSecretKey());
-    // Since xorData is pure ASCII, btoa will not throw InvalidCharacterError.
     return PREFIX + btoa(xorData);
   } catch (e) {
-    logger.error('Error encoding data', e);
+    logger.warn('Error encoding data in secureStorage', e);
     return data;
   }
 }
 
-function decode(data: string): string {
+function decode(data: string, maxDepth: number = 3): string | null {
+  if (typeof data !== 'string') return null;
   // Fallback to legacy plain text for backward compatibility
   if (!data.startsWith(PREFIX)) {
     return data;
+  }
+  if (maxDepth <= 0) {
+    return null;
   }
 
   const base64Data = data.substring(PREFIX.length);
@@ -83,21 +132,40 @@ function decode(data: string): string {
   try {
     xorData = atob(base64Data);
   } catch (error) {
-    logger.error('Error decoding data', error);
-    return data;
+    logger.warn('Failed to decode base64 in secureStorage', error);
+    return null;
   }
-  try {
-    const decodedUri = xorCipher(xorData, getSecretKey());
-    return decodeURIComponent(decodedUri);
-  } catch {
+
+  const candidateKeys = getCandidateKeys();
+  for (const key of candidateKeys) {
     try {
-      const decodedUri = xorCipher(xorData, LEGACY_SECRET_KEY);
-      return decodeURIComponent(decodedUri);
-    } catch (legacyError) {
-      logger.error('Error decoding data', legacyError);
-      return data;
+      const decodedUri = xorCipher(xorData, key);
+      const decoded = safeDecodeURIComponent(decodedUri);
+      if (decoded !== null) {
+        // If data was double-encoded historically, recursively unwrap inner layer
+        if (decoded.startsWith(PREFIX)) {
+          const inner = decode(decoded, maxDepth - 1);
+          if (inner !== null) return inner;
+        }
+        return decoded;
+      }
+    } catch {
+      // Continue to next candidate key
     }
   }
+
+  // If candidate keys fail, attempt safe decode on raw base64 data as fallback
+  try {
+    const rawDecoded = safeDecodeURIComponent(xorData);
+    if (rawDecoded !== null) {
+      return rawDecoded;
+    }
+  } catch {
+    // Ignore fallback failure
+  }
+
+  logger.warn('Unable to decode secureStorage payload with candidate keys');
+  return null;
 }
 
 export const secureStorage = {
@@ -106,7 +174,7 @@ export const secureStorage = {
       const encoded = encode(value);
       safeSetItem(key, encoded);
     } catch (e) {
-      logger.error(`Error setting secureStorage key ${key}`, e);
+      logger.warn(`Error setting secureStorage key ${key}`, e);
     }
   },
 
@@ -116,7 +184,7 @@ export const secureStorage = {
       if (value === null) return null;
       return decode(value);
     } catch (e) {
-      logger.error(`Error getting secureStorage key ${key}`, e);
+      logger.warn(`Error getting secureStorage key ${key}`, e);
       return null;
     }
   },
@@ -125,7 +193,7 @@ export const secureStorage = {
     try {
       safeRemoveItem(key);
     } catch (e) {
-      logger.error(`Error removing secureStorage key ${key}`, e);
+      logger.warn(`Error removing secureStorage key ${key}`, e);
     }
   },
 
@@ -133,8 +201,9 @@ export const secureStorage = {
     try {
       safeClearStorage();
     } catch (e) {
-      logger.error('Error clearing secureStorage', e);
+      logger.warn('Error clearing secureStorage', e);
     }
   }
 };
+
 

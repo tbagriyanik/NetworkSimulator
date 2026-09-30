@@ -52,6 +52,13 @@ export function getPrivilegedCommands(isTR: boolean): CommandDefinition {
       ['terminal monitor', isTR ? 'Log mesajlarını görüntüle' : 'Monitor log messages', '#'],
       ['terminal no monitor', isTR ? 'Log görüntülemeyi kapat' : 'Stop monitoring logs', '#'],
       ['terminal width <n>', isTR ? 'Terminal genişliği' : 'Set terminal width', '#'],
+      ['show network health', isTR ? 'Kapsamlı ağ sağlık denetimi raporu' : 'Comprehensive network health audit report', '#'],
+      ['netconf <hello|get|edit-config|close-session>', isTR ? 'NETCONF RFC 6241 kontrol düzlemi oturumu' : 'NETCONF RFC 6241 control plane session', '#'],
+      ['show netconf sessions', isTR ? 'Aktif NETCONF oturum durumlarını göster' : 'Show active NETCONF sessions', '#'],
+      ['mqtt <connect|subscribe|publish>', isTR ? 'MQTT broker istemci ve konu yönetimi' : 'MQTT broker client and topic management', '#'],
+      ['show mqtt <clients|topics>', isTR ? 'MQTT bağlı istemciler ve abonelikler' : 'Show MQTT clients and topic subscriptions', '#'],
+      ['coap <get|put|delete>', isTR ? 'CoAP RESTful UDP kaynak istekleri' : 'CoAP RESTful UDP resource operations', '#'],
+      ['show coap resources', isTR ? 'CoAP kaynak envanteri ve durumları' : 'Show CoAP resource inventory', '#'],
     ]
   };
 }
