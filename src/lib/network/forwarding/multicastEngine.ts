@@ -1,5 +1,16 @@
 /**
- * multicastEngine.ts — PIM/IGMP Simulation Tick Engine
+ * multicastEngine.ts — PIM/IGMP Runtime Tick Engine (state owner).
+ *
+ * ── Ownership contract (tek sahiplik) ────────────────────────────────────────
+ * This module owns the *runtime* multicast state of a device: it is the only
+ * place that mutates pimNeighbors, igmpMemberships, mrouteEntries and
+ * pimPrunedInterfaces, and the only producer of PIM Hello / IGMP Query frames.
+ *
+ * Pure/stateless multicast logic (address classification, IGMP snooping table
+ * construction, PIM RP shared-tree resolution) lives in
+ * `lib/network/multicastEngine.ts` and is re-used here rather than reimplemented.
+ * The per-packet forwarding decision lives in
+ * `lib/network/forwarding/packetPipelineResolution.ts`.
  *
  * On each call to tickMulticast():
  *  1. Generates PIM Hello frames on all PIM-enabled interfaces (sparse & dense)
@@ -16,12 +27,22 @@
 
 import type { SwitchState } from '../types';
 import type { NetworkPacketFrame } from './packetFrame';
+import {
+  buildIgmpSnoopingTableFromState,
+  isMulticastAddress,
+  type IgmpSnoopingEntry,
+} from '../multicastEngine';
 
-/** Returns true if the IP address falls in the 224.0.0.0/4 multicast range */
-export function isMulticastAddress(ip: string | undefined): boolean {
-  if (!ip) return false;
-  const first = Number(ip.split('.')[0]);
-  return first >= 224 && first <= 239;
+// Re-exported for backward compatibility: the single implementation lives in
+// lib/network/multicastEngine.ts (control-plane helpers).
+export { isMulticastAddress };
+
+/**
+ * L2 snooping table derived from this device's IGMP group configuration.
+ * Delegates to the pure helper so there is exactly one owner of the algorithm.
+ */
+export function getIgmpSnoopingTable(state: SwitchState): IgmpSnoopingEntry[] {
+  return buildIgmpSnoopingTableFromState(state);
 }
 
 /** PIM Hello hold time in simulated milliseconds (105 s) */

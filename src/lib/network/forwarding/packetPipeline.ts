@@ -1,8 +1,8 @@
 import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
-import type { DhcpPayload } from '@/lib/network/forwarding/packetFrame';
 
-import { ConntrackEngine } from '@/lib/network/conntrackEngine';
-import { PolicyEngine } from '@/lib/network/policyEngine';
+import { ConntrackEngine, parseTcpFlags, resolveIngressDirection } from '@/lib/network/conntrackEngine';
+import { PolicyEngine, type PolicyRule } from '@/lib/network/policyEngine';
+import { relayDhcpPayload, unwrapRelayedReply } from '@/lib/network/dhcpRelayEngine';
 import type { SwitchState, Port } from '@/lib/network/types';
 
 // Global instances of stateful engines
@@ -46,6 +46,25 @@ export type {
   PacketHopTrace,
   PacketSimulationResult,
 };
+
+/**
+ * Configure the ALLOW/DROP rules enforced by the pipeline. Rules are evaluated
+ * in order on ingress and re-evaluated per egress interface (Stage 9d), so a
+ * rule can match on L3 addresses, ports, VLAN, interface and trust direction.
+ */
+export function setPipelinePolicyRules(rules: PolicyRule[]): void {
+  policyEngine.setRules(rules);
+}
+
+/** Remove every policy rule (back to implicit permit). */
+export function clearPipelinePolicyRules(): void {
+  policyEngine.clear();
+}
+
+/** Currently active pipeline policy rules (read-only inspection). */
+export function getPipelinePolicyRules(): PolicyRule[] {
+  return policyEngine.getRules();
+}
 
 /**
  * Run the full pipeline for a single hop (one device).
@@ -112,20 +131,59 @@ export function runHopPipeline(
   traces.push(makeTrace(hopIndex, device, ingressPortId, 'dhcp-snooping', 'pass', 'DHCP snooping OK', frame));
 
   // -- Stage 3c: DHCP Relay Processing ---------------------------------
+  // Client broadcast (DISCOVER/REQUEST/RELEASE) is relayed as a unicast to the
+  // configured helper address with giaddr + Option 82 populated, so the rest of
+  // the pipeline (route lookup, NAT, egress) forwards it like any other packet.
+  // Server replies (OFFER/ACK) carrying a giaddr owned by this device are
+  // unwrapped back to the client as a broadcast on the relay interface.
   if (frame.protocol === 'DHCP' && frame.dhcpPayload) {
-    const relayInterfaceIp = ingressPort?.ipAddress ?? '0.0.0.0';
-    const dhcpServerIp = '192.168.1.250'; // TODO: make configurable
-    if (relayInterfaceIp !== '0.0.0.0') {
-      const relayedPayload: DhcpPayload = {
-        ...frame.dhcpPayload,
-        option82: {
-          agentCircuitId: frame.ingressPortId ?? 'port-1',
-          agentRemoteId: relayInterfaceIp
-        }
-      };
-      frame = { ...frame, dhcpPayload: relayedPayload };
-      traces.push(makeTrace(hopIndex, device, ingressPortId, 'dhcp-relay', 'pass',
-        `DHCP Relay: giaddr=${relayInterfaceIp}, forwarding to ${dhcpServerIp}`, frame));
+    const payload = frame.dhcpPayload;
+    const helperAddresses = (ingressPort?.helperAddresses || []).filter(ip => ip && ip !== '0.0.0.0');
+    const relayInterfaceIp = ingressPort?.ipAddress ?? '';
+    const clientToServer = ['discover', 'request', 'release'].includes(payload.messageType);
+    const giaddr = payload.giaddr ?? '0.0.0.0';
+
+    if (clientToServer) {
+      if (helperAddresses.length === 0 || !relayInterfaceIp || relayInterfaceIp === '0.0.0.0') {
+        traces.push(makeTrace(hopIndex, device, ingressPortId, 'dhcp-relay', 'skip',
+          'DHCP Relay: no helper-address or relay interface IP configured — frame left untouched', frame));
+      } else {
+        // Ownership: giaddr / Option 82 semantics live in dhcpRelayEngine.
+        const relayed = relayDhcpPayload(
+          payload,
+          relayInterfaceIp,
+          helperAddresses[0],
+          `${device.id}/${frame.ingressPortId ?? 'port-1'}`,
+          frame.srcMac
+        );
+        frame = {
+          ...frame,
+          srcIp: relayInterfaceIp,
+          dstIp: relayed.targetDestinationIp,
+          dhcpPayload: relayed.payload,
+          info: `DHCP ${payload.messageType} relayed to ${relayed.targetDestinationIp}`
+        };
+        traces.push(makeTrace(hopIndex, device, ingressPortId, 'dhcp-relay', 'forward',
+          `${relayed.log}, option82 circuit=${relayed.payload.option82?.agentCircuitId ?? '-'}`, frame));
+      }
+    } else if (giaddr !== '0.0.0.0') {
+      // Server → client reply. Only the relay that owns the giaddr unwraps it.
+      const ownsGiaddr = Object.values(state?.ports ?? {}).some(p => p.ipAddress === giaddr);
+      if (ownsGiaddr) {
+        frame = {
+          ...frame,
+          srcIp: ingressPort?.ipAddress ?? frame.srcIp,
+          dstIp: '255.255.255.255',
+          dstMac: 'ff:ff:ff:ff:ff:ff',
+          dhcpPayload: unwrapRelayedReply(payload),
+          info: `DHCP ${payload.messageType} delivered to client ${payload.clientMac}`
+        };
+        traces.push(makeTrace(hopIndex, device, ingressPortId, 'dhcp-relay', 'forward',
+          `DHCP Relay: reply for giaddr=${giaddr} unwrapped and broadcast to client ${payload.clientMac}`, frame));
+      } else {
+        traces.push(makeTrace(hopIndex, device, ingressPortId, 'dhcp-relay', 'skip',
+          `DHCP Relay: giaddr ${giaddr} not owned by this device`, frame));
+      }
     }
   }
 
@@ -198,16 +256,23 @@ export function runHopPipeline(
   // -- Stage 8b: Conntrack Inspection (stateful firewall) ----------
   // SPI enforcement only applies to firewall devices.
   // On routers and switches we auto-track the flow but never block it.
+  // On firewalls inspectAndTrack() both evaluates and creates state, so the
+  // very first outbound TCP SYN opens a session instead of being dropped.
   if (frame.srcIp && frame.dstIp) {
     const proto = frame.protocol as 'TCP' | 'UDP' | 'ICMP';
     if (proto === 'TCP' || proto === 'UDP' || proto === 'ICMP') {
       if (device.type === 'firewall') {
-        const connResult = conntrackEngine.inspectPacket(
+        const connResult = conntrackEngine.inspectAndTrack(
           proto,
           frame.srcIp ?? '',
           frame.srcPort ?? 0,
           frame.dstIp ?? '',
-          frame.dstPort ?? 0
+          frame.dstPort ?? 0,
+          {
+            tcpFlags: proto === 'TCP' ? parseTcpFlags(frame.tcpFlags) : {},
+            direction: resolveIngressDirection(ingressPort),
+            bytes: frame.length || 0
+          }
         );
         if (!connResult.allowed) {
           return drop('conntrack', connResult.reason);
@@ -220,7 +285,9 @@ export function runHopPipeline(
           frame.srcIp ?? '',
           frame.srcPort ?? 0,
           frame.dstIp ?? '',
-          frame.dstPort ?? 0
+          frame.dstPort ?? 0,
+          proto === 'TCP' ? parseTcpFlags(frame.tcpFlags) : {},
+          frame.length || 0
         );
         traces.push(makeTrace(hopIndex, device, ingressPortId, 'conntrack', 'pass', 'Conntrack: flow tracked (non-firewall passthrough)', frame));
       }
@@ -232,12 +299,27 @@ export function runHopPipeline(
   }
 
 
-  // -- Stage 9: Policy Engine (simple ACL) --------------------------
-  // Apply lightweight firewall policies (ALLOW/DROP) based on protocol and ports.
-  if (!policyEngine.isAllowed(frame.protocol as 'TCP' | 'UDP' | 'ICMP', frame.srcPort ?? 0, frame.dstPort ?? 0)) {
-    return drop('policy', `PolicyEngine DROP: ${frame.protocol} ${frame.srcPort ?? '-'}→${frame.dstPort ?? '-'}`);
+  // -- Stage 9: Policy Engine (ingress ACL) -------------------------
+  // Evaluate ALLOW/DROP rules against protocol, ports and the full packet
+  // context (L3 addresses, VLAN, ingress port, trust direction).
+  const ingressDirection = resolveIngressDirection(ingressPort);
+  const policyCtx = {
+    srcIp: frame.srcIp,
+    dstIp: frame.dstIp,
+    vlanId: frame.vlanId ?? ingressPort?.vlan,
+    ingressPortId,
+    direction: ingressDirection,
+  };
+  const policyVerdict = policyEngine.evaluate(
+    frame.protocol,
+    frame.srcPort ?? 0,
+    frame.dstPort ?? 0,
+    policyCtx
+  );
+  if (!policyVerdict.allowed) {
+    return drop('policy', `${policyVerdict.reason}: ${frame.protocol} ${frame.srcIp ?? '*'}:${frame.srcPort ?? '-'}→${frame.dstIp ?? '*'}:${frame.dstPort ?? '-'}`);
   }
-  traces.push(makeTrace(hopIndex, device, ingressPortId, 'policy', 'pass', 'PolicyEngine ALLOW', frame));
+  traces.push(makeTrace(hopIndex, device, ingressPortId, 'policy', 'pass', policyVerdict.reason, frame));
   // -- Stage 9: MAC Lookup / Route Lookup ------------------------------
   const { egressPorts, nextDeviceId, routeDecision } = resolveEgress(frame, device, state!, connections, deviceMap);
 
@@ -261,6 +343,24 @@ export function runHopPipeline(
   const forwardAction: PipelineAction = egressPorts.length > 1 ? 'flood' : 'forward';
   const reasonText = routeDecision || `${forwardAction === 'flood' ? 'Flooding' : 'Forwarding'} to ${egressPorts.join(', ')}`;
   traces.push(makeTrace(hopIndex, device, ingressPortId, forwardStage, forwardAction, reasonText, frame));
+
+  // -- Stage 9d: Policy Engine (egress/interface-scoped rules) ----------
+  // Only runs when rules exist, so the default path stays allocation-free.
+  if (policyEngine.getRules().length > 0) {
+    for (const egressPortId of egressPorts) {
+      const egressVerdict = policyEngine.evaluate(
+        frame.protocol,
+        frame.srcPort ?? 0,
+        frame.dstPort ?? 0,
+        { ...policyCtx, egressPortId }
+      );
+      if (!egressVerdict.allowed) {
+        return drop('policy', `${egressVerdict.reason} on egress ${egressPortId}`);
+      }
+      traces.push(makeTrace(hopIndex, device, egressPortId, 'policy', 'pass',
+        `${egressVerdict.reason} on egress ${egressPortId}`, frame));
+    }
+  }
 
   // -- Stage 9b: NAT / PAT Translation --------------------------------
   if ((device.type === 'router' || device.type === 'firewall') && state && egressPorts[0] && frame.srcIp && frame.dstIp) {

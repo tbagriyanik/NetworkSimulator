@@ -429,10 +429,12 @@ export function useKeyboardShortcuts({
         }
       }
 
-      if ((e.key === '?' || (e.shiftKey && e.key === '/')) && !isModalOrWindowActive && !isEditable) {
-        e.preventDefault();
-        window.dispatchEvent(new CustomEvent('trigger-topology-toggle-shortcuts'));
-      }
+      // Shift + ? / Shift + / is handled by the topology keyboard hook
+      // (useCanvasKeyboard -> onOpenShortcutsModal). It used to be handled here
+      // too, but the dispatched `trigger-topology-toggle-shortcuts` event had no
+      // listener anywhere, and the preventDefault() here stopped the topology
+      // handler from running (`if (e.defaultPrevented) return`), so the modal
+      // could never open.
     };
     window.addEventListener('keydown', handleKeyDown, true);
 

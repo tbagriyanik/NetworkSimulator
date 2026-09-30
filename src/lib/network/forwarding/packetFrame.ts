@@ -19,7 +19,8 @@ export type PacketProtocolType =
   | 'IPSEC'
   | 'CAPWAP'
   | 'PIM'
-  | 'IGMP';
+  | 'IGMP'
+  | 'VXLAN';
 
 export interface MqttFramePayload {
   type: 'CONNECT' | 'CONNACK' | 'PUBLISH' | 'PUBACK' | 'SUBSCRIBE' | 'SUBACK' | 'PINGREQ' | 'PINGRESP';
@@ -93,6 +94,11 @@ export interface DhcpPayload {
   gateway?: string;
   dns?: string;
   leaseTime?: number;
+  /**
+   * giaddr (gateway IP address) written by the DHCP relay agent (RFC 2131 §4.1).
+   * '0.0.0.0' means the message was not relayed.
+   */
+  giaddr?: string;
   option82?: { agentCircuitId?: string; agentRemoteId?: string };
 }
 
@@ -182,6 +188,7 @@ export interface NetworkPacketFrame {
   mqttPayload?: MqttFramePayload;
   coapPayload?: CoapFramePayload;
   netconfPayload?: NetconfFramePayload;
+  vxlanPayload?: { vni: number; outerSrcIp: string; outerDstIp: string; innerFrame: NetworkPacketFrame };
 
   // Layer 4 Ports (used by NetFlow accounting / firewalls)
   srcPort?: number;

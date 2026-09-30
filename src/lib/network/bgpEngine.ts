@@ -1,4 +1,5 @@
 import type { SwitchState } from './types';
+import { selectBestBgpPath } from './bgpBestPathExplainer';
 
 export interface BgpNeighbor {
   ip: string;
@@ -35,6 +36,9 @@ export interface BgpRoute {
   igpMetric?: number; // IGP metric to next-hop
   receivedTime?: number; // timestamp for oldest path comparison
   routerId?: string; // router ID of advertising router
+  originatorId?: string; // ORIGINATOR_ID for reflected routes (wins over routerId)
+  clusterListLength?: number; // CLUSTER_LIST length; fewer reflectors is preferred
+  neighborAddress?: string; // peer address that advertised the route
 }
 
 export interface BgpConfig {
@@ -167,7 +171,8 @@ export function configureMpBgpVrf(
  * Simulates BGP peering and route exchange across topology devices
  */
 export function exchangeBgpRoutes(
-  deviceStates: Map<string, SwitchState>
+  deviceStates: Map<string, SwitchState>,
+  now: number = Date.now()
 ): void {
   // Step 1: Collect all advertised routes per AS
   const asRouteMap = new Map<string, BgpRoute[]>();
@@ -231,12 +236,41 @@ export function exchangeBgpRoutes(
             asPath: isIbgp ? [...r.asPath] : [otherCfg.asNumber, ...r.asPath],
             localPref: isIbgp ? 100 : undefined,
             weight: 0,
-            isBest: true
+            isBest: true,
+            // Metadata consumed by the best-path decision process.
+            isIbgp,
+            neighborAddress: otherIp,
+            routerId: otherCfg.routerId || otherIp,
+            igpMetric: 0,
+            receivedTime: now
           };
 
           cfg.rib.push(importedRoute);
         });
       }
+    });
+  });
+
+  // Step 3: Run the full best-path decision process per prefix so exactly one
+  // route (per prefix and VRF) is flagged isBest, matching real BGP RIB
+  // behaviour instead of marking every learned path as best.
+  deviceStates.forEach(state => {
+    const cfg = state.bgpConfig as BgpConfig | undefined;
+    if (!cfg) return;
+    const localRouterId = cfg.routerId || getDevicePrimaryIp(state);
+
+    const byPrefix = new Map<string, BgpRoute[]>();
+    for (const route of cfg.rib) {
+      const key = `${route.vrfName ?? ''}|${route.prefix}`;
+      const bucket = byPrefix.get(key);
+      if (bucket) bucket.push(route);
+      else byPrefix.set(key, [route]);
+    }
+
+    cfg.rib.forEach(route => { route.isBest = false; });
+    byPrefix.forEach(routes => {
+      const best = selectBestBgpPath(routes, localRouterId);
+      if (best) best.isBest = true;
     });
   });
 }

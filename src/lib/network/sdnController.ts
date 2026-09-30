@@ -1,65 +1,61 @@
 import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
+import type { YangModule } from './yangParser';
 import { buildImplicitWirelessConnections } from '@/lib/network/wireless';
 import { ensureDeviceStatesMap } from '@/lib/network/networkUtils';
+import { getRoutingTable, findRoute } from '@/lib/network/routing';
+import { extractNetconfConfig, applyNetconfEditConfig } from './netconfStateSync';
 
-export interface YangLeaf {
+/** Arbitrary YANG/NETCONF datastore payload (leaf name → value). */
+export type YangData = Record<string, unknown>;
+
+/** Match criteria of a pushed flow entry (OpenFlow/RESTCONF style). */
+export interface SdnFlowMatch {
+  srcIp?: string;
+  dstIp?: string;
+  protocol?: string;
+  vlanId?: number;
+}
+
+export interface SdnFlowRule {
+  id: string;
+  priority: number;
+  match: SdnFlowMatch;
+  action: 'FORWARD' | 'DROP' | 'SET_VLAN' | 'PRIORTIZE';
+  egressPort?: string;
+}
+
+export type SdnIntentType = 'qos-voip' | 'isolate-vlan' | 'rate-limit';
+
+/** Intent-Based Networking policy applied across target devices. */
+export interface SdnIntentPolicy {
+  id: string;
   name: string;
-  type: string;
-  config: boolean;
-  description?: string;
+  type: SdnIntentType;
+  targetDeviceIds: string[];
+  parameters: {
+    vlanId?: number;
+    bandwidthLimitMbps?: number;
+    [key: string]: string | number | boolean | undefined;
+  };
 }
 
-export interface YangContainer {
-  name: string;
-  leaves: YangLeaf[];
-  description?: string;
+/** Topology inventory produced by the controller discovery pass. */
+export interface SdnInventorySummary {
+  totalDevices: number;
+  switchesCount: number;
+  routersCount: number;
+  pcsCount: number;
+  activeLinksCount: number;
+  discoveredVlans: number[];
 }
 
-export interface YangList {
-  name: string;
-  key: string;
-  leaves: YangLeaf[];
-  description?: string;
-}
-
-export interface YangRpc {
-  name: string;
-  inputLeaves: YangLeaf[];
-  outputLeaves: YangLeaf[];
-  description?: string;
-}
-
-export interface YangModule {
-  name: string;
-  namespace: string;
-  prefix?: string;
-  leaves: YangLeaf[];
-  containers?: YangContainer[];
-  lists?: YangList[];
-  rpcs?: YangRpc[];
-}
-
-export type YangData = Record<string, string | number | boolean>;
-
-export interface NetconfRpcMessage {
-  messageId: string;
-  rpcName: string;
-  params: Record<string, string | number | boolean>;
-}
-
-export interface NetconfRpcReply {
-  messageId: string;
-  ok: boolean;
-  data?: Record<string, unknown>;
-  errorMessage?: string;
-}
-
+/** One hop of an APIC-EM style path trace. */
 export interface SdnPathTraceHop {
   hopNumber: number;
   deviceId: string;
   deviceName: string;
-  deviceType: string;
+  deviceType: CanvasDevice['type'];
   ingressPort?: string;
   egressPort?: string;
   status: 'UP' | 'DOWN' | 'DEGRADED';
@@ -77,128 +73,33 @@ export interface SdnPathTraceResult {
   healthStatus: 'HEALTHY' | 'DEGRADED' | 'UNREACHABLE';
 }
 
-export interface SdnIntentPolicy {
-  id: string;
-  name: string;
-  type: 'qos-voip' | 'isolate-vlan' | 'rate-limit';
-  targetDeviceIds: string[];
-  parameters: {
-    vlanId?: number;
-    dscpValue?: number;
-    bandwidthLimitMbps?: number;
-  };
+/** NETCONF <rpc> request envelope. */
+export interface NetconfRpcMessage {
+  messageId: string;
+  rpcName: string;
+  params: Record<string, string | number>;
 }
 
-export interface SdnInventorySummary {
-  totalDevices: number;
-  switchesCount: number;
-  routersCount: number;
-  pcsCount: number;
-  activeLinksCount: number;
-  discoveredVlans: number[];
+/** NETCONF <rpc-reply> result envelope. */
+export interface NetconfRpcReply {
+  messageId: string;
+  ok: boolean;
+  errorMessage?: string;
+  data?: Record<string, unknown>;
 }
 
-export interface SdnFlowRule {
-  id: string;
-  priority: number;
-  match: {
-    srcIp?: string;
-    dstIp?: string;
-    protocol?: string;
-    vlanId?: number;
-  };
-  action: 'FORWARD' | 'DROP' | 'SET_VLAN' | 'PRIORTIZE';
-  egressPort?: string;
-}
-
-function parseLeaves(block: string): YangLeaf[] {
-  const leaves: YangLeaf[] = [];
-  const leafPattern = /\bleaf\s+([\w-]+)\s*\{([\s\S]*?)\}/gi;
-  let match: RegExpExecArray | null;
-
-  while ((match = leafPattern.exec(block))) {
-    const type = match[2].match(/\btype\s+([\w:-]+)/i)?.[1] || 'string';
-    leaves.push({
-      name: match[1],
-      type,
-      config: !/\bconfig\s+false\s*;/i.test(match[2]),
-    });
-  }
-  return leaves;
-}
-
-/** Comprehensive YANG 1.1 model parser supporting modules, leaves, containers, lists and RPCs */
-export function parseYangModule(source: string): YangModule {
-  const name = source.match(/\bmodule\s+([\w-]+)\s*\{/i)?.[1];
-  const namespace = source.match(/\bnamespace\s+"([^"]+)"\s*;/i)?.[1];
-  const prefix = source.match(/\bprefix\s+"?([\w-]+)"?\s*;/i)?.[1];
-  if (!name || !namespace) {
-    throw new Error('Invalid YANG module: module and namespace are required');
-  }
-
-  function extractBlocks(tag: string): Array<{ name: string; content: string }> {
-    const results: Array<{ name: string; content: string }> = [];
-    const regex = new RegExp(`\\b${tag}\\s+([\\w-]+)\\s*\\{`, 'gi');
-    let m: RegExpExecArray | null;
-    while ((m = regex.exec(source))) {
-      const name = m[1];
-      const start = m.index + m[0].length;
-      let depth = 1;
-      let pos = start;
-      while (pos < source.length && depth > 0) {
-        if (source[pos] === '{') depth++;
-        else if (source[pos] === '}') depth--;
-        pos++;
-      }
-      results.push({ name, content: source.slice(start, pos - 1) });
-    }
-    return results;
-  }
-
-  function extractSubBlock(parentContent: string, tag: string): string {
-    const regex = new RegExp(`\\b${tag}\\s*\\{`, 'i');
-    const m = regex.exec(parentContent);
-    if (!m) return '';
-    const start = m.index + m[0].length;
-    let depth = 1;
-    let pos = start;
-    while (pos < parentContent.length && depth > 0) {
-      if (parentContent[pos] === '{') depth++;
-      else if (parentContent[pos] === '}') depth--;
-      pos++;
-    }
-    return parentContent.slice(start, pos - 1);
-  }
-
-  // Top-level leaves
-  const leaves = parseLeaves(source);
-
-  // Containers
-  const containers: YangContainer[] = extractBlocks('container').map(b => ({
-    name: b.name,
-    leaves: parseLeaves(b.content),
-  }));
-
-  // Lists
-  const lists: YangList[] = extractBlocks('list').map(b => ({
-    name: b.name,
-    key: b.content.match(/\bkey\s+"?([\w-]+)"?\s*;/i)?.[1] || 'id',
-    leaves: parseLeaves(b.content),
-  }));
-
-  // RPCs
-  const rpcs: YangRpc[] = extractBlocks('rpc').map(b => {
-    const inputContent = extractSubBlock(b.content, 'input');
-    const outputContent = extractSubBlock(b.content, 'output');
-    return {
-      name: b.name,
-      inputLeaves: parseLeaves(inputContent),
-      outputLeaves: parseLeaves(outputContent),
-    };
-  });
-
-  return { name, namespace, prefix, leaves, containers, lists, rpcs };
-}
+export type {
+  YangLeaf,
+  YangContainer,
+  YangList,
+  YangRpc,
+  YangTypedef,
+  YangModule,
+  YangAstNode,
+  YangToken,
+  YangTokenType,
+} from './yangParser';
+export { tokenizeYang, parseYangTokens, buildYangSchemaFromAst, parseYangModule } from './yangParser';
 
 export class SdnController {
   private readonly data = new Map<string, YangData>();
@@ -207,12 +108,16 @@ export class SdnController {
 
   constructor(public readonly modules: YangModule[] = []) {}
 
-  get(path: string): YangData | undefined {
+  get(path: string, deviceState?: SwitchState): YangData | undefined {
+    if (deviceState) {
+      const extracted = extractNetconfConfig(deviceState, path);
+      return extracted as YangData;
+    }
     const value = this.data.get(path);
     return value ? { ...value } : undefined;
   }
 
-  editConfig(path: string, patch: YangData): YangData {
+  editConfig(path: string, patch: YangData, deviceState?: SwitchState): YangData {
     const current = { ...this.data.get(path) };
     const schema = this.modules.flatMap(m => m.leaves).filter(l => l.config);
 
@@ -223,13 +128,18 @@ export class SdnController {
       }
     }
 
+    if (deviceState) {
+      applyNetconfEditConfig(deviceState, patch as Record<string, string | number | boolean>, path);
+    }
+
     const next = { ...current, ...patch };
     this.data.set(path, next);
     return { ...next };
   }
 
-  netconfGet(path: string): string {
-    return `<data><config path="${path}">${JSON.stringify(this.get(path) || {})}</config></data>`;
+  netconfGet(path: string, deviceState?: SwitchState): string {
+    const data = this.get(path, deviceState);
+    return `<data><config path="${path}">${JSON.stringify(data || {})}</config></data>`;
   }
 
   restconfGet(path: string): YangData | undefined {
@@ -394,9 +304,14 @@ export class SdnController {
 
     let hopNum = 1;
     let totalLatency = 0;
+    let overallHealth: 'HEALTHY' | 'DEGRADED' | 'UNREACHABLE' = 'HEALTHY';
+    let pathFound = true;
+    let currentSrcIp = srcIp;
+    let currentDstIp = dstIp;
 
     for (let i = 0; i < foundPath.length; i++) {
       const item = foundPath[i];
+      const devState = safeStates.get(item.device.id);
       const ingressConn = foundPath[i].conn;
       const egressConn = foundPath[i + 1]?.conn;
 
@@ -411,6 +326,59 @@ export class SdnController {
       const hopLatency = 0.4 + (i * 0.1);
       totalLatency += hopLatency;
 
+      let hopStatus: 'UP' | 'DOWN' | 'DEGRADED' = item.device.status === 'online' ? 'UP' : 'DOWN';
+      let aclStatus: 'PERMITTED' | 'DENIED' = 'PERMITTED';
+
+      // 1. STP & Port Operational Status Check
+      if (devState && (ingressPort || egressPort)) {
+        const inPortObj = ingressPort ? devState.ports?.[ingressPort] : undefined;
+        const outPortObj = egressPort ? devState.ports?.[egressPort] : undefined;
+
+        if (inPortObj?.shutdown || outPortObj?.shutdown || inPortObj?.status === 'disabled' || outPortObj?.status === 'disabled') {
+          hopStatus = 'DOWN';
+          overallHealth = 'UNREACHABLE';
+          pathFound = false;
+        } else if (inPortObj?.status === 'blocked' || outPortObj?.status === 'blocked') {
+          hopStatus = 'DEGRADED';
+          if (overallHealth !== 'UNREACHABLE') overallHealth = 'DEGRADED';
+        }
+      }
+
+      // 2. SDN Flow Rules & ACL Status Check
+      const activeFlowRules = [...this.flowRules, ...(devState?.sdnFlowRules || [])];
+      for (const rule of activeFlowRules) {
+        if (rule.action === 'DROP') {
+          const matchSrc = !rule.match.srcIp || rule.match.srcIp === currentSrcIp;
+          const matchDst = !rule.match.dstIp || rule.match.dstIp === currentDstIp;
+          if (matchSrc && matchDst) {
+            aclStatus = 'DENIED';
+            hopStatus = 'DEGRADED';
+            if (overallHealth !== 'UNREACHABLE') overallHealth = 'DEGRADED';
+          }
+        }
+      }
+
+      // 3. RIB / FIB Routing Table Verification for L3 Hops
+      if (devState && (item.device.type === 'router' || item.device.type === 'switchL3' || devState.ipRouting)) {
+        if (item.device.id !== dstDevice.id) {
+          const routingTable = getRoutingTable(item.device.id, safeStates);
+          const route = findRoute(currentDstIp, routingTable);
+          if (!route) {
+            hopStatus = 'DOWN';
+            overallHealth = 'UNREACHABLE';
+            pathFound = false;
+          }
+        }
+      }
+
+      // 4. NAT State Inspection
+      if (devState?.staticNat && typeof devState.staticNat === 'object') {
+        const natMap = devState.staticNat as Record<string, string>;
+        if (natMap[currentSrcIp]) {
+          currentSrcIp = natMap[currentSrcIp];
+        }
+      }
+
       pathHops.push({
         hopNumber: hopNum++,
         deviceId: item.device.id,
@@ -418,20 +386,22 @@ export class SdnController {
         deviceType: item.device.type,
         ingressPort,
         egressPort,
-        status: item.device.status === 'online' ? 'UP' : 'DOWN',
+        status: hopStatus,
         latencyMs: parseFloat(hopLatency.toFixed(2)),
-        aclStatus: 'PERMITTED',
+        aclStatus,
       });
+
+      if (!pathFound) break;
     }
 
     return {
       sourceIp: srcIp,
       destIp: dstIp,
-      pathFound: true,
+      pathFound,
       totalHops: pathHops.length,
       latencyMs: parseFloat(totalLatency.toFixed(2)),
       pathHops,
-      healthStatus: 'HEALTHY',
+      healthStatus: pathFound ? overallHealth : 'UNREACHABLE',
     };
   }
 
@@ -451,15 +421,35 @@ export class SdnController {
       const state = deviceStates.get(devId);
       if (!dev || !state) continue;
 
+      if (!state.sdnIntents) state.sdnIntents = [];
+      state.sdnIntents.push(policy);
+
       if (policy.type === 'isolate-vlan' && typeof policy.parameters.vlanId === 'number') {
         const vlanIdNum = policy.parameters.vlanId;
         dev.vlan = vlanIdNum;
         if (!state.vlans) state.vlans = {};
         const vlanKey = String(vlanIdNum);
         state.vlans[vlanKey] = { id: vlanIdNum, name: `VLAN_${vlanIdNum}`, status: 'active', ports: [] };
+        
+        const flowRule: SdnFlowRule = {
+          id: `intent-isolate-${policy.id}-${devId}`,
+          priority: 100,
+          match: { vlanId: vlanIdNum },
+          action: 'SET_VLAN',
+        };
+        this.pushFlowRule(flowRule);
+        state.sdnFlowRules = [...(state.sdnFlowRules || []), flowRule];
         appliedDevices.push(dev.name);
       } else if (policy.type === 'qos-voip') {
         state.mlsQosEnabled = true;
+        const flowRule: SdnFlowRule = {
+          id: `intent-qos-${policy.id}-${devId}`,
+          priority: 100,
+          match: { protocol: 'udp' },
+          action: 'PRIORTIZE',
+        };
+        this.pushFlowRule(flowRule);
+        state.sdnFlowRules = [...(state.sdnFlowRules || []), flowRule];
         appliedDevices.push(dev.name);
       } else if (policy.type === 'rate-limit' && typeof policy.parameters.bandwidthLimitMbps === 'number') {
         const limit = policy.parameters.bandwidthLimitMbps;
@@ -469,6 +459,14 @@ export class SdnController {
             if (p) p.bandwidthLimitMbps = limit;
           }
         }
+        const flowRule: SdnFlowRule = {
+          id: `intent-rate-${policy.id}-${devId}`,
+          priority: 50,
+          match: {},
+          action: 'FORWARD',
+        };
+        this.pushFlowRule(flowRule);
+        state.sdnFlowRules = [...(state.sdnFlowRules || []), flowRule];
         appliedDevices.push(dev.name);
       }
     }

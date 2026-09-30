@@ -61,7 +61,14 @@ The simulator supports **729+ commands** across multiple configuration modes.
 | **QoS & Queue Management** | Strict Priority (LLQ), WFQ, Tail Drop / WRED queue overflow drops, and DSCP/CoS packet marking. |
 | **Multicast & IGMP / PIM-SM** | IGMPv2/v3 membership reports, L2 IGMP Snooping VLAN port tables, and PIM-SM Rendezvous Point (RP) shared tree `(*, G)` routing. |
 | **Automated Network Assertions** | Rule-based automated testing engine evaluating `PING_SUCCESS`, `PING_FAIL` (VLAN/ACL Isolation), `PORT_REACHABLE`, and `PORT_BLOCKED` assertions inside Network Diagnostics. |
-| **Wireshark Packet Tree Inspector** | Layer 2 (Ethernet II & 802.1Q VLAN), Layer 3 (IPv4/ARP TTL/Flags), Layer 4 (TCP SYN/ACK, UDP), and Application Protocol (HTTP, MQTT, CoAP, SNMP) header tree inspection. |
+| **SDN Path Trace & Flow Rules** | Hop-by-hop path trace evaluated against RIB/FIB, STP status, ACL, NAT, and SDN Flow Rules (`FORWARD`, `DROP`, `SET_VLAN`). |
+| **YANG 1.1 AST Parser** | Lexer (Tokenizer), AST Tree (`YangAstNode`), `typedef`, nested container, `list`, `rpc` schema parsing. |
+| **NETCONF State Synchronization** | RFC 6241 compliant `hello`, `get`, `get-config`, `edit-config`, `commit` bidirectional `SwitchState` synchronization. |
+| **VXLAN / EVPN Pipeline** | Access VLAN to VNI mapping, EVPN Type-2 MAC learning, VTEP UDP 4789 encapsulation and decapsulation. |
+| **VRF-Lite Isolation & RT Leaking** | Per-VRF isolated RIB/FIB routing tables and MP-BGP Route Target (`rtImport`/`rtExport`) route leaking (`VLeaked`). |
+| **PIM / IGMP Multicast Pipeline** | Multicast forwarding with Reverse Path Forwarding (RPF) check enforcement and PIM Dense Mode Pruned port filtering. |
+| **QoS Scheduling & Congestion Pipeline** | DSCP EF/CS6/AF31 classification/marking, Token Bucket Traffic Policing, WRED early drop, Tail Drop, and LLQ scheduling. |
+| **SNMP & Syslog State Correlation** | Automatic Syslog (`%LINK-3-UPDOWN`, `%SYS-5-CONFIG_I`, `%OSPF-5-ADJCHG`) and SNMP Trap (`linkDown`, `linkUp`, `configChange`, `ospfNbrStateChange`) generation correlated to live device state changes. |
 
 ## Command Overview
 

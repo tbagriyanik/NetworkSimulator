@@ -16,6 +16,8 @@ export interface Route {
   localPreference?: number; // For BGP — local preference attribute
   weight?: number;          // For BGP — weight attribute
   trackId?: number;         // For floating static — IP SLA track object id (route only installed while track is Up)
+  vrf?: string;             // VRF-Lite: routing table this entry belongs to
+  interfaceId?: string;     // Exit interface id (alias kept for VRF filtering)
 }
 
 export interface BgpNeighbor {

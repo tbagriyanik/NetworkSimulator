@@ -174,12 +174,29 @@ export function useTopologyWindowEvents({
       }
     };
 
+    // Page Up / Page Down: scroll the canvas vertically by a quarter of its height
+    const scrollCanvasVertically = (direction: 1 | -1) => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const rect = canvas.getBoundingClientRect();
+      if (rect.height === 0) return;
+      setPan((prevPan) => ({
+        x: prevPan.x,
+        y: prevPan.y + rect.height * 0.25 * direction,
+      }));
+    };
+
+    const handleScrollUpEvent = () => scrollCanvasVertically(-1);
+    const handleScrollDownEvent = () => scrollCanvasVertically(1);
+
     window.addEventListener('trigger-topology-zoom-to-fit', handleZoomToFitEvent);
     window.addEventListener('trigger-topology-toggle-minimap', handleToggleMinimapEvent);
     window.addEventListener('trigger-topology-toggle-network-log', handleToggleLogEvent);
     window.addEventListener('trigger-topology-zoom-in', handleZoomInEvent);
     window.addEventListener('trigger-topology-zoom-out', handleZoomOutEvent);
     window.addEventListener('trigger-topology-zoom-reset', handleZoomResetEvent);
+    window.addEventListener('trigger-topology-scroll-up', handleScrollUpEvent);
+    window.addEventListener('trigger-topology-scroll-down', handleScrollDownEvent);
 
     return () => {
       window.removeEventListener('trigger-topology-zoom-to-fit', handleZoomToFitEvent);
@@ -188,6 +205,8 @@ export function useTopologyWindowEvents({
       window.removeEventListener('trigger-topology-zoom-in', handleZoomInEvent);
       window.removeEventListener('trigger-topology-zoom-out', handleZoomOutEvent);
       window.removeEventListener('trigger-topology-zoom-reset', handleZoomResetEvent);
+      window.removeEventListener('trigger-topology-scroll-up', handleScrollUpEvent);
+      window.removeEventListener('trigger-topology-scroll-down', handleScrollDownEvent);
     };
   }, [canvasRef, zoomToFit, setIsMinimapOpen, setShowLogPanel, setZoom, setPan, resetView]);
 

@@ -221,7 +221,7 @@ export function scheduleQosPackets(
   for (const name of order) {
     const queue = queues.get(name)!;
     const cls = byName.get(name);
-    const quota = (discipline === 'wfq' || (discipline === 'llq' && cls?.priority))
+    const quota = (discipline === 'wfq' || discipline === 'llq' || cls?.priority)
       ? remaining
       : Math.floor(capacity * (cls?.bandwidthPercent ?? 100) / 100);
     let used = 0;

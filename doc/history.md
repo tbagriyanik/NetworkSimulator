@@ -29,6 +29,22 @@
   - Katman 4 TCP/UDP/ICMP durumsal firewall oturum takip tablosu (`ESTABLISHED`, `SYN_SENT`, `FIN_WAIT`) ve izinsiz giriş engelleme denetimleri.
 - **🔌 DHCP Relay & Option 82 İşleme Motoru (`dhcpRelayEngine.ts`)**:
   - `giaddr` ve Option 82 (Circuit ID & Remote ID) başlık güncellemeleri ile farklı subnet'ler arası DHCP röleleme simülasyonu.
+- **🌐 SDN Intent & Path Trace Gerçek Ağ Durumu Entegrasyonu (`sdnController.ts`)**:
+  - SDN Path Trace hop-by-hop yol analizinin gerçek RIB/FIB yönlendirme tabloları, STP port durumları (`blocked`/`shutdown`), ACL denetimleri (`PERMITTED`/`DENIED`), NAT dönüşümleri ve SDN Flow Rule kuralları üzerinden çalışması sağlandı.
+- **📜 YANG 1.1 AST Parser Mimarisi (`yangParser.ts`)**:
+  - Regex tabanlı ayrıştırmadan formal bir Lexer (Tokenizer), Abstract Syntax Tree (`YangAstNode`) ve Schema Builder mimarisine geçildi. `typedef`, iç içe geçmiş container, `list`, `rpc` ve AST ağacı çıktısı desteklendi.
+- **🔄 NETCONF Config & Operational State Senkronizasyonu (`netconfStateSync.ts`, `netconfTransport.ts`)**:
+  - NETCONF `hello`, `get`, `get-config`, `edit-config` ve `commit` işlemlerinin cihaz canlı `SwitchState` konfigürasyon ve operasyonel verileriyle çift yönlü senkronizasyonu tamamlandı.
+- **🔀 VXLAN / EVPN Paket Forwarding Pipeline Entegrasyonu (`vxlanEvpn.ts`)**:
+  - Access/Trunk VLAN -> VNI eşleşmeleri, EVPN Type-2 MAC rotaları öğrenimi, VTEP UDP 4789 kapsülleme (`processVxlanEncapsulation`) ve kapsülden çıkarma (`processVxlanDecapsulation`) iletim motoruna entegre edildi.
+- **🛡️ VRF-Lite Routing Izolasyonu & RT Route Leaking (`vrfLite.ts`)**:
+  - Per-VRF izole yönlendirme tabloları (RIB/FIB) oluşturuldu. Cross-VRF paket sızmaları engellendi; MP-BGP Route Target (`rtImport` / `rtExport`) eşleşmelerine göre güvenli VRF rota sızdırma (`VLeaked`) eklendi.
+- **🌊 PIM / IGMP Multicast Forwarding Uçtan Uca Güçlendirmesi (`multicastEngine.ts`)**:
+  - Multicast yönlendirme pipeline'ına Reverse Path Forwarding (RPF) paket düşürme denetimleri (`checkRpf`) ve PIM Dense Mode budanmış port (`getPrunedPorts`) filtrelemesi entegre edildi.
+- **⚡ QoS Packet Scheduling, WRED & Traffic Policing (`qosPipeline.ts`, `qosScheduler.ts`)**:
+  - VoIP (EF/DSCP 46), CS6 ve AF31 otomatik paket sınıflandırması/işaretlemesi; Token Bucket bant genişliği policer düşürmeleri; WRED olasılıksal erken düşürme ve LLQ öncelikli kuyruklama entegrasyonu sağlandı.
+- **📊 SNMP / Syslog & State Değişimi İlişkilendirmesi (`monitoringStateSync.ts`)**:
+  - Arabirim link `up`/`down`, konfigürasyon değişiklikleri ve OSPF komşu durum geçişlerinin canlı SNMP tuzaklarına (Trap: `linkDown`, `linkUp`, `configChange`, `ospfNbrStateChange`) ve Syslog olay kayıtlarına (`%LINK-3-UPDOWN`, `%SYS-5-CONFIG_I`, `%OSPF-5-ADJCHG`) otomatik dönüştürülmesi sağlandı.
 
 ## v6.9.0 — 2026-09-30
 

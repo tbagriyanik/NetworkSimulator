@@ -1,6 +1,6 @@
 ﻿'use client';
 
-import { useCallback, RefObject } from 'react';
+import { useCallback, useEffect, RefObject } from 'react';
 import type { CanvasDevice } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { isSwitchDeviceType, easeInOutCubic } from '@/components/network/NetworkTopology/utils/networkTopology.helpers';
 
@@ -29,43 +29,28 @@ export function useDeviceNavigation({
   panRef,
   svgContentGroupRef,
 }: UseDeviceNavigationProps) {
-  const navigateToNextDevice = useCallback((currentDeviceId: string | null, shift = false) => {
-    if (devices.length === 0) return;
-
-    const orderedDevices = [...devices].sort((a, b) => {
+  const orderDevices = useCallback(() => {
+    return [...devices].sort((a, b) => {
       if (a.y !== b.y) return a.y - b.y;
       if (a.x !== b.x) return a.x - b.x;
       return a.id.localeCompare(b.id);
     });
+  }, [devices]);
 
-    const currentIndex = currentDeviceId
-      ? orderedDevices.findIndex((d) => d.id === currentDeviceId)
-      : -1;
-
-    const nextIndex = currentIndex >= 0
-      ? (currentIndex + (shift ? -1 : 1) + orderedDevices.length) % orderedDevices.length
-      : 0;
-
-    const nextDevice = orderedDevices[nextIndex];
-    if (!nextDevice) return;
-
-    setSelectedDeviceIds([nextDevice.id]);
+  // Select a device and smoothly scroll it to the viewport center
+  const focusDevice = useCallback((device: CanvasDevice) => {
+    setSelectedDeviceIds([device.id]);
     setSelectedNoteIds([]);
-    onDeviceSelect(nextDevice.type, nextDevice.id, isSwitchDeviceType(nextDevice.type) ? nextDevice.switchModel : undefined, nextDevice.name);
+    onDeviceSelect(device.type, device.id, isSwitchDeviceType(device.type) ? device.switchModel : undefined, device.name);
 
-    // Smooth scroll to the next device and focus it
-    const nextEl = document.querySelector<SVGGElement>(`[data-device-id="${nextDevice.id}"]`);
+    const nextEl = document.querySelector<SVGGElement>(`[data-device-id="${device.id}"]`);
     if (nextEl && canvasRef.current) {
       nextEl.focus();
 
       // Calculate pan to center the device in viewport
       const canvasRect = canvasRef.current.getBoundingClientRect();
-      const deviceX = nextDevice.x;
-      const deviceY = nextDevice.y;
-      const currentZoom = zoomRef.current;
-
-      const targetPanX = canvasRect.width / 2 - deviceX * currentZoom;
-      const targetPanY = canvasRect.height / 2 - deviceY * currentZoom;
+      const targetPanX = canvasRect.width / 2 - device.x * zoomRef.current;
+      const targetPanY = canvasRect.height / 2 - device.y * zoomRef.current;
 
       const startPan = { ...panRef.current };
       const startTime = performance.now();
@@ -83,7 +68,7 @@ export function useDeviceNavigation({
 
         const g = svgContentGroupRef.current;
         if (g) {
-          g.style.transform = `translate3d(${panRef.current.x}px, ${panRef.current.y}px, 0px) scale(${currentZoom})`;
+          g.style.transform = `translate3d(${panRef.current.x}px, ${panRef.current.y}px, 0px) scale(${zoomRef.current})`;
         }
 
         if (progress < 1) {
@@ -95,7 +80,55 @@ export function useDeviceNavigation({
 
       requestAnimationFrame(animatePan);
     }
-  }, [devices, onDeviceSelect, setSelectedDeviceIds, setSelectedNoteIds, setPan, canvasRef, zoomRef, panRef, svgContentGroupRef]);
+  }, [setSelectedDeviceIds, setSelectedNoteIds, onDeviceSelect, canvasRef, zoomRef, panRef, svgContentGroupRef, setPan]);
+
+  const navigateToNextDevice = useCallback((currentDeviceId: string | null, shift = false) => {
+    if (devices.length === 0) return;
+
+    const orderedDevices = orderDevices();
+
+    const currentIndex = currentDeviceId
+      ? orderedDevices.findIndex((d) => d.id === currentDeviceId)
+      : -1;
+
+    const nextIndex = currentIndex >= 0
+      ? (currentIndex + (shift ? -1 : 1) + orderedDevices.length) % orderedDevices.length
+      : 0;
+
+    const nextDevice = orderedDevices[nextIndex];
+    if (nextDevice) focusDevice(nextDevice);
+  }, [devices, orderDevices, focusDevice]);
+
+  // End key: jump to the last device (same focus + camera-center behaviour as Tab)
+  const focusLastDevice = useCallback(() => {
+    const orderedDevices = orderDevices();
+    const lastDevice = orderedDevices[orderedDevices.length - 1];
+    if (lastDevice) focusDevice(lastDevice);
+  }, [orderDevices, focusDevice]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'End' || e.ctrlKey || e.metaKey || e.altKey || e.shiftKey) return;
+      if (devices.length === 0) return;
+
+      const target = e.target as HTMLElement | null;
+      if (target && (
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.tagName === 'SELECT' ||
+        target.isContentEditable ||
+        target.closest('[data-note-id], textarea, input, select, [contenteditable="true"], [data-modal-content], [data-slot="dialog-content"], [role="dialog"], [data-terminal-input], [data-code-editor]')
+      )) {
+        return;
+      }
+
+      e.preventDefault();
+      focusLastDevice();
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [devices.length, focusLastDevice]);
 
   const handleDeviceKeyDown = useCallback((e: React.KeyboardEvent<SVGGElement>, device: CanvasDevice) => {
     if (e.key !== 'Tab') return;
@@ -106,6 +139,7 @@ export function useDeviceNavigation({
 
   return {
     navigateToNextDevice,
+    focusLastDevice,
     handleDeviceKeyDown,
   };
 }

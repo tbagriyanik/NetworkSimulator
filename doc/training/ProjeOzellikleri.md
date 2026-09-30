@@ -9,12 +9,14 @@
 | **Test Paketi: 233 Dosya, 2096 Test — Tamamı Geçer** | portMirroring (SPAN/RSPAN), packetTraceDiagnostics (TTL, egress drop, stats), dhcpRelayEngine ve conntrack testleri düzeltildi. `npm run check` kod 0 ile çıkıyor. |
 | **Ağ Dokümantasyon Rapor Motoru (`networkReportGenerator.ts`)** | Topoloji envanteri, IP adresleme matrisi, VLAN haritası ve dinamik/statik yönlendirme özetlerini otomatik markdown teknik raporuna dönüştürme. |
 
-| **Dinamik Trafik Jeneratörü & Telemetri Motoru (`trafficGeneratorEngine.ts`)** | HTTP, VoIP, FTP ve UDP veri akışları simülasyonu, canlı bant genişliği doluluk oranı (% Utilization), gecikme (ms) ve hat sıkışıklığı (Congestion) durum takibi. |
-| **STP Güvenlik Korumaları Motoru (`stpGuardsEngine.ts`)** | PortFast, BPDU Guard (errdisable moduna alma), BPDU Filter, Root Guard (Root-Inconsistent bloklama) ve Loop Guard koruma mekanizmaları. |
-| **L2 Fırtına Kontrolü & Yayın Algılama Motoru (`stormControlEngine.ts`)** | L2 Broadcast/Multicast fırtına tespiti, eşik aşımında paket drop/errdisable yeteneği ve simulated CPU koruma doğrulaması. |
-| **BGP En İyi Yol Karar Açıklayıcısı (`bgpBestPathExplainer.ts`)** | BGP 13 adımlı yol seçimi algoritması (Weight, LocalPref, Locally Originated, AS-Path, Origin, MED, Neighbor IP) adım ve tie-breaker karar nedeni raporlaması. |
-| **Stateful Connection Tracking Motoru (`conntrackEngine.ts`)** | Katman 4 TCP/UDP/ICMP durumsal firewall oturum takip tablosu (ESTABLISHED, SYN_SENT, FIN_WAIT) ve izinsiz giriş engelleme denetimleri. |
-| **DHCP Relay & Option 82 İşleme Motoru (`dhcpRelayEngine.ts`)** | `giaddr` ve Option 82 (Circuit ID, Remote ID) başlık güncellemeleri ile farklı subnet'ler arası DHCP röleleme simülasyonu. |
+| **SDN Intent & Path Trace Gerçek Ağ Durumu (`sdnController.ts`)** | SDN Path Trace hop-by-hop yol analizinin gerçek RIB/FIB yönlendirme tabloları, STP port durumları (`blocked`/`shutdown`), ACL denetimleri (`PERMITTED`/`DENIED`), NAT dönüşümleri ve SDN Flow Rule kuralları üzerinden çalıştırılması. |
+| **YANG 1.1 AST Parser Mimarisi (`yangParser.ts`)** | Lexer (Tokenizer), Abstract Syntax Tree (`YangAstNode`) ve Schema Builder mimarisi. `typedef`, iç içe geçmiş container, `list`, `rpc` ve AST ağacı çıktısı desteği. |
+| **NETCONF Config & State Senkronizasyonu (`netconfStateSync.ts`, `netconfTransport.ts`)** | NETCONF `hello`, `get`, `get-config`, `edit-config` ve `commit` işlemlerinin cihaz canlı `SwitchState` konfigürasyon ve operasyonel verileriyle çift yönlü senkronizasyonu. |
+| **VXLAN / EVPN Paket Forwarding Pipeline Entegrasyonu (`vxlanEvpn.ts`)** | Access/Trunk VLAN -> VNI eşleşmeleri, EVPN Type-2 MAC rotaları öğrenimi, VTEP UDP 4789 kapsülleme (`processVxlanEncapsulation`) ve kapsülden çıkarma (`processVxlanDecapsulation`) iletim motoru entegrasyonu. |
+| **VRF-Lite Routing Izolasyonu & RT Route Leaking (`vrfLite.ts`)** | Per-VRF izole yönlendirme tabloları (RIB/FIB). Cross-VRF paket sızmalarının engellenmesi; MP-BGP Route Target (`rtImport` / `rtExport`) eşleşmelerine göre VRF rota sızdırma (`VLeaked`). |
+| **PIM / IGMP Multicast Forwarding Güçlendirmesi (`multicastEngine.ts`)** | Multicast yönlendirme pipeline'ına Reverse Path Forwarding (RPF) paket düşürme denetimleri (`checkRpf`) ve PIM Dense Mode budanmış port (`getPrunedPorts`) filtrelemesi entegrasyonu. |
+| **QoS Packet Scheduling, WRED & Traffic Policing (`qosPipeline.ts`, `qosScheduler.ts`)** | VoIP (EF/DSCP 46), CS6 ve AF31 otomatik paket sınıflandırması/işaretlemesi; Token Bucket bant genişliği policer düşürmeleri; WRED olasılıksal erken düşürme ve LLQ öncelikli kuyruklama entegrasyonu. |
+| **SNMP / Syslog & State Değişimi İlişkilendirmesi (`monitoringStateSync.ts`)** | Arabirim link `up`/`down`, konfigürasyon değişiklikleri ve OSPF komşu durum geçişlerinin canlı SNMP tuzaklarına (Trap: `linkDown`, `linkUp`, `configChange`, `ospfNbrStateChange`) ve Syslog olay kayıtlarına (`%LINK-3-UPDOWN`, `%SYS-5-CONFIG_I`, `%OSPF-5-ADJCHG`) otomatik dönüştürülmesi. |
 
 ## CLI Tab Ototamlama, ICMP Tip/Kod Raporlaması, Canlı Hat Telemetrisi, Otomatik Ağ Doğrulama & Derin Protokol Engine (2026-09-30 - v6.9.5)
 

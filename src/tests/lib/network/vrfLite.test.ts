@@ -6,6 +6,15 @@ import {
   filterRoutesByVrf,
 } from '@/lib/network/vrfLite';
 import type { SwitchState } from '@/lib/network/types';
+import type { Route } from '@/lib/network/types/routingTypes';
+
+/** Routing-table entry builder: only destination/interface matter for VRF filtering. */
+const route = (destination: string, iface?: string): Route => ({
+  destination,
+  interface: iface,
+  nextHop: '0.0.0.0',
+  type: 'static',
+});
 
 describe('vrfLite (VRF-Lite Virtual Routing and Forwarding)', () => {
   it('should create VRF instance with RD and assign interfaces', () => {
@@ -22,9 +31,9 @@ describe('vrfLite (VRF-Lite Virtual Routing and Forwarding)', () => {
     const mockState = {} as SwitchState;
     assignInterfaceToVrf(mockState, 'VRF_RED', 'GigabitEthernet0/1');
 
-    const routes = [
-      { destination: '10.0.0.0', interface: 'GigabitEthernet0/1' },
-      { destination: '192.168.1.0', interface: 'GigabitEthernet0/2' },
+    const routes: Route[] = [
+      route('10.0.0.0', 'GigabitEthernet0/1'),
+      route('192.168.1.0', 'GigabitEthernet0/2'),
     ];
 
     const redRoutes = filterRoutesByVrf(mockState, 'VRF_RED', routes);
@@ -52,7 +61,7 @@ describe('vrfLite (VRF-Lite Virtual Routing and Forwarding)', () => {
 
   it('returns empty array when filtering routes for non-existent VRF', () => {
     const mockState = {} as SwitchState;
-    const routes = [{ destination: '10.0.0.0', interface: 'GigabitEthernet0/1' }];
+    const routes: Route[] = [route('10.0.0.0', 'GigabitEthernet0/1')];
 
     const filtered = filterRoutesByVrf(mockState, 'NON_EXISTENT_VRF', routes);
     expect(filtered).toEqual([]);
@@ -63,11 +72,11 @@ describe('vrfLite (VRF-Lite Virtual Routing and Forwarding)', () => {
     assignInterfaceToVrf(mockState, 'VRF_ALPHA', 'GigabitEthernet0/1');
     assignInterfaceToVrf(mockState, 'VRF_BETA', 'GigabitEthernet0/2');
 
-    const routes = [
-      { destination: '10.1.0.0/16', interface: 'GigabitEthernet0/1' },
-      { destination: '10.2.0.0/16', interface: 'GigabitEthernet0/2' },
-      { destination: '172.16.0.0/24', interface: 'GigabitEthernet0/3' },
-      { destination: '192.168.0.0/24', interface: 'Loopback0' },
+    const routes: Route[] = [
+      route('10.1.0.0/16', 'GigabitEthernet0/1'),
+      route('10.2.0.0/16', 'GigabitEthernet0/2'),
+      route('172.16.0.0/24', 'GigabitEthernet0/3'),
+      route('192.168.0.0/24', 'Loopback0'),
     ];
 
     const alphaRoutes = filterRoutesByVrf(mockState, 'VRF_ALPHA', routes);
@@ -84,9 +93,9 @@ describe('vrfLite (VRF-Lite Virtual Routing and Forwarding)', () => {
     const mockState = {} as SwitchState;
     assignInterfaceToVrf(mockState, 'VRF_TEST', 'GigabitEthernet0/1');
 
-    const routes = [
-      { destination: '0.0.0.0/0', interface: undefined },
-      { destination: '10.0.0.0/8', interface: 'GigabitEthernet0/1' },
+    const routes: Route[] = [
+      route('0.0.0.0/0'),
+      route('10.0.0.0/8', 'GigabitEthernet0/1'),
     ];
 
     // VRF query should exclude routes with no interface

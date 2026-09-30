@@ -22,6 +22,8 @@ export function useTopologyInteractionState() {
   const connectionMetaRef = useRef<Map<string, { index: number; total: number }>>(new Map());
   const isPanningRef = useRef(false);
   const panStartRef = useRef({ x: 0, y: 0 });
+  // Space held down => left-drag pans the canvas instead of dragging/selecting
+  const spacePanRef = useRef(false);
   const zoomRef = useRef(DEFAULT_ZOOM);
   const panRef = useRef({ x: 0, y: 0 });
   const draggedDeviceRef = useRef<string | null>(null);
@@ -89,6 +91,7 @@ export function useTopologyInteractionState() {
     connectionMetaRef,
     isPanningRef,
     panStartRef,
+    spacePanRef,
     zoomRef,
     panRef,
     draggedDeviceRef,

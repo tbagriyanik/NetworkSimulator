@@ -1,12 +1,30 @@
 import type { SwitchState } from './types';
 import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
+import { auditNetwork, summarizeAudit, type AuditFinding, type AuditReport } from './networkAudit';
 
 export interface NetworkReportOptions {
   includeInventory?: boolean;
   includeIpAddresses?: boolean;
   includeVlans?: boolean;
   includeRoutes?: boolean;
+  /**
+   * Run the automatic validation engine and append the audit section.
+   * Defaults to true: the report is a validator, not just documentation.
+   */
+  includeAudit?: boolean;
+  /** Only list findings at or above this severity in the rendered report. */
+  minAuditSeverity?: 'critical' | 'warning' | 'info';
   title?: string;
+}
+
+/**
+ * Structured result for callers that want the findings without Markdown
+ * (UI badges, CI gates, JSON export).
+ */
+export interface NetworkReport {
+  markdown: string;
+  audit: AuditReport;
+  auditSummary: string;
 }
 
 export interface DeviceIpEntry {
@@ -43,14 +61,23 @@ export function generateNetworkReport(
     includeIpAddresses = true,
     includeVlans = true,
     includeRoutes = true,
+    includeAudit = true,
+    minAuditSeverity = 'info',
     title = 'Ağ Topolojisi Ve Sistem Teknik Raporu'
   } = options;
 
   const lines: string[] = [];
   const now = new Date().toISOString().replace('T', ' ').slice(0, 19);
 
+  // The audit runs first so its summary can be part of the report header.
+  const audit = auditNetwork(devices, connections, deviceStates);
+  const auditSummary = summarizeAudit(audit);
+
   lines.push(`# ${title}`);
   lines.push(`*Oluşturulma Tarihi: ${now}*\n`);
+  if (includeAudit) {
+    lines.push(`> **Otomatik Doğrulama Durumu:** ${auditSummary}\n`);
+  }
 
   // 1. Ağ Özet Metrikleri
   lines.push(`## 1. Ağ Özet İstatistikleri`);
@@ -185,5 +212,57 @@ export function generateNetworkReport(
     }
   }
 
+  // 6. Otomatik Doğrulama & Denetim (Validation / Audit)
+  if (includeAudit) {
+    const severityOrder = { critical: 0, warning: 1, info: 2 } as const;
+    const threshold = severityOrder[minAuditSeverity];
+    const shown = audit.findings.filter(f => severityOrder[f.severity] <= threshold);
+
+    lines.push(`## 6. Otomatik Doğrulama ve Denetim (Audit)`);
+    lines.push(`- **Sonuç:** ${audit.passed ? 'GEÇTİ (kritik hata yok)' : 'BAŞARISIZ (kritik hata var)'}`);
+    lines.push(`- **Sağlık Skoru:** ${audit.score}/100`);
+    lines.push(`- **Bulgular:** ${audit.counts.critical} kritik, ${audit.counts.warning} uyarı, ${audit.counts.info} bilgi\n`);
+
+    if (shown.length === 0) {
+      lines.push(`*Bu eşikte gösterilecek bulgu yok — yapılandırma doğrulamadan geçti.*\n`);
+    } else {
+      lines.push(`| Önem | Kod | Bulgu | Detay | Öneri |`);
+      lines.push(`|---|---|---|---|---|`);
+      shown.forEach(f => {
+        const label = f.severity === 'critical' ? '🔴 Kritik' : f.severity === 'warning' ? '🟠 Uyarı' : '🔵 Bilgi';
+        lines.push(`| ${label} | \`${f.code}\` | ${f.title} | ${f.detail} | ${f.remediation ?? '-'} |`);
+      });
+      lines.push('');
+    }
+  }
+
   return lines.join('\n');
+}
+
+/**
+ * Structured variant of generateNetworkReport(): returns the Markdown body
+ * together with the audit findings so callers can gate builds/tests on them.
+ */
+export function generateNetworkReportWithAudit(
+  devices: CanvasDevice[],
+  connections: CanvasConnection[],
+  deviceStates: Map<string, SwitchState>,
+  options: NetworkReportOptions = {}
+): NetworkReport {
+  const audit = auditNetwork(devices, connections, deviceStates);
+  return {
+    markdown: generateNetworkReport(devices, connections, deviceStates, options),
+    audit,
+    auditSummary: summarizeAudit(audit),
+  };
+}
+
+/** Convenience filter for UI badges: findings at or above a severity. */
+export function filterAuditFindings(
+  findings: AuditFinding[],
+  minSeverity: 'critical' | 'warning' | 'info'
+): AuditFinding[] {
+  const severityOrder = { critical: 0, warning: 1, info: 2 } as const;
+  const threshold = severityOrder[minSeverity];
+  return findings.filter(f => severityOrder[f.severity] <= threshold);
 }

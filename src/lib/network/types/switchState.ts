@@ -146,7 +146,7 @@ export interface SwitchState {
   errdisableConfig?: { enabledCauses: string[]; interval: number };
   greTunnels?: Record<string, { id: string; source?: string; destination?: string; tunnelIp?: string; subnetMask?: string }>;
   ospfAreaRanges?: { areaId: string; network: string; mask: string; advertise: boolean }[];
-  vrfInstances?: Record<string, { name: string; rd?: string; interfaces: string[] }>;
+  vrfInstances?: Record<string, import('../vrfLite').VrfInstance>;
   qosPolicies?: Record<string, { name: string; classes: { name: string; priorityPercent?: number; bandwidthKbps?: number }[] }>;
   nveInterfaces?: Record<string, NveInterface>;
   vxlanConfig?: import('../vxlanEvpn').VxlanConfig;
@@ -262,6 +262,8 @@ export interface SwitchState {
     exportedPackets?: number;
     exportedFlows?: number;
   };
+  sdnFlowRules?: import('../sdnController').SdnFlowRule[];
+  sdnIntents?: import('../sdnController').SdnIntentPolicy[];
   netflowCache?: {
     srcIf?: string;
     dstIf?: string;
@@ -593,6 +595,10 @@ export interface SwitchState {
   loggingEnabled?: boolean;
   syslogHost?: string;
   syslogTrapLevel?: string;
+  /** Buffered, already-formatted syslog lines emitted by this device (newest last). */
+  syslogLogs?: string[];
+  /** Primary management IP of the device (used by SDN/VXLAN helpers). */
+  ipAddress?: string;
   currentSlaId?: string;
   ipSlaOperations?: Record<string, IpSlaOperation>;
   ipSlaTracks?: Record<string, { operationId: string; state: 'up' | 'down'; lastChange: number; decrement?: number }>;

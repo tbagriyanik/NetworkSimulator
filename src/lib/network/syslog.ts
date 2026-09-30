@@ -82,3 +82,22 @@ export function shouldLogMessage(severity: number, trapLevelStr: string | undefi
   
   return severity <= 6; // Default fallback
 }
+
+export function emitSyslogEvent(
+  state: SwitchState,
+  facility: string,
+  severity: number,
+  mnemonic: string,
+  message: string
+): { updatedState: SwitchState; syslog: SyslogMessage } {
+  const syslog = generateSyslogMessage(state, facility, severity, mnemonic, message);
+  const formatted = `%${facility}-${severity}-${mnemonic}: ${message}`;
+
+  const updatedState: SwitchState = {
+    ...state,
+    syslogLogs: [...(state.syslogLogs || []), formatted],
+    eventLogs: [...(state.eventLogs || []), formatted],
+  };
+
+  return { updatedState, syslog };
+}

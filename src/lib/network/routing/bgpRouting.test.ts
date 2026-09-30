@@ -15,7 +15,7 @@ function makeRoute(overrides: Partial<Route> = {}): Route {
     localPreference: 100,
     weight: 0,
     ...overrides,
-  } as any;
+  } as Route;
 }
 
 describe('bgpBestPath algorithm', () => {

@@ -1,4 +1,4 @@
-﻿import { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
+import { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { SwitchState } from './types';
 import { calculateOSPFRoutes } from './ospf';
 import { calculateEigrpRoutes, calculateEigrp6Routes } from './eigrp-dual';
@@ -19,6 +19,7 @@ import {
 import { calculateRipRoutes, calculateRipngRoutes } from './routing/ripRouting';
 import { recalculateBgpNeighbors, calculateBgpRoutes } from './routing/bgpRouting';
 import { detectRoutingLoops as detectLoopsImpl } from './routing/routingLoops';
+import { filterRoutesByVrf } from './vrfLite';
 import type { Route, RouteDecisionDetails, L3Hop, RoutingLoopIssue } from './routing/routingTypes';
 
 // Re-export types and functions
@@ -402,14 +403,17 @@ export function getRoutingTable(
   deviceId: string,
   deviceStates: Map<string, SwitchState>,
   devices?: CanvasDevice[],
-  connections?: CanvasConnection[]
+  connections?: CanvasConnection[],
+  vrfName?: string
 ): Route[] {
   const state = deviceStates.get(deviceId);
   if (!state) return [];
 
-  const routes = (devices && connections)
+  const rawRoutes = (devices && connections)
     ? buildRoutingTable(deviceId, deviceStates)
     : buildBasicRoutingTable(state);
+
+  const routes = filterRoutesByVrf(state, vrfName, rawRoutes);
 
   return routes.sort((a, b) => {
     const typeOrder = { connected: 0, static: 1, dynamic: 2 };

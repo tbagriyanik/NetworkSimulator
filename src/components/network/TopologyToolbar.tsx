@@ -385,7 +385,7 @@ export function TopologyToolbar({
           </TooltipTrigger>
           <TooltipContent className="flex items-center gap-2">
             <span>{t.simulationMode}</span>
-            <ShortcutBadge shortcut="S" variant="danger" />
+            <ShortcutBadge shortcut="Shift + S" variant="danger" />
           </TooltipContent>
         </Tooltip>
       </div>

@@ -149,8 +149,8 @@ export function useCanvasKeyboard({
         return;
       }
 
-      // Delete key handler (Plain Delete key only)
-      if (e.key === 'Delete' && !e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey && !isEditable) {
+      // Delete / Backspace key handler (plain keys only, no modifiers)
+      if ((e.key === 'Delete' || e.key === 'Backspace') && !e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey && !isEditable) {
         if (selectedDeviceIds.length > 0) {
           e.preventDefault();
           saveToHistory();
@@ -247,6 +247,15 @@ export function useCanvasKeyboard({
       if (!isEditable && (e.key === 'Home' || (e.altKey && !e.ctrlKey && !e.metaKey && key === 'r'))) {
         e.preventDefault();
         resetView();
+      }
+
+      // Page Up / Page Down scroll the canvas vertically
+      if (!isEditable && !e.ctrlKey && !e.metaKey && !e.altKey && (e.key === 'PageUp' || e.key === 'PageDown')) {
+        e.preventDefault();
+        window.dispatchEvent(new CustomEvent(
+          e.key === 'PageUp' ? 'trigger-topology-scroll-up' : 'trigger-topology-scroll-down'
+        ));
+        return;
       }
 
       // P to enter ping mode

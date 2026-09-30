@@ -1,4 +1,5 @@
 import type { SwitchState, NveInterface } from './types';
+import type { NetworkPacketFrame } from './forwarding/packetFrame';
 
 export interface EvpnMacRoute {
   vni: number;
@@ -91,6 +92,98 @@ export function encapsulateVxlanPacket(
     },
     payload: innerPayload,
   };
+}
+
+/**
+ * Handles VXLAN Ingress Encapsulation for frames originating on local access/trunk VLANs mapped to VNIs.
+ */
+export function processVxlanEncapsulation(
+  state: SwitchState,
+  frame: NetworkPacketFrame
+): { encapsulated: boolean; vxlanFrame?: NetworkPacketFrame; targetVtep?: string } {
+  if (!state.vxlanConfig?.enabled) {
+    return { encapsulated: false };
+  }
+
+  const vlanId = frame.vlanId || 1;
+  const nveInterface = Object.values(state.vxlanConfig.nveInterfaces)[0];
+  if (!nveInterface) return { encapsulated: false };
+
+  // Find matching VNI for frame's VLAN
+  let matchingVni: number | undefined;
+  for (const [vniStr, mapping] of Object.entries(nveInterface.vniMappings)) {
+    if (mapping.vlanId === vlanId) {
+      matchingVni = parseInt(vniStr, 10);
+      break;
+    }
+  }
+
+  if (!matchingVni) return { encapsulated: false };
+
+  // Auto-learn local MAC into EVPN Type-2 MAC table
+  addEvpnMacRoute(state, matchingVni, frame.srcMac, frame.srcIp, 'local');
+
+  // Lookup destination VTEP in EVPN MAC routes
+  const evpnRoute = lookupEvpnMacTable(state.vxlanConfig.evpnMacRoutes, matchingVni, frame.dstMac);
+  const targetVtep = evpnRoute?.nextHopVtep || state.vxlanConfig.evpnNeighbors[0]?.vtepIp;
+
+  if (!targetVtep || targetVtep === 'local' || targetVtep === '0.0.0.0') {
+    return { encapsulated: false };
+  }
+
+  const localVtepIp = state.ports['Loopback0']?.ipAddress || state.ipAddress || '192.168.255.1';
+
+  const vxlanFrame: NetworkPacketFrame = {
+    id: `vxlan-encap-${Date.now()}`,
+    protocol: 'VXLAN',
+    timestamp: Date.now(),
+    srcMac: state.macAddress || '00:11:22:33:44:55',
+    dstMac: 'ffff.ffff.ffff',
+    etherType: '0x0800',
+    srcIp: localVtepIp,
+    dstIp: targetVtep,
+    dstPort: 4789,
+    vxlanPayload: {
+      vni: matchingVni,
+      outerSrcIp: localVtepIp,
+      outerDstIp: targetVtep,
+      innerFrame: frame,
+    },
+    length: frame.length + 50,
+    info: `VXLAN VNI ${matchingVni} Encap (${frame.srcMac} -> ${frame.dstMac})`,
+  };
+
+  return { encapsulated: true, vxlanFrame, targetVtep };
+}
+
+/**
+ * Handles VXLAN Egress Decapsulation for incoming UDP 4789 packets at a VTEP.
+ */
+export function processVxlanDecapsulation(
+  state: SwitchState,
+  frame: NetworkPacketFrame
+): { decapsulated: boolean; innerFrame?: NetworkPacketFrame } {
+  if (frame.protocol !== 'VXLAN' && frame.dstPort !== 4789) {
+    return { decapsulated: false };
+  }
+
+  if (!frame.vxlanPayload) {
+    return { decapsulated: false };
+  }
+
+  const { vni, outerSrcIp, innerFrame } = frame.vxlanPayload;
+  const nveInterface = Object.values(state.vxlanConfig?.nveInterfaces || {})[0];
+  const mappedVlan = nveInterface?.vniMappings[vni]?.vlanId || state.vxlanConfig?.evpnVniMapping[vni]?.vlanId || 1;
+
+  const resFrame: NetworkPacketFrame = {
+    ...innerFrame,
+    vlanId: mappedVlan,
+  };
+
+  // Auto-learn remote VTEP MAC into EVPN MAC table
+  addEvpnMacRoute(state, vni, innerFrame.srcMac, innerFrame.srcIp, outerSrcIp);
+
+  return { decapsulated: true, innerFrame: resFrame };
 }
 
 export function lookupEvpnMacTable(

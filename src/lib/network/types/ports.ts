@@ -53,6 +53,10 @@ export interface Port {
   subnetMask?: string;
   stpCost?: number;             // Manual STP path cost
   bandwidthLimitMbps?: number;  // Rate-limiting bandwidth cap (Mbps)
+  qosServicePolicyOut?: string;
+  qosServicePolicyIn?: string;
+  wredProfile?: import('../qosScheduler').WredProfile;
+  currentQueueDepth?: number;
   isMrouterPort?: boolean;       // IGMP Snooping multicast router port flag
   arpTimeout?: string;          // ARP timeout setting
   macAddress?: string;         // Per-port MAC address (for router ports)
@@ -121,6 +125,8 @@ export interface Port {
   pppChapHostname?: string;
   pppChapPassword?: string;
   helperAddresses?: string[];
+  /** VRF-Lite: name of the VRF this interface is bound to (undefined = global table). */
+  vrf?: string;
 
   lldpTransmit?: boolean;       // default: true when LLDP enabled
   lldpReceive?: boolean;        // default: true when LLDP enabled

@@ -11,6 +11,10 @@ import { isFrameAllowedOnDot1xPort } from '@/lib/network/dot1x';
 import { processEapolFrame } from '@/lib/network/dot1x';
 import { processMqtt, processCoap } from '@/lib/network/applicationProtocols';
 import { processNetconfFrame } from '@/lib/network/netconfTransport';
+import { processVxlanEncapsulation, processVxlanDecapsulation } from '@/lib/network/vxlanEvpn';
+import { getVrfForInterface } from '@/lib/network/vrfLite';
+import { checkRpf, getPrunedPorts } from './multicastEngine';
+import { processQosEgress } from '@/lib/network/qosPipeline';
 import { STP_DEFAULT_PRIORITY } from '@/lib/network/stp';
 
 export interface ForwardingEngineResult {
@@ -90,6 +94,21 @@ export function checkIngressSanity(
       }
       // Implicit deny if list exists but no permit matched
       return { allowed: false, reason: `Implicitly dropped by MAC ACL ${aclName}` };
+    }
+  }
+
+  // SDN Flow Rules Drop Check
+  if (_state?.sdnFlowRules && _state.sdnFlowRules.length > 0) {
+    for (const rule of _state.sdnFlowRules) {
+      if (rule.action === 'DROP') {
+        const matchSrc = !rule.match.srcIp || rule.match.srcIp === frame.srcIp;
+        const matchDst = !rule.match.dstIp || rule.match.dstIp === frame.dstIp;
+        const matchVlan = rule.match.vlanId === undefined || rule.match.vlanId === frame.vlanId;
+        const matchProto = !rule.match.protocol || rule.match.protocol.toLowerCase() === (frame.protocol || '').toLowerCase();
+        if (matchSrc && matchDst && matchVlan && matchProto) {
+          return { allowed: false, reason: `Dropped by SDN Flow Rule [${rule.id}]` };
+        }
+      }
     }
   }
 
@@ -426,6 +445,54 @@ export function forwardPacketFrame(
     learnMacAddress(device.id, frame.srcMac, frame.ingressPortId, frame.vlanId || 1, deviceMap);
   }
 
+  // Stage 2.5: VXLAN Decapsulation (VTEP Egress)
+  if (state && (frame.protocol === 'VXLAN' || frame.dstPort === 4789)) {
+    const decapRes = processVxlanDecapsulation(state, frame);
+    if (decapRes.decapsulated && decapRes.innerFrame) {
+      frame = decapRes.innerFrame;
+    }
+  }
+
+  // Stage 2.6: VXLAN Encapsulation (VTEP Ingress)
+  if (state && state.vxlanConfig?.enabled && frame.protocol !== 'VXLAN') {
+    const encapRes = processVxlanEncapsulation(state, frame);
+    if (encapRes.encapsulated && encapRes.vxlanFrame && encapRes.targetVtep) {
+      const fullTable = getRoutingTable(device.id, new Map([[device.id, state]]));
+      const route = findRoute(encapRes.targetVtep, fullTable);
+      const outPort = route?.interfaceId || route?.nextHop || 'Gi0/0';
+      return {
+        accepted: true,
+        trapToControlPlane: false,
+        egressPorts: [outPort],
+        actionReason: `Encapsulated into VXLAN VNI ${encapRes.vxlanFrame.vxlanPayload?.vni} to VTEP ${encapRes.targetVtep}`,
+        responseFrame: encapRes.vxlanFrame,
+      };
+    }
+  }
+
+
+  // Stage 3: SDN Flow Rule Action Processing
+  if (state?.sdnFlowRules && state.sdnFlowRules.length > 0) {
+    for (const rule of state.sdnFlowRules) {
+      const matchSrc = !rule.match.srcIp || rule.match.srcIp === frame.srcIp;
+      const matchDst = !rule.match.dstIp || rule.match.dstIp === frame.dstIp;
+      const matchVlan = rule.match.vlanId === undefined || rule.match.vlanId === frame.vlanId;
+      if (matchSrc && matchDst && matchVlan) {
+        if (rule.action === 'SET_VLAN' && rule.match.vlanId !== undefined) {
+          frame.vlanId = rule.match.vlanId;
+        } else if (rule.action === 'FORWARD' && rule.egressPort) {
+          if (!state.ports?.[rule.egressPort]?.shutdown) {
+            return {
+              accepted: true,
+              trapToControlPlane: false,
+              egressPorts: [rule.egressPort],
+              actionReason: `Forwarded by SDN Flow Rule [${rule.id}] to ${rule.egressPort}`,
+            };
+          }
+        }
+      }
+    }
+  }
 
   // Stage 3: Switching / Routing Forwarding Logic
   const egressPorts: string[] = [];
@@ -467,19 +534,35 @@ export function forwardPacketFrame(
     // Router Multicast Forwarding (PIM + IGMP OIL replication) vs Unicast Route Lookup
     if (multicastGroup) {
       if (state?.multicastRoutingEnabled) {
+        // Reverse Path Forwarding (RPF) Check
+        if (frame.srcIp && frame.ingressPortId) {
+          const rpf = checkRpf(state, frame.srcIp, frame.ingressPortId);
+          if (!rpf.passed) {
+            return {
+              accepted: false,
+              trapToControlPlane: false,
+              egressPorts: [],
+              actionReason: `Multicast packet dropped due to RPF check failure (expected ${rpf.expectedInterface}, received on ${frame.ingressPortId})`,
+            };
+          }
+        }
+
+        const prunedPorts = frame.dstIp ? getPrunedPorts(state, frame.dstIp) : [];
+
         Object.values(state.ports || {}).forEach((port) => {
           const joined = port.igmpGroups?.includes(frame.dstIp as string);
           const pimForwarding = Boolean(port.pimMode);
-          if (port.id !== frame.ingressPortId && !port.shutdown && (joined || pimForwarding)) {
+          if (port.id !== frame.ingressPortId && !port.shutdown && (joined || pimForwarding) && !prunedPorts.includes(port.id)) {
             egressPorts.push(port.id);
           }
         });
+
         if (state.mrouteEntries && Array.isArray(state.mrouteEntries)) {
           state.mrouteEntries.forEach((entry) => {
             if (entry.group === frame.dstIp || entry.group === '224.0.0.0/4' || entry.group === '*') {
               (entry.outgoingInterfaces || []).forEach((outPort: string) => {
                 const portKey = Object.keys(state.ports || {}).find((k) => k.toLowerCase() === outPort.toLowerCase()) || outPort;
-                if (portKey !== frame.ingressPortId && !state.ports?.[portKey]?.shutdown && !egressPorts.includes(portKey)) {
+                if (portKey !== frame.ingressPortId && !state.ports?.[portKey]?.shutdown && !egressPorts.includes(portKey) && !prunedPorts.includes(portKey)) {
                   egressPorts.push(portKey);
                 }
               });
@@ -489,8 +572,9 @@ export function forwardPacketFrame(
       }
       // If multicastRoutingEnabled is disabled, router drops multicast packets between L3 interfaces
     } else if (frame.dstIp && state) {
+      const ingressVrf = getVrfForInterface(state, frame.ingressPortId || '');
       const deviceMap = new Map<string, SwitchState>([[device.id, state]]);
-      const fullTable = getRoutingTable(device.id, deviceMap);
+      const fullTable = getRoutingTable(device.id, deviceMap, undefined, undefined, ingressVrf);
       const route = findRoute(frame.dstIp, fullTable);
       if (route && (route.interfaceId || route.nextHop)) {
         const portId = route.interfaceId || route.nextHop;
@@ -507,6 +591,38 @@ export function forwardPacketFrame(
         egressPorts.push(p.id);
       }
     });
+  }
+
+  // Stage 4: QoS Egress Policing, WRED, and LLQ Scheduling Evaluation
+  if (state && egressPorts.length > 0) {
+    const allowedEgressPorts: string[] = [];
+    for (const portId of egressPorts) {
+      const portObj = state.ports?.[portId];
+      if (portObj) {
+        const qosRes = processQosEgress(state, portObj, frame);
+        if (qosRes.allowed) {
+          if (qosRes.markedDscp !== undefined) frame.dscp = qosRes.markedDscp;
+          if (qosRes.markedPriority !== undefined) frame.priority = qosRes.markedPriority;
+          if (qosRes.computedDelayMs !== undefined) frame.qosDelayMs = qosRes.computedDelayMs;
+          allowedEgressPorts.push(portId);
+        } else if (egressPorts.length === 1) {
+          return {
+            accepted: false,
+            trapToControlPlane: false,
+            egressPorts: [],
+            actionReason: qosRes.dropReason || 'Dropped by QoS Policy',
+          };
+        }
+      } else {
+        allowedEgressPorts.push(portId);
+      }
+    }
+    return {
+      accepted: allowedEgressPorts.length > 0,
+      trapToControlPlane: false,
+      egressPorts: allowedEgressPorts,
+      actionReason: `Forwarded to ${allowedEgressPorts.length} egress ports with QoS scheduling`,
+    };
   }
 
   return {

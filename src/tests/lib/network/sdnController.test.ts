@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { parseYangModule, SdnController } from '@/lib/network/sdnController';
 import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
+import { createInitialRouterState } from '@/lib/network/initialState';
 
 const yang = `module network-device { namespace "urn:test"; leaf hostname { type string; } leaf enabled { type boolean; } leaf state { config false; type string; } }`;
 
@@ -192,5 +193,76 @@ describe('SDN YANG & Controller Interactive Engine', () => {
     // XML serialization
     const xml = controller.netconfRpcXml('104', 'ping', { destination: '1.1.1.1' });
     expect(xml).toContain('<ping><destination>1.1.1.1</destination></ping>');
+  });
+
+  it('evaluates device RIB/FIB, STP, and SDN ACL flow rules during path trace computation', () => {
+    const c = new SdnController();
+    const mockDevices: CanvasDevice[] = [
+      { id: 'pc1', name: 'PC1', type: 'pc', ip: '10.0.0.10', status: 'online', ports: [], x: 0, y: 0 },
+      { id: 'r1', name: 'R1', type: 'router', ip: '10.0.0.1', status: 'online', ports: [], x: 0, y: 0 },
+      { id: 'pc2', name: 'PC2', type: 'pc', ip: '10.0.1.10', status: 'online', ports: [], x: 0, y: 0 },
+    ];
+    const mockConnections: CanvasConnection[] = [
+      { id: 'c1', sourceDeviceId: 'pc1', sourcePort: 'Eth0', targetDeviceId: 'r1', targetPort: 'Gi0/0', active: true, cableType: 'straight' },
+      { id: 'c2', sourceDeviceId: 'r1', sourcePort: 'Gi0/1', targetDeviceId: 'pc2', targetPort: 'Eth0', active: true, cableType: 'straight' },
+    ];
+
+    const mockStates = new Map<string, SwitchState>();
+    const r1State = createInitialRouterState();
+    r1State.hostname = 'R1';
+    r1State.ipRouting = true;
+    r1State.ports['Gi0/0'] = {
+      id: 'Gi0/0',
+      name: 'Gi0/0',
+      type: 'gigabitethernet',
+      status: 'connected',
+      ipAddress: '10.0.0.1',
+      subnetMask: '255.255.255.0',
+      vlan: 1,
+      mode: 'access',
+      duplex: 'auto',
+      speed: 'auto',
+      shutdown: false,
+    };
+    r1State.ports['Gi0/1'] = {
+      id: 'Gi0/1',
+      name: 'Gi0/1',
+      type: 'gigabitethernet',
+      status: 'connected',
+      ipAddress: '10.0.1.1',
+      subnetMask: '255.255.255.0',
+      vlan: 1,
+      mode: 'access',
+      duplex: 'auto',
+      speed: 'auto',
+      shutdown: false,
+    };
+    mockStates.set('r1', r1State);
+
+    // 1. Healthy path trace with valid connected routes
+    const trace1 = c.computePathTrace('10.0.0.10', '10.0.1.10', mockDevices, mockConnections, mockStates);
+    expect(trace1.pathFound).toBe(true);
+    expect(trace1.healthStatus).toBe('HEALTHY');
+    expect(trace1.pathHops[1].aclStatus).toBe('PERMITTED');
+
+    // 2. SDN Flow Rule DENY/DROP policy blocks trace
+    c.pushFlowRule({ id: 'drop-test', priority: 100, match: { srcIp: '10.0.0.10', dstIp: '10.0.1.10' }, action: 'DROP' });
+    const trace2 = c.computePathTrace('10.0.0.10', '10.0.1.10', mockDevices, mockConnections, mockStates);
+    expect(trace2.pathHops[0].aclStatus).toBe('DENIED');
+    expect(trace2.healthStatus).toBe('DEGRADED');
+
+    // 3. STP blocked port causes DEGRADED hop status
+    const mockStatesBlocked = new Map<string, SwitchState>();
+    mockStatesBlocked.set('r1', {
+      hostname: 'R1',
+      ipRouting: true,
+      ports: {
+        'Gi0/0': { id: 'Gi0/0', name: 'Gi0/0', ipAddress: '10.0.0.1', subnetMask: '255.255.255.0', status: 'blocked' },
+        'Gi0/1': { id: 'Gi0/1', name: 'Gi0/1', ipAddress: '10.0.1.1', subnetMask: '255.255.255.0', status: 'connected' },
+      },
+    } as unknown as SwitchState);
+    const cClean = new SdnController();
+    const traceBlocked = cClean.computePathTrace('10.0.0.10', '10.0.1.10', mockDevices, mockConnections, mockStatesBlocked);
+    expect(traceBlocked.pathHops[1].status).toBe('DEGRADED');
   });
 });

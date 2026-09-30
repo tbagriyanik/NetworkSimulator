@@ -10,6 +10,7 @@ export interface UseTopologyDeviceMouseHandlersOptions {
   devices: CanvasDevice[];
   deviceMap: Map<string, CanvasDevice>;
   canvasRef: React.RefObject<HTMLDivElement | null>;
+  spacePanRef?: React.MutableRefObject<boolean>;
   selectedDeviceIds: string[];
   selectedDeviceIdsRef: React.MutableRefObject<string[]>;
   wasDraggingRef: React.MutableRefObject<boolean>;

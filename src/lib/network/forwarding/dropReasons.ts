@@ -30,6 +30,7 @@ export enum DropReasonCode {
   ACL_DENY_INGRESS = 'ACL_DENY_INGRESS',
   ACL_DENY_EGRESS = 'ACL_DENY_EGRESS',
   DHCP_SNOOPING_UNTRUSTED_SERVER = 'DHCP_SNOOPING_UNTRUSTED_SERVER',
+  DHCP_RELAY_NOT_FOR_US = 'DHCP_RELAY_NOT_FOR_US',
   DAI_INVALID_ARP = 'DAI_INVALID_ARP',
 
   // QoS & Queue drops
@@ -153,6 +154,13 @@ export const DROP_REASON_REGISTRY: Record<DropReasonCode, DropReasonDetail> = {
     title: 'DHCP Snooping Untrusted Server Packet',
     description: 'DHCP OFFER/ACK packet intercepted on untrusted switch port',
     suggestedFix: 'Mark uplink/server port as trusted: "ip dhcp snooping trust"',
+  },
+  [DropReasonCode.DHCP_RELAY_NOT_FOR_US]: {
+    code: DropReasonCode.DHCP_RELAY_NOT_FOR_US,
+    category: 'SECURITY',
+    title: 'DHCP Relay giaddr Mismatch',
+    description: 'DHCP OFFER/ACK arrived for a giaddr that belongs to another relay agent, so this device must not forward it to a client',
+    suggestedFix: 'Verify "show ip dhcp relay binding" and that "ip helper-address" is configured on the client-facing interface',
   },
   [DropReasonCode.DAI_INVALID_ARP]: {
     code: DropReasonCode.DAI_INVALID_ARP,

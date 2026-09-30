@@ -38,7 +38,7 @@ export function getKeyboardShortcuts(isTR: boolean): CommandDefinition {
       ['Delete', isTR ? 'Seçili cihazı / öğeyi sil' : 'Delete selected device / item'],
       ['Ctrl + L', isTR ? 'CMD & CLI Ekran geçmişini temizle' : 'Clear CMD & CLI Terminal screen'],
       ['Ctrl + P', isTR ? 'Yazdır / Sertifika' : 'Print / Certificate'],
-      ['S', isTR ? 'Simülasyon modunu aç/kapat' : 'Toggle simulation mode'],
+      ['Shift + S', isTR ? 'Simülasyon modunu aç/kapat' : 'Toggle simulation mode'],
       ['P', isTR ? 'Paket analizi: Oynat / Duraklat' : 'Packet analysis: Play / Pause'],
       ['N', isTR ? 'Paket analizi: Sonraki Hop (duraklatıldığında)' : 'Packet analysis: Next Hop (when paused)'],
       ['"', isTR ? 'Timeline panelini aç/kapat' : 'Toggle timeline panel'],
