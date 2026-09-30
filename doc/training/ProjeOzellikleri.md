@@ -1,3 +1,15 @@
+## Ağ Dokümantasyon Raporlama, Trafik Jeneratörü, STP Güvenlik Korumaları, BGP Yol Karar Açıklayıcısı & Stateful Connection Tracking (2026-09-30 - v7.0.0)
+
+| Özellik | Güncel kapsam ve sınır |
+|---|---|
+| **Ağ Dokümantasyon Rapor Motoru (`networkReportGenerator.ts`)** | Topoloji envanteri, IP adresleme matrisi, VLAN haritası ve dinamik/statik yönlendirme özetlerini otomatik markdown teknik raporuna dönüştürme. |
+| **Dinamik Trafik Jeneratörü & Telemetri Motoru (`trafficGeneratorEngine.ts`)** | HTTP, VoIP, FTP ve UDP veri akışları simülasyonu, canlı bant genişliği doluluk oranı (% Utilization), gecikme (ms) ve hat sıkışıklığı (Congestion) durum takibi. |
+| **STP Güvenlik Korumaları Motoru (`stpGuardsEngine.ts`)** | PortFast, BPDU Guard (errdisable moduna alma), BPDU Filter, Root Guard (Root-Inconsistent bloklama) ve Loop Guard koruma mekanizmaları. |
+| **L2 Fırtına Kontrolü & Yayın Algılama Motoru (`stormControlEngine.ts`)** | L2 Broadcast/Multicast fırtına tespiti, eşik aşımında paket drop/errdisable yeteneği ve simulated CPU koruma doğrulaması. |
+| **BGP En İyi Yol Karar Açıklayıcısı (`bgpBestPathExplainer.ts`)** | BGP 13 adımlı yol seçimi algoritması (Weight, LocalPref, Locally Originated, AS-Path, Origin, MED, Neighbor IP) adım ve tie-breaker karar nedeni raporlaması. |
+| **Stateful Connection Tracking Motoru (`conntrackEngine.ts`)** | Katman 4 TCP/UDP/ICMP durumsal firewall oturum takip tablosu (ESTABLISHED, SYN_SENT, FIN_WAIT) ve izinsiz giriş engelleme denetimleri. |
+| **DHCP Relay & Option 82 İşleme Motoru (`dhcpRelayEngine.ts`)** | `giaddr` ve Option 82 (Circuit ID, Remote ID) başlık güncellemeleri ile farklı subnet'ler arası DHCP röleleme simülasyonu. |
+
 ## CLI Tab Ototamlama, ICMP Tip/Kod Raporlaması, Canlı Hat Telemetrisi, Otomatik Ağ Doğrulama & Derin Protokol Engine (2026-09-30 - v6.9.5)
 
 | Özellik | Güncel kapsam ve sınır |

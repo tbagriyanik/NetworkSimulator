@@ -6,6 +6,20 @@ Bu indeks, Network Simulator projesinin tüm dokümantasyon dosyalarını ve iç
 
 ## 📖 Dokümantasyon Dosyaları
 
+### 🚀 [training/ProjeOzellikleri.md](training/ProjeOzellikleri.md)
+**Amaç**: Sürüm Özellikleri, Ağ Dokümantasyonu, Trafik Telemetrisi, STP Güvenlik Korumaları & Stateful ConnTrack Motoru Özeti (v7.0.0)  
+**Okuma Süresi**: 15 dakika  
+**İçerik**:
+- Otomatik Ağ Dokümantasyon Raporu Motoru (`networkReportGenerator.ts`)
+- Dinamik Trafik Jeneratörü & Canlı Telekomünikasyon Hat Telemetrisi (`trafficGeneratorEngine.ts`)
+- STP Güvenlik Korumaları Motoru (PortFast, BPDU Guard, BPDU Filter, Root Guard, Loop Guard - `stpGuardsEngine.ts`)
+- L2 Broadcast Storm & Fırtına Kontrol Motoru (`stormControlEngine.ts`)
+- BGP 13 Adımlı Yol Seçim Karar Nedeni Açıklayıcısı (`bgpBestPathExplainer.ts`)
+- Katman 4 Stateful Connection Tracking & SPI Tablosu (`conntrackEngine.ts`)
+- DHCP Relay & Option 82 İşleme Motoru (`dhcpRelayEngine.ts`)
+
+---
+
 ### 🎓 [cli/CLI_GUIDED_TUTORIAL.md](cli/CLI_GUIDED_TUTORIAL.md)
 **Amaç**: Tüm CLI komutlarının pratik rehberli dersleri  
 **Okuma Süresi**: 2-3 saat (tüm dersler)  

@@ -1,5 +1,22 @@
 # 📅 Network Simulator — Proje Geçmişi
 
+## v7.0.0 — 2026-09-30
+
+- **📝 Otomatik Ağ Dokümantasyon Rapor Motoru (`networkReportGenerator.ts`)**:
+  - Topoloji envanteri, IP adresleme matrisi, VLAN haritası ve statik/OSPF yönlendirme özetlerini otomatize markdown teknik raporuna dönüştürme yeteneği.
+- **⚡ Dinamik Trafik Jeneratörü & Canlı Telemetri Motoru (`trafficGeneratorEngine.ts`)**:
+  - HTTP, VoIP, FTP ve UDP veri akışı simülasyonu, hat doluluk oranı (% Utilization), gecikme (ms) ve hat sıkışıklık durumları takibi.
+- **🛡️ STP Güvenlik Korumaları Motoru (`stpGuardsEngine.ts`)**:
+  - PortFast, BPDU Guard (errdisable moduna alma), BPDU Filter, Root Guard (`Root-Inconsistent` engelleme) ve Loop Guard koruma kontrolleri.
+- **🌊 L2 Fırtına Kontrolü & Yayın Algılama Motoru (`stormControlEngine.ts`)**:
+  - L2 Broadcast/Multicast fırtına tespiti, pps eşik aşımında paket drop/errdisable yeteneği ve CPU koruma simülasyonu.
+- **🧠 BGP En İyi Yol Karar Açıklayıcısı (`bgpBestPathExplainer.ts`)**:
+  - BGP 13 adımlı yol seçimi algoritması (Weight, LocalPref, Locally Originated, AS-Path, Origin, MED, Neighbor IP) karar nedeni raporlaması.
+- **🔒 Stateful Connection Tracking Motoru (`conntrackEngine.ts`)**:
+  - Katman 4 TCP/UDP/ICMP durumsal firewall oturum takip tablosu (`ESTABLISHED`, `SYN_SENT`, `FIN_WAIT`) ve izinsiz giriş engelleme denetimleri.
+- **🔌 DHCP Relay & Option 82 İşleme Motoru (`dhcpRelayEngine.ts`)**:
+  - `giaddr` ve Option 82 (Circuit ID & Remote ID) başlık güncellemeleri ile farklı subnet'ler arası DHCP röleleme simülasyonu.
+
 ## v6.9.0 — 2026-09-30
 
 - **🌐 SDN & Intent-Based Networking Controller (APIC-EM / DNA-C Simülasyonu)**:

@@ -275,9 +275,11 @@ export interface Port {
     direction?: 'rx' | 'tx' | 'both';
   };
   // BPDU Guard & related features
+  portfast?: boolean;
   bpduGuard?: boolean;
   bpduFilter?: boolean;
   rootGuard?: boolean;
+  loopGuard?: boolean;
   // Storm control
   stormControl?: {
     broadcast?: {
