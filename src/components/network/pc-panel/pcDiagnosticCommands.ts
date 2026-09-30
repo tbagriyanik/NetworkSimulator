@@ -204,8 +204,19 @@ export async function handlePcDiagnosticCommand(
 
         await emitMulti('output', `Pinging ${pingTargetDisplay} with ${bufferSize} bytes of data:\n${replies.join('\n')}\n\nPing statistics for ${pingTargetDisplay}:\n    Packets: Sent = ${packets}, Received = ${received}, Lost = ${lost} (${lossPercent}% loss)`, 100);
       } else {
-        const timeouts = Array(packets).fill('\nRequest timed out.').join('');
-        await emitMulti('output', `Pinging ${pingTargetDisplay} with ${bufferSize} bytes of data:${timeouts}\n\nPing statistics for ${pingTargetDisplay}:\n    Packets: Sent = ${packets}, Received = 0, Lost = ${packets} (100% loss)`, 100);
+        const dropReasonStr = result?.error || 'Destination host unreachable.';
+        let icmpDetail = 'ICMP Type 3 Code 1 (Destination Host Unreachable)';
+        const lowerReason = dropReasonStr.toLowerCase();
+        if (lowerReason.includes('acl') || lowerReason.includes('denied') || lowerReason.includes('prohibited')) {
+          icmpDetail = 'ICMP Type 3 Code 13 (Communication Administratively Prohibited - ACL)';
+        } else if (lowerReason.includes('port')) {
+          icmpDetail = 'ICMP Type 3 Code 3 (Destination Port Unreachable)';
+        } else if (lowerReason.includes('route') || lowerReason.includes('network')) {
+          icmpDetail = 'ICMP Type 3 Code 0 (Destination Network Unreachable)';
+        }
+
+        const failLines = Array(packets).fill(`\nReply from ${pingTargetDisplay}: ${icmpDetail}`).join('');
+        await emitMulti('output', `Pinging ${pingTargetDisplay} with ${bufferSize} bytes of data:${failLines}\nReason: ${dropReasonStr}\n\nPing statistics for ${pingTargetDisplay}:\n    Packets: Sent = ${packets}, Received = 0, Lost = ${packets} (100% loss)`, 100);
       }
     };
 

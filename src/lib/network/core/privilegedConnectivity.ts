@@ -295,7 +295,20 @@ export function cmdPing(state: SwitchState, input: string, ctx: CommandContext):
             let failOutput = `\nType escape sequence to abort.\nSending ${count}, ${size}-byte ICMP Echos to ${host}, timeout is 2 seconds:\n${packetLine}\n`;
             failOutput += `Success rate is 0 percent (0/${n})\n`;
             const dropReasonStr = connectivity?.error || 'Destination host unreachable.';
-            failOutput += `Drop Reason: ${dropReasonStr}\n`;
+
+            let icmpDetail = 'ICMP Type 3 Code 1 (Host Unreachable)';
+            const lowerReason = dropReasonStr.toLowerCase();
+            if (lowerReason.includes('acl') || lowerReason.includes('denied') || lowerReason.includes('prohibited')) {
+                icmpDetail = 'ICMP Type 3 Code 13 (Communication Administratively Prohibited - ACL)';
+            } else if (lowerReason.includes('port')) {
+                icmpDetail = 'ICMP Type 3 Code 3 (Port Unreachable)';
+            } else if (lowerReason.includes('route') || lowerReason.includes('network')) {
+                icmpDetail = 'ICMP Type 3 Code 0 (Network Unreachable)';
+            } else if (lowerReason.includes('ttl') || lowerReason.includes('time to live')) {
+                icmpDetail = 'ICMP Type 11 Code 0 (Time to Live Exceeded)';
+            }
+
+            failOutput += `ICMP Details: ${icmpDetail}\nDrop Reason: ${dropReasonStr}\n`;
             return {
                 success: false,
                 output: failOutput,

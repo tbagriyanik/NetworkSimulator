@@ -89,7 +89,7 @@ export function SdnControllerModal({
 
   const handleRunTrace = () => {
     if (!sourceIp || !destIp) return;
-    const res = controller.computePathTrace(sourceIp, destIp, devices, connections);
+    const res = controller.computePathTrace(sourceIp, destIp, devices, connections, deviceStates);
     setTraceResult(res);
   };
 

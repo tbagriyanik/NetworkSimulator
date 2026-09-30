@@ -459,6 +459,7 @@ function getEstimatedSuggestions(
   return cleanNextWords.slice(0, 8);
 }
 
-export { getInlineHelp, getEstimatedSuggestions };
+export { getInlineHelp, getEstimatedSuggestions, buildModeHelpFromPatterns };
+
 
 

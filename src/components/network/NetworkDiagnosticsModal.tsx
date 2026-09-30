@@ -29,6 +29,7 @@ import type { CanvasDevice, CanvasConnection } from './NetworkTopology/types/net
 import type { SwitchState } from '@/lib/network/types';
 import { runRootCauseAnalysis, NetworkDiagnosticResult } from '@/lib/network/connectivity/networkTroubleshooter';
 import { diagnoseVlanMismatches } from '@/lib/network/vlanDiagnostics';
+import { evaluateNetworkAssertion, NetworkAssertionRule } from '@/lib/network/networkAssertionEngine';
 
 interface NetworkDiagnosticsModalProps {
   open: boolean;
@@ -499,6 +500,95 @@ export function NetworkDiagnosticsModal({
           </div>
         </div>
       )}
+
+      {/* Automated Network Verification & Assertion Section */}
+      <div className="p-3 rounded-xl border border-sky-500/30 bg-sky-950/20 space-y-2 shrink-0">
+        <div className="text-xs font-bold text-sky-400 flex items-center justify-between">
+          <span className="flex items-center gap-1.5">
+            <ShieldAlert className="w-4 h-4 text-sky-400" />
+            {isTr ? 'Otomatik Ağ Doğrulama & Test Assertion\'ı' : 'Automated Network Verification & Assertions'}
+          </span>
+          <span className="text-[10px] font-mono opacity-80 px-1.5 py-0.5 rounded bg-sky-500/10 text-sky-300">
+            {selectedSourceDevice?.name || 'Src'} ↔ {selectedTargetDevice?.name || 'Dst'}
+          </span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+          {(() => {
+            if (!sourceId || !targetId || sourceId === targetId) {
+              return (
+                <div className="col-span-2 text-[11px] opacity-70 italic">
+                  {isTr ? 'Test assertion çalıştırmak için kaynak ve hedef cihazları seçin.' : 'Select source and target devices to run assertion checks.'}
+                </div>
+              );
+            }
+
+            const pingSuccessRule: NetworkAssertionRule = {
+              id: 'ping-success',
+              type: 'PING_SUCCESS',
+              sourceDeviceId: sourceId,
+              targetDeviceId: targetId,
+              descriptionTr: 'Ping Erişimi Başarılı Olmalı',
+              descriptionEn: 'Ping Reachability Required',
+            };
+            const pingFailRule: NetworkAssertionRule = {
+              id: 'ping-fail',
+              type: 'PING_FAIL',
+              sourceDeviceId: sourceId,
+              targetDeviceId: targetId,
+              descriptionTr: 'VLAN / ACL İzolasyonu (Ping Engeli)',
+              descriptionEn: 'VLAN / ACL Isolation (Ping Blocked)',
+            };
+            const httpRule: NetworkAssertionRule = {
+              id: 'port-http',
+              type: 'PORT_REACHABLE',
+              sourceDeviceId: sourceId,
+              targetDeviceId: targetId,
+              port: 80,
+              descriptionTr: 'Web Sunucu Port 80 (HTTP) Açık',
+              descriptionEn: 'Web Server Port 80 (HTTP) Open',
+            };
+            const portBlockedRule: NetworkAssertionRule = {
+              id: 'port-blocked',
+              type: 'PORT_BLOCKED',
+              sourceDeviceId: sourceId,
+              targetDeviceId: targetId,
+              port: 22,
+              descriptionTr: 'Port 22 (SSH) Engelli / Kapalı',
+              descriptionEn: 'Port 22 (SSH) Blocked / Closed',
+            };
+
+            const assertions = [pingSuccessRule, pingFailRule, httpRule, portBlockedRule];
+            const results = assertions.map(r => evaluateNetworkAssertion(r, devices, connections, deviceStates));
+
+            return results.map(res => (
+              <div
+                key={res.ruleId}
+                className={`p-2 rounded-lg border flex items-center justify-between gap-2 ${
+                  res.passed
+                    ? (isDark ? 'bg-emerald-950/30 border-emerald-500/40 text-emerald-200' : 'bg-emerald-50 border-emerald-300 text-emerald-900')
+                    : (isDark ? 'bg-amber-950/30 border-amber-500/40 text-amber-200' : 'bg-amber-50 border-amber-300 text-amber-900')
+                }`}
+              >
+                <div className="flex items-center gap-1.5 truncate">
+                  {res.passed ? (
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                  ) : (
+                    <XCircle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                  )}
+                  <span className="font-mono text-[11px] truncate">
+                    {isTr ? res.messageTr : res.messageEn}
+                  </span>
+                </div>
+                <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase shrink-0 ${
+                  res.passed ? 'bg-emerald-500/20 text-emerald-300' : 'bg-amber-500/20 text-amber-300'
+                }`}>
+                  {res.passed ? 'PASSED' : 'FAILED'}
+                </span>
+              </div>
+            ));
+          })()}
+        </div>
+      </div>
 
       <div className="pt-2 flex justify-end shrink-0">
         <Button

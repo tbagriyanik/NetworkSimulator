@@ -3,6 +3,7 @@
 import { useCallback } from 'react';
 import type { SwitchState } from '@/lib/network/types';
 import { commandHelp } from '@/lib/network/executor';
+import { buildModeHelpFromPatterns } from '@/lib/network/executorInlineHelp';
 
 interface AutocompleteContextOptions {
   state: SwitchState;
@@ -22,12 +23,14 @@ export function useTerminalTabCompletion({
   const getAutocompleteContext = useCallback((value: string) => {
     const mode = state.currentMode;
     const base = expandCommandContext(mode, value);
-    const helpTree = commandHelp[mode] || commandHelp.user || {};
+    const helpTree = commandHelp[mode] || buildModeHelpFromPatterns(mode) || commandHelp.user || {};
     const contextKey = base.contextTokens.join(' ').toLowerCase();
 
     let candidates = base.candidates;
     if (helpTree[contextKey]) {
       candidates = helpTree[contextKey];
+    } else if (contextKey === '' && helpTree['']) {
+      candidates = helpTree[''];
     }
 
     // Pipe filter autocomplete (e.g. "show run | inc" -> include, exclude, begin, section)
@@ -49,8 +52,14 @@ export function useTerminalTabCompletion({
 
     const isInterfaceContext = base.contextTokens.some(t => ['interface', 'int'].includes(t.toLowerCase()));
     if (isInterfaceContext) {
-      const ifaceNames = state.ports ? Object.keys(state.ports) : ['GigabitEthernet0/0', 'GigabitEthernet0/1', 'FastEthernet0/1', 'Vlan1', 'Loopback0'];
-      candidates = Array.from(new Set([...candidates, ...ifaceNames]));
+      const defaultIfaces = [
+        'GigabitEthernet0/0', 'GigabitEthernet0/1', 'GigabitEthernet0/2', 'GigabitEthernet0/3',
+        'FastEthernet0/1', 'FastEthernet0/2', 'FastEthernet0/3', 'FastEthernet0/4',
+        'Vlan1', 'Vlan10', 'Vlan20', 'Loopback0', 'Serial0/0/0', 'Tunnel0', 'Port-channel1', 'Eth0'
+      ];
+      const configuredIfaces = state.ports ? Object.keys(state.ports) : [];
+      const allIfaces = Array.from(new Set([...configuredIfaces, ...defaultIfaces]));
+      candidates = Array.from(new Set([...candidates, ...allIfaces]));
     }
 
     return {
@@ -62,3 +71,4 @@ export function useTerminalTabCompletion({
 
   return { getAutocompleteContext };
 }
+

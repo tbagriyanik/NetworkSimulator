@@ -48,7 +48,11 @@ Protokol sütununda protokol adının yanında standart numara parantez içinde 
 | ICMPv6 | `ICMPv6 (58)` | IPv6 kontrol mesajları |
 | ARP | `ARP (0x0806)` | Adres çözümleme |
 | RARP | `RARP (0x8035)` | Ters adres çözümleme |
-| STP | `STP (0x4242)` | Spanning Tree |
+| STP | `STP (0x4242)` | Spanning Tree BPDU |
+| 802.1Q | `802.1Q (0x8100)` | VLAN Etiketleme (VLAN Tag & Priority) |
+| IGMP | `IGMP (2)` | Çoklu yayın üyelik bildirimi (v2/v3 Membership) |
+| PIM-SM | `PIM (103)` | Protokolden bağımsız çoklu yayın yönlendirmesi (Shared Tree *, G) |
+| MQTT / CoAP | `MQTT / CoAP` | IoT telemetry ve sensör mesajlaşması |
 
 ---
 

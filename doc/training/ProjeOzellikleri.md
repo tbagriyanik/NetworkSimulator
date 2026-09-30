@@ -1,4 +1,16 @@
-# Network Simulator — Özellik ve Yetenek Envanteri
+## CLI Tab Ototamlama, ICMP Tip/Kod Raporlaması, Canlı Hat Telemetrisi, Otomatik Ağ Doğrulama & Derin Protokol Engine (2026-09-30 - v6.9.5)
+
+| Özellik | Güncel kapsam ve sınır |
+|---|---|
+| **CLI Tab Ototamlama & Bağlama Duyarlı İpuçları (`useTerminalTabCompletion.ts`, `executorInlineHelp.ts`)** | Özel modlarda (`router-ospf`, `dhcp-config`, `vlan` vb.) `Tab` ile dinamik komut tamamlama. `interface` komutundan sonra cihaz portları (`GigabitEthernet0/0`, `FastEthernet0/1`, `Vlan1`, `Loopback0`, `Serial0/0/0`, `Tunnel0`, `Port-channel1`, `Eth0`) ve partial prefix tamamlama. |
+| **Ping & Traceroute Detaylı ICMP Type/Code Raporlaması (`privilegedConnectivity.ts`, `pcDiagnosticCommands.ts`)** | Başarısız erişimlerde standart ICMP kodları: `ICMP Type 3 Code 1 (Host Unreachable)`, `ICMP Type 3 Code 3 (Port Unreachable)`, `ICMP Type 3 Code 13 (Communication Administratively Prohibited - ACL)` ve `ICMP Type 11 Code 0 (TTL Exceeded)`. |
+| **Hat Görselleştirme & Telemetri Rozetleri (`ConnectionLine.tsx`)** | Bağlantı durumlarının tuval üzerinde canlı görünümü: `Errdisable` (kırmızı kesikli çizgi), `Admin Down`, `Speed/Duplex Mismatch` (turuncu uyarı), `STP Blocking` (amber rozet) ve `UP` telemetri rozetleri. |
+| **Wireshark Paket Başlık Ağacı (`ProtocolTreeDetails.tsx`)** | Katman 2 (Ethernet II & 802.1Q VLAN Tag), Katman 3 (IPv4/ARP TTL, DF/MF), Katman 4 (TCP SYN/ACK bayrakları, UDP) ve Uygulama (HTTP, MQTT, CoAP, SNMP) katmanı detaylı protokol inceleme. |
+| **Otomatik Ağ Doğrulama & Test Assertion Engine (`networkAssertionEngine.ts`, `NetworkDiagnosticsModal.tsx`)** | Kural tabanlı `PING_SUCCESS`, `PING_FAIL` (VLAN/ACL İzolasyon), `PORT_REACHABLE` (HTTP/HTTPS) ve `PORT_BLOCKED` (SSH/Firewall) test assertion motoru ve canlı Ağ Tanılama modülü entegrasyonu. |
+| **IP Fragmentation & MTU Doğrulama Motoru (`ipFragmentationEngine.ts`)** | Don't Fragment (DF) biti kontrolü, Fragment Offset/MF parçalama, `ICMP Type 3 Code 4` düşürmeleri ve OSPF MTU uyumsuzluklarında `EXSTART/EXCHANGE` kilitlenme simülasyonu. |
+| **Stateful TCP 3-Way Handshake Simülatörü (`statefulTcpEngine.ts`)** | RFC 793 uyumlu `SYN -> SYN-ACK -> ACK` el sıkışması ve `FIN/RST` zarif bağlantı kapatma/sıfırlama adımları. |
+| **QoS Scheduler & Trafik Denetimi (`qosScheduler.ts`)** | Strict Priority (LLQ), WFQ, Tail Drop / WRED kuyruk aşımı düşürme ve DSCP/CoS trafik etiketleme motoru. |
+| **Multicast Yönlendirme, IGMP Snooping & PIM-SM RP (`multicastEngine.ts`)** | IGMPv2/v3 üyelik raporları, L2 IGMP Snooping VLAN port tablosu ve PIM-SM Rendezvous Point (RP) Shared Tree `(*, G)` yönlendirmesi. |
 
 ## Packet/Control-Plane Entegrasyon Özeti
 

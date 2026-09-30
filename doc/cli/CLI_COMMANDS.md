@@ -49,7 +49,19 @@ The simulator supports **729+ commands** across multiple configuration modes.
 | `Tabbed View` | Switch open device windows to tabbed layout mode |
 | `Double-click Header` | Toggle collapse / minimize window (PC Window, Router Panel, Packet Analysis, Refresh Report) |
 | `Click Terminal Output / History` | Focus command line input field |
-| `Tab` | Command auto-completion / suggestion completion |
+| `Tab` | Command auto-completion / suggestion completion (supports custom modes: `router-ospf`, `dhcp-config`, `vlan` and interface names) |
+
+## Advanced Protocol Simulation & Diagnostic Features
+
+| Feature / Engine | Capabilities & Protocol Standards |
+|------------------|-----------------------------------|
+| **Detailed ICMP Type/Code Reporting** | Reports explicit ICMP error codes on ping/traceroute failures: `Type 3 Code 1` (Host Unreachable), `Type 3 Code 3` (Port Unreachable), `Type 3 Code 13` (ACL Prohibited), `Type 3 Code 0` (Net Unreachable), `Type 11 Code 0` (TTL Exceeded). |
+| **IP Fragmentation & MTU Engine** | Validates Don't Fragment (DF) bit against interface MTU, calculates Fragment Offset (8-byte units) and More Fragments (MF) flag, simulates OSPF `EXSTART/EXCHANGE` lockups on MTU mismatch. |
+| **Stateful TCP Handshake** | RFC 793 compliant `SYN -> SYN-ACK -> ACK` 3-way handshake, Data transfer (PSH, ACK), and `FIN-ACK` / `RST` teardown sequence simulation. |
+| **QoS & Queue Management** | Strict Priority (LLQ), WFQ, Tail Drop / WRED queue overflow drops, and DSCP/CoS packet marking. |
+| **Multicast & IGMP / PIM-SM** | IGMPv2/v3 membership reports, L2 IGMP Snooping VLAN port tables, and PIM-SM Rendezvous Point (RP) shared tree `(*, G)` routing. |
+| **Automated Network Assertions** | Rule-based automated testing engine evaluating `PING_SUCCESS`, `PING_FAIL` (VLAN/ACL Isolation), `PORT_REACHABLE`, and `PORT_BLOCKED` assertions inside Network Diagnostics. |
+| **Wireshark Packet Tree Inspector** | Layer 2 (Ethernet II & 802.1Q VLAN), Layer 3 (IPv4/ARP TTL/Flags), Layer 4 (TCP SYN/ACK, UDP), and Application Protocol (HTTP, MQTT, CoAP, SNMP) header tree inspection. |
 
 ## Command Overview
 

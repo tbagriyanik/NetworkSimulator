@@ -1,5 +1,7 @@
 import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
+import { buildImplicitWirelessConnections } from '@/lib/network/wireless';
+import { ensureDeviceStatesMap } from '@/lib/network/networkUtils';
 
 export interface YangLeaf {
   name: string;
@@ -319,7 +321,8 @@ export class SdnController {
     srcIp: string,
     dstIp: string,
     devices: CanvasDevice[],
-    connections: CanvasConnection[]
+    connections: CanvasConnection[],
+    deviceStates?: Map<string, SwitchState>
   ): SdnPathTraceResult {
     const srcDevice = devices.find(d => d.ip === srcIp);
     const dstDevice = devices.find(d => d.ip === dstIp);
@@ -335,6 +338,10 @@ export class SdnController {
         healthStatus: 'UNREACHABLE',
       };
     }
+
+    const safeStates = deviceStates ? ensureDeviceStatesMap(deviceStates) : new Map();
+    const implicitWirelessConns = buildImplicitWirelessConnections(devices, safeStates, 'sdn-wireless');
+    const allConns = [...connections, ...implicitWirelessConns];
 
     const pathHops: SdnPathTraceHop[] = [];
     const visited = new Set<string>();
@@ -355,7 +362,7 @@ export class SdnController {
 
       visited.add(current.deviceId);
 
-      const activeConns = connections.filter(
+      const activeConns = allConns.filter(
         c => (c.sourceDeviceId === current.deviceId || c.targetDeviceId === current.deviceId) && c.active !== false
       );
 
