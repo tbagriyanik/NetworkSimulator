@@ -187,6 +187,11 @@ export interface SwitchState {
   mlsQosEnabled?: boolean;
   dhcpSnooping?: { enabled?: boolean; vlans?: number[]; informationOption?: boolean };
   dhcpSnoopingEnabled?: boolean;
+  /** Optional fragmentation reporting entries */
+  fragmentationEntries?: Array<{ packetId: string; dropped: boolean; reason: string }>;
+  /** DHCP Relay feature flag and log entries */
+  dhcpRelayEnabled?: boolean;
+  dhcpRelayEntries?: Array<{ clientMac: string; giaddr: string; serverIp: string }>;
   dhcpExcludedAddresses?: Array<{ startIp: string; endIp?: string }>;
   clockTimezone?: { name: string; hoursOffset: number; minutesOffset?: number };
   ntpServers?: string[];

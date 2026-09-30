@@ -10,10 +10,11 @@ export interface Route {
   code?: string;
   interfaceId?: string;
   administrativeDistance?: number;
-  asPath?: string;          // For BGP — AS path attribute
-  localPreference?: number; // For BGP — local preference attribute
-  weight?: number;          // For BGP — weight attribute
-  trackId?: number;         // For floating static — IP SLA track object id (route only installed while track is Up)
+  asPath?: string;          // For BGP - AS path attribute
+  localPreference?: number; // For BGP - local preference attribute
+  weight?: number;          // For BGP - weight attribute
+  routerId?: string;        // For BGP - advertiser's router ID (compare-routerid tie-breaker)
+  trackId?: number;         // For floating static - IP SLA track object id (route only installed while track is Up)
 }
 
 export interface RouteDecisionDetails {

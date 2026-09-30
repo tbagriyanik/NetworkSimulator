@@ -313,19 +313,34 @@ function asPathAsnCount(path: string | undefined): number {
 }
 
 /** BGP best-path selection for two routes to the same prefix. */
-function bgpBestPath(r: Route, existing: Route): boolean {
-  if ((r.weight || 0) !== (existing.weight || 0)) return (r.weight || 0) > (existing.weight || 0);
-  if ((r.localPreference ?? 100) !== (existing.localPreference ?? 100)) {
+export function bgpBestPath(
+  r: Route,
+  existing: Route,
+  config?: { asPathIgnore?: boolean; compareRouterId?: boolean }
+): boolean {
+  // 1️⃣ weight – higher wins
+  if ((r.weight || 0) !== (existing.weight || 0))
+    return (r.weight || 0) > (existing.weight || 0);
+  // 2️⃣ local preference – higher wins (default 100)
+  if ((r.localPreference ?? 100) !== (existing.localPreference ?? 100))
     return (r.localPreference ?? 100) > (existing.localPreference ?? 100);
-  }
+  // 3️⃣ AS‑PATH length – shorter wins unless ignored
   const rPathLen = asPathAsnCount(r.asPath);
   const ePathLen = asPathAsnCount(existing.asPath);
-  if (rPathLen !== ePathLen) return rPathLen < ePathLen;
-  if ((r.metric || 0) !== (existing.metric || 0)) return (r.metric || 0) < (existing.metric || 0);
+  if (!config?.asPathIgnore && rPathLen !== ePathLen) return rPathLen < ePathLen;
+  // 4️⃣ compare‑router‑id – optional tie‑breaker (lower id wins)
+  if (config?.compareRouterId && r.routerId && existing.routerId) {
+    return r.routerId < existing.routerId;
+  }
+  // 5️⃣ metric – lower wins
+  if ((r.metric || 0) !== (existing.metric || 0))
+    return (r.metric || 0) < (existing.metric || 0);
+  // 6️⃣ administrative distance – lower wins
   const rAd = r.administrativeDistance || 200;
   const eAd = existing.administrativeDistance || 200;
   return rAd < eAd;
 }
+
 
 /**
  * Compute BGP-learned routes for a device from all its Established neighbors.
@@ -442,7 +457,7 @@ export function calculateBgpRoutes(
     }
     const existingLen = getPrefixLength(existing.subnetMask || '255.255.255.255');
     const newLen = getPrefixLength(r.subnetMask || '255.255.255.255');
-    if (newLen > existingLen || (newLen === existingLen && bgpBestPath(r, existing))) {
+    if (newLen > existingLen || (newLen === existingLen && bgpBestPath(r, existing, myState.bgpBestpathConfig))) {
       bestByKey.set(key, r);
     }
   });

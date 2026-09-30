@@ -1,5 +1,13 @@
 import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
+import type { DhcpPayload } from '@/lib/network/forwarding/packetFrame';
+
+import { ConntrackEngine } from '@/lib/network/conntrackEngine';
+import { PolicyEngine } from '@/lib/network/policyEngine';
 import type { SwitchState, Port } from '@/lib/network/types';
+
+// Global instances of stateful engines
+const conntrackEngine = new ConntrackEngine();
+const policyEngine = new PolicyEngine();
 import type { NetworkPacketFrame } from './packetFrame';
 import { checkIngressSanity, processControlPlaneProtocols } from './commonForwardingEngine';
 import { buildNetflowExportFrame, captureNetFlow } from './netflowEngine';
@@ -64,7 +72,7 @@ export function runHopPipeline(
     traces.push(makeTrace(hopIndex, device, ingressPortId, stage, 'drop', reason, frame));
 
     let responseFrame: NetworkPacketFrame | undefined;
-    if (frame.srcIp && frame.protocol !== 'ICMP') {
+    if ((frame.srcIp ?? '') && frame.protocol !== 'ICMP') {
       const type = isUnreachable ? 'destination-unreachable' : 'time-exceeded';
       const reportingIp = ingressPort?.ipAddress || state?.ports?.['Fa0/0']?.ipAddress || state?.ports?.['Gi0/0']?.ipAddress;
       responseFrame = generateIcmpUnreachable(frame, type, reason, icmpCode ?? 0, reportingIp);
@@ -102,6 +110,24 @@ export function runHopPipeline(
     }
   }
   traces.push(makeTrace(hopIndex, device, ingressPortId, 'dhcp-snooping', 'pass', 'DHCP snooping OK', frame));
+
+  // -- Stage 3c: DHCP Relay Processing ---------------------------------
+  if (frame.protocol === 'DHCP' && frame.dhcpPayload) {
+    const relayInterfaceIp = ingressPort?.ipAddress ?? '0.0.0.0';
+    const dhcpServerIp = '192.168.1.250'; // TODO: make configurable
+    if (relayInterfaceIp !== '0.0.0.0') {
+      const relayedPayload: DhcpPayload = {
+        ...frame.dhcpPayload,
+        option82: {
+          agentCircuitId: frame.ingressPortId ?? 'port-1',
+          agentRemoteId: relayInterfaceIp
+        }
+      };
+      frame = { ...frame, dhcpPayload: relayedPayload };
+      traces.push(makeTrace(hopIndex, device, ingressPortId, 'dhcp-relay', 'pass',
+        `DHCP Relay: giaddr=${relayInterfaceIp}, forwarding to ${dhcpServerIp}`, frame));
+    }
+  }
 
   // -- Stage 3b: IPv6 First-Hop Security (RA Guard & DHCPv6 Guard) --------
   const fhsResult = evaluateIpv6FirstHopSecurity(ingressPort, frame);
@@ -163,12 +189,55 @@ export function runHopPipeline(
   }
   traces.push(makeTrace(hopIndex, device, ingressPortId, 'control-plane', 'pass', 'Not a control plane frame — continue to data plane', frame));
 
-  // -- Stage 8: MAC Learning (switches only) ----------------------------
+// -- Stage 8: MAC Learning (switches only) ----------------------------
   if (state && (device.type === 'switchL2' || device.type === 'switchL3') && ingressPortId) {
     const stateMap = new Map<string, SwitchState>([[device.id, state]]);
     learnMacAddress(device.id, frame.srcMac, ingressPortId, frame.vlanId || 1, stateMap);
   }
 
+  // -- Stage 8b: Conntrack Inspection (stateful firewall) ----------
+  // SPI enforcement only applies to firewall devices.
+  // On routers and switches we auto-track the flow but never block it.
+  if (frame.srcIp && frame.dstIp) {
+    const proto = frame.protocol as 'TCP' | 'UDP' | 'ICMP';
+    if (proto === 'TCP' || proto === 'UDP' || proto === 'ICMP') {
+      if (device.type === 'firewall') {
+        const connResult = conntrackEngine.inspectPacket(
+          proto,
+          frame.srcIp ?? '',
+          frame.srcPort ?? 0,
+          frame.dstIp ?? '',
+          frame.dstPort ?? 0
+        );
+        if (!connResult.allowed) {
+          return drop('conntrack', connResult.reason);
+        }
+        traces.push(makeTrace(hopIndex, device, ingressPortId, 'conntrack', 'pass', connResult.reason, frame));
+      } else {
+        // Non-firewall: auto-create/update connection entry and allow
+        conntrackEngine.trackPacket(
+          proto,
+          frame.srcIp ?? '',
+          frame.srcPort ?? 0,
+          frame.dstIp ?? '',
+          frame.dstPort ?? 0
+        );
+        traces.push(makeTrace(hopIndex, device, ingressPortId, 'conntrack', 'pass', 'Conntrack: flow tracked (non-firewall passthrough)', frame));
+      }
+    } else {
+      traces.push(makeTrace(hopIndex, device, ingressPortId, 'conntrack', 'skip', 'Conntrack: non-IP protocol skipped', frame));
+    }
+  } else {
+    traces.push(makeTrace(hopIndex, device, ingressPortId, 'conntrack', 'skip', 'Conntrack: no IP addresses, skipped', frame));
+  }
+
+
+  // -- Stage 9: Policy Engine (simple ACL) --------------------------
+  // Apply lightweight firewall policies (ALLOW/DROP) based on protocol and ports.
+  if (!policyEngine.isAllowed(frame.protocol as 'TCP' | 'UDP' | 'ICMP', frame.srcPort ?? 0, frame.dstPort ?? 0)) {
+    return drop('policy', `PolicyEngine DROP: ${frame.protocol} ${frame.srcPort ?? '-'}→${frame.dstPort ?? '-'}`);
+  }
+  traces.push(makeTrace(hopIndex, device, ingressPortId, 'policy', 'pass', 'PolicyEngine ALLOW', frame));
   // -- Stage 9: MAC Lookup / Route Lookup ------------------------------
   const { egressPorts, nextDeviceId, routeDecision } = resolveEgress(frame, device, state!, connections, deviceMap);
 

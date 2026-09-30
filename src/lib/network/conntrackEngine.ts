@@ -303,4 +303,43 @@ export class ConntrackEngine {
   clear(): void {
     this.table.clear();
   }
+  /**
+   * Public method to purge expired entries (exposes private aging logic).
+   */
+  purgeExpired(): void {
+    this.ageOutEntries();
+  }
+
+  /**
+   * Inspect a forward packet against the connection tracking table.
+   * Returns allowed status and reason similar to inspectReturnTraffic.
+   */
+  inspectPacket(
+    protocol: 'TCP' | 'UDP' | 'ICMP',
+    srcIp: string,
+    srcPort: number,
+    dstIp: string,
+    dstPort: number
+  ): InspectionResult {
+    const key = this.buildKey(protocol, srcIp, srcPort, dstIp, dstPort);
+    const entry = this.table.get(key);
+    if (!entry) {
+      return {
+        allowed: false,
+        reason: `SPI Drop: No matching connection entry for forward traffic ${srcIp}:${srcPort} -> ${dstIp}:${dstPort}`
+      };
+    }
+    if (entry.state === 'CLOSED' || entry.state === 'TIME_WAIT') {
+      return {
+        allowed: false,
+        reason: `SPI Drop: Connection is in ${entry.state} state, forward traffic not allowed`
+      };
+    }
+    return {
+      allowed: true,
+      reason: `SPI Allow: Matched existing ${entry.state} session (${entry.id})`,
+      entry
+    };
+  }
 }
+

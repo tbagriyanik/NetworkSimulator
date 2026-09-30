@@ -7,6 +7,9 @@
  * - Models OSPF EXSTART/EXCHANGE MTU mismatch state machine lockups.
  */
 
+import type { NetworkPacketFrame } from './forwarding/packetFrame';
+import { generateIcmpFragmentationNeeded } from './forwarding/icmpUtils';
+
 export interface IpPacketInfo {
   id: string;
   sourceIp: string;
@@ -56,11 +59,30 @@ export function processIpFragmentation(
 
   // MTU exceeded
   if (packet.dontFragment) {
+    // Build a dummy ICMP frame to attach detailed info
+    const dummyFrame: NetworkPacketFrame = {
+      id: `icmp-${packet.id}`,
+      protocol: 'ICMP',
+      timestamp: Date.now(),
+      srcIp: packet.sourceIp,
+      dstIp: packet.targetIp,
+      srcMac: '',
+      dstMac: '',
+      etherType: '',
+      ipProtocol: 0,
+      length: 0,
+      info: '',
+    };
+    const icmp = generateIcmpFragmentationNeeded(
+      dummyFrame,
+      `Packet size (${packet.totalLength}B) exceeds MTU (${mtu}B) with DF bit set`,
+      mtu
+    );
     return {
       fragmented: false,
       dropped: true,
       error: `Packet size (${packet.totalLength}B) exceeds MTU (${mtu}B) with DF bit set`,
-      icmpDetail: 'ICMP Type 3 Code 4 (Fragmentation Needed and DF Set)',
+      icmpDetail: icmp.info,
       fragments: [],
     };
   }

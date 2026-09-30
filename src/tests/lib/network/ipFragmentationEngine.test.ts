@@ -35,7 +35,7 @@ describe('ipFragmentationEngine', () => {
     expect(result.dropped).toBe(true);
     expect(result.error).toContain('exceeds MTU');
     expect(result.error).toContain('DF bit set');
-    expect(result.icmpDetail).toContain('ICMP Type 3 Code 4');
+    expect(result.icmpDetail).toContain('Type 3, Code 4');
   });
 
   it('fragments packet when size exceeds MTU and DF bit is not set', () => {
