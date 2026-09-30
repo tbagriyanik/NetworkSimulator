@@ -123,6 +123,18 @@ export function cmdIpAddress(state: SwitchState, input: string, _ctx: CommandCon
     };
   }
 
+  // Sub-interface check: require dot1Q encapsulation before configuring IP
+  const isSubinterface = Boolean(state.currentInterface && state.currentInterface.includes('.'));
+  if (isSubinterface) {
+    const subPort = state.ports?.[state.currentInterface];
+    if (!subPort?.dot1qVlan) {
+      return {
+        success: false,
+        error: `% Configured option not supported. First configure 802.1Q encapsulation with command: encapsulation dot1Q <vlan-id>`
+      };
+    }
+  }
+
   // Physical routed port IP assignment (Layer 3 switch or router)
   const newPorts = applyToSelectedPorts(state, (port: Port) => ({
     ...port,

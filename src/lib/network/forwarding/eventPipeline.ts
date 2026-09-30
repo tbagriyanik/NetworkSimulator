@@ -715,13 +715,36 @@ function isOspfInterfacePassive(state: SwitchState, portId: string): boolean {
 function ospfAdjacencyAllowed(
   srcState: SwitchState,
   srcPortId: string,
-  _srcRouterId: string,
+  srcRouterId: string,
   dstState: SwitchState,
   dstPortId: string,
-  _dstRouterId: string
+  dstRouterId: string
 ): boolean {
+  // Duplicate Router ID check
+  if (srcRouterId && dstRouterId && srcRouterId === dstRouterId) return false;
+
   const srcPort = srcState.ports?.[srcPortId];
   const dstPort = dstState.ports?.[dstPortId];
+
+  // Subnet & Mask match check
+  if (srcPort?.ipAddress && srcPort?.subnetMask && dstPort?.ipAddress && dstPort?.subnetMask) {
+    if (srcPort.subnetMask !== dstPort.subnetMask) return false;
+    const srcIpNum = srcPort.ipAddress.split('.').map(Number);
+    const dstIpNum = dstPort.ipAddress.split('.').map(Number);
+    const maskNum = srcPort.subnetMask.split('.').map(Number);
+    const srcNet = srcIpNum.map((b, i) => b & maskNum[i]).join('.');
+    const dstNet = dstIpNum.map((b, i) => b & maskNum[i]).join('.');
+    if (srcNet !== dstNet) return false;
+  }
+
+  // Hello / Dead timer match check
+  const srcHello = srcPort?.ospfHelloInterval ?? 10;
+  const dstHello = dstPort?.ospfHelloInterval ?? 10;
+  if (srcHello !== dstHello) return false;
+
+  const srcDead = srcPort?.ospfDeadInterval ?? 40;
+  const dstDead = dstPort?.ospfDeadInterval ?? 40;
+  if (srcDead !== dstDead) return false;
 
   const srcArea = srcPort?.ospfArea !== undefined ? parseInt(String(srcPort.ospfArea), 10) : (srcState.ospfAreas?.[0] ?? 0);
   const dstArea = dstPort?.ospfArea !== undefined ? parseInt(String(dstPort.ospfArea), 10) : (dstState.ospfAreas?.[0] ?? 0);

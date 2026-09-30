@@ -432,6 +432,7 @@ export function PingPacketInfoPanel({
         <>
             <DraggableWindowWrapper
                 id="pingPacketInfoPanel"
+                alwaysOnTop={true}
                 title={titleContent}
                 icon={<div className="w-5 h-5 flex items-center justify-center" />}
                 isOpen={isVisible}

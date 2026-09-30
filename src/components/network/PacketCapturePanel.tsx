@@ -198,6 +198,7 @@ export const PacketCapturePanel = ({
   return (
     <DraggableWindowWrapper
       id="packetCapture"
+      alwaysOnTop={true}
       className={graphicsQuality === 'low'
         ? `graphics-low-solid ${isDark ? '!bg-secondary-950 !border-secondary-800' : '!bg-white !border-secondary-200'}`
         : isMobile

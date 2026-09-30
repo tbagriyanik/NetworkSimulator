@@ -109,7 +109,7 @@ export function cmdPing(state: SwitchState, input: string, ctx: CommandContext):
         );
 
         // Create new deviceStates Map for updates
-        const updatedDeviceStates = new Map<string, SwitchState>(ctx.deviceStates);
+        let updatedDeviceStates = new Map<string, SwitchState>(ctx.deviceStates);
 
         // Handle port security violations - update state if needed
         if (connectivity.portSecurityViolations && connectivity.portSecurityViolations.length > 0) {
@@ -243,10 +243,34 @@ export function cmdPing(state: SwitchState, input: string, ctx: CommandContext):
             let packetLine = '';
             let successes = 0;
 
-            for (let i = 0; i < n; i++) {
-                packetLine += '!';
-                successes++;
+            const currentDeviceId = ctx.sourceDeviceId || state.hostname;
+            const currentState = (updatedDeviceStates || ctx.deviceStates)?.get(currentDeviceId) || state;
+            const hadArp = currentState?.arpCache?.some((e: { ip: string }) => e.ip === host) ?? false;
+            const isFirstArpDrop = !hadArp && n === 5;
+
+            if (isFirstArpDrop) {
+                packetLine = '.!!!!';
+                successes = 4;
+            } else {
+                for (let i = 0; i < n; i++) {
+                    packetLine += '!';
+                    successes++;
+                }
             }
+
+            // Update ARP cache for the target if available
+            const targetDev = devices.find(d => d.id === connectivity.targetId || d.ip === host);
+            if (targetDev && targetDev.macAddress && currentState) {
+                const nextStates = new Map(updatedDeviceStates || ctx.deviceStates);
+                const devState = { ...currentState };
+                if (!devState.arpCache) devState.arpCache = [];
+                if (!devState.arpCache.some((e: { ip: string }) => e.ip === host)) {
+                    devState.arpCache = [...devState.arpCache, { ip: host, mac: targetDev.macAddress, interface: 'VLAN', timestamp: Date.now() }];
+                    nextStates.set(currentDeviceId, devState);
+                    updatedDeviceStates = nextStates;
+                }
+            }
+
             output += packetLine;
             const successRate = Math.round((successes / n) * 100);
             output += `\n\nSuccess rate is ${successRate} percent (${successes}/${n})`;

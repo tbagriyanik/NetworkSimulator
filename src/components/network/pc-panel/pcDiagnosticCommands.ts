@@ -4,6 +4,7 @@ import type { OutputLine } from './PCPanel.types';
 import { checkConnectivity, getWirelessDistance } from '@/lib/network/connectivity';
 import { dispatchCapturedPackets } from '../../../utils/packetCapture';
 import { getL3Hops } from '@/lib/network/routing';
+import { secureStorage } from '@/lib/storage/secureStorage';
 
 export interface PcDiagnosticCommandsContext {
   deviceId: string;
@@ -150,6 +151,20 @@ export async function handlePcDiagnosticCommand(
 
       if (result.success) {
         const targetDevice = result.targetId ? topologyDevices.find(d => d.id === result.targetId) : undefined;
+
+        // Check if ARP was already resolved for this target IP
+        let hadArp = false;
+        try {
+          if (typeof window !== 'undefined') {
+            const rawArp = secureStorage.getItem(`pc_arp_${deviceId}`);
+            if (rawArp && rawArp.toLowerCase().includes(targetIp.toLowerCase())) {
+              hadArp = true;
+            }
+          }
+        } catch {
+          hadArp = true;
+        }
+
         if (targetDevice && targetDevice.macAddress) {
           addPcArpEntry?.(targetIp, targetDevice.macAddress, targetDevice.type === 'iot');
         }
@@ -170,12 +185,24 @@ export async function handlePcDiagnosticCommand(
 
         const formatTime = (ms: number) => ms === 0 ? '<1ms' : `${ms}ms`;
 
+        // If target was not yet in ARP cache, the first packet drops due to ARP resolution (standard network behavior)
+        const isFirstArpDrop = !hadArp && packets >= 2;
         const replies: string[] = [];
-        for (let i = 0; i < packets; i++) {
+        if (isFirstArpDrop) {
+          replies.push('Request timed out.');
+        }
+
+        const startIdx = isFirstArpDrop ? 1 : 0;
+        for (let i = startIdx; i < packets; i++) {
           const time = generatePingTime();
           replies.push(`Reply from ${targetIp.toLowerCase()}: bytes=${bufferSize} time=${formatTime(time)} TTL=128`);
         }
-        await emitMulti('output', `Pinging ${pingTargetDisplay} with ${bufferSize} bytes of data:\n${replies.join('\n')}\n\nPing statistics for ${pingTargetDisplay}:\n    Packets: Sent = ${packets}, Received = ${packets}, Lost = 0 (0% loss)`, 100);
+
+        const received = isFirstArpDrop ? packets - 1 : packets;
+        const lost = isFirstArpDrop ? 1 : 0;
+        const lossPercent = isFirstArpDrop ? Math.round((1 / packets) * 100) : 0;
+
+        await emitMulti('output', `Pinging ${pingTargetDisplay} with ${bufferSize} bytes of data:\n${replies.join('\n')}\n\nPing statistics for ${pingTargetDisplay}:\n    Packets: Sent = ${packets}, Received = ${received}, Lost = ${lost} (${lossPercent}% loss)`, 100);
       } else {
         const timeouts = Array(packets).fill('\nRequest timed out.').join('');
         await emitMulti('output', `Pinging ${pingTargetDisplay} with ${bufferSize} bytes of data:${timeouts}\n\nPing statistics for ${pingTargetDisplay}:\n    Packets: Sent = ${packets}, Received = 0, Lost = ${packets} (100% loss)`, 100);

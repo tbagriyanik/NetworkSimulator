@@ -28,6 +28,7 @@ import {
 import type { CanvasDevice, CanvasConnection } from './NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 import { runRootCauseAnalysis, NetworkDiagnosticResult } from '@/lib/network/connectivity/networkTroubleshooter';
+import { diagnoseVlanMismatches } from '@/lib/network/vlanDiagnostics';
 
 interface NetworkDiagnosticsModalProps {
   open: boolean;
@@ -162,7 +163,26 @@ export function NetworkDiagnosticsModal({
     if (!sourceId || !targetId) {
       return { canCommunicate: false, sourceDevice: null, targetDevice: null, issues: [], passedChecks: [] };
     }
-    return runRootCauseAnalysis(sourceId, targetId, devices, connections, deviceStates);
+    const res = runRootCauseAnalysis(sourceId, targetId, devices, connections, deviceStates);
+    if (deviceStates) {
+      const vlanMismatches = diagnoseVlanMismatches(devices, connections, deviceStates);
+      vlanMismatches.forEach(vm => {
+        const titleTr = `Native/VLAN Uyumsuzluğu (${vm.sourceDeviceName} ↔ ${vm.targetDeviceName})`;
+        const titleEn = `VLAN Mismatch (${vm.sourceDeviceName} ↔ ${vm.targetDeviceName})`;
+        if (!res.issues.some(i => (i.title?.tr || '').includes(vm.sourceDeviceName) && (i.title?.tr || '').includes(vm.targetDeviceName))) {
+          res.issues.push({
+            id: `vlan-mismatch-${vm.connectionId}`,
+            category: 'vlan',
+            severity: 'error',
+            title: { tr: titleTr, en: titleEn },
+            description: { tr: vm.message, en: vm.message },
+            suggestedFix: { tr: vm.recommendation, en: vm.recommendation }
+          });
+          res.canCommunicate = false;
+        }
+      });
+    }
+    return res;
   }, [sourceId, targetId, devices, connections, deviceStates]);
 
   if (!open) return null;
@@ -190,6 +210,7 @@ export function NetworkDiagnosticsModal({
   return (
     <DraggableWindowWrapper
       id="networkDiagnosticsModal"
+      alwaysOnTop={true}
       title={
         <div className="flex items-center gap-2">
           <Stethoscope className="w-4 h-4 text-emerald-400 shrink-0" />

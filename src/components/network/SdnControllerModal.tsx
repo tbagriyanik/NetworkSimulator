@@ -124,6 +124,7 @@ export function SdnControllerModal({
   return (
     <DraggableWindowWrapper
       id="sdn-controller-modal"
+      alwaysOnTop={true}
       title={isTr ? 'SDN & Intent-Based Ağ Denetleyicisi (APIC-EM / DNA-C)' : 'SDN & Intent-Based Controller'}
       icon={<Cpu className="w-4 h-4 text-sky-400 shrink-0" />}
       isOpen={open}
@@ -217,26 +218,70 @@ export function SdnControllerModal({
       {/* Tab: Path Trace */}
       {activeTab === 'trace' && (
         <div className="space-y-3">
-          <div className="flex gap-2 items-center">
-            <input
-              type="text"
-              placeholder={isTr ? 'Kaynak IP (örn. 192.168.1.10)' : 'Source IP'}
-              value={sourceIp}
-              onChange={e => setSourceIp(e.target.value)}
-              className="p-1.5 rounded bg-secondary-900 border border-secondary-700 flex-1 font-mono text-xs"
-            />
-            <ArrowRight className="w-4 h-4 opacity-50 shrink-0" />
-            <input
-              type="text"
-              placeholder={isTr ? 'Hedef IP (örn. 192.168.2.20)' : 'Dest IP'}
-              value={destIp}
-              onChange={e => setDestIp(e.target.value)}
-              className="p-1.5 rounded bg-secondary-900 border border-secondary-700 flex-1 font-mono text-xs"
-            />
-            <Button size="sm" onClick={handleRunTrace} className="h-8">
-              {isTr ? 'İzle' : 'Trace'}
-            </Button>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {/* Source Device Selection */}
+            <div className="space-y-1">
+              <label className="text-[11px] font-medium text-secondary-400">
+                {isTr ? 'Kaynak Cihaz / IP' : 'Source Device / IP'}
+              </label>
+              <select
+                value={devices.find(d => d.ip === sourceIp)?.id || ''}
+                onChange={e => {
+                  const dev = devices.find(d => d.id === e.target.value);
+                  if (dev?.ip) setSourceIp(dev.ip);
+                }}
+                className="w-full p-1.5 text-xs rounded bg-secondary-900 border border-secondary-700 font-mono text-secondary-100 outline-none"
+              >
+                <option value="">{isTr ? '-- Listeden Cihaz Seç (Kaynak) --' : '-- Select Source Device --'}</option>
+                {devices.map(d => (
+                  <option key={d.id} value={d.id}>
+                    {d.name} ({d.ip || 'IP Yok'})
+                  </option>
+                ))}
+              </select>
+              <input
+                type="text"
+                placeholder={isTr ? 'Kaynak IP (örn. 192.168.1.10)' : 'Source IP'}
+                value={sourceIp}
+                onChange={e => setSourceIp(e.target.value)}
+                className="w-full p-1.5 rounded bg-secondary-900 border border-secondary-700 font-mono text-xs text-secondary-100"
+              />
+            </div>
+
+            {/* Destination Device Selection */}
+            <div className="space-y-1">
+              <label className="text-[11px] font-medium text-secondary-400">
+                {isTr ? 'Hedef Cihaz / IP' : 'Dest Device / IP'}
+              </label>
+              <select
+                value={devices.find(d => d.ip === destIp)?.id || ''}
+                onChange={e => {
+                  const dev = devices.find(d => d.id === e.target.value);
+                  if (dev?.ip) setDestIp(dev.ip);
+                }}
+                className="w-full p-1.5 text-xs rounded bg-secondary-900 border border-secondary-700 font-mono text-secondary-100 outline-none"
+              >
+                <option value="">{isTr ? '-- Listeden Cihaz Seç (Hedef) --' : '-- Select Target Device --'}</option>
+                {devices.map(d => (
+                  <option key={d.id} value={d.id}>
+                    {d.name} ({d.ip || 'IP Yok'})
+                  </option>
+                ))}
+              </select>
+              <input
+                type="text"
+                placeholder={isTr ? 'Hedef IP (örn. 192.168.2.20)' : 'Dest IP'}
+                value={destIp}
+                onChange={e => setDestIp(e.target.value)}
+                className="w-full p-1.5 rounded bg-secondary-900 border border-secondary-700 font-mono text-xs text-secondary-100"
+              />
+            </div>
           </div>
+
+          <Button size="sm" onClick={handleRunTrace} className="w-full h-8 flex items-center justify-center gap-1.5">
+            <ArrowRight className="w-3.5 h-3.5" />
+            <span>{isTr ? 'Yol İzleme Çalıştır (Run Path Trace)' : 'Run Path Trace'}</span>
+          </Button>
 
           {traceResult && (
             <div className="p-2.5 rounded bg-secondary-900/60 border border-secondary-800 space-y-2">

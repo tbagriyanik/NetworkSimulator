@@ -342,6 +342,7 @@ export function PCPanel({
   const { validateIpField, validateSubnetField } = usePCPanelValidation({
     deviceId,
     topologyDevices,
+    pcIP,
     pcSubnet,
     setPcSubnet,
     setErrors,

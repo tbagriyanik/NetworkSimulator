@@ -106,6 +106,28 @@ vlan_brief = conn.send_command("show vlan brief")
 print(vlan_brief)
 conn.disconnect()
 `,
+  ospf_bgp_automation: `# Automated Dynamic Routing Provisioning (OSPF & BGP)
+from netmiko import ConnectHandler
+
+routing_script = [
+    "router ospf 1",
+    "router-id 1.1.1.1",
+    "network 10.0.0.0 0.255.255.255 area 0",
+    "exit",
+    "router bgp 65001",
+    "bgp log-neighbor-changes",
+    "neighbor 10.0.0.2 remote-as 65002",
+    "network 192.168.10.0 mask 255.255.255.0"
+]
+
+print("[NetDevOps] Configuring dynamic routing protocols (OSPF & BGP)...")
+conn = ConnectHandler(host="R1", device_type="generic_router")
+res = conn.send_config_set(routing_script)
+print("[Routing Setup] Done. Verifying BGP & OSPF Status:")
+print(conn.send_command("show ip ospf neighbor"))
+print(conn.send_command("show ip bgp summary"))
+conn.disconnect()
+`,
 };
 
 export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
@@ -515,6 +537,7 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
                     <option value="netmiko_audit">Ağ & IP Sağlık Denetimi</option>
                     <option value="restconf_requests">RESTCONF Python Requests</option>
                     <option value="vlan_automation">Otomatik VLAN Dağıtımı</option>
+                    <option value="ospf_bgp_automation">Dinamik Rotalama (OSPF & BGP) Otomasyonu</option>
                   </select>
                   <button
                     onClick={() => setPythonScript(PYTHON_TEMPLATES[selectedPythonPreset as keyof typeof PYTHON_TEMPLATES] || PYTHON_TEMPLATES.netmiko_provision)}
