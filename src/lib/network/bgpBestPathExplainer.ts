@@ -11,6 +11,21 @@ export interface BgpDecisionExplanation {
 /**
  * BGP En İyi Yol (Best Path) Karar Nedeni Açıklayıcısı
  * İki BGP rotasını karşılaştırır ve BGP yol seçimi algoritmasına göre kazananı ve nedenini döndürür.
+ *
+ * Cisco BGP Best Path Selection Algorithm (13 steps):
+ * 1. Highest Weight
+ * 2. Highest Local Preference
+ * 3. Locally Originated
+ * 4. Shortest AS-Path
+ * 5. Lowest Origin Type
+ * 6. Lowest MED
+ * 7. eBGP over iBGP
+ * 8. Lowest IGP metric to next-hop
+ * 9. Oldest path (longest-established)
+ * 10. Lowest Router ID
+ * 11. Lowest Neighbor IP
+ * 12. Prefer the path that comes from the lowest neighbor address
+ * 13. Prefer the path with the minimum cluster list length
  */
 export function explainBgpBestPath(
   routeA: BgpRoute,
@@ -100,12 +115,68 @@ export function explainBgpBestPath(
     };
   }
 
-  // 7. Lowest Neighbor IP (Tie-Breaker Final)
+  // 7. Prefer eBGP over iBGP
+  const isIbgpA = routeA.isIbgp ?? false;
+  const isIbgpB = routeB.isIbgp ?? false;
+  if (isIbgpA !== isIbgpB) {
+    const winner = isIbgpA ? routeB : routeA; // Prefer eBGP (not iBGP)
+    return {
+      bestRoute: winner,
+      comparedRoute: winner === routeA ? routeB : routeA,
+      stepIndex: 7,
+      stepName: 'Prefer eBGP over iBGP',
+      reason: `Route via ${winner.nextHop} is from eBGP neighbor (preferred over iBGP).`
+    };
+  }
+
+  // 8. Lowest IGP metric to next-hop
+  const igpMetricA = routeA.igpMetric ?? 0;
+  const igpMetricB = routeB.igpMetric ?? 0;
+  if (igpMetricA !== igpMetricB) {
+    const winner = igpMetricA < igpMetricB ? routeA : routeB;
+    return {
+      bestRoute: winner,
+      comparedRoute: winner === routeA ? routeB : routeA,
+      stepIndex: 8,
+      stepName: 'Lowest IGP Metric to Next-Hop',
+      reason: `Route via ${winner.nextHop} has lower IGP metric to next-hop (${Math.min(igpMetricA, igpMetricB)} vs ${Math.max(igpMetricA, igpMetricB)}).`
+    };
+  }
+
+  // 9. Oldest path (longest-established)
+  const receivedTimeA = routeA.receivedTime ?? 0;
+  const receivedTimeB = routeB.receivedTime ?? 0;
+  if (receivedTimeA !== receivedTimeB) {
+    const winner = receivedTimeA < receivedTimeB ? routeA : routeB; // Older timestamp wins
+    return {
+      bestRoute: winner,
+      comparedRoute: winner === routeA ? routeB : routeA,
+      stepIndex: 9,
+      stepName: 'Oldest Path (Longest-Established)',
+      reason: `Route via ${winner.nextHop} is the oldest path (longest-established).`
+    };
+  }
+
+  // 10. Lowest Router ID
+  const routerIdA = routeA.routerId ?? '0.0.0.0';
+  const routerIdB = routeB.routerId ?? '0.0.0.0';
+  if (routerIdA !== routerIdB) {
+    const winner = routerIdA < routerIdB ? routeA : routeB;
+    return {
+      bestRoute: winner,
+      comparedRoute: winner === routeA ? routeB : routeA,
+      stepIndex: 10,
+      stepName: 'Lowest Router ID',
+      reason: `Route via ${winner.nextHop} has lower advertising router ID (${winner.routerId}).`
+    };
+  }
+
+  // 11. Lowest Neighbor IP (Tie-Breaker)
   const winner = routeA.nextHop < routeB.nextHop ? routeA : routeB;
   return {
     bestRoute: winner,
     comparedRoute: winner === routeA ? routeB : routeA,
-    stepIndex: 10,
+    stepIndex: 11,
     stepName: 'Lowest Neighbor IP (Tie-Breaker)',
     reason: `Route via ${winner.nextHop} was selected as tie-breaker based on lower Neighbor IP address.`
   };

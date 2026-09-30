@@ -59,4 +59,42 @@ describe('stpGuardsEngine', () => {
     const res = evaluateStpGuards(port, { rootBridgeId: '0001', rootPathCost: 0, isSuperior: true });
     expect(res.action).toBe('NONE');
   });
+
+  it('triggers BLOCK_LOOP when BPDU loss is detected on Loop Guard enabled port', () => {
+    const port: Port = {
+      id: 'Fa0/4',
+      name: 'FastEthernet0/4',
+      type: 'fastethernet',
+      status: 'connected',
+      vlan: 1,
+      mode: 'access',
+      duplex: 'auto',
+      speed: 'auto',
+      shutdown: false,
+      loopGuard: true
+    };
+
+    const res = evaluateStpGuards(port, undefined);
+    expect(res.action).toBe('BLOCK_LOOP');
+    expect(res.reason).toContain('Loop Guard violation');
+    expect(res.reason).toContain('No BPDU received');
+  });
+
+  it('does not trigger BLOCK_LOOP when BPDU is received on Loop Guard enabled port', () => {
+    const port: Port = {
+      id: 'Fa0/5',
+      name: 'FastEthernet0/5',
+      type: 'fastethernet',
+      status: 'connected',
+      vlan: 1,
+      mode: 'access',
+      duplex: 'auto',
+      speed: 'auto',
+      shutdown: false,
+      loopGuard: true
+    };
+
+    const res = evaluateStpGuards(port, { rootBridgeId: '0001', rootPathCost: 0, isSuperior: false });
+    expect(res.action).toBe('NONE');
+  });
 });

@@ -34,6 +34,18 @@ export function processIpFragmentation(
   const ipHeaderSize = 20;
   const payloadSize = Math.max(0, packet.totalLength - ipHeaderSize);
 
+  // MTU validation: minimum valid MTU for IP fragmentation
+  const MIN_VALID_MTU = 68; // RFC 791 minimum MTU
+  if (mtu < MIN_VALID_MTU) {
+    return {
+      fragmented: false,
+      dropped: true,
+      error: `Invalid MTU (${mtu}B): must be at least ${MIN_VALID_MTU}B for IP fragmentation`,
+      icmpDetail: 'ICMP Type 3 Code 4 (Fragmentation Needed and DF Set)',
+      fragments: [],
+    };
+  }
+
   if (packet.totalLength <= mtu) {
     return {
       fragmented: false,
@@ -55,6 +67,18 @@ export function processIpFragmentation(
 
   // Fragment payload into MTU-compatible chunks
   const maxPayloadPerFragment = Math.floor((mtu - ipHeaderSize) / 8) * 8; // Must be 8-byte aligned
+
+  // Edge-case protection: if maxPayloadPerFragment is 0, cannot fragment
+  if (maxPayloadPerFragment === 0) {
+    return {
+      fragmented: false,
+      dropped: true,
+      error: `MTU (${mtu}B) too small for fragmentation: max payload per fragment is 0`,
+      icmpDetail: 'ICMP Type 3 Code 4 (Fragmentation Needed and DF Set)',
+      fragments: [],
+    };
+  }
+
   const fragments: IpPacketInfo[] = [];
   let currentOffset = 0;
   let remainingPayload = payloadSize;

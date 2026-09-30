@@ -5,12 +5,18 @@ export interface StpGuardViolationResult {
   reason?: string;
 }
 
+export interface IncomingBpdu {
+  rootBridgeId: string;
+  rootPathCost: number;
+  isSuperior: boolean;
+}
+
 /**
  * STP PortFast, BPDU Guard, BPDU Filter, Root Guard ve Loop Guard Motoru
  */
 export function evaluateStpGuards(
   port: Port,
-  incomingBpdu: { rootBridgeId: string; rootPathCost: number; isSuperior: boolean }
+  incomingBpdu?: IncomingBpdu
 ): StpGuardViolationResult {
   if (port.shutdown) {
     return { action: 'NONE' };
@@ -30,7 +36,7 @@ export function evaluateStpGuards(
   }
 
   // 3. Root Guard: Üstün (superior) BPDU alındığında root bridge rolünün çalınmasını önler
-  if (port.rootGuard && incomingBpdu.isSuperior) {
+  if (port.rootGuard && incomingBpdu && incomingBpdu.isSuperior) {
     return {
       action: 'BLOCK_ROOT',
       reason: `Root Guard violation on Port ${port.id}: Superior BPDU received, blocking interface (Root-Inconsistent).`
@@ -38,10 +44,10 @@ export function evaluateStpGuards(
   }
 
   // 4. Loop Guard: BPDU kaybı durumunda bloklanan portun yanlışlıkla forwarding durumuna geçmesini önler
-  if (port.loopGuard && !incomingBpdu) {
+  if (port.loopGuard && incomingBpdu === undefined) {
     return {
       action: 'BLOCK_LOOP',
-      reason: `Loop Guard violation on Port ${port.id}: BPDU loss detected, blocking interface (Loop-Inconsistent).`
+      reason: `Loop Guard violation on Port ${port.id}: No BPDU received, blocking interface (Loop-Inconsistent).`
     };
   }
 

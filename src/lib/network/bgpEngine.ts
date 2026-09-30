@@ -30,6 +30,11 @@ export interface BgpRoute {
   vrfName?: string; // For MP-BGP VPNv4
   routeTarget?: string; // For MP-BGP VPNv4
   rd?: string; // Route Distinguisher e.g. "65001:100"
+  // Additional fields for best path selection
+  isIbgp?: boolean; // true if route is from iBGP neighbor
+  igpMetric?: number; // IGP metric to next-hop
+  receivedTime?: number; // timestamp for oldest path comparison
+  routerId?: string; // router ID of advertising router
 }
 
 export interface BgpConfig {
