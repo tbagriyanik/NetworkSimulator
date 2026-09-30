@@ -2,8 +2,21 @@
 
 ## v7.0.0 — 2026-09-30
 
+- **🔒 Conntrack SPI Enforcement Firewall'a Özgü Kılındı (`packetPipeline.ts`, `conntrackEngine.ts`)**:
+  - `inspectPacket` artık yalnızca `firewall` tipi cihazlarda çalışır; router ve switch cihazlarında paketler engellenmez, yalnızca takip (track) edilir.
+  - Bu sayede normal yönlendirme trafiği üzerinde yanlış SPI Drop hataları önlendi.
+- **🔌 DHCP Relay Engine Temizlendi (`dhcpRelayEngine.ts`)**:
+  - `DhcpHeader` tabanlı bağımsız uygulama; `DhcpPayload` bağımlılığı kaldırıldı.
+  - `processDhcpRelay` artık `giaddr` ve Option 82 (Circuit ID, Remote ID) alanlarını doğru yapılandırır.
+  - Geçmişten kalan binlerce satır yinelenen kod temizlendi (1326 satır → 64 satır).
+- **📡 Packet Pipeline DHCP Relay Stage Güncellendi (`packetPipeline.ts`)**:
+  - Relay processing artık `DhcpPayload.option82.agentCircuitId/agentRemoteId` alanlarını kullanır.
+- **✅ Test Paketi Tam Geçer Duruma Getirildi**:
+  - 233 test dosyası, 2096 test — tamamı başarılı (`npm run check` kod 0 ile çıkıyor).
+  - portMirroring (SPAN/RSPAN), packetTraceDiagnostics, dhcpRelayEngine ve conntrack testleri düzeltildi.
 - **📝 Otomatik Ağ Dokümantasyon Rapor Motoru (`networkReportGenerator.ts`)**:
   - Topoloji envanteri, IP adresleme matrisi, VLAN haritası ve statik/OSPF yönlendirme özetlerini otomatize markdown teknik raporuna dönüştürme yeteneği.
+
 - **⚡ Dinamik Trafik Jeneratörü & Canlı Telemetri Motoru (`trafficGeneratorEngine.ts`)**:
   - HTTP, VoIP, FTP ve UDP veri akışı simülasyonu, hat doluluk oranı (% Utilization), gecikme (ms) ve hat sıkışıklık durumları takibi.
 - **🛡️ STP Güvenlik Korumaları Motoru (`stpGuardsEngine.ts`)**:

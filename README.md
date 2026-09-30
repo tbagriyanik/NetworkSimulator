@@ -65,7 +65,7 @@ Simülatör, standart komut formatının yanı sıra yaygın olarak kullanılan 
 - **🐍 Python Yorumlayıcısı, Dosya & GUI/Ses/3D İşlemleri:** PC terminalinde OOP, Decorator, Generator, `open()` ile sanal dosya I/O; `tkinter`/`form` ile görsel pencereli form uygulamaları; Web Audio API tabanlı dinamik nota/akor/müzik ve ses efekti (`audio`/`music`/`synth`) sentezleme; `scene3d`/`three3d` ile interaktif 3D sahne, katı geometri (CSG) ve ışıklandırma motoru; soket ağ programlama.
 - **🖥️ Çapraz Platform Özellik Eşitliği:** macOS (`Cmd`) ve Windows/Linux (`Ctrl`) kısayol standardizasyonu, native dosya diyalogları ve çevrimdışı çalışma doğrulamaları.
 - **🔍 Gelişmiş Teşhis & Sağlık Denetimi:** Native VLAN mismatch, çakışan IP/MAC tespiti, routing loop tespiti, orphan port denetimi ve tek komutla `show network health` raporu.
-- **🔌 Kontrol Düzlemi Protokol Enjeksiyonu (NETCONF / MQTT / CoAP):** Privileged modda `netconf hello|get|edit-config|close-session`, `mqtt connect|subscribe|publish`, `coap get|put|delete` komutları gerçek bir `NetworkPacketFrame` üretip forwarding engine'in `processControlPlaneProtocols` girişinden geçirir; oturum, client ve resource durumu `show netconf sessions`, `show mqtt clients|topics`, `show coap resources` ile okunur. NETCONF'ta RFC 6241 capability exchange zorunluluğu uygulanır: oturumsuz `get` isteği `<rpc-error> session-not-established` ile reddedilir.
+- **🔒 Firewall Stateful SPI & Pipeline İyileştirmeleri:** Conntrack SPI enforcement artık yalnızca firewall tipi cihazlarda aktif; router ve switch'ler paketleri geçirir ve sessizce takip eder. DHCP Relay Engine (`dhcpRelayEngine.ts`) temizlendi; `DhcpHeader` tabanlı `giaddr` + Option 82 işlemesi ile 233 test dosyası, 2096 test tamamı başarılı.
 
 > **Kapsam notu:** README’de listelenen CLI, parser, state, paket yakalama ve forwarding özellikleri her protokolde aynı olgunluk seviyesinde değildir. NetFlow/sFlow, MQTT, CoAP, NETCONF-YANG ve RESTCONF için mevcut davranışlar eğitim amaçlı simülasyon kapsamındadır; “destekleniyor” ifadesi tek başına tam üretim protokol uygulaması veya gerçek harici collector/server uyumluluğu anlamına gelmez. Kontrol düzlemi komutları çerçeve düzeyinde çalışır: frame'ler süreç içinde sentezlenir, sokete veya kabloya yazılmaz; `netconfTransport.ts` XML yerine düz bir nesne işler ve bu sonuçlar `realismLevel: sim-only` olarak işaretlenir. Bu nedenle harici bir NETCONF/RESTCONF yöneticisiyle veya MQTT/CoAP broker ile birlikte kullanılamazlar.
 
@@ -78,6 +78,8 @@ Simülatör, standart komut formatının yanı sıra yaygın olarak kullanılan 
 | Version / Sürüm | 7.0.0 |
 | Total Lines / Toplam Satır (`src/`) | ~236,159 |
 | Source Files / Kaynak Dosya | 1142 |
+| Test Files / Test Dosyaları | 233 |
+| Tests / Testler | 2096 |
 | Documentation Files / Dokümantasyon Dosya | 25 |
 | Example Projects / Örnek Proje | 49 |
 | Guided Lessons / Rehberli Ders | 19 |

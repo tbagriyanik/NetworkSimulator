@@ -7,7 +7,7 @@ Bu indeks, Network Simulator projesinin tüm dokümantasyon dosyalarını ve iç
 ## 📖 Dokümantasyon Dosyaları
 
 ### 🚀 [training/ProjeOzellikleri.md](training/ProjeOzellikleri.md)
-**Amaç**: Sürüm Özellikleri, Ağ Dokümantasyonu, Trafik Telemetrisi, STP Güvenlik Korumaları & Stateful ConnTrack Motoru Özeti (v7.0.0)  
+**Amaç**: Sürüm Özellikleri, Ağ Dokümantasyonu, Trafik Telemetrisi, STP Güvenlik Korumaları, Stateful ConnTrack Motoru & DHCP Relay/Pipeline İyileştirmeleri (v7.0.0)  
 **Okuma Süresi**: 15 dakika  
 **İçerik**:
 - Otomatik Ağ Dokümantasyon Raporu Motoru (`networkReportGenerator.ts`)

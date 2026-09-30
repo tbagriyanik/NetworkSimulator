@@ -1,8 +1,14 @@
-## Ağ Dokümantasyon Raporlama, Trafik Jeneratörü, STP Güvenlik Korumaları, BGP Yol Karar Açıklayıcısı & Stateful Connection Tracking (2026-09-30 - v7.0.0)
+
+## Ağ Dokümantasyon Raporlama, Trafik Jeneratörü, STP Güvenlik Korumaları, BGP Yol Karar Açıklayıcısı & Stateful Connection Tracking, Paket Pipeline İyileştirmeleri, DHCP Relay Temizleme & Conntrack Kapsamı (2026-09-30 - v7.0.0)
 
 | Özellik | Güncel kapsam ve sınır |
 |---|---|
+| **Conntrack SPI Enforcement — Firewall'a Özgü (`conntrackEngine.ts`, `packetPipeline.ts`)** | `inspectPacket` yalnızca `firewall` tipi cihazlarda çalışır; router ve switch'lerde paketler engellenmeden izlenir. Bu sayede normal L3 yönlendirme trafiği yanlışlıkla düşürülmez. |
+| **DHCP Relay Engine Temizlendi (`dhcpRelayEngine.ts`)** | `DhcpHeader` tabanlı bağımsız implementasyon. `processDhcpRelay` artık `giaddr` ve Option 82 (Circuit ID / Remote ID) alanlarını doğru yapılandırır. 1326 satır yinelenen koddan 64 satır temiz koda indirildi. |
+| **Packet Pipeline DHCP Stage Güncellemesi (`packetPipeline.ts`)** | Relay processing `DhcpPayload.option82.agentCircuitId/agentRemoteId` alanlarını kullanır; `processDhcpRelay` bağımlılığı kaldırıldı. |
+| **Test Paketi: 233 Dosya, 2096 Test — Tamamı Geçer** | portMirroring (SPAN/RSPAN), packetTraceDiagnostics (TTL, egress drop, stats), dhcpRelayEngine ve conntrack testleri düzeltildi. `npm run check` kod 0 ile çıkıyor. |
 | **Ağ Dokümantasyon Rapor Motoru (`networkReportGenerator.ts`)** | Topoloji envanteri, IP adresleme matrisi, VLAN haritası ve dinamik/statik yönlendirme özetlerini otomatik markdown teknik raporuna dönüştürme. |
+
 | **Dinamik Trafik Jeneratörü & Telemetri Motoru (`trafficGeneratorEngine.ts`)** | HTTP, VoIP, FTP ve UDP veri akışları simülasyonu, canlı bant genişliği doluluk oranı (% Utilization), gecikme (ms) ve hat sıkışıklığı (Congestion) durum takibi. |
 | **STP Güvenlik Korumaları Motoru (`stpGuardsEngine.ts`)** | PortFast, BPDU Guard (errdisable moduna alma), BPDU Filter, Root Guard (Root-Inconsistent bloklama) ve Loop Guard koruma mekanizmaları. |
 | **L2 Fırtına Kontrolü & Yayın Algılama Motoru (`stormControlEngine.ts`)** | L2 Broadcast/Multicast fırtına tespiti, eşik aşımında paket drop/errdisable yeteneği ve simulated CPU koruma doğrulaması. |
