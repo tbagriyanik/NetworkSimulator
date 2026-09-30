@@ -1,26 +1,26 @@
 import { colors, withAlpha } from '@/lib/design-tokens/colors';
 
 export function get3DSceneStyles(isDark: boolean = true): string {
-  const bgBody = isDark ? colors.terminal.bg : '#f8fafc';
-  const textBody = isDark ? colors.topology.noteText : '#0f172a';
+  const bgBody = isDark ? colors.terminal.bg : colors.neutral['50'];
+  const textBody = isDark ? colors.topology.noteText : colors.slate['900'];
   const bgGroup = isDark ? withAlpha(colors.topology.bg, 0.75) : 'rgba(255, 255, 255, 0.92)';
   const borderGroup = isDark ? withAlpha(colors.common.white, 0.12) : 'rgba(203, 213, 225, 0.9)';
   const shadowGroup = isDark ? withAlpha(colors.common.black, 0.5) : 'rgba(15, 23, 42, 0.12)';
   
-  const bgBtn = isDark ? withAlpha(colors.common.white, 0.06) : 'rgba(241, 245, 249, 0.9)';
-  const borderBtn = isDark ? withAlpha(colors.common.white, 0.1) : 'rgba(203, 213, 225, 0.8)';
-  const textBtn = isDark ? colors.topology.noteText : '#1e293b';
-  const bgBtnHover = isDark ? withAlpha(colors.common.white, 0.14) : '#e2e8f0';
+  const bgBtn = isDark ? withAlpha(colors.common.white, 0.06) : withAlpha(colors.neutral['100'], 0.9);
+  const borderBtn = isDark ? withAlpha(colors.common.white, 0.1) : withAlpha(colors.neutral['300'], 0.8);
+  const textBtn = isDark ? colors.topology.noteText : colors.slate['800'];
+  const bgBtnHover = isDark ? withAlpha(colors.common.white, 0.14) : colors.neutral['200'];
   
-  const bgSelect = isDark ? withAlpha(colors.common.black, 0.4) : '#ffffff';
-  const borderSelect = isDark ? withAlpha(colors.common.white, 0.15) : '#cbd5e1';
-  const textSelect = isDark ? colors.theme.accent : '#0284c7';
+  const bgSelect = isDark ? withAlpha(colors.common.black, 0.4) : colors.common.white;
+  const borderSelect = isDark ? withAlpha(colors.common.white, 0.15) : colors.neutral['400'];
+  const textSelect = isDark ? colors.theme.accent : colors.theme.primary;
   
-  const bgFooter = isDark ? withAlpha(colors.topology.bg, 0.7) : 'rgba(255, 255, 255, 0.9)';
-  const borderFooter = isDark ? withAlpha(colors.common.white, 0.08) : 'rgba(203, 213, 225, 0.8)';
-  const textFooter = isDark ? colors.topology.subText : '#475569';
-  const bgKbd = isDark ? withAlpha(colors.common.white, 0.12) : '#e2e8f0';
-  const textKbd = isDark ? colors.terminal.fg : '#0f172a';
+  const bgFooter = isDark ? withAlpha(colors.topology.bg, 0.7) : withAlpha(colors.common.white, 0.9);
+  const borderFooter = isDark ? withAlpha(colors.common.white, 0.08) : withAlpha(colors.neutral['300'], 0.8);
+  const textFooter = isDark ? colors.topology.subText : colors.neutral['500'];
+  const bgKbd = isDark ? withAlpha(colors.common.white, 0.12) : colors.neutral['200'];
+  const textKbd = isDark ? colors.terminal.fg : colors.slate['900'];
 
   return `
     * {
