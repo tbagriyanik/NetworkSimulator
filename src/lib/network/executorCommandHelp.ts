@@ -50,7 +50,7 @@ export const commandHelp: Record<string, Record<string, string[]>> = {
     'show vlan': ['brief'],
   },
   'privileged': {
-    '': ['clear', 'clock', 'coap', 'configure', 'copy', 'debug', 'delete', 'disable', 'disconnect', 'erase', 'exit', 'help', 'more', 'mqtt', 'netconf', 'no', 'ping', 'reload', 'resume', 'setup', 'show', 'ssh', 'suspend', 'telnet', 'terminal', 'test', 'traceroute', 'undebug', 'write'],
+    '': ['clear', 'clock', 'coap', 'configure', 'conntrack', 'copy', 'debug', 'delete', 'dhcp-relay', 'disable', 'disconnect', 'erase', 'exit', 'help', 'more', 'mqtt', 'netconf', 'no', 'ping', 'reload', 'report', 'resume', 'setup', 'show', 'ssh', 'storm-control', 'suspend', 'telnet', 'terminal', 'test', 'traceroute', 'undebug', 'write'],
     ...pfx('clear', ['arp-cache', 'counters', 'interface', 'ip', 'ipv6', 'line', 'mac']),
     'clear ip': ['bgp', 'dhcp', 'nat', 'ospf', 'route'],
     'clear ip bgp': ['*'],
@@ -107,7 +107,7 @@ export const commandHelp: Record<string, Record<string, string[]>> = {
     'show errdisable': ['detect', 'recovery'],
     'show interface': ['trunk'],
     'show interfaces': ['status', 'trunk'],
-    'show ip': ['arp', 'bgp', 'cache', 'dhcp', 'eigrp', 'flow', 'igmp', 'inspect', 'interface', 'mroute', 'nat', 'ospf', 'pim', 'prefix-list', 'protocols', 'route', 'sla', 'source', 'ssh', 'verify'],
+    'show ip': ['arp', 'bgp', 'cache', 'conntrack', 'dhcp', 'dhcp-relay', 'eigrp', 'flow', 'igmp', 'inspect', 'interface', 'mroute', 'nat', 'ospf', 'pim', 'prefix-list', 'protocols', 'route', 'sla', 'source', 'ssh', 'verify'],
     'show ip mroute': [],
     'show ip pim': ['interface', 'neighbor'],
     'show ip pim interface': [],

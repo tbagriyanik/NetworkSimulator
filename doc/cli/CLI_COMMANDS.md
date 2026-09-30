@@ -998,6 +998,18 @@ The simulator automatically parses and maps alternative network operating system
 | `computePathTrace(src, dst)` | Controller Engine | Compute hop-by-hop path trace with latency, ingress/egress ports, and ACL checks |
 | `applyIntentPolicy(policy)` | Controller Engine | Deploy high-level policies (VoIP QoS prioritization, IoT VLAN isolation, rate-limiting) |
 
+### Network Report, Traffic Telemetry, STP Guards & Stateful ConnTrack (v7.0.0)
+
+| Feature / Command | Context | Description |
+|-------------------|---------|-------------|
+| `generateNetworkReport(...)` | Report Engine | Export network inventory, IP matrix, VLAN list, and routes to Markdown technical report |
+| `trafficGeneratorEngine` | Telemetry Engine | Simulate HTTP, VoIP, FTP, UDP traffic flows and compute % link bandwidth utilization & latency |
+| `evaluateStpGuards(...)` | STP Engine | Enforce PortFast, BPDU Guard (`errdisable`), BPDU Filter, Root Guard (`Root-Inconsistent`), and Loop Guard |
+| `evaluateStormControl(...)` | L2 Storm Engine | Detect L2 Broadcast/Multicast storms and throttle excess pps or shut down interface |
+| `explainBgpBestPath(...)` | BGP Engine | Analyze 13-step BGP decision tie-breakers (Weight, LocalPref, AS-Path, Origin, MED, Neighbor IP) |
+| `ConntrackEngine` / `show ip conntrack` | Stateful Engine | Track L4 TCP/UDP/ICMP stateful firewall sessions (`ESTABLISHED`, `SYN_SENT`, `FIN_WAIT`) |
+| `processDhcpRelay(...)` | DHCP Engine | Insert `giaddr` and Option 82 (Circuit ID, Remote ID) during inter-subnet DHCP relaying |
+
 
 ## Command Modes
 - **User Mode** (`>`) - Basic monitoring commands
