@@ -22,7 +22,7 @@ import {
 import { cn } from '@/lib/utils';
 import {
   Menu, Plus, Save, FolderOpen, Languages, Sun, Moon, File, BookOpen, Leaf, Compass, Info, Sparkles, Cloud, Trophy,
-  Mail, GraduationCap, ImageDown, FileText, Wand2, Gamepad2
+  Mail, GraduationCap, ImageDown, FileText, Wand2, Gamepad2, Cpu
 } from 'lucide-react';
 import type { Translations } from '@/contexts/LanguageContext';
 import type { CanvasDevice, DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
@@ -66,6 +66,7 @@ interface AppHeaderProps {
   isPingPanelOpen?: boolean;
   isExamActive?: boolean;
   setShowStoryMode?: (v: boolean) => void;
+  setShowSdnModal?: (v: boolean) => void;
 }
 
 export function AppHeader({
@@ -82,7 +83,7 @@ export function AppHeader({
   showBasarilarim, setShowBasarilarim,
   helpLevel, setHelpLevel,
   isPingPanelOpen,
-  isExamActive = false, setShowStoryMode
+  isExamActive = false, setShowStoryMode, setShowSdnModal
 }: AppHeaderProps) {
   const showLabProgress = false;
   return (
@@ -284,6 +285,26 @@ export function AppHeader({
                   </span>
                 </TooltipTrigger>
                 <TooltipContent>{t.storyMode || (language === 'tr' ? 'Etkileşimli Senaryo Modu' : 'Interactive Story Mode')}</TooltipContent>
+              </Tooltip>}
+
+              {setShowSdnModal && <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="inline-block">
+                    <button
+                      disabled={isExamActive}
+                      aria-label={language === 'tr' ? 'SDN & Intent Denetleyici (APIC-EM/DNA-C)' : 'SDN & Intent Controller (APIC-EM/DNA-C)'}
+                      className={cn(
+                        "h-8 w-8 flex items-center justify-center transition-all hover:bg-secondary-200/50",
+                        isDark ? 'text-secondary-300 hover:text-sky-400 hover:bg-secondary-700/50' : 'text-secondary-500 hover:text-sky-600',
+                        isExamActive && "opacity-40 cursor-not-allowed hover:bg-transparent hover:text-secondary-300"
+                      )}
+                      onClick={() => !isExamActive && setShowSdnModal(true)}
+                    >
+                      <Cpu className="w-4 h-4" />
+                    </button>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>{language === 'tr' ? 'SDN & Intent Denetleyicisi (APIC-EM / DNA-C)' : 'SDN & Intent Controller'}</TooltipContent>
               </Tooltip>}
 
 

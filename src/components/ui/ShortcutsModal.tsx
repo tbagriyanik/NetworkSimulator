@@ -69,13 +69,13 @@ export function ShortcutsModal({
       shortcuts: [
         { label: isTr ? 'Ağ Topolojisini Yenile' : 'Refresh Topology', key: 'F5' },
         { label: isTr ? 'Ekrana Sığdır' : 'Zoom to Fit', key: 'Alt+F' },
-        { label: isTr ? 'Görünümü Sıfırla' : 'Reset View', key: 'Alt+R / Home' },
+        { label: isTr ? 'Görünümü Sıfırla' : 'Reset View', key: '0 / Alt+R / Home' },
         { label: isTr ? 'Mini Haritayı Aç/Kapat' : 'Toggle Mini-map', key: 'Alt+M' },
         { label: isTr ? 'Olay Günlüğü Aç/Kapat' : 'Toggle Event Log', key: 'Alt+L' },
         { label: isTr ? 'Paket Analizini Oynat/Duraklat' : 'Play/Pause Packet Anim', key: 'P' },
         { label: isTr ? 'Sonraki Hop Adımı' : 'Next Hop Step', key: 'N' },
         { label: isTr ? 'Tuvali Kaydır' : 'Pan Canvas', key: 'Space + Drag' },
-        { label: isTr ? 'Yakınlaştır / Uzaklaştır' : 'Zoom In / Out', key: `${modText} + Scroll` },
+        { label: isTr ? 'Yakınlaştır / Uzaklaştır' : 'Zoom In / Out', key: `+ / - / ${modText}+Scroll` },
       ],
     },
     {

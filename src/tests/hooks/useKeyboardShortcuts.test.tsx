@@ -172,5 +172,82 @@ describe('global shortcut handler', () => {
 
     expect(handleDeviceDoubleClick).not.toHaveBeenCalled();
   });
+
+  it('triggers zoom in, out, and reset events in topology tab', () => {
+    const zoomInListener = vi.fn();
+    const zoomOutListener = vi.fn();
+    const zoomResetListener = vi.fn();
+
+    window.addEventListener('trigger-topology-zoom-in', zoomInListener);
+    window.addEventListener('trigger-topology-zoom-out', zoomOutListener);
+    window.addEventListener('trigger-topology-zoom-reset', zoomResetListener);
+
+    function TopologyHarness() {
+      useKeyboardShortcuts({
+        ...baseProps,
+        activeTab: 'topology',
+        activeTabRef: { current: 'topology' },
+      });
+      return <div data-testid="topology-canvas" />;
+    }
+
+    render(<TopologyHarness />);
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: '+', code: 'Equal' }));
+    });
+    expect(zoomInListener).toHaveBeenCalledTimes(1);
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: '-', code: 'Minus' }));
+    });
+    expect(zoomOutListener).toHaveBeenCalledTimes(1);
+
+    act(() => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: '0', code: 'Digit0' }));
+    });
+    expect(zoomResetListener).toHaveBeenCalledTimes(1);
+
+    window.removeEventListener('trigger-topology-zoom-in', zoomInListener);
+    window.removeEventListener('trigger-topology-zoom-out', zoomOutListener);
+    window.removeEventListener('trigger-topology-zoom-reset', zoomResetListener);
+  });
+
+  it('does not trigger zoom shortcuts when typing in an input field', () => {
+    const zoomInListener = vi.fn();
+    const zoomOutListener = vi.fn();
+    const zoomResetListener = vi.fn();
+
+    window.addEventListener('trigger-topology-zoom-in', zoomInListener);
+    window.addEventListener('trigger-topology-zoom-out', zoomOutListener);
+    window.addEventListener('trigger-topology-zoom-reset', zoomResetListener);
+
+    function InputHarness() {
+      useKeyboardShortcuts({
+        ...baseProps,
+        activeTab: 'topology',
+        activeTabRef: { current: 'topology' },
+      });
+      return <input data-testid="test-input" />;
+    }
+
+    const { getByTestId } = render(<InputHarness />);
+    const input = getByTestId('test-input');
+
+    act(() => {
+      input.focus();
+      fireEvent.keyDown(input, { key: '+', code: 'Equal' });
+      fireEvent.keyDown(input, { key: '-', code: 'Minus' });
+      fireEvent.keyDown(input, { key: '0', code: 'Digit0' });
+    });
+
+    expect(zoomInListener).not.toHaveBeenCalled();
+    expect(zoomOutListener).not.toHaveBeenCalled();
+    expect(zoomResetListener).not.toHaveBeenCalled();
+
+    window.removeEventListener('trigger-topology-zoom-in', zoomInListener);
+    window.removeEventListener('trigger-topology-zoom-out', zoomOutListener);
+    window.removeEventListener('trigger-topology-zoom-reset', zoomResetListener);
+  });
 });
 

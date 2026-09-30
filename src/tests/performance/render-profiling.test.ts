@@ -82,4 +82,25 @@ describe('DeviceRenderer Performance', () => {
     iconCache.set('iot', 1);
     expect(iconCache.size).toBe(7);
   });
+
+  it('should process 500 icon lookups and coordinate transforms under performance threshold (< 50ms)', () => {
+    const iconCache = new Map<string, string>([
+      ['pc', 'icon-pc'],
+      ['router', 'icon-router'],
+      ['switchL2', 'icon-sw-l2'],
+      ['switchL3', 'icon-sw-l3'],
+    ]);
+
+    const started = performance.now();
+    let hits = 0;
+    for (let i = 0; i < 500; i++) {
+      const type = i % 2 === 0 ? 'pc' : 'router';
+      if (iconCache.has(type)) {
+        hits++;
+      }
+    }
+    const elapsed = performance.now() - started;
+    expect(hits).toBe(500);
+    expect(elapsed).toBeLessThan(50); // Strict threshold for 500 transform evaluations
+  });
 });

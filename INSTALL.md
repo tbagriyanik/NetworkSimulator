@@ -2,17 +2,48 @@
 
 ## 🚀 Hızlı Başlangıç
 
-### 1. Bağımlılıkları Yükle
+
+## 📦 Derleme & Dağıtım / Build & Releases
+
+### 🌐 1. Web Sürümü (Web Production)
+```bash
+npm run build
+npm run start
+```
+Vercel, Node.js veya Docker ortamında tam dinamik API rotalarıyla çalışır.
+
+### 🖥️ 2. Masaüstü Sürümleri (Windows, macOS, Linux)
+Tauri v2 altyapısıyla yerel masaüstü uygulaması derlemek için:
+```bash
+# Yerel masaüstü derlemesi (.exe / .dmg / .deb / .AppImage)
+npm run build:exe
+```
+Çıktılar `src-tauri/target/release/bundle/` altında oluşturulur.
+
+### 🤖 3. Mobil Android Sürümü (Android APK)
+```bash
+# İlk kurulum (Android Studio & SDK yüklü olmalıdır)
+npx tauri android init
+
+# APK derlemesi
+npx tauri android build --apk
+```
+Çıktı: `src-tauri/gen/android/app/build/outputs/apk/` dizininde üretilir.
+
+### 🚀 4. GitHub Actions ile Otomatik Cross-Platform Release
+Depoda `.github/workflows/release.yml` iş akışı bulunmaktadır. Yeni bir sürüm etiketi gönderildiğinde GitHub 3 ayrı işletim sisteminde (Windows, macOS, Ubuntu) derleme yapar ve **Releases** sayfasına indirme paketlerini otomatik ekler:
 
 ```bash
-npm install
+git add .
+git commit -m "chore: release v6.6.0"
+git tag v6.6.0
+git push origin main --tags
 ```
 
-### 2. Geliştirme Sunucusunu Başlat
-
-```bash
-npm run dev
-```
+**Üretilen Paketler:**
+- 🪟 **Windows:** `.exe` (NSIS Yükleyici) & `.msi`
+- 🍏 **macOS:** `.dmg` (Disk Kalıbı) & `.app`
+- 🐧 **Linux:** `.deb` (Debian/Ubuntu paketi) & `.AppImage` (Evrensel Linux paketi)
 
 Tarayıcıda açın: [http://localhost:3000](http://localhost:3000)
 

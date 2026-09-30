@@ -105,12 +105,22 @@ export function useKeyboardShortcuts({
       );
 
       const focusedElement = typeof document !== 'undefined' ? (document.activeElement as HTMLElement | null) : null;
+      const targetElement = (typeof HTMLElement !== 'undefined' && e.target instanceof HTMLElement) ? e.target : null;
       const isEditable = Boolean(
-        focusedElement && (
+        (focusedElement && (
           focusedElement.tagName === 'INPUT' ||
           focusedElement.tagName === 'TEXTAREA' ||
+          focusedElement.tagName === 'SELECT' ||
           focusedElement.getAttribute('contenteditable') === 'true' ||
           focusedElement.closest('[data-note-id], textarea, input, select, [contenteditable="true"]')
+        )) || (
+          targetElement && (
+            targetElement.tagName === 'INPUT' ||
+            targetElement.tagName === 'TEXTAREA' ||
+            targetElement.tagName === 'SELECT' ||
+            targetElement.isContentEditable ||
+            targetElement.closest('[data-note-id], textarea, input, select, [contenteditable="true"]')
+          )
         )
       );
 
@@ -259,6 +269,31 @@ export function useKeyboardShortcuts({
           e.preventDefault();
           handleNewProject();
         }
+
+        const isZoomIn = e.key === '+' || e.key === '=' || e.code === 'NumpadAdd' || e.code === 'Equal';
+        const isZoomOut = e.key === '-' || e.key === '_' || e.code === 'NumpadSubtract' || e.code === 'Minus';
+        const isZoomReset = e.key === '0' || e.code === 'Digit0' || e.code === 'Numpad0';
+
+        if (activeTabRef.current === 'topology' && !isEditable && !isWindowInteriorFocused) {
+          if (isZoomIn) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            window.dispatchEvent(new CustomEvent('trigger-topology-zoom-in'));
+            return;
+          }
+          if (isZoomOut) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            window.dispatchEvent(new CustomEvent('trigger-topology-zoom-out'));
+            return;
+          }
+          if (isZoomReset) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            window.dispatchEvent(new CustomEvent('trigger-topology-zoom-reset'));
+            return;
+          }
+        }
       }
 
       if (e.altKey && !e.ctrlKey && !e.metaKey) {
@@ -309,6 +344,29 @@ export function useKeyboardShortcuts({
             } else {
               setIsTimelineMinimized(prev => !prev);
             }
+            return;
+          }
+
+          const isZoomIn = e.key === '+' || e.key === '=' || e.code === 'NumpadAdd';
+          const isZoomOut = e.key === '-' || e.key === '_' || e.code === 'NumpadSubtract';
+          const isZoomReset = e.key === '0' || e.code === 'Digit0' || e.code === 'Numpad0';
+
+          if (isZoomIn) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            window.dispatchEvent(new CustomEvent('trigger-topology-zoom-in'));
+            return;
+          }
+          if (isZoomOut) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            window.dispatchEvent(new CustomEvent('trigger-topology-zoom-out'));
+            return;
+          }
+          if (isZoomReset) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            window.dispatchEvent(new CustomEvent('trigger-topology-zoom-reset'));
             return;
           }
         }

@@ -1,12 +1,12 @@
 # Network Simulator
 
-![Version](https://img.shields.io/badge/version-6.8.1-blue)
-![Next.js](https://img.shields.io/badge/Next.js-16.3.6-black?logo=next.js)
+![Version](https://img.shields.io/badge/version-6.9.0-blue)
+![Next.js](https://img.shields.io/badge/Next.js-16.3.7-black?logo=next.js)
 ![React](https://img.shields.io/badge/React-19.3.0-61DAFB?logo=react&logoColor=black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-7.0.2-3178C6?logo=typescript&logoColor=white)
 ![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-4.3.3-06B6D4?logo=tailwindcss&logoColor=white)
 ![FOSS](https://img.shields.io/badge/FOSS-Free%20Open%20Source-brightgreen)
-![Total Lines](https://img.shields.io/badge/total--lines-~231k-lightgrey)
+![Total Lines](https://img.shields.io/badge/total--lines-~210k-lightgrey)
 
 A comprehensive, client-side, browser-based network simulator for learning switching, routing, wireless, security, IoT, CLI terminal workflows.
 
@@ -14,8 +14,8 @@ A comprehensive, client-side, browser-based network simulator for learning switc
 
 ### Demo & Videos / Tanıtım Videoları
 - 📺 **Tanıtım 3:** [https://youtu.be/w9XYxws-thw](https://youtu.be/w9XYxws-thw)
-- 📺 **Tanıtım 2:** [https://www.youtube.com/watch?v=rSW3LiQa290](https://www.youtube.com/watch?v=rSW3LiQa290)
-- 📺 **Tanıtım 1:** [https://www.youtube.com/watch?v=2Xo-ZP5qgXI](https://www.youtube.com/watch?v=2Xo-ZP5qgXI)
+- 📺 **Tanıtım 2:** [https://youtu.be/rSW3LiQa290](https://youtu.be/rSW3LiQa290)
+- 📺 **Tanıtım 1:** [https://youtu.be/2Xo-ZP5qgXI](https://youtu.be/2Xo-ZP5qgXI)
 
 ---
 
@@ -38,49 +38,6 @@ npm run check
 ### 🧩 CLI Varyasyon Desteği / CLI Alias Compatibility
 
 Simülatör, standart komut formatının yanı sıra yaygın olarak kullanılan alternatif CLI biçimlerini de tanır. `configure terminal` gibi ana komutlar yanında; `system-view`, `show config` ve `display interface brief` gibi kısa veya farklı yazım biçimleri de aynı akışta çalışır. Bu sayede öğrenciler daha tanıdık komut kalıplarıyla pratik yapabilir, ancak sistem yine tek bir standart komut modeline dayanır.
-
----
-
-## 📦 Derleme & Dağıtım / Build & Releases
-
-### 🌐 1. Web Sürümü (Web Production)
-```bash
-npm run build
-npm run start
-```
-Vercel, Node.js veya Docker ortamında tam dinamik API rotalarıyla çalışır.
-
-### 🖥️ 2. Masaüstü Sürümleri (Windows, macOS, Linux)
-Tauri v2 altyapısıyla yerel masaüstü uygulaması derlemek için:
-```bash
-# Yerel masaüstü derlemesi (.exe / .dmg / .deb / .AppImage)
-npm run build:exe
-```
-Çıktılar `src-tauri/target/release/bundle/` altında oluşturulur.
-
-### 🤖 3. Mobil Android Sürümü (Android APK)
-```bash
-# İlk kurulum (Android Studio & SDK yüklü olmalıdır)
-npx tauri android init
-
-# APK derlemesi
-npx tauri android build --apk
-```
-Çıktı: `src-tauri/gen/android/app/build/outputs/apk/` dizininde üretilir.
-
-### 🚀 4. GitHub Actions ile Otomatik Cross-Platform Release
-Depoda `.github/workflows/release.yml` iş akışı bulunmaktadır. Yeni bir sürüm etiketi gönderildiğinde GitHub 3 ayrı işletim sisteminde (Windows, macOS, Ubuntu) derleme yapar ve **Releases** sayfasına indirme paketlerini otomatik ekler:
-
-```bash
-git add .
-git commit -m "chore: release v6.6.0"
-git tag v6.6.0
-git push origin main --tags
-```
-**Üretilen Paketler:**
-- 🪟 **Windows:** `.exe` (NSIS Yükleyici) & `.msi`
-- 🍏 **macOS:** `.dmg` (Disk Kalıbı) & `.app`
-- 🐧 **Linux:** `.deb` (Debian/Ubuntu paketi) & `.AppImage` (Evrensel Linux paketi)
 
 ---
 
@@ -116,9 +73,9 @@ git push origin main --tags
 
 | Metrik / Metric | Değer / Value |
 | --- | --- |
-| Version / Sürüm | 6.8.1 |
-| Total Lines / Toplam Satır (`src/`) | ~230,853 |
-| Source Files / Kaynak Dosya | 1114 |
+| Version / Sürüm | 6.9.0 |
+| Total Lines / Toplam Satır (`src/`) | ~209,832 |
+| Source Files / Kaynak Dosya | 1117 |
 | Documentation Files / Dokümantasyon Dosya | 25 |
 | Example Projects / Örnek Proje | 49 |
 | Guided Lessons / Rehberli Ders | 19 |

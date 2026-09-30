@@ -5,15 +5,53 @@ export interface YangLeaf {
   name: string;
   type: string;
   config: boolean;
+  description?: string;
+}
+
+export interface YangContainer {
+  name: string;
+  leaves: YangLeaf[];
+  description?: string;
+}
+
+export interface YangList {
+  name: string;
+  key: string;
+  leaves: YangLeaf[];
+  description?: string;
+}
+
+export interface YangRpc {
+  name: string;
+  inputLeaves: YangLeaf[];
+  outputLeaves: YangLeaf[];
+  description?: string;
 }
 
 export interface YangModule {
   name: string;
   namespace: string;
+  prefix?: string;
   leaves: YangLeaf[];
+  containers?: YangContainer[];
+  lists?: YangList[];
+  rpcs?: YangRpc[];
 }
 
 export type YangData = Record<string, string | number | boolean>;
+
+export interface NetconfRpcMessage {
+  messageId: string;
+  rpcName: string;
+  params: Record<string, string | number | boolean>;
+}
+
+export interface NetconfRpcReply {
+  messageId: string;
+  ok: boolean;
+  data?: Record<string, unknown>;
+  errorMessage?: string;
+}
 
 export interface SdnPathTraceHop {
   hopNumber: number;
@@ -71,19 +109,12 @@ export interface SdnFlowRule {
   egressPort?: string;
 }
 
-/** Minimal YANG 1.1 subset parser for simulator data models. */
-export function parseYangModule(source: string): YangModule {
-  const name = source.match(/\bmodule\s+([\w-]+)\s*\{/i)?.[1];
-  const namespace = source.match(/\bnamespace\s+"([^"]+)"\s*;/i)?.[1];
-  if (!name || !namespace) {
-    throw new Error('Invalid YANG module: module and namespace are required');
-  }
-
+function parseLeaves(block: string): YangLeaf[] {
   const leaves: YangLeaf[] = [];
   const leafPattern = /\bleaf\s+([\w-]+)\s*\{([\s\S]*?)\}/gi;
   let match: RegExpExecArray | null;
 
-  while ((match = leafPattern.exec(source))) {
+  while ((match = leafPattern.exec(block))) {
     const type = match[2].match(/\btype\s+([\w:-]+)/i)?.[1] || 'string';
     leaves.push({
       name: match[1],
@@ -91,8 +122,80 @@ export function parseYangModule(source: string): YangModule {
       config: !/\bconfig\s+false\s*;/i.test(match[2]),
     });
   }
+  return leaves;
+}
 
-  return { name, namespace, leaves };
+/** Comprehensive YANG 1.1 model parser supporting modules, leaves, containers, lists and RPCs */
+export function parseYangModule(source: string): YangModule {
+  const name = source.match(/\bmodule\s+([\w-]+)\s*\{/i)?.[1];
+  const namespace = source.match(/\bnamespace\s+"([^"]+)"\s*;/i)?.[1];
+  const prefix = source.match(/\bprefix\s+"?([\w-]+)"?\s*;/i)?.[1];
+  if (!name || !namespace) {
+    throw new Error('Invalid YANG module: module and namespace are required');
+  }
+
+  function extractBlocks(tag: string): Array<{ name: string; content: string }> {
+    const results: Array<{ name: string; content: string }> = [];
+    const regex = new RegExp(`\\b${tag}\\s+([\\w-]+)\\s*\\{`, 'gi');
+    let m: RegExpExecArray | null;
+    while ((m = regex.exec(source))) {
+      const name = m[1];
+      const start = m.index + m[0].length;
+      let depth = 1;
+      let pos = start;
+      while (pos < source.length && depth > 0) {
+        if (source[pos] === '{') depth++;
+        else if (source[pos] === '}') depth--;
+        pos++;
+      }
+      results.push({ name, content: source.slice(start, pos - 1) });
+    }
+    return results;
+  }
+
+  function extractSubBlock(parentContent: string, tag: string): string {
+    const regex = new RegExp(`\\b${tag}\\s*\\{`, 'i');
+    const m = regex.exec(parentContent);
+    if (!m) return '';
+    const start = m.index + m[0].length;
+    let depth = 1;
+    let pos = start;
+    while (pos < parentContent.length && depth > 0) {
+      if (parentContent[pos] === '{') depth++;
+      else if (parentContent[pos] === '}') depth--;
+      pos++;
+    }
+    return parentContent.slice(start, pos - 1);
+  }
+
+  // Top-level leaves
+  const leaves = parseLeaves(source);
+
+  // Containers
+  const containers: YangContainer[] = extractBlocks('container').map(b => ({
+    name: b.name,
+    leaves: parseLeaves(b.content),
+  }));
+
+  // Lists
+  const lists: YangList[] = extractBlocks('list').map(b => ({
+    name: b.name,
+    key: b.content.match(/\bkey\s+"?([\w-]+)"?\s*;/i)?.[1] || 'id',
+    leaves: parseLeaves(b.content),
+  }));
+
+  // RPCs
+  const rpcs: YangRpc[] = extractBlocks('rpc').map(b => {
+    const inputContent = extractSubBlock(b.content, 'input');
+    const outputContent = extractSubBlock(b.content, 'output');
+    return {
+      name: b.name,
+      inputLeaves: parseLeaves(inputContent),
+      outputLeaves: parseLeaves(outputContent),
+    };
+  });
+
+  return { name, namespace, prefix, leaves, containers, lists, rpcs };
 }
 
 export class SdnController {
@@ -133,6 +236,48 @@ export class SdnController {
 
   restconfPatch(path: string, patch: YangData): YangData {
     return this.editConfig(path, patch);
+  }
+
+  /**
+   * Dispatches and processes a NETCONF RPC message against defined YANG RPC schemas.
+   */
+  executeNetconfRpc(rpcMessage: NetconfRpcMessage): NetconfRpcReply {
+    const definedRpc = this.modules.flatMap(m => m.rpcs ?? []).find(r => r.name === rpcMessage.rpcName);
+    if (!definedRpc) {
+      return {
+        messageId: rpcMessage.messageId,
+        ok: false,
+        errorMessage: `RPC ${rpcMessage.rpcName} not defined in loaded YANG modules`,
+      };
+    }
+
+    // Verify required inputs
+    for (const inLeaf of definedRpc.inputLeaves) {
+      if (rpcMessage.params[inLeaf.name] === undefined) {
+        return {
+          messageId: rpcMessage.messageId,
+          ok: false,
+          errorMessage: `Missing input parameter: ${inLeaf.name}`,
+        };
+      }
+    }
+
+    return {
+      messageId: rpcMessage.messageId,
+      ok: true,
+      data: {
+        status: 'SUCCESS',
+        executedRpc: rpcMessage.rpcName,
+        receivedParams: rpcMessage.params,
+      },
+    };
+  }
+
+  netconfRpcXml(messageId: string, rpcName: string, params: Record<string, string | number>): string {
+    const paramsXml = Object.entries(params)
+      .map(([k, v]) => `<${k}>${v}</${k}>`)
+      .join('');
+    return `<rpc message-id="${messageId}" xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"><${rpcName}>${paramsXml}</${rpcName}></rpc>`;
   }
 
   /**

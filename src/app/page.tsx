@@ -28,13 +28,18 @@ import { TopologySection } from './sections/TopologySection';
 import { usePageController } from './usePageController';
 import { useAppStore } from '@/lib/store/appStore';
 import { StoryModePanel } from '@/components/network/StoryModePanel';
+import { SdnControllerModal } from '@/components/network/SdnControllerModal';
 import { useEffect, useState } from 'react';
 
 export default function Home({ initialProjectId }: { initialProjectId?: string }) {
   const page = usePageController({ initialProjectId });
   const [showStoryMode, setShowStoryMode] = useState(false);
+  const [showSdnModal, setShowSdnModal] = useState(false);
   useEffect(() => {
-    const closeForWorkspaceChange = () => setShowStoryMode(false);
+    const closeForWorkspaceChange = () => {
+      setShowStoryMode(false);
+      setShowSdnModal(false);
+    };
     window.addEventListener('new-project-reset', closeForWorkspaceChange);
     window.addEventListener('restore-checkpoint', closeForWorkspaceChange);
     window.addEventListener('network-refresh', closeForWorkspaceChange);
@@ -97,9 +102,20 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
             helpLevel={page.helpLevel}
             setHelpLevel={useAppStore.getState().setHelpLevel}
             setShowStoryMode={setShowStoryMode}
+            setShowSdnModal={setShowSdnModal}
           />
 
           <StoryModePanel open={showStoryMode} onClose={() => setShowStoryMode(false)} topologyDevices={page.topologyDevices} topologyConnections={page.topologyConnections} deviceStates={page.deviceStates} />
+
+          <SdnControllerModal
+            open={showSdnModal}
+            onOpenChange={setShowSdnModal}
+            devices={page.topologyDevices}
+            connections={page.topologyConnections}
+            deviceStates={page.deviceStates}
+            isDark={page.isDark}
+            language={page.language}
+          />
 
           <PageDialogs
             t={page.t}

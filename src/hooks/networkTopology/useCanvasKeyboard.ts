@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect } from 'react';
 import type { CanvasDevice, ContextMenuState } from '@/components/network/NetworkTopology/types/networkTopology.types';
@@ -90,16 +90,26 @@ export function useCanvasKeyboard({
 
     const handleKeyDown = (e: KeyboardEvent) => {
       const activeEl = document.activeElement as HTMLElement | null;
+      const targetEl = (typeof HTMLElement !== 'undefined' && e.target instanceof HTMLElement) ? e.target : null;
       const isEditable = Boolean(
-        activeEl && (
+        (activeEl && (
           activeEl.tagName === 'INPUT' ||
           activeEl.tagName === 'TEXTAREA' ||
+          activeEl.tagName === 'SELECT' ||
           activeEl.getAttribute('contenteditable') === 'true' ||
-          activeEl.closest('[data-note-id], textarea, input, [contenteditable="true"]')
+          activeEl.closest('[data-note-id], textarea, input, select, [contenteditable="true"]')
+        )) || (
+          targetEl && (
+            targetEl.tagName === 'INPUT' ||
+            targetEl.tagName === 'TEXTAREA' ||
+            targetEl.tagName === 'SELECT' ||
+            targetEl.isContentEditable ||
+            targetEl.closest('[data-note-id], textarea, input, select, [contenteditable="true"]')
+          )
         )
       );
 
-      if (!e.key) return;
+      if (e.defaultPrevented || !e.key) return;
       const key = e.key.toLowerCase();
 
       // Escape key handler
@@ -207,6 +217,29 @@ export function useCanvasKeyboard({
         if (key === 'f') {
           e.preventDefault();
           toggleFullscreen();
+        }
+      }
+
+      // Zoom controls: + (in), - (out), 0 (reset)
+      if (!isEditable && !e.altKey) {
+        const isZoomIn = e.key === '+' || e.key === '=' || e.code === 'NumpadAdd' || (e.ctrlKey && e.code === 'Equal');
+        const isZoomOut = e.key === '-' || e.key === '_' || e.code === 'NumpadSubtract' || (e.ctrlKey && e.code === 'Minus');
+        const isZoomReset = e.key === '0' || e.code === 'Digit0' || e.code === 'Numpad0';
+
+        if (isZoomIn) {
+          e.preventDefault();
+          window.dispatchEvent(new CustomEvent('trigger-topology-zoom-in'));
+          return;
+        }
+        if (isZoomOut) {
+          e.preventDefault();
+          window.dispatchEvent(new CustomEvent('trigger-topology-zoom-out'));
+          return;
+        }
+        if (isZoomReset) {
+          e.preventDefault();
+          resetView();
+          return;
         }
       }
 

@@ -94,8 +94,11 @@ export function cleanupAllResources(): void {
  * Force garbage collection hint (works in some environments)
  */
 export function forceGC(): void {
-  if (typeof global !== 'undefined' && (global as any).gc) {
-    (global as any).gc();
+  if (process.env.NODE_ENV !== 'production') {
+    const globalWithGc = globalThis as unknown as { gc?: () => void };
+    if (typeof globalWithGc.gc === 'function') {
+      globalWithGc.gc();
+    }
   }
 }
 
@@ -103,7 +106,7 @@ export function forceGC(): void {
  * Memory usage monitoring for development
  */
 export function getMemoryUsage(): NodeJS.MemoryUsage | null {
-  if (typeof process !== 'undefined' && process.memoryUsage) {
+  if (process.env.NODE_ENV !== 'production' && typeof process !== 'undefined' && process.memoryUsage) {
     return process.memoryUsage();
   }
   return null;
@@ -113,6 +116,9 @@ export function getMemoryUsage(): NodeJS.MemoryUsage | null {
  * Log memory usage if available
  */
 export function logMemoryUsage(context: string): void {
+  if (process.env.NODE_ENV === 'production') {
+    return;
+  }
   const usage = getMemoryUsage();
   if (usage) {
     console.log(`[Memory ${context}]`, {
@@ -126,7 +132,7 @@ export function logMemoryUsage(context: string): void {
 /**
  * Performance-optimized debounce function
  */
-export function debounce<T extends (...args: any[]) => any>(
+export function debounce<T extends (...args: unknown[]) => unknown>(
   func: T,
   wait: number
 ): (...args: Parameters<T>) => void {
@@ -150,7 +156,7 @@ export function debounce<T extends (...args: any[]) => any>(
 /**
  * Performance-optimized throttle function
  */
-export function throttle<T extends (...args: any[]) => any>(
+export function throttle<T extends (...args: unknown[]) => unknown>(
   func: T,
   limit: number
 ): (...args: Parameters<T>) => void {

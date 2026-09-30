@@ -1,4 +1,4 @@
-﻿import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 import type { NetworkPacketFrame } from '@/lib/network/forwarding/packetFrame';
@@ -70,7 +70,10 @@ describe('500-Device Scale Smoke / Benchmark', () => {
     return 'Gi1/0/2';
   }
 
-  it('builds 500 devices + ring connections without errors', () => {
+  it('builds 500 devices + ring connections within threshold (< 3000ms build, < 50MB heap delta)', () => {
+    const memBefore = process.memoryUsage ? process.memoryUsage().heapUsed : 0;
+    const started = performance.now();
+
     const devices = Array.from({ length: TOTAL }, (_, i) => makeDevice(i));
     const connections: CanvasConnection[] = [];
     for (let i = 0; i < TOTAL; i++) {
@@ -79,9 +82,20 @@ describe('500-Device Scale Smoke / Benchmark', () => {
       const [sp, tp] = pairPorts(a, b);
       connections.push({ id: `c${i}`, sourceDeviceId: a.id, sourcePort: sp, targetDeviceId: b.id, targetPort: tp, cableType: 'straight' as const, active: true });
     }
+
+    const elapsed = performance.now() - started;
+    const memAfter = process.memoryUsage ? process.memoryUsage().heapUsed : 0;
+    const heapDeltaMB = (memAfter - memBefore) / (1024 * 1024);
+
     expect(devices).toHaveLength(TOTAL);
     expect(connections).toHaveLength(TOTAL);
     expect(new Set(devices.map(d => d.id)).size).toBe(TOTAL);
+    
+    // Explicit regression thresholds
+    expect(elapsed).toBeLessThan(3000);
+    if (memBefore > 0) {
+      expect(heapDeltaMB).toBeLessThan(50);
+    }
   });
 
   it('benchmark: routing tables for L3 devices at 500-device scale stay fast', () => {

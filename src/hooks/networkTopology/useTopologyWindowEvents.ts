@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef, RefObject, Dispatch, SetStateAction } from 'react';
+import { useEffect, useRef, RefObject, Dispatch, SetStateAction } from 'react';
 import { CanvasDevice, CanvasConnection, CanvasNote, ContextMenuState } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { getDeviceCenter } from '@/components/network/NetworkTopology/utils/networkTopology.helpers';
 import { MIN_ZOOM, MAX_ZOOM } from '@/components/network/NetworkTopology/utils/networkTopology.constants';
@@ -9,6 +9,7 @@ interface UseTopologyWindowEventsProps {
   setZoom: Dispatch<SetStateAction<number>>;
   setPan: Dispatch<SetStateAction<{ x: number; y: number }>>;
   zoomToFit: () => void;
+  resetView?: () => void;
   setIsMinimapOpen: Dispatch<SetStateAction<boolean>>;
   setShowLogPanel: Dispatch<SetStateAction<boolean>>;
   setContextMenu: Dispatch<SetStateAction<ContextMenuState | null>>;
@@ -36,6 +37,7 @@ export function useTopologyWindowEvents({
   setZoom,
   setPan,
   zoomToFit,
+  resetView,
   setIsMinimapOpen,
   setShowLogPanel,
   setContextMenu,
@@ -129,16 +131,65 @@ export function useTopologyWindowEvents({
     const handleToggleMinimapEvent = () => setIsMinimapOpen((prev) => !prev);
     const handleToggleLogEvent = () => setShowLogPanel((prev) => !prev);
 
+    const handleZoomInEvent = () => {
+      setZoom((prevZoom) => {
+        const newZoom = Math.min(MAX_ZOOM, prevZoom + 0.25);
+        if (newZoom === prevZoom) return prevZoom;
+        if (canvasRef.current) {
+          const rect = canvasRef.current.getBoundingClientRect();
+          const cursorX = rect.width / 2;
+          const cursorY = rect.height / 2;
+          setPan((prevPan) => ({
+            x: cursorX - (cursorX - prevPan.x) * (newZoom / prevZoom),
+            y: cursorY - (cursorY - prevPan.y) * (newZoom / prevZoom),
+          }));
+        }
+        return newZoom;
+      });
+    };
+
+    const handleZoomOutEvent = () => {
+      setZoom((prevZoom) => {
+        const newZoom = Math.max(MIN_ZOOM, prevZoom - 0.25);
+        if (newZoom === prevZoom) return prevZoom;
+        if (canvasRef.current) {
+          const rect = canvasRef.current.getBoundingClientRect();
+          const cursorX = rect.width / 2;
+          const cursorY = rect.height / 2;
+          setPan((prevPan) => ({
+            x: cursorX - (cursorX - prevPan.x) * (newZoom / prevZoom),
+            y: cursorY - (cursorY - prevPan.y) * (newZoom / prevZoom),
+          }));
+        }
+        return newZoom;
+      });
+    };
+
+    const handleZoomResetEvent = () => {
+      if (resetView) {
+        resetView();
+      } else {
+        setZoom(1.0);
+        setPan({ x: 0, y: 0 });
+      }
+    };
+
     window.addEventListener('trigger-topology-zoom-to-fit', handleZoomToFitEvent);
     window.addEventListener('trigger-topology-toggle-minimap', handleToggleMinimapEvent);
     window.addEventListener('trigger-topology-toggle-network-log', handleToggleLogEvent);
+    window.addEventListener('trigger-topology-zoom-in', handleZoomInEvent);
+    window.addEventListener('trigger-topology-zoom-out', handleZoomOutEvent);
+    window.addEventListener('trigger-topology-zoom-reset', handleZoomResetEvent);
 
     return () => {
       window.removeEventListener('trigger-topology-zoom-to-fit', handleZoomToFitEvent);
       window.removeEventListener('trigger-topology-toggle-minimap', handleToggleMinimapEvent);
       window.removeEventListener('trigger-topology-toggle-network-log', handleToggleLogEvent);
+      window.removeEventListener('trigger-topology-zoom-in', handleZoomInEvent);
+      window.removeEventListener('trigger-topology-zoom-out', handleZoomOutEvent);
+      window.removeEventListener('trigger-topology-zoom-reset', handleZoomResetEvent);
     };
-  }, [zoomToFit, setIsMinimapOpen, setShowLogPanel]);
+  }, [canvasRef, zoomToFit, setIsMinimapOpen, setShowLogPanel, setZoom, setPan, resetView]);
 
   // Mobile back event listener
   useEffect(() => {

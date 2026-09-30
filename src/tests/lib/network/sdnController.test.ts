@@ -101,4 +101,96 @@ describe('SDN YANG & Controller Interactive Engine', () => {
     expect(rules[0].id).toBe('r-high'); // Higher priority rule first
     expect(rules[1].id).toBe('r-low');
   });
+
+  it('parses advanced YANG structures including containers, lists with keys, and RPCs', () => {
+    const yangAdvanced = `
+      module network-os-core {
+        namespace "urn:ietf:params:xml:ns:yang:network-os";
+        prefix "nos";
+
+        container system-settings {
+          leaf banner { type string; }
+          leaf timezone { type string; }
+        }
+
+        list interface {
+          key "name";
+          leaf name { type string; }
+          leaf enabled { type boolean; }
+        }
+
+        rpc restart-interface {
+          input {
+            leaf interface-name { type string; }
+          }
+          output {
+            leaf status { type string; }
+          }
+        }
+      }
+    `;
+
+    const module = parseYangModule(yangAdvanced);
+    expect(module.name).toBe('network-os-core');
+    expect(module.prefix).toBe('nos');
+    expect(module.containers).toHaveLength(1);
+    expect(module.containers?.[0].name).toBe('system-settings');
+    expect(module.containers?.[0].leaves).toHaveLength(2);
+
+    expect(module.lists).toHaveLength(1);
+    expect(module.lists?.[0].name).toBe('interface');
+    expect(module.lists?.[0].key).toBe('name');
+    expect(module.lists?.[0].leaves).toHaveLength(2);
+
+    expect(module.rpcs).toHaveLength(1);
+    expect(module.rpcs?.[0].name).toBe('restart-interface');
+    expect(module.rpcs?.[0].inputLeaves).toHaveLength(1);
+    expect(module.rpcs?.[0].inputLeaves[0].name).toBe('interface-name');
+  });
+
+  it('dispatches NETCONF RPC messages and validates schema parameters', () => {
+    const yangRpc = `
+      module router-operations {
+        namespace "urn:ops";
+        rpc ping {
+          input {
+            leaf destination { type string; }
+          }
+        }
+      }
+    `;
+    const controller = new SdnController([parseYangModule(yangRpc)]);
+
+    // Successful RPC call
+    const successReply = controller.executeNetconfRpc({
+      messageId: '101',
+      rpcName: 'ping',
+      params: { destination: '8.8.8.8' },
+    });
+    expect(successReply.ok).toBe(true);
+    expect(successReply.messageId).toBe('101');
+    expect(successReply.data?.status).toBe('SUCCESS');
+
+    // Missing required input parameter
+    const missingParamReply = controller.executeNetconfRpc({
+      messageId: '102',
+      rpcName: 'ping',
+      params: {},
+    });
+    expect(missingParamReply.ok).toBe(false);
+    expect(missingParamReply.errorMessage).toContain('Missing input parameter');
+
+    // Undefined RPC
+    const undefinedRpcReply = controller.executeNetconfRpc({
+      messageId: '103',
+      rpcName: 'reboot',
+      params: {},
+    });
+    expect(undefinedRpcReply.ok).toBe(false);
+    expect(undefinedRpcReply.errorMessage).toContain('not defined');
+
+    // XML serialization
+    const xml = controller.netconfRpcXml('104', 'ping', { destination: '1.1.1.1' });
+    expect(xml).toContain('<ping><destination>1.1.1.1</destination></ping>');
+  });
 });

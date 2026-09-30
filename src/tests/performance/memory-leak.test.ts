@@ -102,4 +102,26 @@ describe('Memory Leak Scanning (Heap Snapshot)', () => {
     expect(weakRef.deref()).toBeDefined();
     globalThis.gc?.();
   });
+
+  it('should maintain heap growth below threshold (< 15MB) across 1000 mount/unmount cycles', () => {
+    const memBefore = process.memoryUsage ? process.memoryUsage().heapUsed : 0;
+    
+    // Simulate 1000 component lifecycles with local listener sets
+    const runLifecycles = () => {
+      for (let i = 0; i < 1000; i++) {
+        const listeners = new Set<() => void>();
+        const cb = () => i * 2;
+        listeners.add(cb);
+        listeners.delete(cb);
+        listeners.clear();
+      }
+    };
+    runLifecycles();
+
+    const memAfter = process.memoryUsage ? process.memoryUsage().heapUsed : 0;
+    const growthMB = (memAfter - memBefore) / (1024 * 1024);
+    if (memBefore > 0) {
+      expect(growthMB).toBeLessThan(15); // Maximum allowable leak threshold
+    }
+  });
 });

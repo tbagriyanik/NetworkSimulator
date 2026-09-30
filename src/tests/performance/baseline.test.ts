@@ -118,4 +118,15 @@ describe('Performance Monitor', () => {
     const memoryUsage = 52428800;
     expect(memoryUsage).toBeGreaterThan(0);
   });
+
+  it('should enforce CI execution threshold for 10,000 array calculations (< 50ms)', () => {
+    const started = performance.now();
+    const data: number[] = [];
+    for (let i = 0; i < 10000; i++) {
+      data.push(i * 2);
+    }
+    const elapsed = performance.now() - started;
+    expect(data.length).toBe(10000);
+    expect(elapsed).toBeLessThan(50);
+  });
 });

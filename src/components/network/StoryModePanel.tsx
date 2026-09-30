@@ -31,7 +31,7 @@ import { addStoryCampaignRecord, getSummary } from '@/utils/achievementRecords';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTheme } from '@/contexts/ThemeContext';
 
-type SavedStoryState = {
+export type SavedStoryState = {
   campaignId: string;
   stepIndex: number;
   score: number;
@@ -41,9 +41,9 @@ type SavedStoryState = {
   choicesMade?: Record<string, number>;
 };
 
-const STORAGE_KEY = 'netsim_interactive_story_v4';
+export const STORAGE_KEY = 'netsim_interactive_story_v4';
 
-function initialStoryState(): SavedStoryState {
+export function initialStoryState(): SavedStoryState {
   return {
     campaignId: STORY_CAMPAIGNS[0].id,
     stepIndex: 0,
@@ -53,6 +53,14 @@ function initialStoryState(): SavedStoryState {
     completedCampaigns: [],
     choicesMade: {},
   };
+}
+
+export function calculateStoryRank(score: number, isTr: boolean): string {
+  if (score >= 1200) return isTr ? 'Baş Siber Operatör' : 'Lead Cyber Operator';
+  if (score >= 800) return isTr ? 'Ağ Mimarı' : 'Network Architect';
+  if (score >= 500) return isTr ? 'Siber Savunucu' : 'Cyber Defender';
+  if (score >= 250) return isTr ? 'Ağ Teknisyeni' : 'Network Technician';
+  return isTr ? 'Stajyer' : 'Trainee';
 }
 
 export function StoryModePanel({
@@ -133,11 +141,7 @@ export function StoryModePanel({
 
   // Rank calculation based on score
   const rank = useMemo(() => {
-    if (state.score >= 1200) return isTr ? 'Baş Siber Operatör' : 'Lead Cyber Operator';
-    if (state.score >= 800) return isTr ? 'Ağ Mimarı' : 'Network Architect';
-    if (state.score >= 500) return isTr ? 'Siber Savunucu' : 'Cyber Defender';
-    if (state.score >= 250) return isTr ? 'Ağ Teknisyeni' : 'Network Technician';
-    return isTr ? 'Stajyer' : 'Trainee';
+    return calculateStoryRank(state.score, isTr);
   }, [state.score, isTr]);
 
   // Auto trigger stage progression on objective complete

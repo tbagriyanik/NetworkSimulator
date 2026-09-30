@@ -1,3 +1,4 @@
+// Renk değerleri kasıtlı hardcoded — bağımsız HTML sayfa üretimi, CSS token erişimi yok.
 import type { CanvasDevice } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 export function generatePrinterWebPanelContent(device: CanvasDevice, language: string, isDark: boolean = true): string {

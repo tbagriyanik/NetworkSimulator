@@ -1,5 +1,25 @@
 # 📅 Network Simulator — Proje Geçmişi
 
+## v6.9.0 — 2026-09-30
+
+- **🌐 SDN & Intent-Based Networking Controller (APIC-EM / DNA-C Simülasyonu)**:
+  - `SdnController` ve `SdnControllerModal` bileşeni eklendi.
+  - Ağ envanteri ve VLAN keşfi, APIC-EM tarzı kaynak-hedef arası atlama-atlama (hop-by-hop) yol izleme (Path Trace) mekanizması entegre edildi.
+  - Intent-Based Networking (IBN) ile VoIP QoS önceliklendirme, VLAN izolasyonu ve rate limiting politikalarının tek tıkla ağ cihazlarına dağıtılması sağlandı.
+  - YANG 1.1 model ayrıştırıcısı (`container`, `list` ile key desteği, `rpc` giriş/çıkış blokları) ve NETCONF `<rpc>` mesaj yürütme/doğrulama motoru geliştirildi.
+
+- **📡 Multicast İletim Pipeline & PIM/IGMP Test Derinleştirmesi**:
+  - `multicastForwarding.test.ts` test kapsamı 11'den 25'e çıkarıldı; IP multicast adres doğrulama, RPF (Reverse Path Forwarding) kontrolleri, PIM Hello paket üretimi, IGMP General Query yayımı, dinamik `(*, G)` ve `(S, G)` mroute geçişleri ve PIM-DM dinamik arayüz budama senaryoları kapsandı.
+
+- **⚡ Performans Test Eşik Değerleri (Regression Budgets)**:
+  - 500 cihazlık topoloji inşası (`< 3000ms`, heap artışı `< 50MB`), 1000 döngülü bellek sızıntısı taraması (`< 15MB`), render ikon/koordinat dönüştürme (`< 50ms`) ve CI temel eşikleri somut kurallara bağlandı.
+
+- **🎮 StoryModePanel Birim Test Paketi**:
+  - `StoryModePanel.test.ts` (15+ test senaryosu) eklenerek rank derecelendirme (Trainee → Lead Cyber Operator), dil değişimleri, senaryo resetleme, adım atlama ve topoloji hedeflerinin doğrulanması güvence altına alındı.
+
+- **♿ Radix UI & Erişilebilirlik Restorasyonu**:
+  - `@radix-ui/react-tooltip`, `@radix-ui/react-tabs` ve `@radix-ui/react-scroll-area` paketleri geri yüklenerek klavye odaklanması, WAI-ARIA semantikleri ve roving tabindex davranışları korundu.
+
 ## v6.8.1 — 2026-09-29
 
 - **🎨 Kapsamlı Uygulama Açık/Koyu Tema Senkronizasyonu (`isDark`)**:

@@ -685,6 +685,7 @@ export function useTopologyCanvasInteractions(
     setZoom,
     setPan,
     zoomToFit,
+    resetView,
     setIsMinimapOpen,
     setShowLogPanel,
     setContextMenu,
