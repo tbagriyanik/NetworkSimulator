@@ -22,6 +22,9 @@ export function TopologyAreaOverlay({
   isDark = true,
 }: TopologyAreaOverlayProps) {
   const zones = useMemo(() => {
+    // Nothing is drawn in 'none' mode, so skip walking the device list on
+    // every topology change just to throw the result away.
+    if (overlayMode === 'none') return [];
     return computeAreaZones(devices, deviceStates, overlayMode);
   }, [devices, deviceStates, overlayMode]);
 

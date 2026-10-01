@@ -239,6 +239,17 @@ export function useTopologyMouse(props: UseTopologyMouseProps) {
     // Element handles for the drag commit path. Populated once per drag so the
     // per-frame loop never re-queries the whole SVG tree.
     const dragDomCache = createDragDomCache();
+    // Device lookup used to resolve connection endpoints during a drag. Built
+    // when the drag starts rather than on every animation frame.
+    let dragDevicesById: Map<string, CanvasDevice> = new Map();
+    const dragDevicesByIdRef = {
+      get current() {
+        return dragDevicesById;
+      },
+      set current(next: Map<string, CanvasDevice>) {
+        dragDevicesById = next;
+      },
+    };
 
     const handleMouseMove = (e: globalThis.MouseEvent) => {
       if (canvasRef.current) {
@@ -351,6 +362,8 @@ export function useTopologyMouse(props: UseTopologyMouseProps) {
 
               // Only connections touching the dragged devices are rewritten
               // each frame, so those are the only ones worth resolving.
+              // Both the endpoint lookup table and the touched-connection list
+              // are derived once here instead of on every animation frame.
               const movedIdSet = new Set(dragIds);
               const touchedConnectionIds: string[] = [];
               for (const conn of latestConnectionsRef.current) {
@@ -359,6 +372,8 @@ export function useTopologyMouse(props: UseTopologyMouseProps) {
                 }
               }
               collectConnectionElements(svgContentGroupRef.current, dragDomCache, touchedConnectionIds);
+
+              dragDevicesByIdRef.current = new Map(latestDevicesRef.current.map(device => [device.id, device]));
 
               for (let wi = 0; wi < dragIds.length; wi++) {
                 const we = getCachedDeviceElement(dragDomCache, dragIds[wi]);
@@ -405,8 +420,9 @@ export function useTopologyMouse(props: UseTopologyMouseProps) {
             const dy = mouseY - startMouseY;
 
             // Connection updates can touch many links. Avoid scanning the full
-            // device array once per endpoint and frame while dragging.
-            const devicesById = new Map(latestDevicesRef.current.map(device => [device.id, device]));
+            // device array once per endpoint and frame while dragging: the map
+            // is built once when the drag starts and reused every frame.
+            const devicesById = dragDevicesByIdRef.current;
 
             const devicesToMove = currentSelectedIds.includes(currentDraggedDevice)
               ? currentSelectedIds
@@ -798,6 +814,7 @@ export function useTopologyMouse(props: UseTopologyMouseProps) {
       }
 
       clearDragDomCache(dragDomCache);
+      dragDevicesByIdRef.current = new Map();
 
       setDraggedDevice(null);
       draggedDeviceRef.current = null;

@@ -83,6 +83,22 @@ export function usePeriodicNetworkPackets({
           deviceById.set(device.id, device);
         }
 
+        // Cable adjacency per device. The hub L1 flood below only needs the
+        // sibling cables of the hub at hand, so indexing once turns that from a
+        // full scan of every cable per cable into a single lookup.
+        const connectionsByDeviceId = new Map<string, CanvasConnection[]>();
+        for (let ci = 0; ci < currentConnections.length; ci++) {
+          const conn = currentConnections[ci];
+          const sourceList = connectionsByDeviceId.get(conn.sourceDeviceId);
+          if (sourceList) sourceList.push(conn);
+          else connectionsByDeviceId.set(conn.sourceDeviceId, [conn]);
+          if (conn.targetDeviceId !== conn.sourceDeviceId) {
+            const targetList = connectionsByDeviceId.get(conn.targetDeviceId);
+            if (targetList) targetList.push(conn);
+            else connectionsByDeviceId.set(conn.targetDeviceId, [conn]);
+          }
+        }
+
       // 1. Audit all activeVoipCalls across topology devices: if network connectivity is broken, clear activeVoipCall on BOTH sides
       const devicesToDisconnect = new Set<string>();
       currentDevices.forEach(dev => {
@@ -211,7 +227,8 @@ export function usePeriodicNetworkPackets({
         const nonHubDevice = hubDevice === devA ? devB : hubDevice === devB ? devA : null;
         if (hubDevice && nonHubDevice) {
           // Find all other connections of this hub (sibling ports)
-          currentConnections.forEach(sibConn => {
+          const hubSiblings = connectionsByDeviceId.get(hubDevice.id) || [];
+          hubSiblings.forEach(sibConn => {
             if (sibConn.active === false) return;
             if (sibConn.id === connId) return; // Skip the ingress connection itself
             const sibIsSource = sibConn.sourceDeviceId === hubDevice.id;

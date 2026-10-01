@@ -5,6 +5,11 @@ import { useSpatialPartitioning } from '@/lib/performance/spatial';
 import { getDevicePairKey } from '@/components/network/NetworkTopology/utils/networkTopology.helpers';
 import type { SwitchState } from '@/lib/network/types';
 
+// Below these counts a topology renders fast enough without culling, and
+// skipping the grid keeps small canvases free of per-render bookkeeping.
+const CULLING_DEVICE_THRESHOLD = 60;
+const CULLING_CONNECTION_THRESHOLD = 80;
+
 interface UseTopologyDerivedStateProps {
   topologyDevices: CanvasDevice[];
   topologyConnections: CanvasConnection[];
@@ -132,16 +137,24 @@ export function useTopologyDerivedState({
     };
   }, [pan.x, pan.y, canvasDimensions.width, canvasDimensions.height, zoom]);
 
-  // Spatial partitioning visibility culling (enabled only in low graphics quality)
+  // Viewport culling. Small topologies are cheap to render in full and culling
+  // them only adds bookkeeping, so it kicks in once the canvas holds enough
+  // elements for the difference to matter. Low-end machines always cull: there
+  // the same render cost is what causes visible stutter.
+  const cullingEnabled =
+    graphicsQuality === 'low' ||
+    topologyDevices.length > CULLING_DEVICE_THRESHOLD ||
+    visualConnections.length > CULLING_CONNECTION_THRESHOLD;
+
   const { visibleDeviceIds, visibleConnectionIds } = useSpatialPartitioning(
     topologyDevices,
     visualConnections,
     currentViewport,
-    { cellSize: 256, margin: 100, enabled: graphicsQuality === 'low' }
+    { cellSize: 256, margin: 100, enabled: cullingEnabled }
   );
 
   const { visibleDevices, visibleConnections, visibleNotes } = useMemo(() => {
-    if (!isActive || canvasDimensions.width === 0 || isExporting || graphicsQuality !== 'low') {
+    if (!isActive || canvasDimensions.width === 0 || isExporting || !cullingEnabled) {
       return { visibleDevices: topologyDevices, visibleConnections: visualConnections, visibleNotes: topologyNotes };
     }
 
@@ -182,7 +195,7 @@ export function useTopologyDerivedState({
     visibleDeviceIds,
     visibleConnectionIds,
     isExporting,
-    graphicsQuality,
+    cullingEnabled,
     deviceMap,
     connectionMap,
   ]);

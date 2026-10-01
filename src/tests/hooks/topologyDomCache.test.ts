@@ -174,18 +174,23 @@ describe('topologyDomCache — per-frame DOM query budget', () => {
   });
 
   it('shows the per-frame cost the cache removes: one tree query per moved device', () => {
+    // Only two frames here: the point is the ratio (queries === devices x
+    // frames), and running the real 10x400 sweep took long enough under a
+    // parallel test run to trip the per-test timeout without proving anything
+    // extra.
+    const DEMO_FRAMES = 2;
     const ids = Array.from({ length: DEVICES }, (_, i) => `d${i}`);
     buildCanvasFixture(ids, []);
 
     const querySelector = vi.spyOn(document, 'querySelector');
 
     // The pre-cache drag loop did exactly this, once per device, per frame.
-    for (let frame = 0; frame < FRAMES; frame++) {
+    for (let frame = 0; frame < DEMO_FRAMES; frame++) {
       for (const id of ids) {
         document.querySelector(`[data-device-id="${id}"]`);
       }
     }
 
-    expect(querySelector).toHaveBeenCalledTimes(DEVICES * FRAMES);
+    expect(querySelector).toHaveBeenCalledTimes(DEVICES * DEMO_FRAMES);
   });
 });

@@ -81,20 +81,57 @@ export function usePerformanceDetection(
     let animationFrameId = 0;
     let lastTime = performance.now();
 
+    // The monitor exists to catch a frame budget that cannot be met. Once the
+    // picture is stable there is nothing left to learn from a 60Hz sample
+    // loop, and waking the main thread every frame competes with the very
+    // canvas work it is measuring. So the loop sleeps while the tab is hidden
+    // (rAF already stalls, but the handler stays parked rather than racing
+    // ahead on restore) and backs off to a cheap periodic sample once the
+    // recommendation has been unchanged for a while.
+    const STABLE_SAMPLES = 900; // ~15s of frames at 60Hz
+    let stableSamples = 0;
+    let lastSampledAt = 0;
+
     const monitorPerformance = (timestamp: number) => {
       const frameTime = timestamp - lastTime;
       lastTime = timestamp;
 
-      monitor.recordFrame(frameTime);
-      monitor.checkPerformance(timestamp);
+      if (stableSamples < STABLE_SAMPLES) {
+        monitor.recordFrame(frameTime);
+        monitor.checkPerformance(timestamp);
+        stableSamples += 1;
+        lastSampledAt = timestamp;
+      } else if (timestamp - lastSampledAt >= 2000) {
+        // Idle check: one sample per 2s is enough to notice the machine has
+        // become slow, without keeping a permanent per-frame task alive. A
+        // single sample carries no trend, so it only serves to keep the
+        // existing verdict warm rather than to flip it.
+        monitor.reset();
+        monitor.recordFrame(frameTime);
+        monitor.checkPerformance(timestamp, 1);
+        lastSampledAt = timestamp;
+      }
 
       animationFrameId = requestAnimationFrame(monitorPerformance);
     };
 
+    const onVisibilityChange = () => {
+      if (document.hidden) {
+        if (animationFrameId) cancelAnimationFrame(animationFrameId);
+        animationFrameId = 0;
+      } else if (animationFrameId === 0) {
+        // Resuming: drop the accumulated gap instead of reporting it as a stall.
+        lastTime = performance.now();
+        animationFrameId = requestAnimationFrame(monitorPerformance);
+      }
+    };
+
     animationFrameId = requestAnimationFrame(monitorPerformance);
+    document.addEventListener('visibilitychange', onVisibilityChange);
 
     return () => {
       if (animationFrameId) cancelAnimationFrame(animationFrameId);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
     };
   }, [onQualityChange]);
 

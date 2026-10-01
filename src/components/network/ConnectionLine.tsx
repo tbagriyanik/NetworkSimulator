@@ -26,6 +26,14 @@ interface ConnectionLineProps {
   deviceStates?: Map<string, SwitchState>;
   topologyDevices?: CanvasDevice[];
   isPathHighlighted?: boolean;
+  /**
+   * Budget switch for the decorative per-cable effects (SVG drop-shadow
+   * filters, ambient glow layer and the flowing particles). Every one of them
+   * costs a full-canvas repaint on a machine without GPU compositing, so the
+   * canvas turns them off once a topology has enough cables that the repaint
+   * cost outweighs the look. Hover highlighting is unaffected.
+   */
+  enableDecorativeEffects?: boolean;
 }
 
 /**
@@ -95,6 +103,7 @@ export const ConnectionLine = memo(function ConnectionLine({
   deviceStates,
   topologyDevices,
   isPathHighlighted = false,
+  enableDecorativeEffects = true,
 }: ConnectionLineProps) {
   // Get port positions for more accurate connection lines
   const source = getPortPosition(sourceDevice, connection.sourcePort);
@@ -249,6 +258,10 @@ export const ConnectionLine = memo(function ConnectionLine({
     ? buildWavePath(target.x, target.y, source.x, source.y)
     : `M ${target.x} ${target.y} C ${controlPoint2.x} ${controlPoint2.y}, ${controlPoint1.x} ${controlPoint1.y}, ${source.x} ${source.y}`;
 
+  // Decorative effects only make sense while the canvas can afford them.
+  // Hover/path highlighting is a direct feedback signal and always renders.
+  const useDecorativeEffects = graphicsQuality === 'high' && enableDecorativeEffects;
+
   // Keep the apparent travel speed consistent with the physical distance:
   // nearby devices animate smoothly and moderately, while distant devices animate gently.
   const durationSec = Math.min(10, Math.max(3.8, len / 55));
@@ -296,7 +309,7 @@ export const ConnectionLine = memo(function ConnectionLine({
           opacity: getLineOpacity(),
           filter: isPathHighlighted
             ? 'drop-shadow(0 0 3px var(--color-emerald-400)) drop-shadow(0 0 8px var(--color-emerald-500))'
-            : (isHovered || (graphicsQuality === 'high' && isEffectivelyActive && !isWireless) ?
+            : (isHovered || (graphicsQuality === 'high' && useDecorativeEffects && isEffectivelyActive && !isWireless) ?
               'drop-shadow(0 0 0.5px ' + color + ') drop-shadow(0 0 1px ' + color + ')' :
               'none'),
           willChange: graphicsQuality === 'low' ? 'auto' : 'opacity, filter',
@@ -307,7 +320,7 @@ export const ConnectionLine = memo(function ConnectionLine({
       )}
 
       {/* Ambient glow for active connections in high graphics mode */}
-      {graphicsQuality === 'high' && isEffectivelyActive && !isHovered && !isWireless && (
+      {graphicsQuality === 'high' && useDecorativeEffects && isEffectivelyActive && !isHovered && !isWireless && (
         <path
           d={pathD}
           stroke={isPathHighlighted ? 'var(--color-emerald-400)' : color}
@@ -324,7 +337,7 @@ export const ConnectionLine = memo(function ConnectionLine({
       )}
 
       {/* Animated data flow - subtle glowing particles */}
-      {(showAnimation || isPathHighlighted) && graphicsQuality === 'high' && isEffectivelyActive && !isDragging && (
+      {(showAnimation || isPathHighlighted) && graphicsQuality === 'high' && useDecorativeEffects && isEffectivelyActive && !isDragging && (
         <>
           <circle r={isPathHighlighted ? Math.max(2.8, 4.5 / zoom) : Math.max(1.8, 3.2 / zoom)} fill={isPathHighlighted ? 'var(--color-emerald-300)' : color} style={{ filter: isDark || isPathHighlighted ? `drop-shadow(0 0 4px ${isPathHighlighted ? 'var(--color-emerald-400)' : color})` : 'none', opacity: isPathHighlighted ? 1 : (isDark ? 0.9 : 0.8) }}>
             <animateMotion

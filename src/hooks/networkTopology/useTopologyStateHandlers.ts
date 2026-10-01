@@ -8,6 +8,7 @@ import { useIsMobile } from '@/hooks/use-breakpoint';
 import { useUiPreferences } from '@/hooks/useUiPreferences';
 import { ContextMenuState, NetworkTopologyProps } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { DEFAULT_ZOOM } from '@/components/network/NetworkTopology/utils/networkTopology.constants';
+import { isControllableIotDevice } from '@/components/network/NetworkTopology/utils/networkTopology.helpers';
 
 export function useTopologyStateHandlers(props: NetworkTopologyProps) {
   const {
@@ -63,14 +64,57 @@ export function useTopologyStateHandlers(props: NetworkTopologyProps) {
   // Environment settings
   const environment = useEnvironment();
 
-  // Force continuous updates for IoT measurements
+  // Force continuous updates for IoT measurements.
+  // The measured value of a live sensor jitters on every render, so it needs a
+  // periodic re-render to actually change on screen. Without a sensor in the
+  // topology that re-render is pure overhead: it walks every connection and
+  // reconciles the whole SVG ~4x/second for nothing. So the timer is only armed
+  // while at least one live sensor exists (and stays parked while the tab is
+  // hidden), which keeps idle topologies at zero background render cost.
   const [iotUpdateTrigger, setIotUpdateTrigger] = useState(0);
+  const hasLiveIotSensor = useMemo(
+    () =>
+      topologyDevices.some(
+        (device) =>
+          device.type === 'iot' &&
+          device.status !== 'offline' &&
+          device.iot?.collaborationEnabled !== false &&
+          !isControllableIotDevice(device)
+      ),
+    [topologyDevices]
+  );
+
   useEffect(() => {
-    const interval = setInterval(() => {
-      setIotUpdateTrigger((prev) => prev + 1);
-    }, 250);
-    return () => clearInterval(interval);
-  }, []);
+    if (!hasLiveIotSensor) return;
+
+    let timer: ReturnType<typeof setInterval> | null = null;
+    const startTimer = () => {
+      if (timer !== null) return;
+      timer = setInterval(() => {
+        setIotUpdateTrigger((prev) => prev + 1);
+      }, 250);
+    };
+    const stopTimer = () => {
+      if (timer === null) return;
+      clearInterval(timer);
+      timer = null;
+    };
+    const syncVisibility = () => {
+      if (document.hidden) {
+        stopTimer();
+      } else {
+        startTimer();
+      }
+    };
+
+    syncVisibility();
+    document.addEventListener('visibilitychange', syncVisibility);
+
+    return () => {
+      stopTimer();
+      document.removeEventListener('visibilitychange', syncVisibility);
+    };
+  }, [hasLiveIotSensor]);
 
   const [isPanning, setIsPanning] = useState(false);
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });

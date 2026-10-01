@@ -303,11 +303,11 @@ export class PerformanceMonitor {
     }
   }
 
-  checkPerformance(timestamp: number) {
+  checkPerformance(timestamp: number, minSamples: number = 30) {
     if (timestamp - this.lastCheck < this.checkInterval) return;
     this.lastCheck = timestamp;
 
-    if (this.frameTimes.length < 30) return;
+    if (this.frameTimes.length < minSamples) return;
 
     const sorted = [...this.frameTimes].sort((a, b) => a - b);
     // Use the median: one janky frame should not condemn the whole window.

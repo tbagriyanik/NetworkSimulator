@@ -34,9 +34,20 @@ export const getDeviceHeight = (deviceType: DeviceType | string, portCount: numb
   return 80 + numRows * 14 + 5;
 };
 
-export function getConnectionStatusMessage(conn: CanvasConnection, devices: CanvasDevice[], language: 'tr' | 'en'): string {
-  const sourceDevice = devices.find(d => d.id === conn.sourceDeviceId);
-  const targetDevice = devices.find(d => d.id === conn.targetDeviceId);
+export function getConnectionStatusMessage(
+  conn: CanvasConnection,
+  devices: readonly CanvasDevice[] | ReadonlyMap<string, CanvasDevice>,
+  language: 'tr' | 'en'
+): string {
+  // Accepting a Map matters: the canvas layer already keeps one, so callers do
+  // not have to rebuild a lookup for every cable they want to describe.
+  const byId = devices as ReadonlyMap<string, CanvasDevice>;
+  const byList = devices as readonly CanvasDevice[];
+  const isMap = devices instanceof Map;
+  const lookup = (id: string): CanvasDevice | undefined =>
+    isMap ? byId.get(id) : byList.find((d) => d.id === id);
+  const sourceDevice = lookup(conn.sourceDeviceId);
+  const targetDevice = lookup(conn.targetDeviceId);
   if (!sourceDevice || !targetDevice) return language === 'tr' ? 'Cihaz bulunamadı' : 'Device not found';
 
   const sourcePort = sourceDevice.ports.find(p => p.id === conn.sourcePort);
@@ -74,6 +85,13 @@ export const isSwitchDeviceType = (type: DeviceType | string): boolean => {
   return type === 'switchL2' || type === 'switchL3';
 };
 
+// Lamp/heater/cooler report their own On/Off state instead of a live
+// measurement, so they never need a refresh tick to stay visually accurate.
+export const isControllableIotDevice = (device: CanvasDevice): boolean => {
+  const kind = device.iot?.kind;
+  return kind === 'lamp' || kind === 'heater' || kind === 'cooler';
+};
+
 export const easeInOutCubic = (t: number): number => {
   return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 };
@@ -86,6 +104,119 @@ export const getDeviceCenter = (device: CanvasDevice) => {
 
 
 
+/**
+ * Derived port layout for a device's port array.
+ *
+ * `getPortPosition` is called twice per cable on every render and again twice
+ * per cable on every drag frame, and the router/WLC branches used to rebuild
+ * three or four filtered arrays per call. Those splits depend only on the port
+ * array itself, so they are computed once per array identity and reused. The
+ * array is replaced whenever a device's ports actually change, so the cache
+ * cannot go stale.
+ */
+interface PortLayout {
+  /** Index of each port id within `device.ports`, by id. */
+  indexById: Map<string, number>;
+  /** Column offset for Gi-style ports on routers/WLCs. */
+  giColById: Map<string, number>;
+  /** Column offset for non-Gi built-in ports on routers/WLCs. */
+  otherColById: Map<string, number>;
+  /** Absolute row offset for module ports. */
+  moduleRowById: Map<string, number>;
+  /** Absolute column offset for module ports. */
+  moduleColById: Map<string, number>;
+  /** Index of each port id across the whole port array. */
+  totalPortCount: number;
+  /**
+   * Column used for a port that exists but is excluded from the port row
+   * (`wlan0`, `service*`). The straight-line version this replaces fell back to
+   * `findIndex` returning -1, which for a WLC was `giPorts.length - 1`.
+   */
+  otherColFallback: number;
+}
+
+const portLayoutCache = new WeakMap<readonly CanvasPort[], PortLayout>();
+
+/** First write wins, matching the `findIndex` lookups this replaces. */
+const setFirst = (target: Map<string, number>, key: string, value: number): void => {
+  if (!target.has(key)) target.set(key, value);
+};
+
+const buildPortLayout = (ports: readonly CanvasPort[], deviceType: DeviceType | string): PortLayout => {
+  const indexById = new Map<string, number>();
+  for (let i = 0; i < ports.length; i++) {
+    setFirst(indexById, ports[i].id, i);
+  }
+
+  const layout: PortLayout = {
+    indexById,
+    giColById: new Map(),
+    otherColById: new Map(),
+    moduleRowById: new Map(),
+    moduleColById: new Map(),
+    totalPortCount: ports.length,
+    otherColFallback: -1,
+  };
+
+  const isRouterOrSwitch = deviceType === 'router' || deviceType === 'switchL2' || deviceType === 'switchL3';
+
+  if (deviceType === 'wlc') {
+    // WLC: every non-service port in a single row, Gi first then the rest.
+    // Module ports are part of that row, as they always have been here.
+    const wlcPorts = ports.filter((p) => p.id !== 'wlan0' && !p.id.startsWith('service'));
+    let giCount = 0;
+    for (const p of wlcPorts) {
+      if (p.id.toLowerCase().startsWith('gi')) giCount += 1;
+    }
+    layout.otherColFallback = giCount - 1;
+
+    // Non-Gi ports continue after the Gi ports, matching
+    // `giPorts.length + otherPorts.findIndex(...)`.
+    let giCol = 0;
+    let otherCol = giCount;
+    for (const p of wlcPorts) {
+      if (p.id.toLowerCase().startsWith('gi')) setFirst(layout.giColById, p.id, giCol++);
+      else setFirst(layout.otherColById, p.id, otherCol++);
+    }
+    return layout;
+  }
+
+  if (!isRouterOrSwitch) return layout;
+
+  const portsPerRow = 8;
+
+  const builtInPorts = ports.filter(
+    (p) => !isModulePort(p.id) && p.id !== 'wlan0' && !p.id.startsWith('service')
+  );
+
+  // Router: Gi ports row 0, other built-ins row 1.
+  const giPorts = builtInPorts.filter((p) => p.id.toLowerCase().startsWith('gi'));
+  const otherBuiltIns = builtInPorts.filter((p) => !p.id.toLowerCase().startsWith('gi'));
+  giPorts.forEach((p, i) => setFirst(layout.giColById, p.id, i));
+  otherBuiltIns.forEach((p, i) => setFirst(layout.otherColById, p.id, i));
+
+  // Module ports go strictly on the row below all built-in ports.
+  const modulePorts = ports.filter((p) => isModulePort(p.id));
+  const maxBuiltInRow =
+    deviceType === 'router'
+      ? 1 // Gi row 0, console/serial row 1, so modules start on row 2.
+      : Math.max(0, Math.floor((builtInPorts.length - 1) / portsPerRow));
+  modulePorts.forEach((p, i) => {
+    setFirst(layout.moduleColById, p.id, i % portsPerRow);
+    setFirst(layout.moduleRowById, p.id, maxBuiltInRow + 1 + Math.floor(i / portsPerRow));
+  });
+
+  return layout;
+};
+
+const getPortLayout = (device: CanvasDevice): PortLayout => {
+  const cached = portLayoutCache.get(device.ports);
+  if (cached) return cached;
+  const layout = buildPortLayout(device.ports, device.type);
+  portLayoutCache.set(device.ports, layout);
+  return layout;
+};
+
 export const getPortPosition = (device: CanvasDevice, portId: string) => {
   // IoT wireless links terminate at the visible Wi-Fi indicator, not at a
   // second physical port circle.
@@ -93,7 +224,9 @@ export const getPortPosition = (device: CanvasDevice, portId: string) => {
     const deviceWidth = getDeviceWidth(device.type);
     return { x: device.x + deviceWidth - 15, y: device.y + 14 };
   }
-  const portIndex = device.ports.findIndex(p => p.id === portId);
+
+  const layout = getPortLayout(device);
+  const portIndex = layout.indexById.get(portId) ?? -1;
   if (portIndex === -1) return getDeviceCenter(device);
 
   const portsPerRow = (device.type === 'pc' || device.type === 'iot') ? 2 : 8;
@@ -102,7 +235,7 @@ export const getPortPosition = (device: CanvasDevice, portId: string) => {
 
   if (device.type === 'pc' || device.type === 'iot') {
     const pcPortSpacing = PC_PORT_SPACING;
-    const pcStartY = 85 / 2 - ((device.ports.length - 1) * pcPortSpacing) / 2;
+    const pcStartY = 85 / 2 - ((layout.totalPortCount - 1) * pcPortSpacing) / 2;
     const devWidth = getDeviceWidth(device.type);
     return {
       x: device.x + devWidth - 8,
@@ -113,56 +246,35 @@ export const getPortPosition = (device: CanvasDevice, portId: string) => {
   // Router/WLC: Gi ports row 0, Console+Serial ports row 1
   let actualCol: number;
   let actualRow: number;
-  
+
   // Handle routers and switches with module ports
   const isRouterOrSwitch = device.type === 'router' || device.type === 'switchL2' || device.type === 'switchL3';
-  
+
   if (device.type === 'wlc') {
-    const filteredPorts = device.ports.filter(p => p.id !== 'wlan0' && !p.id.startsWith('service'));
-    const portIdLower = portId.toLowerCase();
-    const giPorts = filteredPorts.filter(p => p.id.toLowerCase().startsWith('gi'));
-    const otherPorts = filteredPorts.filter(p => !p.id.toLowerCase().startsWith('gi'));
-    const isGi = portIdLower.startsWith('gi');
-    
+    const isGi = portId.toLowerCase().startsWith('gi');
     // WLC: all ports in single row, console after gi ports
+    // The `-1` fallbacks keep the `findIndex` miss behaviour of the original
+    // lookups for ports that exist but sit outside the row (`wlan0`, `service*`).
     if (isGi) {
-      actualCol = giPorts.findIndex(p => p.id === portId);
+      actualCol = layout.giColById.get(portId) ?? -1;
     } else {
-      actualCol = giPorts.length + otherPorts.findIndex(p => p.id === portId);
+      actualCol = layout.otherColById.get(portId) ?? layout.otherColFallback;
     }
     actualRow = 0;
   } else if (isRouterOrSwitch) {
     // Check if current port is a module port
     const isModulePortId = isModulePort(portId);
-    
-    if (isModulePortId) {
-      // Module ports go strictly on the row below all built-in ports
-      const builtInPorts = device.ports.filter(p => !isModulePort(p.id) && p.id !== 'wlan0' && !p.id.startsWith('service'));
-      const modulePorts = device.ports.filter(p => isModulePort(p.id));
-      const modulePortIndex = modulePorts.findIndex(p => p.id === portId);
-      
-      let maxBuiltInRow = 0;
-      if (device.type === 'router') {
-        maxBuiltInRow = 1; // Router built-in ports occupy row 0 (gi) and row 1 (console + serial), so module ports start on row 2 (3rd row)
-      } else {
-        maxBuiltInRow = Math.max(0, Math.floor((builtInPorts.length - 1) / portsPerRow));
-      }
 
-      actualCol = modulePortIndex % portsPerRow;
-      actualRow = (maxBuiltInRow + 1) + Math.floor(modulePortIndex / portsPerRow);
+    if (isModulePortId) {
+      actualCol = layout.moduleColById.get(portId) ?? 0;
+      actualRow = layout.moduleRowById.get(portId) ?? 0;
     } else if (device.type === 'router') {
       // Router built-in ports: gi ports row 0, other ports row 1
-      const filteredPorts = device.ports.filter(p => p.id !== 'wlan0' && !p.id.startsWith('service') && !isModulePort(p.id));
-      const portIdLower = portId.toLowerCase();
-      const giPorts = filteredPorts.filter(p => p.id.toLowerCase().startsWith('gi'));
-      const otherPorts = filteredPorts.filter(p => !p.id.toLowerCase().startsWith('gi'));
-      const isGi = portIdLower.startsWith('gi');
-      
-      if (isGi) {
-        actualCol = giPorts.findIndex(p => p.id === portId);
+      if (portId.toLowerCase().startsWith('gi')) {
+        actualCol = layout.giColById.get(portId) ?? -1;
         actualRow = 0;
       } else {
-        actualCol = otherPorts.findIndex(p => p.id === portId);
+        actualCol = layout.otherColById.get(portId) ?? -1;
         actualRow = 1;
       }
     } else {

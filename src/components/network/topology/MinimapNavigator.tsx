@@ -4,7 +4,7 @@ import React, { useState, useMemo, useRef, useCallback } from 'react';
 import { colors } from '@/lib/design-tokens/colors';
 import { activateOnKey } from '@/lib/utils/keyboardActivation';
 import {
-  Map,
+  Map as MapIcon,
   ChevronDown,
   ChevronUp,
   Maximize2,
@@ -92,6 +92,15 @@ export function MinimapNavigator({
       width: Math.max(400, maxX - minX),
       height: Math.max(300, maxY - minY),
     };
+  }, [devices]);
+
+  // Endpoint lookup for the cable pass. Scanning `devices` per connection is
+  // O(cables x devices) on every render, which is exactly the shape that stalls
+  // a large topology while the minimap is open.
+  const devicesById = useMemo(() => {
+    const map = new Map<string, CanvasDevice>();
+    devices.forEach((d) => map.set(d.id, d));
+    return map;
   }, [devices]);
 
   // Detected subnets list for rapid focus
@@ -260,7 +269,7 @@ export function MinimapNavigator({
           onKeyDown={activateOnKey(toggleOpen)}
           className="flex items-center gap-1.5 cursor-pointer"
         >
-          <Map className="w-3.5 h-3.5 text-primary-500" />
+          <MapIcon className="w-3.5 h-3.5 text-primary-500" />
           <span className="text-[11px] font-bold">
             {isTR ? 'Mini Harita' : 'Mini-map'}
           </span>
@@ -341,8 +350,8 @@ export function MinimapNavigator({
             {/* Render Connection Lines */}
             <svg className="absolute inset-0 w-full h-full pointer-events-none">
               {connections.map((conn) => {
-                const srcDev = devices.find((d) => d.id === conn.sourceDeviceId);
-                const tgtDev = devices.find((d) => d.id === conn.targetDeviceId);
+                const srcDev = devicesById.get(conn.sourceDeviceId);
+                const tgtDev = devicesById.get(conn.targetDeviceId);
                 if (!srcDev || !tgtDev) return null;
                 const x1 = mapX(srcDev.x + DEVICE_CENTER_X);
                 const y1 = mapY(srcDev.y + DEVICE_CENTER_Y);

@@ -17,6 +17,10 @@ import type { CanvasConnection, CanvasDevice, CanvasNote, ContextMenuState } fro
 import type { SwitchState, CableInfo } from '@/lib/network/types';
 import { useUiPreferences } from '@/hooks/useUiPreferences';
 
+// Above this many visible cables the per-cable drop-shadow filters and flowing
+// particles cost more than they communicate, so they are skipped entirely.
+const DECORATIVE_EFFECTS_CONNECTION_BUDGET = 120;
+
 export interface TopologyCanvasLayerProps {
     canvasRef: React.RefObject<HTMLDivElement | null>;
     svgContentGroupRef: React.RefObject<SVGGElement | null>;
@@ -177,6 +181,14 @@ export function TopologyCanvasLayer({
 }: TopologyCanvasLayerProps) {
     const { preferences } = useUiPreferences();
     const canvasSize = getCanvasDimensions();
+
+    // Each active cable can add an SVG filter and two infinite particle
+    // animations. On a machine without GPU compositing those effects are
+    // repainted every frame, so once the topology is wide enough the budget is
+    // spent and the decorations are dropped. Cable color, hover highlighting
+    // and deletion handles are untouched.
+    const decorativeEffectsEnabled = visibleConnections.length <= DECORATIVE_EFFECTS_CONNECTION_BUDGET;
+
     const connectionGroups = React.useMemo(() => {
         const groups = new Map<string, string[]>();
         connections.forEach((item) => {
@@ -187,6 +199,44 @@ export function TopologyCanvasLayer({
         });
         return groups;
     }, [connections]);
+
+    // Stable per-cable event handlers.
+    //
+    // Inline arrow functions gave every `ConnectionLine` a fresh callback on
+    // every canvas render, which defeats its `memo` and forces all of them to
+    // re-render even when nothing about them changed. Building them once per
+    // topology change keeps the memo effective during pans, hovers, selections
+    // and the IoT refresh tick.
+    const connectionHandlers = React.useMemo(() => {
+        const handlers = new Map<string, {
+            onMouseEnter: (e: React.MouseEvent<SVGPathElement>) => void;
+            onClick: (e: React.MouseEvent) => void;
+        }>();
+
+        for (const conn of visibleConnections) {
+            const sourceDevice = deviceMap.get(conn.sourceDeviceId);
+            const targetDevice = deviceMap.get(conn.targetDeviceId);
+            if (!sourceDevice || !targetDevice) continue;
+
+            const connId = conn.id;
+            const sourceName = sourceDevice.name;
+            const targetName = targetDevice.name;
+            const sourcePort = conn.sourcePort;
+            const targetPort = conn.targetPort;
+            const cableType = conn.cableType;
+            // The status message is only read on hover, so it stays lazy.
+            const statusMessage = () => getConnectionStatusMessage(conn, deviceMap, language);
+
+            handlers.set(connId, {
+                onMouseEnter: (e) => handleConnectionMouseEnter(
+                    e, connId, sourceName, sourcePort, targetName, targetPort, cableType, statusMessage()
+                ),
+                onClick: (e) => handleConnectionClick(e, connId),
+            });
+        }
+
+        return handlers;
+    }, [visibleConnections, deviceMap, language, handleConnectionMouseEnter, handleConnectionClick]);
 
     return (
         <div
@@ -339,6 +389,9 @@ export function TopologyCanvasLayer({
                         const sameConnIndex = rawIndex >= 0 ? rawIndex : 0;
                         const totalSameConns = ids.length || 1;
 
+                        const handlers = connectionHandlers.get(conn.id);
+                        if (!handlers) return null;
+
                         const sourcePos = getPortPosition(sourceDevice, conn.sourcePort);
                         const targetPos = getPortPosition(targetDevice, conn.targetPort);
 
@@ -369,10 +422,11 @@ export function TopologyCanvasLayer({
                                     graphicsQuality={graphicsQuality}
                                     showAnimation={isVisibleInViewport}
                                     showLabel={preferences.showPortLabels}
+                                    enableDecorativeEffects={decorativeEffectsEnabled}
                                     isHovered={hoveredConnectionId === conn.id || activeCaptureConnectionId === conn.id}
-                                    onMouseEnter={(e: React.MouseEvent<SVGPathElement>) => handleConnectionMouseEnter(e, conn.id, sourceDevice.name, conn.sourcePort, targetDevice.name, conn.targetPort, conn.cableType, getConnectionStatusMessage(conn, devices, language))}
+                                    onMouseEnter={handlers.onMouseEnter}
                                     onMouseLeave={handleConnectionMouseLeave}
-                                    onClick={(e: React.MouseEvent) => handleConnectionClick(e, conn.id)}
+                                    onClick={handlers.onClick}
                                     deviceStates={deviceStates}
                                     topologyDevices={devices}
                                 />

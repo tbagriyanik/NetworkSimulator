@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 import { CanvasDevice, CanvasConnection } from '../NetworkTopology/types/networkTopology.types';
 import { SwitchState } from '@/lib/network/types';
@@ -15,6 +15,7 @@ import { DeviceBody } from './DeviceBody';
 import { DeviceStpBadge } from './DeviceStpBadge';
 import { DeviceLabels } from './DeviceLabels';
 import { DevicePorts } from './DevicePorts';
+import { subscribeFocusDevice } from './focusDeviceEvent';
 
 export interface DeviceRendererProps {
   device: CanvasDevice;
@@ -79,17 +80,25 @@ export const DeviceRenderer = React.memo(function DeviceRenderer({
 }: DeviceRendererProps) {
   void _mousePosRef;
   const [isFocusedPulse, setIsFocusedPulse] = useState(false);
+  const pulseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    const handleFocusDevice = (e: Event) => {
-      const customEvent = e as CustomEvent<{ deviceId?: string }>;
-      if (customEvent.detail?.deviceId !== device.id) return;
-      setIsFocusedPulse(true);
-      const timer = setTimeout(() => setIsFocusedPulse(false), 2200);
-      return () => clearTimeout(timer);
+    // Re-focusing the same device restarts the pulse, so drop the pending timer
+    // instead of letting an older one cut the new pulse short.
+    return () => {
+      if (pulseTimerRef.current) {
+        clearTimeout(pulseTimerRef.current);
+        pulseTimerRef.current = null;
+      }
     };
-    window.addEventListener('focus-device', handleFocusDevice);
-    return () => window.removeEventListener('focus-device', handleFocusDevice);
+  }, []);
+
+  useEffect(() => {
+    // A single shared listener serves every device instead of one per device.
+    return subscribeFocusDevice(device.id, () => {
+      setIsFocusedPulse(true);
+      pulseTimerRef.current = setTimeout(() => setIsFocusedPulse(false), 2200);
+    });
   }, [device.id]);
 
   const isTargetingThisDevice = (isDrawingConnection && connectionStart && connectionStart.deviceId !== device.id) ?? false;
