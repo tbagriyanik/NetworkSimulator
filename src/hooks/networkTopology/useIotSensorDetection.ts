@@ -1,21 +1,44 @@
 ﻿'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { CanvasDevice } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { getDeviceWidth, getDeviceHeight } from '@/components/network/NetworkTopology/utils/networkTopology.helpers';
 
 interface UseIotSensorDetectionProps {
   setDevices: React.Dispatch<React.SetStateAction<CanvasDevice[]>>;
   mousePosRef: React.MutableRefObject<{ x: number; y: number }>;
+  devices?: CanvasDevice[];
 }
 
 export function useIotSensorDetection({
   setDevices,
   mousePosRef,
+  devices,
 }: UseIotSensorDetectionProps) {
+  // Whether any device can actually react to the pointer. Without this guard
+  // the 100ms loop walks the whole device array forever, even in topologies
+  // that contain no motion/sound sensors at all.
+  const hasActiveSensorRef = useRef(false);
+  useEffect(() => {
+    if (!devices) {
+      hasActiveSensorRef.current = true;
+      return;
+    }
+    hasActiveSensorRef.current = devices.some(
+      (device) =>
+        device.type === 'iot' &&
+        device.status !== 'offline' &&
+        device.iot?.collaborationEnabled !== false &&
+        (device.iot?.sensorType === 'motion' || device.iot?.sensorType === 'sound')
+    );
+  }, [devices]);
+
   // Motion/Sound detection state update logic
   useEffect(() => {
     const interval = setInterval(() => {
+      if (!hasActiveSensorRef.current) return;
+      if (document.hidden) return;
+
       setDevices((prev) => {
         let changed = false;
         const next = prev.map((device) => {

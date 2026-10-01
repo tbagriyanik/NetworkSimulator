@@ -1,4 +1,3 @@
-import jsPDF from 'jspdf';
 import { toast } from '@/hooks/use-toast';
 import { csrfHeaders } from '@/lib/security/csrf';
 import { colors } from '@/lib/design-tokens/colors';
@@ -402,6 +401,10 @@ export const generateCertificate = async (data: CertificateData): Promise<boolea
     const certificateImgData = await renderCertificateCanvas(fullData, verifyCode, qrDataUrl, logoDataUrl);
 
     // Step 4: Embed High-DPI Canvas Image into jsPDF (A4 Landscape)
+    // jsPDF is only needed at this last step, so it is loaded on demand
+    // instead of riding along in the initial client bundle — that keeps the
+    // first page load small on slow connections.
+    const { default: jsPDF } = await import('jspdf');
     const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4', compress: true });
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();

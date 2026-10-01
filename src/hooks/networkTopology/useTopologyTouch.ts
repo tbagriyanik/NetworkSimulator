@@ -4,6 +4,12 @@ import type { TopologyActivationEvent } from './topologyEventTypes';
 import type { CanvasConnection, CanvasDevice, ContextMenuMode, DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { MOMENTUM_DECAY, MOMENTUM_MIN_SPEED, MOMENTUM_THRESHOLD } from '@/components/network/NetworkTopology/utils/networkTopology.constants';
 import { getOptimalTargetPort } from '@/components/network/NetworkTopology/utils/networkTopology.helpers';
+import {
+  createDragDomCache,
+  clearDragDomCache,
+  collectDeviceElements,
+  getCachedDeviceElement,
+} from './topologyDomCache';
 
 export interface UseTopologyTouchProps {
   canvasRef: React.RefObject<HTMLDivElement | null>;
@@ -560,6 +566,10 @@ export function useTopologyTouch({
   }, [longPressTimer]);
 
   React.useEffect(() => {
+    // Element handles resolved once per touch drag so the per-frame loop does
+    // not scan the whole SVG tree for every moved device.
+    const touchDomCache = createDragDomCache();
+
     const handleGlobalTouchMove = (e: globalThis.TouchEvent) => {
       const currentTouchDraggedDevice = touchDraggedDeviceRef.current;
       if (e.touches.length !== 1 || !currentTouchDraggedDevice || !canvasRef.current) return;
@@ -573,6 +583,11 @@ export function useTopologyTouch({
         if (distance > DRAG_THRESHOLD) {
           setIsTouchDragging(true);
           isTouchDraggingRef.current = true;
+          collectDeviceElements(
+            svgContentGroupRef.current,
+            touchDomCache,
+            Object.keys(dragStartDevicePositionsRef.current)
+          );
           setDeviceTooltip(null);
           setPortTooltip(null);
           if (longPressTimer) {
@@ -604,7 +619,7 @@ export function useTopologyTouch({
               const clampedX = Math.max(50, Math.min(init.x + dx, canvasDims.width - 120));
               const clampedY = Math.max(50, Math.min(init.y + dy, canvasDims.height - 150));
               touchNewPositions.set(id, { x: clampedX, y: clampedY });
-              const touchOuterG = document.querySelector('[data-device-id="' + id + '"]');
+              const touchOuterG = getCachedDeviceElement(touchDomCache, id);
               if (touchOuterG) {
                 touchOuterG.setAttribute('transform', 'translate(' + clampedX + ', ' + clampedY + ')');
               }
@@ -662,9 +677,11 @@ export function useTopologyTouch({
         touchFinalPositions.clear();
       }
 
+      clearDragDomCache(touchDomCache);
+
       // Remove GPU will-change hints from touch-dragged devices
       for (let wi = 0; wi < touchFinalDeviceIds.length; wi++) {
-        const we = document.querySelector('[data-device-id="' + touchFinalDeviceIds[wi] + '"]') as SVGGElement | null;
+        const we = getCachedDeviceElement(touchDomCache, touchFinalDeviceIds[wi]);
         if (we) {
           we.style.willChange = '';
         }

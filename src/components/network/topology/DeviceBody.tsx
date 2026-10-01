@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { CanvasDevice } from '../NetworkTopology/types/networkTopology.types';
 import { isSwitchDeviceType } from '../NetworkTopology/utils/networkTopology.helpers';
@@ -23,10 +23,9 @@ interface DeviceBodyProps {
   deviceWidth: number;
   deviceHeight: number;
   isDark: boolean;
-  isDragging: boolean;
 }
 
-export function DeviceBody({ device, deviceWidth, deviceHeight, isDark, isDragging }: DeviceBodyProps) {
+export function DeviceBody({ device, deviceWidth, deviceHeight, isDark }: DeviceBodyProps) {
   const deviceFill = getDeviceFill(device, isDark);
   const deviceStroke = isDark ? getDeviceDefaultStroke(device.type) : 'var(--color-secondary-300)';
 
@@ -35,17 +34,11 @@ export function DeviceBody({ device, deviceWidth, deviceHeight, isDark, isDraggi
       {/* Device body */}
       {device.type === 'firewall' ? (
         <>
-          <defs>
-            <filter id="deviceShadow" x="-50%" y="-50%" width="200%" height="200%">
-              <feDropShadow dx="1" dy="2" stdDeviation="1.5" floodOpacity={isDark ? "0.15" : "0.1"} />
-            </filter>
-          </defs>
           <path
             d={`M 10 0 L ${deviceWidth - 10} 0 Q ${deviceWidth} 0 ${deviceWidth} 10 L ${deviceWidth} ${deviceHeight - 15} L ${deviceWidth / 2} ${deviceHeight} L 0 ${deviceHeight - 15} L 0 10 Q 0 0 10 0 Z`}
             fill={deviceFill}
             style={{ stroke: isDark ? 'var(--color-error-500)' : 'var(--color-secondary-300)' }}
             strokeWidth={1.5}
-            className={isDragging ? '' : 'transition-all duration-150'}
             filter="url(#deviceShadow)"
           />
           {/* Shield Icon inside Firewall device */}
@@ -67,7 +60,6 @@ export function DeviceBody({ device, deviceWidth, deviceHeight, isDark, isDraggi
             fill={deviceFill}
             style={{ stroke: isDark ? 'var(--color-sky-500)' : 'var(--color-secondary-300)' }}
             strokeWidth={1.5}
-            className={isDragging ? '' : 'transition-all duration-150'}
             filter="url(#deviceShadow)"
           />
         </g>
@@ -77,7 +69,6 @@ export function DeviceBody({ device, deviceWidth, deviceHeight, isDark, isDraggi
           fill={deviceFill}
           style={{ stroke: isDark ? 'var(--color-warning-500)' : 'var(--color-secondary-300)' }}
           strokeWidth={1.5}
-          className={isDragging ? '' : 'transition-all duration-150'}
           filter="url(#deviceShadow)"
         />
       ) : device.type === 'mobile' ? (
@@ -88,7 +79,6 @@ export function DeviceBody({ device, deviceWidth, deviceHeight, isDark, isDraggi
           fill={deviceFill}
           style={{ stroke: isDark ? 'var(--color-sky-400)' : 'var(--color-sky-500)' }}
           strokeWidth={1.5}
-          className={isDragging ? '' : 'transition-all duration-150'}
           filter="url(#deviceShadow)"
         />
       ) : device.type === 'printer' ? (
@@ -97,7 +87,6 @@ export function DeviceBody({ device, deviceWidth, deviceHeight, isDark, isDraggi
           fill={deviceFill}
           style={{ stroke: isDark ? 'var(--color-amber-500)' : 'var(--color-secondary-300)' }}
           strokeWidth={1.5}
-          className={isDragging ? '' : 'transition-all duration-150'}
           filter="url(#deviceShadow)"
         />
       ) : device.type === 'iot' ? (
@@ -106,7 +95,6 @@ export function DeviceBody({ device, deviceWidth, deviceHeight, isDark, isDraggi
           fill={deviceFill}
           style={{ stroke: isDark ? 'var(--color-secondary-500)' : 'var(--color-secondary-300)' }}
           strokeWidth={1.5}
-          className={isDragging ? '' : 'transition-all duration-150'}
           filter="url(#deviceShadow)"
         />
       ) : isSwitchDeviceType(device.type) ? (
@@ -115,7 +103,6 @@ export function DeviceBody({ device, deviceWidth, deviceHeight, isDark, isDraggi
           fill={deviceFill}
           style={{ stroke: isDark ? 'var(--color-accent-500)' : 'var(--color-secondary-300)' }}
           strokeWidth={1.5}
-          className={isDragging ? '' : 'transition-all duration-150'}
           filter="url(#deviceShadow)"
         />
       ) : (
@@ -128,7 +115,6 @@ export function DeviceBody({ device, deviceWidth, deviceHeight, isDark, isDraggi
             stroke: deviceStroke
           }}
           strokeWidth={1.5}
-          className={isDragging ? '' : 'transition-all duration-150'}
           filter="url(#deviceShadow)"
         />
       )}

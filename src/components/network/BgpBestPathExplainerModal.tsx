@@ -137,7 +137,7 @@ export const BgpBestPathExplainerModal: React.FC<BgpBestPathExplainerModalProps>
           {/* Decision Steps Pipeline */}
           <div className="space-y-3">
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              12 Adımlı BGP Karar Sıralaması (Cisco IOS Standartı)
+              12 Adımlı BGP Karar Sıralaması (IOS Standartı)
             </h3>
             <div className="space-y-1.5">
               {BGP_BEST_PATH_STEPS.map((step, idx) => {

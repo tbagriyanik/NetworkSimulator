@@ -12,6 +12,14 @@ import {
 } from '@/components/network/NetworkTopology/utils/networkTopology.constants';
 import { isSwitchDeviceType, getDeviceIdsInSelectionBox, mergeSelectionIds } from '@/components/network/NetworkTopology/utils/networkTopology.helpers';
 import { computeDeltaPositions } from './topologyMouseUtils';
+import {
+  createDragDomCache,
+  clearDragDomCache,
+  collectDeviceElements,
+  collectConnectionElements,
+  getCachedDeviceElement,
+  getCachedConnectionElements,
+} from './topologyDomCache';
 
 export interface UseTopologyMouseProps {
   canvasRef: React.RefObject<HTMLDivElement | null>;
@@ -228,6 +236,10 @@ export function useTopologyMouse(props: UseTopologyMouseProps) {
   ]);
 
   useEffect(() => {
+    // Element handles for the drag commit path. Populated once per drag so the
+    // per-frame loop never re-queries the whole SVG tree.
+    const dragDomCache = createDragDomCache();
+
     const handleMouseMove = (e: globalThis.MouseEvent) => {
       if (canvasRef.current) {
         const rect = canvasRectRef.current ?? canvasRef.current.getBoundingClientRect();
@@ -334,8 +346,22 @@ export function useTopologyMouse(props: UseTopologyMouseProps) {
               const dragIds = selectedDeviceIdsRef.current.includes(currentDragged)
                 ? selectedDeviceIdsRef.current
                 : [currentDragged];
+
+              collectDeviceElements(svgContentGroupRef.current, dragDomCache, dragIds);
+
+              // Only connections touching the dragged devices are rewritten
+              // each frame, so those are the only ones worth resolving.
+              const movedIdSet = new Set(dragIds);
+              const touchedConnectionIds: string[] = [];
+              for (const conn of latestConnectionsRef.current) {
+                if (movedIdSet.has(conn.sourceDeviceId) || movedIdSet.has(conn.targetDeviceId)) {
+                  touchedConnectionIds.push(conn.id);
+                }
+              }
+              collectConnectionElements(svgContentGroupRef.current, dragDomCache, touchedConnectionIds);
+
               for (let wi = 0; wi < dragIds.length; wi++) {
-                const we = document.querySelector('[data-device-id="' + dragIds[wi] + '"]') as SVGGElement | null;
+                const we = getCachedDeviceElement(dragDomCache, dragIds[wi]);
                 if (we) {
                   we.style.willChange = 'transform';
                   const ichild = we.querySelector('g');
@@ -390,7 +416,7 @@ export function useTopologyMouse(props: UseTopologyMouseProps) {
             const newPositions = computeDeltaPositions(currentStartPositions, devicesToMove, dx, dy, doSnap);
 
             newPositions.forEach((pos, id) => {
-              const outerG = document.querySelector('[data-device-id="' + id + '"]');
+              const outerG = getCachedDeviceElement(dragDomCache, id);
               if (outerG) {
                 outerG.setAttribute('transform', 'translate(' + pos.x + ', ' + pos.y + ')');
               }
@@ -482,9 +508,9 @@ export function useTopologyMouse(props: UseTopologyMouseProps) {
                   ? buildWavePath(srcPort.x, srcPort.y, tgtPort.x, tgtPort.y)
                   : `M ${srcPort.x} ${srcPort.y} C ${controlPoint1.x} ${controlPoint1.y}, ${controlPoint2.x} ${controlPoint2.y}, ${tgtPort.x} ${tgtPort.y}`;
 
-                const connEl = document.querySelector('[data-connection-id="' + conn.id + '"]');
-                if (connEl) {
-                  const pathNodes = connEl.querySelectorAll('path');
+                const connRefs = getCachedConnectionElements(dragDomCache, conn.id, svgContentGroupRef.current);
+                if (connRefs) {
+                  const pathNodes = connRefs.paths;
                   for (let pi2 = 0; pi2 < pathNodes.length; pi2++) {
                     pathNodes[pi2].setAttribute('d', pathD);
                   }
@@ -506,7 +532,7 @@ export function useTopologyMouse(props: UseTopologyMouseProps) {
                   const tgtLabel = { x: tgtPos.x + perpX, y: tgtPos.y + perpY };
                   const labelOffsetY = -10;
 
-                  const textNodes = connEl.querySelectorAll('text');
+                  const textNodes = connRefs.texts;
                   if (textNodes.length >= 4) {
                     textNodes[0].setAttribute('x', String(srcLabel.x));
                     textNodes[0].setAttribute('y', String(srcLabel.y + labelOffsetY));
@@ -532,12 +558,9 @@ export function useTopologyMouse(props: UseTopologyMouseProps) {
                   3 * invT * tTrash * tTrash * controlPoint2.y +
                   tTrash * tTrash * tTrash * tgtPort.y;
 
-                const handleEl = document.querySelector('[data-connection-handle-id="' + conn.id + '"]');
-                if (handleEl) {
-                  const innerG = handleEl.querySelector('[data-handle-inner="true"]');
-                  if (innerG) {
-                    innerG.setAttribute('transform', 'translate(' + trashX + ', ' + trashY + ')');
-                  }
+                const innerG = connRefs?.handleInner ?? null;
+                if (innerG) {
+                  innerG.setAttribute('transform', 'translate(' + trashX + ', ' + trashY + ')');
                 }
               }
             }
@@ -768,11 +791,13 @@ export function useTopologyMouse(props: UseTopologyMouseProps) {
       }
 
       for (let wi = 0; wi < finalDragDeviceIds.length; wi++) {
-        const we = document.querySelector('[data-device-id="' + finalDragDeviceIds[wi] + '"]') as SVGGElement | null;
+        const we = getCachedDeviceElement(dragDomCache, finalDragDeviceIds[wi]);
         if (we) {
           we.style.willChange = '';
         }
       }
+
+      clearDragDomCache(dragDomCache);
 
       setDraggedDevice(null);
       draggedDeviceRef.current = null;

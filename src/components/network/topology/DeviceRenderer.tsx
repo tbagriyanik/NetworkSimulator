@@ -111,7 +111,6 @@ export const DeviceRenderer = React.memo(function DeviceRenderer({
       role="button"
       tabIndex={0}
       aria-label={`${device.name || device.type} (${device.type})`}
-      style={{ transition: isDragging ? 'none' : 'transform 0.12s ease-out' }}
       onMouseDown={(e) => handleDeviceMouseDown(e, device.id)}
       onPointerDown={(e) => handleDevicePointerDown(e, device.id)}
       onClick={(e) => handleDeviceClick(e, device)}
@@ -158,7 +157,7 @@ export const DeviceRenderer = React.memo(function DeviceRenderer({
         isPoweredOff={isPoweredOff}
       />
 
-      <DeviceBody device={device} deviceWidth={deviceWidth} deviceHeight={deviceHeight} isDark={isDark} isDragging={isDragging} />
+      <DeviceBody device={device} deviceWidth={deviceWidth} deviceHeight={deviceHeight} isDark={isDark} />
 
       <DeviceWifiStatus
         device={device}

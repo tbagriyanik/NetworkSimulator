@@ -299,7 +299,7 @@ export const ConnectionLine = memo(function ConnectionLine({
             : (isHovered || (graphicsQuality === 'high' && isEffectivelyActive && !isWireless) ?
               'drop-shadow(0 0 0.5px ' + color + ') drop-shadow(0 0 1px ' + color + ')' :
               'none'),
-          transition: isDragging ? 'none' : 'stroke 0.2s ease, stroke-width 0.2s ease, opacity 0.2s ease, filter 0.2s ease'
+          willChange: graphicsQuality === 'low' ? 'auto' : 'opacity, filter',
         }}
       />
       {isWireless && (
@@ -318,6 +318,7 @@ export const ConnectionLine = memo(function ConnectionLine({
           style={{
             opacity: isPathHighlighted ? 0.8 : 0.004,
             filter: 'url(#connectionGlowFilter)',
+            willChange: 'opacity',
           }}
         />
       )}
@@ -325,7 +326,7 @@ export const ConnectionLine = memo(function ConnectionLine({
       {/* Animated data flow - subtle glowing particles */}
       {(showAnimation || isPathHighlighted) && graphicsQuality === 'high' && isEffectivelyActive && !isDragging && (
         <>
-          <circle r={isPathHighlighted ? Math.max(2.8, 4.5 / zoom) : Math.max(1.8, 3.2 / zoom)} fill={isPathHighlighted ? 'var(--color-emerald-300)' : color} className="animate-pulse" style={{ filter: isDark || isPathHighlighted ? `drop-shadow(0 0 4px ${isPathHighlighted ? 'var(--color-emerald-400)' : color})` : 'none', opacity: isPathHighlighted ? 1 : (isDark ? 0.9 : 0.8) }}>
+          <circle r={isPathHighlighted ? Math.max(2.8, 4.5 / zoom) : Math.max(1.8, 3.2 / zoom)} fill={isPathHighlighted ? 'var(--color-emerald-300)' : color} style={{ filter: isDark || isPathHighlighted ? `drop-shadow(0 0 4px ${isPathHighlighted ? 'var(--color-emerald-400)' : color})` : 'none', opacity: isPathHighlighted ? 1 : (isDark ? 0.9 : 0.8) }}>
             <animateMotion
               dur={isPathHighlighted ? `${(parseFloat(durationSec.toString()) * 0.4).toFixed(2)}s` : animationDuration}
               repeatCount="indefinite"
@@ -333,7 +334,7 @@ export const ConnectionLine = memo(function ConnectionLine({
               <mpath href={`#${motionPathId}`} />
             </animateMotion>
           </circle>
-          <circle r={isPathHighlighted ? Math.max(2.8, 4.5 / zoom) : Math.max(1.8, 3.2 / zoom)} fill={isPathHighlighted ? 'var(--color-emerald-300)' : color} className="animate-pulse" style={{ filter: isDark || isPathHighlighted ? `drop-shadow(0 0 4px ${isPathHighlighted ? 'var(--color-emerald-400)' : color})` : 'none', opacity: isPathHighlighted ? 1 : (isDark ? 0.9 : 0.8) }}>
+          <circle r={isPathHighlighted ? Math.max(2.8, 4.5 / zoom) : Math.max(1.8, 3.2 / zoom)} fill={isPathHighlighted ? 'var(--color-emerald-300)' : color} style={{ filter: isDark || isPathHighlighted ? `drop-shadow(0 0 4px ${isPathHighlighted ? 'var(--color-emerald-400)' : color})` : 'none', opacity: isPathHighlighted ? 1 : (isDark ? 0.9 : 0.8) }}>
             <animateMotion
               dur={isPathHighlighted ? `${(parseFloat(durationSec.toString()) * 0.4).toFixed(2)}s` : animationDuration}
               repeatCount="indefinite"

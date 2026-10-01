@@ -245,7 +245,7 @@ export function TopologyCanvasLayer({
             }}
         >
             <svg width="100%" height="100%" className="block select-none print:w-full print:h-auto print:block overflow-visible">
-                <g ref={svgContentGroupRef} data-content-group="true" style={{ transformOrigin: '0 0', transition: 'none', willChange: 'transform' }}>
+                <g ref={svgContentGroupRef} data-content-group="true" style={{ transformOrigin: '0 0', transition: 'none', willChange: 'transform', contain: 'layout style paint' }}>
                     <CanvasDefs isDark={isDark} canvasWidth={canvasSize.width} canvasHeight={canvasSize.height} />
 
                     {/* Empty State - Welcome Screen */}
@@ -273,9 +273,13 @@ export function TopologyCanvasLayer({
                         </g>
                     )}
                     <rect x="0" y="0" width={canvasSize.width} height={canvasSize.height} fill="url(#canvasBgGradient)" />
-                    <rect data-export-hide="true" x="0" y="0" width={canvasSize.width} height={canvasSize.height} fill="url(#canvasAmbientGlow)" />
-                    <rect data-export-hide="true" x="0" y="0" width={canvasSize.width} height={canvasSize.height} fill="url(#canvasAmbientGlowSecondary)" />
-                    <rect data-export-hide="true" x="0" y="0" width={canvasSize.width} height={canvasSize.height} fill="url(#majorGridPattern)" />
+                    {graphicsQuality !== 'low' && (
+                        <>
+                            <rect data-export-hide="true" x="0" y="0" width={canvasSize.width} height={canvasSize.height} fill="url(#canvasAmbientGlow)" />
+                            <rect data-export-hide="true" x="0" y="0" width={canvasSize.width} height={canvasSize.height} fill="url(#canvasAmbientGlowSecondary)" />
+                            <rect data-export-hide="true" x="0" y="0" width={canvasSize.width} height={canvasSize.height} fill="url(#majorGridPattern)" />
+                        </>
+                    )}
                     <rect data-export-hide="true" x="0" y="0" width={canvasSize.width} height={canvasSize.height} fill="url(#gridPattern)" />
 
                     <EnvironmentBackgrounds environment={environment} isDark={isDark} t={t} />

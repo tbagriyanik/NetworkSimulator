@@ -36,6 +36,12 @@
     background: rgba(107, 114, 128, 0.8);
   }
 
+  /* Optimize for low-end devices: reduce anti-aliasing overhead */
+  body.graphics-low {
+    -webkit-font-smoothing: auto;
+    -moz-osx-font-smoothing: auto;
+  }
+
   /* Improved focus styles for accessibility */
   *:focus-visible {
     outline: 2px solid hsl(var(--ring));

@@ -55,14 +55,33 @@ export function usePeriodicNetworkPackets({
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
+    // Re-entrancy guard: a large topology can take longer than one interval to
+    // process, and stacking passes would keep the main thread permanently busy.
+    let isPassRunning = false;
+
     // Periodic timer every 2 seconds for active VoIP call connectivity validation and 10 seconds for protocols
     const interval = setInterval(() => {
       const executePeriodicPass = () => {
+        // Nothing here is worth waking a sleeping/background tab for.
+        if (typeof document !== 'undefined' && document.hidden) return;
+        if (isPassRunning) return;
+
         const currentDevices = devicesRef.current;
         const currentConnections = connectionsRef.current;
         const currentStates = deviceStatesRef.current;
 
         if (!currentDevices.length) return;
+
+        isPassRunning = true;
+        try {
+        // O(1) device lookups: the connection sweep below used to call
+        // Array.find twice per cable, which is O(devices x connections) per
+        // tick and gets expensive well before the 500-device mark.
+        const deviceById = new Map<string, CanvasDevice>();
+        for (let di = 0; di < currentDevices.length; di++) {
+          const device = currentDevices[di];
+          deviceById.set(device.id, device);
+        }
 
       // 1. Audit all activeVoipCalls across topology devices: if network connectivity is broken, clear activeVoipCall on BOTH sides
       const devicesToDisconnect = new Set<string>();
@@ -178,8 +197,8 @@ export function usePeriodicNetworkPackets({
       currentConnections.forEach(conn => {
         if (conn.active === false) return;
         const connId = conn.id || `${conn.sourceDeviceId}-${conn.targetDeviceId}`;
-        const devA = currentDevices.find(d => d.id === conn.sourceDeviceId);
-        const devB = currentDevices.find(d => d.id === conn.targetDeviceId);
+        const devA = deviceById.get(conn.sourceDeviceId);
+        const devB = deviceById.get(conn.targetDeviceId);
 
         if (!devA || !devB || devA.status === 'offline' || devB.status === 'offline') return;
 
@@ -200,7 +219,7 @@ export function usePeriodicNetworkPackets({
             if (!sibIsSource && !sibIsTarget) return;
             const sibConnId = sibConn.id || `${sibConn.sourceDeviceId}-${sibConn.targetDeviceId}`;
             const sibNeighborId = sibIsSource ? sibConn.targetDeviceId : sibConn.sourceDeviceId;
-            const sibNeighbor = currentDevices.find(d => d.id === sibNeighborId);
+            const sibNeighbor = deviceById.get(sibNeighborId);
             if (!sibNeighbor || sibNeighbor.status === 'offline') return;
             packetsToDispatch.push({
               connectionId: sibConnId,
@@ -486,10 +505,21 @@ export function usePeriodicNetworkPackets({
       if (packetsToDispatch.length > 0) {
         dispatchCapturedPackets(packetsToDispatch);
       }
+        } catch (error) {
+          // A failing protocol engine must not wedge the periodic loop.
+          console.error('Periodic network pass failed:', error);
+        } finally {
+          isPassRunning = false;
+        }
     };
 
     if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-      window.requestIdleCallback(() => executePeriodicPass(), { timeout: 1000 });
+      // Give big topologies a wider idle window: their pass legitimately needs
+      // more contiguous time, and forcing it after 1s is what turns a 10-second
+      // protocol sweep into a visible freeze on slow hardware.
+      const deviceCount = devicesRef.current.length;
+      const idleTimeout = Math.min(5000, Math.max(1000, deviceCount * 8));
+      window.requestIdleCallback(() => executePeriodicPass(), { timeout: idleTimeout });
     } else {
       setTimeout(executePeriodicPass, 0);
     }

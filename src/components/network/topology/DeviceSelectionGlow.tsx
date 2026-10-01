@@ -22,11 +22,6 @@ export function DeviceSelectionGlow({ device, deviceWidth, deviceHeight, isDark 
 
   return (
     <>
-      <defs>
-        <filter id="selectionGlowFilter" x="-50%" y="-50%" width="200%" height="200%">
-          <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor={SELECTION_HIGHLIGHT_COLOR} floodOpacity="0.4" />
-        </filter>
-      </defs>
       {device.type === 'firewall' ? (
         <>
           <path

@@ -28,6 +28,7 @@ import type { Translations } from '@/contexts/LanguageContext';
 import type { CanvasDevice, DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { SwitchState } from '@/lib/network/types';
 import type { RefObject } from 'react';
+import { setGraphicsQualityPreference } from '@/lib/performance/performanceDetector';
 
 interface AppHeaderProps {
   t: Translations;
@@ -86,6 +87,15 @@ export function AppHeader({
   isExamActive = false, setShowStoryMode, setShowSdnModal
 }: AppHeaderProps) {
   const showLabProgress = false;
+
+  // An explicit toggle is a user decision: remember it so automatic hardware
+  // detection and the runtime frame-time monitor stop overriding it.
+  const handleGraphicsQualityToggle = () => {
+    const next = graphicsQuality === 'high' ? 'low' : 'high';
+    setGraphicsQualityPreference(next);
+    setGraphicsQuality(next);
+  };
+
   return (
     <header className={cn("fixed top-0 left-0 right-0 z-[50] border-b px-3 sm:px-5 h-14 sm:h-16 flex items-center", isDark ? "liquid-glass border-secondary-800" : "bg-white/90 backdrop-blur-md border-secondary-200")}>
       <div className="w-full">
@@ -332,7 +342,7 @@ export function AppHeader({
                   <button
                     aria-label={graphicsQuality !== 'high' ? t.highRes : t.lowRes}
                     className={cn("h-8 w-8 rounded flex items-center justify-center transition-all ui-hover-surface", graphicsQuality === 'high' ? (isDark ? 'text-secondary-300 hover:text-success-300' : 'text-secondary-500 hover:text-success-600') : (isDark ? 'text-secondary-300 hover:text-warning-300' : 'text-secondary-500 hover:text-warning-600'))}
-                    onClick={() => setGraphicsQuality(graphicsQuality === 'high' ? 'low' : 'high')}
+                    onClick={() => handleGraphicsQualityToggle()}
                   >
                     {graphicsQuality === 'high' ? <Sparkles className="w-4 h-4" /> : <Cloud className="w-4 h-4" />}
                   </button>
@@ -500,7 +510,7 @@ export function AppHeader({
                       <Button
                         variant="outline"
                         className={cn("justify-start gap-2 h-11 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover", isDark ? "hover:text-accent-400" : "hover:text-accent-600")}
-                        onClick={() => setGraphicsQuality(graphicsQuality === 'high' ? 'low' : 'high')}
+                        onClick={() => handleGraphicsQualityToggle()}
                       >
                         <div className="flex-shrink-0">
                           {graphicsQuality === 'high' ? <Sparkles className="w-3.5 h-3.5" /> : <Cloud className="w-3.5 h-3.5" />}

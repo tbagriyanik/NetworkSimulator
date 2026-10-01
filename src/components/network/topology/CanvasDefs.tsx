@@ -31,6 +31,10 @@ export const CanvasDefs: React.FC<CanvasDefsProps> = ({
       <filter id="wifiIconShadow" x="-50%" y="-50%" width="200%" height="200%">
         <feDropShadow dx="0.5" dy="1" stdDeviation="1" floodOpacity={isDark ? "0.4" : "0.25"} />
       </filter>
+      {/* Device Selection Glow Filter */}
+      <filter id="selectionGlowFilter" x="-50%" y="-50%" width="200%" height="200%">
+        <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="var(--color-success-400)" floodOpacity="0.4" />
+      </filter>
       {/* Canvas background gradient */}
       <radialGradient id="canvasBgGradient" cx="44%" cy="28%" r="90%">
         <stop offset="0%" stopColor="var(--canvas-bg-0)" />

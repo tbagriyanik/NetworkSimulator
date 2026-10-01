@@ -192,7 +192,7 @@ const initialState: Omit<AppState, keyof ReturnType<typeof createActions>> = {
     activeTab: 'topology',
     activePanel: null,
     sidebarOpen: true,
-    graphicsQuality: 'high',
+    graphicsQuality: typeof window !== 'undefined' && window.navigator.hardwareConcurrency <= 2 ? 'low' : 'high',
     helpLevel: 'beginner',
 };
 

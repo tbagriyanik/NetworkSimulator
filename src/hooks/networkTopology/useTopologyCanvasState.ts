@@ -88,6 +88,7 @@ export function useTopologyCanvasState(props: NetworkTopologyProps) {
   useIotSensorDetection({
     setDevices,
     mousePosRef,
+    devices,
   });
 
   usePeriodicNetworkPackets({

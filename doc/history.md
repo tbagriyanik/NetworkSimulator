@@ -1,5 +1,24 @@
 # 📅 Network Simulator — Proje Geçmişi
 
+## v7.2.0 — 2026-10-01
+
+- **⚡ Düşük Donanım & Eski Cihaz Performans Optimizasyonu**:
+  - Dahili GPU (Intel HD Graphics), eski CPU (Core i3) ve düşük RAM (8GB DDR3) sistemler için tam akıcı ve yüksek hızlı çalışma performansı sağlandı.
+  - Sahiplik bazlı SVG etiketlerinden ağırı düşüren `drop-shadow` filtreleri kaldırılarak doğrudan tasarım token renklerine bağlandı.
+  - Cihaz ve kablo sürüklemelerindeki CSS `transform` geçiş gecikmeleri sıfırlandı, pan ve çoklu nesne hareketleri tam akıcı hale getirildi.
+  - Düşük grafik modunda pahalı radial arka plan ışımaları ve çift grid rasterizasyonları optimize edildi.
+- **🛠️ Derleme & Tip Güvenliği Düzeltmeleri**:
+  - `DeviceBody` bileşenindeki unused `isDragging` parametresi ve alt prop ilişkileri temizlendi, `npm run check` tam yeşile getirildi.
+
+## v7.1.0 — 2026-10-01
+
+- **🔒 Conntrack SPI Enforcement Firewall'a Özgü Kılındı (`packetPipeline.ts`, `conntrackEngine.ts`)**:
+  - SPI engelleme denetimi yalnızca `firewall` cihaz tipinde aktifleştirildi, normal yönlendirme cihazlarındaki hatalı paket düşürmeleri engellendi.
+- **🔌 DHCP Relay Engine Yapısal Temizliği (`dhcpRelayEngine.ts`)**:
+  - Yinelenen kod blokları temizlendi, `giaddr` ve Option 82 (Circuit ID, Remote ID) paket başlık yapılandırması tam uyumlu hale getirildi.
+- **📝 Otomatik Ağ Dokümantasyon Rapor Motoru (`networkReportGenerator.ts`)**:
+  - Topoloji envanteri, IP matrisi, VLAN ve yönlendirme özetlerini otomatik markdown raporuna dönüştürme yeteneği eklendi.
+
 ## v7.0.0 — 2026-09-30
 
 - **🔒 Conntrack SPI Enforcement Firewall'a Özgü Kılındı (`packetPipeline.ts`, `conntrackEngine.ts`)**:

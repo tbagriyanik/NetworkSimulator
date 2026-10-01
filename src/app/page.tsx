@@ -30,11 +30,16 @@ import { useAppStore } from '@/lib/store/appStore';
 import { StoryModePanel } from '@/components/network/StoryModePanel';
 import { SdnControllerModal } from '@/components/network/SdnControllerModal';
 import { useEffect, useState } from 'react';
+import { usePerformanceDetection } from '@/hooks/usePerformanceDetection';
 
 export default function Home({ initialProjectId }: { initialProjectId?: string }) {
   const page = usePageController({ initialProjectId });
   const [showStoryMode, setShowStoryMode] = useState(false);
   const [showSdnModal, setShowSdnModal] = useState(false);
+
+  // Auto-detect and adjust graphics quality for low-end hardware
+  usePerformanceDetection(page.graphicsQuality, page.setGraphicsQuality);
+
   useEffect(() => {
     const closeForWorkspaceChange = () => {
       setShowStoryMode(false);

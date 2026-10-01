@@ -229,8 +229,64 @@ body.graphics-low *::after {
   transition: none !important;
   transition-delay: 0ms !important;
   transition-duration: 0ms !important;
+  will-change: auto !important;
 }
 
 body.graphics-low .progress-fill {
   animation: progress-width-fill 0.3s ease-out forwards !important;
+}
+
+/* Disable expensive filter effects in low graphics mode */
+body.graphics-low .topology-canvas {
+  filter: none !important;
+}
+
+/* Disable backdrop filters in low graphics mode. The inline-style rule below
+   only caught React inline styles, but most blurred surfaces are Tailwind
+   utility classes (backdrop-blur-*) or the liquid-glass helpers, and blurring
+   a full-width header/window is one of the most expensive things a machine
+   without a real GPU can be asked to do. */
+body.graphics-low [style*="backdrop-filter"] {
+  backdrop-filter: none !important;
+}
+
+body.graphics-low [class*="backdrop-blur"],
+body.graphics-low .liquid-glass,
+body.graphics-low .liquid-glass-light,
+body.graphics-low .liquid-glass-strong {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* Blur/drop-shadow utility filters are purely cosmetic and get rasterized on
+   the CPU when there is no GPU. */
+body.graphics-low [class*="blur-"] {
+  filter: none !important;
+}
+
+/* SVG filters (device shadows, selection glow, IoT glow) force off-screen
+   raster passes per element. They are the first thing to go on weak hardware. */
+body.graphics-low svg [filter],
+body.graphics-low svg [style*="filter"],
+body.graphics-low svg path[style*="drop-shadow"] {
+  filter: none !important;
+}
+
+/* Long, expensive paint paths: the canvas keeps its cheap dot grid, but the
+   full-page gradients and ambient glow layers are already skipped in React
+   when graphics quality is low. */
+body.graphics-low .topology-print-area {
+  box-shadow: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Respect the OS setting even in high graphics mode: motion is never
+     required to understand the UI. */
+  .topology-canvas *,
+  .topology-canvas *::before,
+  .topology-canvas *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
