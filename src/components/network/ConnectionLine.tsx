@@ -537,7 +537,9 @@ export const ConnectionLine = memo(function ConnectionLine({
     getWlan0SignalKey(prevProps.deviceStates, prevProps.sourceDevice) ===
     getWlan0SignalKey(nextProps.deviceStates, nextProps.sourceDevice) &&
     getWlan0SignalKey(prevProps.deviceStates, prevProps.targetDevice) ===
-    getWlan0SignalKey(nextProps.deviceStates, nextProps.targetDevice)
+    getWlan0SignalKey(nextProps.deviceStates, nextProps.targetDevice) &&
+    prevProps.graphicsQuality === nextProps.graphicsQuality &&
+    prevProps.enableDecorativeEffects === nextProps.enableDecorativeEffects
   );
 });
 

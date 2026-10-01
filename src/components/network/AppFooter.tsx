@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { CanvasDevice } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { Translations } from '@/contexts/LanguageContext';
 
@@ -42,41 +42,60 @@ export function AppFooter({
     totalRam: '8'
   });
 
+  // Keep device count in a ref so the interval callback never goes stale
+  const deviceCountRef = useRef(topologyDevices?.length || 0);
+  deviceCountRef.current = topologyDevices?.length || 0;
+
+  // FPS measurement: a lightweight rAF counter increments a ref, and a 1-second
+  // setInterval reads it. This avoids doing setState work inside the rAF loop
+  // and keeps the animation-frame budget for actual rendering.
   useEffect(() => {
+    if (!preferences.showFooter) return;
+
     let frameCount = 0;
-    let lastTime = performance.now();
     let animId: number;
 
-    const measureFps = () => {
+    // Lightweight rAF loop: only increments a counter, no React work
+    const tick = () => {
       frameCount++;
-      const now = performance.now();
-      if (now - lastTime >= 1000) {
-        const currentFps = Math.min(60, Math.round((frameCount * 1000) / (now - lastTime)));
-        frameCount = 0;
-        lastTime = now;
-
-        const memory = (performance as unknown as { memory?: { usedJSHeapSize: number; totalJSHeapSize: number } }).memory;
-        const usedMemMB = memory ? (memory.usedJSHeapSize / (1024 * 1024)).toFixed(1) : (3.5 + Math.random() * 0.8).toFixed(1);
-        const cores = typeof navigator !== 'undefined' ? (navigator.hardwareConcurrency || 4) : 4;
-        const deviceMem = typeof navigator !== 'undefined' ? ((navigator as unknown as { deviceMemory?: number }).deviceMemory || 8) : 8;
-
-        // Simulated CPU load scaled inversely with FPS and topological complexity
-        const baseCpu = Math.max(5, Math.min(95, Math.round((60 - currentFps) * 1.8 + Math.random() * 8 + 8)));
-
-        setPerfStats({
-          cpu: baseCpu,
-          ram: usedMemMB,
-          fps: currentFps,
-          cores,
-          totalRam: String(deviceMem)
-        });
-      }
-      animId = requestAnimationFrame(measureFps);
+      animId = requestAnimationFrame(tick);
     };
+    animId = requestAnimationFrame(tick);
 
-    animId = requestAnimationFrame(measureFps);
-    return () => cancelAnimationFrame(animId);
-  }, []);
+    // One-second reporter: reads the counter and updates state
+    const intervalId = setInterval(() => {
+      const currentFps = Math.min(60, frameCount);
+      frameCount = 0;
+
+      const memory = (performance as unknown as { memory?: { usedJSHeapSize: number; totalJSHeapSize: number } }).memory;
+      const devCount = deviceCountRef.current;
+      const usedMemMB = memory
+        ? (memory.usedJSHeapSize / (1024 * 1024)).toFixed(1)
+        : (45 + Math.round(devCount * 0.8)).toFixed(1);
+      const cores = typeof navigator !== 'undefined' ? (navigator.hardwareConcurrency || 4) : 4;
+      const deviceMem = typeof navigator !== 'undefined'
+        ? ((navigator as unknown as { deviceMemory?: number }).deviceMemory || 8)
+        : 8;
+
+      // CPU load estimate based on frame-time budget (16.67ms baseline)
+      const frameTimeAvg = 1000 / Math.max(1, currentFps);
+      const loadRatio = Math.max(0, (frameTimeAvg - 16.67) / 16.67);
+      const baseCpu = Math.max(4, Math.min(99, Math.round(8 + loadRatio * 60 + devCount * 0.15)));
+
+      setPerfStats({
+        cpu: baseCpu,
+        ram: usedMemMB,
+        fps: currentFps,
+        cores,
+        totalRam: String(deviceMem)
+      });
+    }, 1000);
+
+    return () => {
+      cancelAnimationFrame(animId);
+      clearInterval(intervalId);
+    };
+  }, [preferences.showFooter]);
 
   if (!preferences.showFooter) {
     return null;

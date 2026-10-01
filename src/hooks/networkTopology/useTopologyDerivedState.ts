@@ -1,4 +1,4 @@
-﻿import { useMemo } from 'react';
+import { useMemo } from 'react';
 import { CanvasDevice, CanvasConnection, CanvasNote } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { buildImplicitWirelessConnections } from '@/lib/network/wireless';
 import { useSpatialPartitioning } from '@/lib/performance/spatial';
@@ -141,6 +141,9 @@ export function useTopologyDerivedState({
   // them only adds bookkeeping, so it kicks in once the canvas holds enough
   // elements for the difference to matter. Low-end machines always cull: there
   // the same render cost is what causes visible stutter.
+  // Viewport culling. Small topologies are cheap to render on high-end machines
+  // so culling kicks in at a threshold there. Low-end machines (low graphics mode)
+  // or topologies with many devices/connections always enable spatial culling.
   const cullingEnabled =
     graphicsQuality === 'low' ||
     topologyDevices.length > CULLING_DEVICE_THRESHOLD ||
