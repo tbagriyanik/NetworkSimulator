@@ -9,6 +9,21 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
  * disable both hardware detection and the runtime frame-time monitor.
  */
 
+// jsdom in this setup does not expose localStorage, so provide a minimal one.
+const store = new Map<string, string>();
+const localStorageMock = {
+  getItem: (key: string) => (store.has(key) ? store.get(key)! : null),
+  setItem: (key: string, value: string) => void store.set(key, String(value)),
+  removeItem: (key: string) => void store.delete(key),
+  clear: () => store.clear(),
+  key: (index: number) => Array.from(store.keys())[index] ?? null,
+  get length() {
+    return store.size;
+  },
+};
+Object.defineProperty(window, 'localStorage', { value: localStorageMock, configurable: true });
+Object.defineProperty(globalThis, 'localStorage', { value: localStorageMock, configurable: true });
+
 const originalCreateElement = document.createElement.bind(document);
 
 interface GlobalWithDeviceMemory {
