@@ -170,6 +170,61 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className="dark">
       <head>
+        <Script id="graphics-quality-prepaint" strategy="beforeInteractive" dangerouslySetInnerHTML={{
+          __html: `
+          (function() {
+            // Runs in <head>, before the body (and React) exist, so the very
+            // first paint is already in the right mode. On a machine without
+            // GPU acceleration that is the difference between a usable first
+            // screen and several seconds of blurred, animated, software
+            // rasterized painting.
+            try {
+              var PREF_KEY = 'graphics-quality-preference';
+              var PREF_VERSION = 'graphics-quality-preference-version';
+              var PREF_VERSION_VALUE = '2';
+
+              var stored = null;
+              try {
+                var version = localStorage.getItem(PREF_VERSION);
+                if (version !== PREF_VERSION_VALUE) localStorage.removeItem(PREF_KEY);
+                stored = localStorage.getItem(PREF_KEY);
+              } catch (e) {}
+
+              if (stored === 'high' || stored === 'low') {
+                window.__NETSIM_GRAPHICS_QUALITY__ = stored;
+                if (stored === 'low') document.documentElement.className += ' graphics-low';
+                return;
+              }
+
+              var cores = navigator.hardwareConcurrency || 4;
+              var memory = navigator.deviceMemory;
+              var score = cores <= 2 ? 3 : cores <= 4 ? 2 : cores <= 6 ? 1 : 0;
+              if (typeof memory === 'number') {
+                if (memory <= 4) score += 3;
+                else if (memory <= 8) score += 2;
+              }
+
+              // A software rasterizer is the strongest single signal here, but
+              // creating a WebGL context costs a few ms, so it is only probed
+              // when the CPU/memory numbers are already inconclusive.
+              if (score < 3) {
+                var canvas = document.createElement('canvas');
+                var gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+                var renderer = '';
+                if (gl) {
+                  var info = gl.getExtension('WEBGL_debug_renderer_info');
+                  renderer = String((info && gl.getParameter(info.UNMASKED_RENDERER_WEBGL)) || gl.getParameter(gl.RENDERER) || '');
+                  var lose = gl.getExtension('WEBGL_lose_context');
+                  if (lose) lose.loseContext();
+                }
+                if (!gl || /swiftshader|llvmpipe|softpipe|software|basic render|microsoft basic|mesa offscreen/i.test(renderer)) score += 4;
+              }
+
+              window.__NETSIM_GRAPHICS_QUALITY__ = score >= 3 ? 'low' : 'high';
+              if (score >= 3) document.documentElement.className += ' graphics-low';
+            } catch (e) {}
+          })();
+        `}} />
         <Script id="secure-storage-interceptor" strategy="beforeInteractive" dangerouslySetInnerHTML={{
           __html: `
           (function() {

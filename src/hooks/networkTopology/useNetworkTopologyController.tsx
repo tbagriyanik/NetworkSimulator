@@ -157,6 +157,7 @@ export function useNetworkTopologyController(props: NetworkTopologyProps) {
         isDraggingInteractionDisabled={isDraggingInteractionDisabled}
         getLiveDeviceVlan={iot.getLiveDeviceVlan}
         getIotMeasuredValue={iot.getIotMeasuredValue}
+        iotUpdateTrigger={iotUpdateTrigger}
         handlePortHover={tooltipHandlers.handlePortHover}
         handlePortMouseLeave={tooltipHandlers.handlePortMouseLeave}
         handlePortClick={interactions.portConnection.handlePortClick}

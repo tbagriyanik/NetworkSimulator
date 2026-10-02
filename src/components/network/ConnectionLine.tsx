@@ -40,23 +40,23 @@ interface ConnectionLineProps {
  * BOLT OPTIMIZATION:
  * Extracts derived STP blocking/alternate states for a specific device's port.
  * Allows comparing actual status changes rather than Map reference equality in the custom memo comparator.
+ *
+ * The runtime state is authoritative whenever it has an entry for the port, so
+ * the device-object lookup (a linear scan over the port list) is only needed for
+ * devices the simulation has not touched yet.
  */
 const getPortSTPBlocking = (
   deviceStates: Map<string, SwitchState> | undefined,
   device: CanvasDevice,
   portId: string
 ): boolean => {
-  const port = device.ports.find(p => p.id === portId);
-  let isBlocking = port?.spanningTree?.state === 'blocking';
-
   if (deviceStates) {
-    const dState = deviceStates.get(device.id);
-    if (dState && dState.ports && dState.ports[portId]) {
-      const sp = dState.ports[portId];
-      isBlocking = sp.spanningTree?.state === 'blocking' || sp.spanningTree?.role === 'alternate';
+    const sp = deviceStates.get(device.id)?.ports?.[portId];
+    if (sp) {
+      return sp.spanningTree?.state === 'blocking' || sp.spanningTree?.role === 'alternate';
     }
   }
-  return isBlocking;
+  return device.ports.find(p => p.id === portId)?.spanningTree?.state === 'blocking';
 };
 
 /**
@@ -64,14 +64,25 @@ const getPortSTPBlocking = (
  * Builds a comparable key from the wifi-relevant state of a device's wlan0 port
  * (shutdown/status/config) so the memo comparator re-renders the link when the
  * runtime/matching status that drives signal strength changes.
+ *
+ * The comparator builds this key twice per cable on every canvas render, so the
+ * result is cached on the port-state object it is derived from: that object is
+ * replaced (not mutated) whenever the port changes, which makes the cache
+ * exactly as precise as recomputing it.
  */
+const wlanSignalKeyCache = new WeakMap<object, string>();
+
 const getWlan0SignalKey = (
   deviceStates: Map<string, SwitchState> | undefined,
   device: CanvasDevice
 ): string => {
   const wlan = deviceStates?.get(device.id)?.ports?.['wlan0'];
   if (!wlan) return 'none';
-  return [
+
+  const cached = wlanSignalKeyCache.get(wlan);
+  if (cached !== undefined) return cached;
+
+  const key = [
     wlan.shutdown ?? false,
     wlan.status ?? '',
     wlan.wifi?.mode ?? '',
@@ -80,6 +91,9 @@ const getWlan0SignalKey = (
     wlan.wifi?.password ?? '',
     wlan.wifi?.channel ?? '',
   ].map(String).join('|');
+
+  wlanSignalKeyCache.set(wlan, key);
+  return key;
 };
 
 export const ConnectionLine = memo(function ConnectionLine({
@@ -312,7 +326,6 @@ export const ConnectionLine = memo(function ConnectionLine({
             : (isHovered || (graphicsQuality === 'high' && useDecorativeEffects && isEffectivelyActive && !isWireless) ?
               'drop-shadow(0 0 0.5px ' + color + ') drop-shadow(0 0 1px ' + color + ')' :
               'none'),
-          willChange: graphicsQuality === 'low' ? 'auto' : 'opacity, filter',
         }}
       />
       {isWireless && (
@@ -331,7 +344,6 @@ export const ConnectionLine = memo(function ConnectionLine({
           style={{
             opacity: isPathHighlighted ? 0.8 : 0.004,
             filter: 'url(#connectionGlowFilter)',
-            willChange: 'opacity',
           }}
         />
       )}
@@ -504,42 +516,65 @@ export const ConnectionLine = memo(function ConnectionLine({
     </g>
   );
 }, (prevProps, nextProps) => {
-  // BOLT OPTIMIZATION: Compare derived STP blocking state from deviceStates map, rather than map referential equality.
-  // This avoids re-rendering all connection lines when irrelevant device states update.
+  // Object identity is the cheapest correct signal available here. Connections
+  // and devices are updated with structural sharing (see updateChangedDevices),
+  // so a new object always means something this cable draws has changed:
+  // position, cable type, port shutdown, speed/duplex, STP role, err-disable…
+  //
+  // Comparing a fixed list of fields instead both missed those changes (leaving
+  // stale cables on screen after e.g. a cable-type swap) and, because it had to
+  // re-read those fields on every render, was slower than the identity check it
+  // replaced.
+  if (
+    prevProps.connection !== nextProps.connection ||
+    prevProps.sourceDevice !== nextProps.sourceDevice ||
+    prevProps.targetDevice !== nextProps.targetDevice
+  ) {
+    return false;
+  }
+
+  if (
+    prevProps.totalSameConns !== nextProps.totalSameConns ||
+    prevProps.sameConnIndex !== nextProps.sameConnIndex ||
+    prevProps.isDark !== nextProps.isDark ||
+    prevProps.isDragging !== nextProps.isDragging ||
+    prevProps.isHovered !== nextProps.isHovered ||
+    prevProps.isPathHighlighted !== nextProps.isPathHighlighted ||
+    prevProps.showAnimation !== nextProps.showAnimation ||
+    prevProps.showLabel !== nextProps.showLabel ||
+    prevProps.zoom !== nextProps.zoom ||
+    prevProps.graphicsQuality !== nextProps.graphicsQuality ||
+    prevProps.enableDecorativeEffects !== nextProps.enableDecorativeEffects
+  ) {
+    return false;
+  }
+
+  // Runtime state that lives outside the device objects: STP role per port.
+  // Both sides are compared so a cable only repaints when its own endpoints
+  // actually moved into (or out of) a blocking state.
+  if (
+    getPortSTPBlocking(prevProps.deviceStates, prevProps.sourceDevice, prevProps.connection.sourcePort) !==
+      getPortSTPBlocking(nextProps.deviceStates, nextProps.sourceDevice, nextProps.connection.sourcePort) ||
+    getPortSTPBlocking(prevProps.deviceStates, prevProps.targetDevice, prevProps.connection.targetPort) !==
+      getPortSTPBlocking(nextProps.deviceStates, nextProps.targetDevice, nextProps.connection.targetPort)
+  ) {
+    return false;
+  }
+
+  // Only a wireless cable derives anything from the full device list and the
+  // global state map (signal strength against the nearest matching AP). Wired
+  // cables are done here, which is what keeps a topology-wide device-state tick
+  // from repainting every link on the canvas. A wireless cable keeps depending
+  // on the whole map because *any* AP's state can move its signal bars.
+  if (prevProps.connection.cableType !== 'wireless') return true;
+
   return (
-    prevProps.connection.id === nextProps.connection.id &&
-    prevProps.connection.active === nextProps.connection.active &&
-    prevProps.connection.ssidIndex === nextProps.connection.ssidIndex &&
-    prevProps.sourceDevice.x === nextProps.sourceDevice.x &&
-    prevProps.sourceDevice.y === nextProps.sourceDevice.y &&
-    prevProps.targetDevice.x === nextProps.targetDevice.x &&
-    prevProps.targetDevice.y === nextProps.targetDevice.y &&
-    prevProps.sourceDevice.ports.find(p => p.id === prevProps.connection.sourcePort)?.shutdown ===
-    nextProps.sourceDevice.ports.find(p => p.id === nextProps.connection.sourcePort)?.shutdown &&
-    prevProps.targetDevice.ports.find(p => p.id === nextProps.connection.targetPort)?.shutdown ===
-    nextProps.targetDevice.ports.find(p => p.id === nextProps.connection.targetPort)?.shutdown &&
-    prevProps.sourceDevice.status === nextProps.sourceDevice.status &&
-    prevProps.targetDevice.status === nextProps.targetDevice.status &&
-    prevProps.totalSameConns === nextProps.totalSameConns &&
-    prevProps.sameConnIndex === nextProps.sameConnIndex &&
-    prevProps.isDark === nextProps.isDark &&
-    prevProps.isDragging === nextProps.isDragging &&
-    prevProps.isHovered === nextProps.isHovered &&
-    prevProps.isPathHighlighted === nextProps.isPathHighlighted &&
-    prevProps.showAnimation === nextProps.showAnimation &&
-    prevProps.showLabel === nextProps.showLabel &&
-    prevProps.zoom === nextProps.zoom &&
-    getPortSTPBlocking(prevProps.deviceStates, prevProps.sourceDevice, prevProps.connection.sourcePort) ===
-    getPortSTPBlocking(nextProps.deviceStates, nextProps.sourceDevice, nextProps.connection.sourcePort) &&
-    getPortSTPBlocking(prevProps.deviceStates, prevProps.targetDevice, prevProps.connection.targetPort) ===
-    getPortSTPBlocking(nextProps.deviceStates, nextProps.targetDevice, nextProps.connection.targetPort) &&
     prevProps.topologyDevices === nextProps.topologyDevices &&
+    prevProps.deviceStates === nextProps.deviceStates &&
     getWlan0SignalKey(prevProps.deviceStates, prevProps.sourceDevice) ===
-    getWlan0SignalKey(nextProps.deviceStates, nextProps.sourceDevice) &&
+      getWlan0SignalKey(nextProps.deviceStates, nextProps.sourceDevice) &&
     getWlan0SignalKey(prevProps.deviceStates, prevProps.targetDevice) ===
-    getWlan0SignalKey(nextProps.deviceStates, nextProps.targetDevice) &&
-    prevProps.graphicsQuality === nextProps.graphicsQuality &&
-    prevProps.enableDecorativeEffects === nextProps.enableDecorativeEffects
+      getWlan0SignalKey(nextProps.deviceStates, nextProps.targetDevice)
   );
 });
 

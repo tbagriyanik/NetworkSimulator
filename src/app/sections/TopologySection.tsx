@@ -142,7 +142,10 @@ export function TopologySection({
 }: TopologySectionProps) {
   return (
     <div className={cn(
-      "w-full flex-1 flex flex-col min-h-0 overflow-hidden transition-all duration-500",
+      // Only the split-pane width ever animates here. `transition-all` made the
+      // browser watch every animatable property of a container that wraps the
+      // whole topology, which is pure recalculation cost on every style change.
+      "w-full flex-1 flex flex-col min-h-0 overflow-hidden transition-[width] duration-300",
       isTablet && (showPCPanel || showUnifiedDeviceModal || showRouterPanel) && "w-full sm:w-1/2 flex-none border-r border-secondary-200/50 dark:border-secondary-800/50"
     )}>
       <div className={`flex-1 flex flex-col min-h-0 ${activeTab === 'topology' ? 'flex' : 'hidden'} print:flex`}>

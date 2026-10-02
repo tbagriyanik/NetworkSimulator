@@ -182,6 +182,14 @@ export function TopologyCanvasLayer({
     const { preferences } = useUiPreferences();
     const canvasSize = getCanvasDimensions();
 
+    // Survives re-runs of the `connectionHandlers` memo below so unchanged
+    // cables keep their previous closures.
+    const previousHandlersRef = React.useRef(new Map<string, {
+        onMouseEnter: (e: React.MouseEvent<SVGPathElement>) => void;
+        onClick: (e: React.MouseEvent) => void;
+        signature: string;
+    }>());
+
     // Each active cable can add an SVG filter and two infinite particle
     // animations. On a machine without GPU compositing those effects are
     // repainted every frame, so once the topology is wide enough the budget is
@@ -204,13 +212,19 @@ export function TopologyCanvasLayer({
     //
     // Inline arrow functions gave every `ConnectionLine` a fresh callback on
     // every canvas render, which defeats its `memo` and forces all of them to
-    // re-render even when nothing about them changed. Building them once per
-    // topology change keeps the memo effective during pans, hovers, selections
-    // and the IoT refresh tick.
+    // re-render even when nothing about them changed.
+    //
+    // The `deviceMap` dependency means this memo runs again whenever any device
+    // object is replaced — which the IoT automation pass does several times a
+    // second. The captured values (endpoint names, ports, cable type) hardly
+    // ever change in between, so a handler is reused whenever they do not.
+    // On a wide topology that turns thousands of short-lived closures per tick
+    // into a handful.
     const connectionHandlers = React.useMemo(() => {
         const handlers = new Map<string, {
             onMouseEnter: (e: React.MouseEvent<SVGPathElement>) => void;
             onClick: (e: React.MouseEvent) => void;
+            signature: string;
         }>();
 
         for (const conn of visibleConnections) {
@@ -224,10 +238,19 @@ export function TopologyCanvasLayer({
             const sourcePort = conn.sourcePort;
             const targetPort = conn.targetPort;
             const cableType = conn.cableType;
+            const signature = `${sourceName}|${sourcePort}|${targetName}|${targetPort}|${cableType}`;
+
+            const previous = previousHandlersRef.current.get(connId);
+            if (previous && previous.signature === signature) {
+                handlers.set(connId, previous);
+                continue;
+            }
+
             // The status message is only read on hover, so it stays lazy.
             const statusMessage = () => getConnectionStatusMessage(conn, deviceMap, language);
 
             handlers.set(connId, {
+                signature,
                 onMouseEnter: (e) => handleConnectionMouseEnter(
                     e, connId, sourceName, sourcePort, targetName, targetPort, cableType, statusMessage()
                 ),
@@ -235,6 +258,7 @@ export function TopologyCanvasLayer({
             });
         }
 
+        previousHandlersRef.current = handlers;
         return handlers;
     }, [visibleConnections, deviceMap, language, handleConnectionMouseEnter, handleConnectionClick]);
 

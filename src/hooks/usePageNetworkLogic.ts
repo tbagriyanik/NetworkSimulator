@@ -4,6 +4,7 @@ import { CanvasDevice, CanvasConnection, FirewallRule } from '@/components/netwo
 import { SwitchState } from '@/lib/network/types';
 import { buildRunningConfig } from '@/lib/network/core/configBuilder';
 import { TerminalOutput } from '@/components/network/Terminal';
+import { applyGraphicsQualityClass } from '@/lib/performance/performanceDetector';
 import type { PCOutputLine } from '@/types/pageTypes';
 
 interface UsePageNetworkLogicProps {
@@ -354,14 +355,7 @@ export function usePageNetworkLogic({
 
   // Apply graphics quality class to body
   useEffect(() => {
-    const body = document.body;
-    if (graphicsQuality === 'low') {
-      body.classList.add('graphics-low');
-      body.classList.remove('graphics-high');
-    } else {
-      body.classList.add('graphics-high');
-      body.classList.remove('graphics-low');
-    }
+    applyGraphicsQualityClass(graphicsQuality === 'low' ? 'low' : 'high');
   }, [graphicsQuality]);
 
   return {

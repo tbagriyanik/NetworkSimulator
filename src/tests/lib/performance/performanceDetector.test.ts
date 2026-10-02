@@ -160,6 +160,78 @@ describe('performanceDetector — preference handling', () => {
   });
 });
 
+describe('performanceDetector — startup quality', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    stubHardwareGpu();
+    delete window.__NETSIM_GRAPHICS_QUALITY__;
+  });
+
+  afterEach(() => {
+    document.createElement = originalCreateElement as typeof document.createElement;
+    localStorage.clear();
+    delete window.__NETSIM_GRAPHICS_QUALITY__;
+    vi.restoreAllMocks();
+  });
+
+  it('starts low-end hardware on the light path before the first render', async () => {
+    setHardware(4, 8);
+    const detector = await loadDetector();
+    expect(detector.getInitialGraphicsQuality()).toBe('low');
+  });
+
+  it('starts strong hardware on the full path before the first render', async () => {
+    setHardware(16, 32);
+    const detector = await loadDetector();
+    expect(detector.getInitialGraphicsQuality()).toBe('high');
+  });
+
+  it('reuses the pre-paint verdict instead of probing again', async () => {
+    setHardware(16, 32);
+    window.__NETSIM_GRAPHICS_QUALITY__ = 'low';
+    const detector = await loadDetector();
+    expect(detector.getInitialGraphicsQuality()).toBe('low');
+  });
+
+  it('lets an explicit choice win over the pre-paint verdict', async () => {
+    setHardware(4, 8);
+    window.__NETSIM_GRAPHICS_QUALITY__ = 'low';
+    const detector = await loadDetector();
+
+    detector.setGraphicsQualityPreference('high');
+    expect(detector.getInitialGraphicsQuality()).toBe('high');
+  });
+});
+
+describe('performanceDetector — graphics-low class', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    stubHardwareGpu();
+  });
+
+  afterEach(() => {
+    document.createElement = originalCreateElement as typeof document.createElement;
+    document.documentElement.className = '';
+    document.body.className = '';
+    localStorage.clear();
+    vi.restoreAllMocks();
+  });
+
+  it('marks both the document element and the body, and clears them again', async () => {
+    setHardware(4, 8);
+    const detector = await loadDetector();
+
+    detector.applyGraphicsQualityClass('low');
+    expect(document.documentElement.classList.contains('graphics-low')).toBe(true);
+    expect(document.body.classList.contains('graphics-low')).toBe(true);
+
+    detector.applyGraphicsQualityClass('high');
+    expect(document.documentElement.classList.contains('graphics-low')).toBe(false);
+    expect(document.body.classList.contains('graphics-low')).toBe(false);
+    expect(document.body.classList.contains('graphics-high')).toBe(true);
+  });
+});
+
 describe('PerformanceMonitor — hysteresis', () => {
   it('degrades after a sustained slow trend and upgrades only after a long fast run', async () => {
     const detector = await loadDetector();

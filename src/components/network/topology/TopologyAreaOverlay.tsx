@@ -12,6 +12,7 @@ interface TopologyAreaOverlayProps {
   overlayMode: OverlayMode;
   zoom: number;
   isDark?: boolean;
+  graphicsQuality?: 'high' | 'medium' | 'low';
 }
 
 export function TopologyAreaOverlay({
@@ -20,6 +21,7 @@ export function TopologyAreaOverlay({
   overlayMode,
   zoom,
   isDark = true,
+  graphicsQuality = 'high',
 }: TopologyAreaOverlayProps) {
   const zones = useMemo(() => {
     // Nothing is drawn in 'none' mode, so skip walking the device list on
@@ -33,7 +35,7 @@ export function TopologyAreaOverlay({
   return (
     <g className="topology-area-overlay pointer-events-none transition-all duration-300">
       <defs>
-        {zones.map((zone) => (
+        {graphicsQuality !== 'low' && zones.map((zone) => (
           <filter key={`glow-${zone.id}`} id={`glow-${zone.id}`} x="-20%" y="-20%" width="140%" height="140%">
             <feGaussianBlur stdDeviation="8" result="blur" />
             <feComposite in="SourceGraphic" in2="blur" operator="over" />
@@ -44,13 +46,15 @@ export function TopologyAreaOverlay({
       {/* Render Area Polygons */}
       {zones.map((zone) => (
         <g key={`zone-group-${zone.id}`} className="transition-opacity duration-300">
-          {/* Ambient Glow */}
-          <path
-            d={zone.pathData}
-            fill={zone.color}
-            fillOpacity={isDark ? 0.12 : 0.08}
-            filter={`url(#glow-${zone.id})`}
-          />
+          {/* Ambient Glow - skipped on low graphics mode to avoid CPU software-rendering lag */}
+          {graphicsQuality !== 'low' && (
+            <path
+              d={zone.pathData}
+              fill={zone.color}
+              fillOpacity={isDark ? 0.12 : 0.08}
+              filter={`url(#glow-${zone.id})`}
+            />
+          )}
 
           {/* Core Shape Fill and Dashed Boundary */}
           <path

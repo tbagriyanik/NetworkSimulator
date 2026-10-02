@@ -219,10 +219,15 @@
 
 /* Low graphics mode: turn off cosmetic micro-animations and transitions for a
    snappier, lighter render. Functional one-shot animations that carry layout
-   state (e.g. the progress bar fill) are kept. */
-body.graphics-low *,
-body.graphics-low *::before,
-body.graphics-low *::after {
+   state (e.g. the progress bar fill) are kept.
+
+   The class is deliberately unqualified rather than `body.graphics-low`: the
+   pre-paint script in app/layout.tsx runs in <head> and can only reach the
+   document element, so both nodes have to be accepted. */
+.graphics-low,
+.graphics-low *,
+.graphics-low *::before,
+.graphics-low *::after {
   animation: none !important;
   animation-duration: 0.01ms !important;
   animation-delay: 0ms !important;
@@ -232,12 +237,12 @@ body.graphics-low *::after {
   will-change: auto !important;
 }
 
-body.graphics-low .progress-fill {
+.graphics-low .progress-fill {
   animation: progress-width-fill 0.3s ease-out forwards !important;
 }
 
 /* Disable expensive filter effects in low graphics mode */
-body.graphics-low .topology-canvas {
+.graphics-low .topology-canvas {
   filter: none !important;
 }
 
@@ -246,36 +251,36 @@ body.graphics-low .topology-canvas {
    utility classes (backdrop-blur-*) or the liquid-glass helpers, and blurring
    a full-width header/window is one of the most expensive things a machine
    without a real GPU can be asked to do. */
-body.graphics-low [style*="backdrop-filter"] {
+.graphics-low [style*="backdrop-filter"] {
   backdrop-filter: none !important;
 }
 
-body.graphics-low [class*="backdrop-blur"],
-body.graphics-low .liquid-glass,
-body.graphics-low .liquid-glass-light,
-body.graphics-low .liquid-glass-strong {
+.graphics-low [class*="backdrop-blur"],
+.graphics-low .liquid-glass,
+.graphics-low .liquid-glass-light,
+.graphics-low .liquid-glass-strong {
   -webkit-backdrop-filter: none !important;
   backdrop-filter: none !important;
 }
 
 /* Blur/drop-shadow utility filters are purely cosmetic and get rasterized on
    the CPU when there is no GPU. */
-body.graphics-low [class*="blur-"] {
+.graphics-low [class*="blur-"] {
   filter: none !important;
 }
 
 /* SVG filters (device shadows, selection glow, IoT glow) force off-screen
    raster passes per element. They are the first thing to go on weak hardware. */
-body.graphics-low svg [filter],
-body.graphics-low svg [style*="filter"],
-body.graphics-low svg path[style*="drop-shadow"] {
+.graphics-low svg [filter],
+.graphics-low svg [style*="filter"],
+.graphics-low svg path[style*="drop-shadow"] {
   filter: none !important;
 }
 
 /* Long, expensive paint paths: the canvas keeps its cheap dot grid, but the
    full-page gradients and ambient glow layers are already skipped in React
    when graphics quality is low. */
-body.graphics-low .topology-print-area {
+.graphics-low .topology-print-area {
   box-shadow: none !important;
 }
 

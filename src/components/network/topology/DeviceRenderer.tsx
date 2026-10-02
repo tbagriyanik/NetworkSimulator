@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 
 import { CanvasDevice, CanvasConnection } from '../NetworkTopology/types/networkTopology.types';
 import { SwitchState } from '@/lib/network/types';
-import { getDeviceWidth, getDeviceHeight } from '../NetworkTopology/utils/networkTopology.helpers';
+import { getDeviceWidth, getDeviceHeight, isControllableIotDevice } from '../NetworkTopology/utils/networkTopology.helpers';
 import { DeviceIconSvg } from './DeviceIconSvg';
 import { DeviceWifiStatus } from './DeviceWifiStatus';
 import { DeviceFocusPulse } from './DeviceFocusPulse';
@@ -16,6 +16,25 @@ import { DeviceStpBadge } from './DeviceStpBadge';
 import { DeviceLabels } from './DeviceLabels';
 import { DevicePorts } from './DevicePorts';
 import { subscribeFocusDevice } from './focusDeviceEvent';
+
+/**
+ * Element-wise comparison of one device's cable list.
+ *
+ * `deviceToConnectionsMap` is rebuilt whenever any connection changes, which
+ * hands every device a brand-new array; comparing the arrays element-wise keeps
+ * a device's re-render scoped to its own links instead of the whole topology.
+ */
+function sameConnectionList(
+  a: CanvasConnection[] | undefined,
+  b: CanvasConnection[] | undefined
+): boolean {
+  if (a === b) return true;
+  if (!a || !b || a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] !== b[i]) return false;
+  }
+  return true;
+}
 
 export interface DeviceRendererProps {
   device: CanvasDevice;
@@ -31,6 +50,12 @@ export interface DeviceRendererProps {
   isDraggingInteractionDisabled: boolean;
   getLiveDeviceVlan: (device: CanvasDevice) => number | string | null;
   getIotMeasuredValue: (device: CanvasDevice) => string;
+  /**
+   * Ticks ~4x/second while a live sensor exists, because a measured reading is
+   * sampled during render. Only devices that actually show such a reading opt
+   * into repainting on it.
+   */
+  iotUpdateTrigger?: number;
   handlePortHover: (e: React.MouseEvent<SVGGElement>, deviceId: string, portId: string) => void;
   handlePortMouseLeave: () => void;
   handlePortClick: (e: React.MouseEvent, deviceId: string, portId: string) => void;
@@ -46,6 +71,22 @@ export interface DeviceRendererProps {
   _mousePosRef: React.MutableRefObject<{ x: number; y: number }>;
   isDrawingConnection?: boolean;
   connectionStart?: { deviceId: string; portId: string } | null;
+}
+
+/**
+ * True for a device whose label shows a live sensor sample.
+ *
+ * The sample is read while rendering, so it can only change when something
+ * forces a repaint. Controlled devices (lamp/heater/cooler) show their
+ * open/close state instead, which already follows the device object.
+ */
+export function hasLiveSensorReading(device: CanvasDevice): boolean {
+  return (
+    device.type === 'iot' &&
+    device.status !== 'offline' &&
+    device.iot?.collaborationEnabled !== false &&
+    !isControllableIotDevice(device)
+  );
 }
 
 export const DeviceRenderer = React.memo(function DeviceRenderer({
@@ -223,6 +264,26 @@ export const DeviceRenderer = React.memo(function DeviceRenderer({
     </g>
   );
 }, (prev, next) => {
+  // `device` and the per-device connection list are updated with structural
+  // sharing, so identity is the precise signal: a new object means this device
+  // (or one of its links) actually changed. Comparing only the Map identity
+  // that holds both used to repaint every device on the canvas whenever any
+  // single device's runtime state moved.
+  if (prev.device !== next.device) return false;
+  if (!sameConnectionList(
+    prev.deviceToConnectionsMap?.get(prev.device.id),
+    next.deviceToConnectionsMap?.get(next.device.id),
+  )) return false;
+
+  // A live sensor reading is sampled during render, so it needs the refresh
+  // tick to reach this device — and only this device.
+  if (
+    prev.iotUpdateTrigger !== next.iotUpdateTrigger &&
+    hasLiveSensorReading(prev.device)
+  ) {
+    return false;
+  }
+
   const isWifiClientDevice =
     prev.device.type === 'pc' ||
     prev.device.type === 'iot' ||
@@ -231,17 +292,21 @@ export const DeviceRenderer = React.memo(function DeviceRenderer({
     Boolean(prev.device.wifi) ||
     Boolean(prev.device.ports?.some(p => p.id === 'wlan0'));
 
-  const wifiContextChanged = isWifiClientDevice
-    ? prev.topologyDevices !== next.topologyDevices || prev.deviceStates !== next.deviceStates
-    : false;
-  return prev.device === next.device &&
-    prev.isDragging === next.isDragging &&
+  if (isWifiClientDevice) {
+    // A wifi client draws its signal bars against every candidate AP, so the
+    // whole device list and state map are genuine inputs for it.
+    if (prev.topologyDevices !== next.topologyDevices || prev.deviceStates !== next.deviceStates) return false;
+  } else if (prev.deviceStates !== next.deviceStates) {
+    // Everything else only reads its own slice (STP badge, port state, wireless
+    // coverage), which keeps structural sharing intact for it.
+    if (prev.deviceStates?.get(prev.device.id) !== next.deviceStates?.get(next.device.id)) return false;
+  }
+
+  return prev.isDragging === next.isDragging &&
     prev.isSelected === next.isSelected &&
     prev.isDark === next.isDark &&
     prev.language === next.language &&
     prev.t === next.t &&
-    prev.deviceStates === next.deviceStates &&
-    prev.deviceToConnectionsMap === next.deviceToConnectionsMap &&
     prev.graphicsQuality === next.graphicsQuality &&
     prev.isDraggingInteractionDisabled === next.isDraggingInteractionDisabled &&
     prev.getLiveDeviceVlan === next.getLiveDeviceVlan &&
@@ -260,6 +325,5 @@ export const DeviceRenderer = React.memo(function DeviceRenderer({
     prev.handleDeviceTouchEnd === next.handleDeviceTouchEnd &&
     prev.isDrawingConnection === next.isDrawingConnection &&
     prev.connectionStart === next.connectionStart &&
-    prev._mousePosRef === next._mousePosRef &&
-    !wifiContextChanged;
+    prev._mousePosRef === next._mousePosRef;
 });

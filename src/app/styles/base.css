@@ -36,8 +36,10 @@
     background: rgba(107, 114, 128, 0.8);
   }
 
-  /* Optimize for low-end devices: reduce anti-aliasing overhead */
-  body.graphics-low {
+  /* Optimize for low-end devices: reduce anti-aliasing overhead. The class is
+     also applied to <html> by the pre-paint script, so it must stay
+     unqualified. */
+  .graphics-low {
     -webkit-font-smoothing: auto;
     -moz-osx-font-smoothing: auto;
   }

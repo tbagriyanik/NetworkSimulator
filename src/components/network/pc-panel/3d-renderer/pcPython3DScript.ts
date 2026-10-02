@@ -8,9 +8,9 @@ export function get3DSceneScript(sceneDataJson: string, isDark: boolean = true):
     (function() {
       const canvas = document.getElementById('render-canvas');
       const gl = canvas.getContext('webgl', {
-        antialias: true,
-        powerPreference: 'high-performance',
-        preserveDrawingBuffer: true
+        antialias: false,
+        powerPreference: 'default',
+        preserveDrawingBuffer: false
       }) || canvas.getContext('experimental-webgl', {
         powerPreference: 'high-performance'
       });
@@ -30,6 +30,12 @@ export function get3DSceneScript(sceneDataJson: string, isDark: boolean = true):
       let camTarget = [0, 0, 0];
       let targetPan = [0, 0, 0];
       let isDragging = false;
+      let renderQueued = false;
+      let lastRenderTime = 0;
+      const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const lowEnd = (navigator.hardwareConcurrency || 4) <= 4 ||
+        (typeof navigator.deviceMemory === 'number' && navigator.deviceMemory <= 4);
+      const frameInterval = lowEnd || reducedMotion ? 33 : 16;
       let dragButton = 0;
       let lastMouseX = 0;
       let lastMouseY = 0;
@@ -38,12 +44,13 @@ export function get3DSceneScript(sceneDataJson: string, isDark: boolean = true):
         if (!canvas.parentElement) return;
         width = Math.max(1, canvas.parentElement.clientWidth);
         height = Math.max(1, canvas.parentElement.clientHeight);
-        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        const dpr = Math.min(window.devicePixelRatio || 1, lowEnd ? 1 : 1.5);
         canvas.width = Math.round(width * dpr);
         canvas.height = Math.round(height * dpr);
         if (gl) {
           gl.viewport(0, 0, canvas.width, canvas.height);
         }
+        requestRender();
       }
       window.addEventListener('resize', resize);
       if (typeof ResizeObserver !== 'undefined' && canvas.parentElement) {
@@ -60,6 +67,7 @@ export function get3DSceneScript(sceneDataJson: string, isDark: boolean = true):
         btnWire.addEventListener('click', () => {
           showWireframe = !showWireframe;
           btnWire.classList.toggle('active', showWireframe);
+          requestRender();
         });
       }
       if (btnGrid) {
@@ -67,6 +75,7 @@ export function get3DSceneScript(sceneDataJson: string, isDark: boolean = true):
         btnGrid.addEventListener('click', () => {
           showGrid = !showGrid;
           btnGrid.classList.toggle('active', showGrid);
+          requestRender();
         });
       }
       if (btnRot) {
@@ -74,6 +83,7 @@ export function get3DSceneScript(sceneDataJson: string, isDark: boolean = true):
         btnRot.addEventListener('click', () => {
           autoRotate = !autoRotate;
           btnRot.classList.toggle('active', autoRotate);
+          requestRender();
         });
       }
       if (btnReset) {
@@ -82,6 +92,7 @@ export function get3DSceneScript(sceneDataJson: string, isDark: boolean = true):
           targetTheta = Math.PI / 4;
           targetPhi = Math.PI / 6;
           targetPan = [0, 0, 0];
+          requestRender();
         });
       }
 
@@ -91,6 +102,7 @@ export function get3DSceneScript(sceneDataJson: string, isDark: boolean = true):
         dragButton = e.button;
         lastMouseX = e.clientX;
         lastMouseY = e.clientY;
+        requestRender();
       });
 
       canvas.addEventListener('pointerup', (e) => {
@@ -120,11 +132,13 @@ export function get3DSceneScript(sceneDataJson: string, isDark: boolean = true):
           targetPan[2] -= (rightZ * dx) * panSpeed;
           targetPan[1] += dy * panSpeed;
         }
+        requestRender();
       });
 
       canvas.addEventListener('wheel', (e) => {
         e.preventDefault();
         targetDistance = Math.max(2, Math.min(100, targetDistance * (1 + e.deltaY * 0.0012)));
+        requestRender();
       }, { passive: false });
 
       let touchStartDist = 0;
@@ -145,6 +159,7 @@ export function get3DSceneScript(sceneDataJson: string, isDark: boolean = true):
             const factor = touchStartDist / dist;
             targetDistance = Math.max(2, Math.min(100, targetDistance * factor));
             touchStartDist = dist;
+            requestRender();
           }
         }
       }, { passive: true });
@@ -607,7 +622,14 @@ export function get3DSceneScript(sceneDataJson: string, isDark: boolean = true):
       let lastTime = performance.now();
 
       function render() {
+        renderQueued = false;
+        if (document.hidden || !canvas.isConnected) return;
         const now = performance.now();
+        if (now - lastRenderTime < frameInterval) {
+          requestRender();
+          return;
+        }
+        lastRenderTime = now;
         const dt = Math.min((now - lastTime) / 1000, 0.1);
         lastTime = now;
 
@@ -701,10 +723,23 @@ export function get3DSceneScript(sceneDataJson: string, isDark: boolean = true):
           gl.drawArrays(mode, 0, item.buffers.count);
         });
 
+        const cameraMoving = Math.abs(targetTheta - camTheta) > 0.001 ||
+          Math.abs(targetPhi - camPhi) > 0.001 ||
+          Math.abs(targetDistance - camDistance) > 0.001 ||
+          Math.abs(targetPan[0] - camTarget[0]) > 0.001 ||
+          Math.abs(targetPan[1] - camTarget[1]) > 0.001 ||
+          Math.abs(targetPan[2] - camTarget[2]) > 0.001;
+        if ((autoRotate && !reducedMotion) || cameraMoving) requestRender();
+      }
+
+      function requestRender() {
+        if (renderQueued || document.hidden || !canvas.isConnected) return;
+        renderQueued = true;
         requestAnimationFrame(render);
       }
 
-      render();
+      document.addEventListener('visibilitychange', requestRender);
+      requestRender();
     })();
   `;
 }

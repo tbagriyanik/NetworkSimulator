@@ -5,6 +5,7 @@ import { SwitchState } from '@/lib/network/types';
 import { createTabSpecificStorage } from './tabStorage';
 import { errorHandler, STORAGE_ERRORS } from '@/lib/errors/errorHandler';
 import { secureStorage } from '@/lib/storage/secureStorage';
+import { getInitialGraphicsQuality } from '@/lib/performance/performanceDetector';
 
 // Environment settings types
 export type EnvironmentBackground = 'none' | 'house' | 'twoStoryGarage' | 'greenhouse';
@@ -192,7 +193,10 @@ const initialState: Omit<AppState, keyof ReturnType<typeof createActions>> = {
     activeTab: 'topology',
     activePanel: null,
     sidebarOpen: true,
-    graphicsQuality: typeof window !== 'undefined' && window.navigator.hardwareConcurrency <= 2 ? 'low' : 'high',
+    // Seeded from hardware detection instead of a core-count guess: the store
+    // is created before React renders the canvas, so a machine that falls back
+    // to software rendering never paints a single heavy frame.
+    graphicsQuality: getInitialGraphicsQuality(),
     helpLevel: 'beginner',
 };
 
@@ -531,7 +535,7 @@ const createActions = (set: (partial: Partial<AppState> | ((state: AppState) => 
         deviceStates: initialDeviceStates,
         activeTab: 'topology',
         activePanel: null,
-        graphicsQuality: 'high',
+        graphicsQuality: getInitialGraphicsQuality(),
         helpLevel: 'beginner',
     }),
 });

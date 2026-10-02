@@ -79,6 +79,7 @@ export function usePerformanceDetection(
     });
 
     let animationFrameId = 0;
+    let samplingTimeoutId = 0;
     let lastTime = performance.now();
 
     // The monitor exists to catch a frame budget that cannot be met. Once the
@@ -89,36 +90,49 @@ export function usePerformanceDetection(
     // ahead on restore) and backs off to a cheap periodic sample once the
     // recommendation has been unchanged for a while.
     const STABLE_SAMPLES = 900; // ~15s of frames at 60Hz
+    const BURST_SAMPLE_COUNT = 30;
+    const IDLE_SAMPLE_INTERVAL = 5000;
     let stableSamples = 0;
-    let lastSampledAt = 0;
+    let burstSampleCount = 0;
+    let reducedSampling = false;
+
+    const scheduleNextSample = () => {
+      if (document.hidden) return;
+      if (reducedSampling && burstSampleCount === 0) {
+        samplingTimeoutId = window.setTimeout(() => {
+          samplingTimeoutId = 0;
+          lastTime = performance.now();
+          animationFrameId = requestAnimationFrame(monitorPerformance);
+        }, IDLE_SAMPLE_INTERVAL);
+        return;
+      }
+      animationFrameId = requestAnimationFrame(monitorPerformance);
+    };
 
     const monitorPerformance = (timestamp: number) => {
       const frameTime = timestamp - lastTime;
       lastTime = timestamp;
 
-      if (stableSamples < STABLE_SAMPLES) {
+      if (!reducedSampling) {
         monitor.recordFrame(frameTime);
         monitor.checkPerformance(timestamp);
         stableSamples += 1;
-        lastSampledAt = timestamp;
-      } else if (timestamp - lastSampledAt >= 2000) {
-        // Idle check: one sample per 2s is enough to notice the machine has
-        // become slow, without keeping a permanent per-frame task alive. A
-        // single sample carries no trend, so it only serves to keep the
-        // existing verdict warm rather than to flip it.
-        monitor.reset();
+        if (stableSamples >= STABLE_SAMPLES) reducedSampling = true;
+      } else {
         monitor.recordFrame(frameTime);
-        monitor.checkPerformance(timestamp, 1);
-        lastSampledAt = timestamp;
+        monitor.checkPerformance(timestamp);
+        burstSampleCount = (burstSampleCount + 1) % BURST_SAMPLE_COUNT;
       }
 
-      animationFrameId = requestAnimationFrame(monitorPerformance);
+      scheduleNextSample();
     };
 
     const onVisibilityChange = () => {
       if (document.hidden) {
         if (animationFrameId) cancelAnimationFrame(animationFrameId);
+        if (samplingTimeoutId) clearTimeout(samplingTimeoutId);
         animationFrameId = 0;
+        samplingTimeoutId = 0;
       } else if (animationFrameId === 0) {
         // Resuming: drop the accumulated gap instead of reporting it as a stall.
         lastTime = performance.now();
@@ -131,6 +145,7 @@ export function usePerformanceDetection(
 
     return () => {
       if (animationFrameId) cancelAnimationFrame(animationFrameId);
+      if (samplingTimeoutId) clearTimeout(samplingTimeoutId);
       document.removeEventListener('visibilitychange', onVisibilityChange);
     };
   }, [onQualityChange]);

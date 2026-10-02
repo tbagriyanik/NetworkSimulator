@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Network Simulator",
-  "version": "7.2.0",
+  "version": "7.2.1",
   "identifier": "com.networksimulator.desktop",
   "build": {
     "frontendDist": "../out",
@@ -12,14 +12,19 @@
   "app": {
     "windows": [
       {
+        "label": "main",
         "title": "Network Simulator",
-        "width": 800,
-        "height": 600,
+        "width": 1280,
+        "height": 800,
+        "minWidth": 900,
+        "minHeight": 600,
+        "center": true,
         "resizable": true,
         "fullscreen": false,
         "devtools": false,
         "transparent": false,
-        "decorations": true
+        "decorations": true,
+        "visible": true
       }
     ],
     "security": {

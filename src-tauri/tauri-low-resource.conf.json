@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Network Simulator (Low Resource)",
-  "version": "6.8.0",
+  "version": "7.2.1",
   "identifier": "com.networksimulator.desktop.lowresource",
   "build": {
     "frontendDist": "../out",
@@ -12,28 +12,23 @@
   "app": {
     "windows": [
       {
+        "label": "main",
         "title": "Network Simulator",
-        "width": 800,
-        "height": 600,
+        "width": 1280,
+        "height": 800,
         "resizable": true,
         "fullscreen": false,
         "devtools": false,
         "transparent": false,
         "decorations": true,
-        "webview": {
-          "allow_scripts": true,
-          "html": false,
-          "js": false,
-          "http_scheme": true
-        },
-        "minWidth": 640,
-        "minHeight": 480
+        "visible": true,
+        "minWidth": 900,
+        "minHeight": 600
       }
     ],
     "security": {
       "csp": null
-    },
-    "withGlobalTauri": true
+    }
   },
   "bundle": {
     "active": true,
@@ -50,6 +45,5 @@
       "icons/icon.ico"
     ],
     "publisher": "Network Simulator"
-  },
-  "plugins": {}
+  }
 }

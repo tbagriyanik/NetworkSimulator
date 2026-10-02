@@ -6,6 +6,18 @@
 
 export type GraphicsQuality = 'high' | 'low';
 
+/**
+ * Global the pre-paint script in `app/layout.tsx` fills in before React boots.
+ * It runs the same cheap heuristics on raw DOM APIs (a head script cannot
+ * import modules), so the first frame is already painted in the right mode
+ * instead of starting heavy and being corrected a few seconds later.
+ */
+declare global {
+  interface Window {
+    __NETSIM_GRAPHICS_QUALITY__?: GraphicsQuality;
+  }
+}
+
 /** Explicit user choice — wins over every automatic heuristic. */
 export const GRAPHICS_PREFERENCE_KEY = 'graphics-quality-preference';
 /** Last automatically detected value. Informational only: never treated as a user choice. */
@@ -226,6 +238,47 @@ export function hasExplicitGraphicsPreference(): boolean {
     return true;
   } catch {
     return false;
+  }
+}
+
+/**
+ * Quality the app should start with, resolved before the first React render.
+ *
+ * The pre-paint script already made the same call; reusing its verdict keeps
+ * the stylesheet and the React tree from disagreeing about the starting mode.
+ */
+export function getInitialGraphicsQuality(): GraphicsQuality {
+  if (hasExplicitGraphicsPreference()) {
+    try {
+      return localStorage.getItem(GRAPHICS_PREFERENCE_KEY) === 'low' ? 'low' : 'high';
+    } catch {
+      return 'high';
+    }
+  }
+
+  const prePaint = typeof window !== 'undefined' ? window.__NETSIM_GRAPHICS_QUALITY__ : undefined;
+  if (prePaint === 'high' || prePaint === 'low') return prePaint;
+
+  return detectLowEndHardware() ? 'low' : 'high';
+}
+
+/**
+ * Mirror the active quality onto a `graphics-low` class so the stylesheet can
+ * drop blurs, filters and animations.
+ *
+ * The class is set on the document element as well as the body because the
+ * pre-paint script can only reach `<html>` — it runs in `<head>`, before the
+ * body exists. Both nodes are cleared here so switching back to high graphics
+ * never leaves a stale low-graphics class behind.
+ */
+export function applyGraphicsQualityClass(quality: GraphicsQuality): void {
+  if (typeof document === 'undefined') return;
+  const useLow = quality === 'low';
+  document.documentElement.classList.toggle('graphics-low', useLow);
+  document.documentElement.classList.toggle('graphics-high', !useLow);
+  if (document.body) {
+    document.body.classList.toggle('graphics-low', useLow);
+    document.body.classList.toggle('graphics-high', !useLow);
   }
 }
 

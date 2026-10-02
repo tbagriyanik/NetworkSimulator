@@ -1,6 +1,6 @@
-﻿import { memo } from 'react';
-import { CanvasDevice } from '../NetworkTopology/types/networkTopology.types';
-import { DeviceRenderer, DeviceRendererProps } from './DeviceRenderer';
+import { memo } from 'react';
+import { CanvasDevice, CanvasConnection } from '../NetworkTopology/types/networkTopology.types';
+import { DeviceRenderer, DeviceRendererProps, hasLiveSensorReading } from './DeviceRenderer';
 
 type TopologyDeviceRendererProps = Omit<DeviceRendererProps, 'device' | 'isSelected' | 'isDragging'> & {
   device: CanvasDevice;
@@ -48,8 +48,41 @@ export const TopologyDeviceRenderer = memo(function TopologyDeviceRenderer({
       }
       continue;
     }
+    if (key === 'deviceToConnectionsMap') {
+      // Rebuilt whenever any cable changes; only this device's slice is drawn
+      // here, so that is the slice worth comparing.
+      if (!sameConnectionList(
+        prev.deviceToConnectionsMap?.get(prev.device.id),
+        next.deviceToConnectionsMap?.get(next.device.id),
+      )) return false;
+      continue;
+    }
+    if (key === 'iotUpdateTrigger') {
+      // A live sensor sample is read while rendering, so this tick has to reach
+      // those devices. Everything else stays bailing out here — the tick is not
+      // a reason to rebuild every element on the canvas.
+      if (
+        prev.iotUpdateTrigger !== next.iotUpdateTrigger &&
+        hasLiveSensorReading(prev.device)
+      ) {
+        return false;
+      }
+      continue;
+    }
     if (!Object.is(prev[key], next[key])) return false;
   }
   return true;
 });
+
+function sameConnectionList(
+  a: CanvasConnection[] | undefined,
+  b: CanvasConnection[] | undefined
+): boolean {
+  if (a === b) return true;
+  if (!a || !b || a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] !== b[i]) return false;
+  }
+  return true;
+}
 

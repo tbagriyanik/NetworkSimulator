@@ -3,27 +3,64 @@ import { execSync } from "child_process";
 import fs from "fs";
 import path from "path";
 
-// Function to recursively count lines of code under src/
+const LOC_CACHE_FILE = path.join(process.cwd(), "node_modules", ".cache", "netsim-loc.json");
+
+/**
+ * Total lines under `src/`, cached against the newest mtime in the tree.
+ *
+ * The count only feeds the About dialog badge, but it used to read and split
+ * ~1,200 source files on every `next dev` start and every build. Stat-ing the
+ * tree is cheap; reading it is not, so the count is only recomputed when a file
+ * actually changed.
+ */
 function getLinesOfCode(dir: string): number {
-  let lines = 0;
-  function traverse(currentDir: string) {
-    const files = fs.readdirSync(currentDir);
-    for (const file of files) {
-      const fullPath = path.join(currentDir, file);
-      const stat = fs.statSync(fullPath);
-      if (stat.isDirectory()) {
-        traverse(fullPath);
-      } else if (stat.isFile() && /\.(js|jsx|ts|tsx|css)$/.test(file)) {
-        const content = fs.readFileSync(fullPath, "utf-8");
-        lines += content.split("\n").length;
+  let newestMtimeMs = 0;
+  let files: string[] = [];
+
+  function collect(currentDir: string) {
+    for (const entry of fs.readdirSync(currentDir, { withFileTypes: true })) {
+      const fullPath = path.join(currentDir, entry.name);
+      if (entry.isDirectory()) {
+        collect(fullPath);
+      } else if (entry.isFile() && /\.(js|jsx|ts|tsx|css)$/.test(entry.name)) {
+        files.push(fullPath);
+        const mtimeMs = fs.statSync(fullPath).mtimeMs;
+        if (mtimeMs > newestMtimeMs) newestMtimeMs = mtimeMs;
       }
     }
   }
+
   try {
-    traverse(dir);
+    collect(dir);
   } catch {
     // Ignore error
   }
+
+  try {
+    const cached = JSON.parse(fs.readFileSync(LOC_CACHE_FILE, "utf-8"));
+    if (cached && cached.newestMtimeMs === newestMtimeMs && typeof cached.lines === "number") {
+      return cached.lines;
+    }
+  } catch {
+    // No usable cache — fall through and recompute.
+  }
+
+  let lines = 0;
+  for (const file of files) {
+    try {
+      lines += fs.readFileSync(file, "utf-8").split("\n").length;
+    } catch {
+      // Ignore unreadable file
+    }
+  }
+
+  try {
+    fs.mkdirSync(path.dirname(LOC_CACHE_FILE), { recursive: true });
+    fs.writeFileSync(LOC_CACHE_FILE, JSON.stringify({ newestMtimeMs, lines }));
+  } catch {
+    // Cache is an optimization only.
+  }
+
   return lines;
 }
 
@@ -104,38 +141,10 @@ const config = async () => {
     devIndicators: false,
     // Performance optimizations for low-resource desktop builds
     compress: true,
-    // Reduce memory footprint during build
-    webpack: (config, { isServer }) => {
-      if (!isServer) {
-        config.optimization = {
-          ...config.optimization,
-          splitChunks: {
-            chunks: 'all',
-            cacheGroups: {
-              default: false,
-              vendors: false,
-              // Vendor chunk optimization
-              vendor: {
-                name: 'vendor',
-                chunks: 'all',
-                test: /node_modules/,
-                priority: 20
-              },
-              // Common chunk optimization
-              common: {
-                name: 'common',
-                minChunks: 2,
-                chunks: 'all',
-                priority: 10,
-                reuseExistingChunk: true,
-                enforce: true
-              }
-            }
-          }
-        };
-      }
-      return config;
-    },
+    // No `webpack` override here on purpose: Next 16 builds with Turbopack, and
+    // the old override (which merged every node_modules import into a single
+    // `vendor` chunk) only applied to a `next build --webpack` run, where it
+    // replaced Next's own chunking rather than tuning it.
     ...(!isExport ? {
       async headers() {
         return [

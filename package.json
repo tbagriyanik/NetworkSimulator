@@ -1,6 +1,6 @@
 {
   "name": "network-simulator",
-  "version": "7.2.0",
+  "version": "7.2.1",
   "private": true,
   "type": "module",
   "scripts": {
@@ -40,6 +40,7 @@
     "zustand": "^5.0.12"
   },
   "devDependencies": {
+    "@csstools/css-calc": "^3.4.3",
     "@tailwindcss/postcss": "^4.3.3",
     "@tauri-apps/cli": "^2.11.5",
     "@testing-library/dom": "^10.4.0",

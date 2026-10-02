@@ -9,12 +9,21 @@ interface CanvasDefsProps {
   isMobile?: boolean;
 }
 
-export const CanvasDefs: React.FC<CanvasDefsProps> = ({
+/**
+ * ~60 gradient/pattern/filter definitions shared by every node on the canvas.
+ *
+ * Memoized because the canvas layer re-renders on every pan frame, hover and
+ * simulation tick: rebuilding this block each time meant re-creating every
+ * gradient node for no visual change. All props are primitives, so the default
+ * shallow compare is exactly the right granularity.
+ */
+
+export const CanvasDefs = React.memo(function CanvasDefs({
   isDark,
   canvasWidth,
   canvasHeight,
   isMobile: isMobileProp
-}) => {
+}: CanvasDefsProps) {
   const isMobileDetected = useIsMobile();
   const isMobile = isMobileProp ?? isMobileDetected;
 
@@ -299,9 +308,9 @@ export const CanvasDefs: React.FC<CanvasDefsProps> = ({
         <stop offset="100%" stopColor="var(--color-primary-200)" />
       </linearGradient>
       <linearGradient id="noteLightGreenLight" x1="0%" y1="0%" x2="0%" y2="100%">
-        <stop offset="0%" stopColor="var(--color-success-100)" />
-        <stop offset="100%" stopColor="var(--color-success-200)" />
+        <stop offset="0%" stopColor="var(--color-primary-100)" />
+        <stop offset="100%" stopColor="var(--color-primary-200)" />
       </linearGradient>
     </defs>
   );
-};
+});

@@ -35,7 +35,7 @@ interface MinimapNavigatorProps {
 const DEVICE_CENTER_X = 40;
 const DEVICE_CENTER_Y = 30;
 
-export function MinimapNavigator({
+export const MinimapNavigator = React.memo(function MinimapNavigator({
   devices,
   connections,
   zoom,
@@ -247,19 +247,16 @@ export function MinimapNavigator({
 
   return (
     <div
-      className={`fixed ${preferences.showFooter ? 'bottom-[110px]' : 'bottom-[70px]'} right-[10px] z-40 transition-all duration-200 select-none ${
-        isDark ? 'text-white' : 'text-slate-900'
-      }`}
+      className={`fixed ${preferences.showFooter ? 'bottom-[110px]' : 'bottom-[70px]'} right-[10px] z-40 transition-all duration-200 select-none ${isDark ? 'text-white' : 'text-slate-900'
+        }`}
     >
       {/* Minimap Card Header */}
       <div
-        className={`flex items-center justify-between gap-2 px-3 py-1.5 rounded-t-xl border shadow-md backdrop-blur-md transition-colors ${
-          isOpen ? 'rounded-b-none' : 'rounded-b-xl cursor-pointer'
-        } ${
-          isDark
+        className={`flex items-center justify-between gap-2 px-3 py-1.5 rounded-t-xl border shadow-md backdrop-blur-md transition-colors ${isOpen ? 'rounded-b-none' : 'rounded-b-xl cursor-pointer'
+          } ${isDark
             ? 'bg-secondary-800/90 border-secondary-700/60'
             : 'bg-white/95 border-secondary-200/80'
-        }`}
+          }`}
       >
         <div
           role="button"
@@ -312,16 +309,14 @@ export function MinimapNavigator({
         <div className="flex flex-col shadow-2xl rounded-b-xl border border-t-0 border-secondary-700/70 overflow-hidden backdrop-blur-md">
           {/* Subnet Focus Quick Filter Bar */}
           {detectedSubnets.length > 0 && (
-            <div className={`px-2 py-1 flex items-center gap-1 text-[10px] border-b ${
-              isDark ? 'bg-secondary-900/95 border-secondary-800 text-slate-300' : 'bg-slate-100 border-slate-200 text-slate-700'
-            }`}>
+            <div className={`px-2 py-1 flex items-center gap-1 text-[10px] border-b ${isDark ? 'bg-secondary-900/95 border-secondary-800 text-slate-300' : 'bg-slate-100 border-slate-200 text-slate-700'
+              }`}>
               <Filter className="w-3 h-3 text-primary-400 shrink-0" />
               <select
                 value={selectedSubnet}
                 onChange={(e) => handleFocusSubnet(e.target.value)}
-                className={`w-full bg-transparent border-0 text-[10px] font-mono outline-none cursor-pointer py-0.5 ${
-                  isDark ? 'text-slate-200' : 'text-slate-800'
-                }`}
+                className={`w-full bg-transparent border-0 text-[10px] font-mono outline-none cursor-pointer py-0.5 ${isDark ? 'text-slate-200' : 'text-slate-800'
+                  }`}
               >
                 <option value="all" className={isDark ? 'bg-slate-900 text-slate-200' : 'bg-white text-slate-800'}>
                   {isTR ? '🔍 Alt Ağ Odakla (Tümü)' : '🔍 Focus Subnet (All)'}
@@ -343,9 +338,8 @@ export function MinimapNavigator({
             onPointerUp={handlePointerUp}
             onPointerCancel={handlePointerUp}
             style={{ width: MAP_WIDTH, height: MAP_HEIGHT, touchAction: 'none' }}
-            className={`relative overflow-hidden cursor-grab active:cursor-grabbing transition-all ${
-              isDark ? 'bg-secondary-955/90' : 'bg-slate-900/90'
-            } ${isDragging ? 'ring-2 ring-amber-400/50' : ''}`}
+            className={`relative overflow-hidden cursor-grab active:cursor-grabbing transition-all ${isDark ? 'bg-secondary-955/90' : 'bg-slate-900/90'
+              } ${isDragging ? 'ring-2 ring-amber-400/50' : ''}`}
           >
             {/* Render Connection Lines */}
             <svg className="absolute inset-0 w-full h-full pointer-events-none">
@@ -387,17 +381,15 @@ export function MinimapNavigator({
                     top: `${cy}px`,
                     transform: 'translate(-50%, -50%)',
                   }}
-                  className={`absolute rounded-full border shadow-sm pointer-events-none transition-all ${
-                    isMatch ? 'w-2.5 h-2.5 border-white/70' : 'w-1.5 h-1.5 opacity-30 border-white/20'
-                  } ${
-                    d.type === 'router'
+                  className={`absolute rounded-full border shadow-sm pointer-events-none transition-all ${isMatch ? 'w-2.5 h-2.5 border-white/70' : 'w-1.5 h-1.5 opacity-30 border-white/20'
+                    } ${d.type === 'router'
                       ? 'bg-purple-500'
                       : d.type.startsWith('switch')
-                      ? 'bg-emerald-400'
-                      : d.type === 'firewall'
-                      ? 'bg-rose-500'
-                      : 'bg-sky-400'
-                  }`}
+                        ? 'bg-emerald-400'
+                        : d.type === 'firewall'
+                          ? 'bg-rose-500'
+                          : 'bg-sky-400'
+                    }`}
                   title={`${d.name} (${d.ip || 'No IP'})`}
                 />
               );
@@ -411,14 +403,13 @@ export function MinimapNavigator({
                 width: `${Math.min(MAP_WIDTH, Math.max(16, viewportRect.width))}px`,
                 height: `${Math.min(MAP_HEIGHT, Math.max(16, viewportRect.height))}px`,
               }}
-              className={`absolute border-2 border-amber-400 bg-amber-400/20 rounded pointer-events-none shadow-[0_0_10px_rgba(251,191,36,0.6)] ${
-                isDragging ? 'border-amber-300 bg-amber-400/35' : ''
-              }`}
+              className={`absolute border-2 border-amber-400 bg-amber-400/20 rounded pointer-events-none shadow-[0_0_10px_rgba(251,191,36,0.6)] ${isDragging ? 'border-amber-300 bg-amber-400/35' : ''
+                }`}
             />
           </div>
         </div>
       )}
     </div>
   );
-}
+});
 
