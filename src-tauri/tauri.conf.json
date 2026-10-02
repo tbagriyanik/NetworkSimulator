@@ -24,7 +24,8 @@
         "devtools": false,
         "transparent": false,
         "decorations": true,
-        "visible": true
+        "visible": true,
+        "additionalBrowserArgs": "--disable-features=msWebOOUI,msPdfOOUI,msSmartScreenProtection --enable-gpu-rasterization --enable-zero-copy --disable-background-timer-throttling --disable-renderer-backgrounding --disable-dev-shm-usage"
       }
     ],
     "security": {

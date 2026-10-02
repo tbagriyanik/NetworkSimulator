@@ -130,7 +130,11 @@ const config = async () => {
     },
     productionBrowserSourceMaps: false,
     experimental: {
-      optimizePackageImports: ["lucide-react"],
+      // `lucide-react` is a barrel of ~1500 icon modules; without this every
+      // page that touches one icon ships the whole set. The other two entries
+      // are the remaining barrels this app pulls from, so the same tree-shaking
+      // applies to them.
+      optimizePackageImports: ["lucide-react", "@radix-ui/react-icons", "jspdf"],
       // Memory optimization for low-resource builds
       webpackMemoryOptimizations: true,
     },
@@ -141,35 +145,63 @@ const config = async () => {
     devIndicators: false,
     // Performance optimizations for low-resource desktop builds
     compress: true,
-    // No `webpack` override here on purpose: Next 16 builds with Turbopack, and
-    // the old override (which merged every node_modules import into a single
-    // `vendor` chunk) only applied to a `next build --webpack` run, where it
-    // replaced Next's own chunking rather than tuning it.
+
+    // Long-lived caching for the immutable build output. Next fingerprints these
+    // paths itself, so a `max-age` long enough to survive a deploy cycle removes
+    // a conditional request on every asset when the app is reopened.
+    //
+    // Static exports (`NEXT_EXPORT=true`, used by the desktop builds) serve from
+    // disk where response headers come from the webview's own cache, so the
+    // rules are only attached to a server-rendered deployment.
     ...(!isExport ? {
       async headers() {
-        return [
+        const immutableAssetHeaders = [
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+        ];
+
+        const sharedSecurityHeaders = [
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "X-XSS-Protection", value: "1; mode=block" },
+          { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
+        ];
+
+        const rules = [
           {
             source: "/fonts/:path*",
             headers: [
               { key: "Access-Control-Allow-Origin", value: "*" },
               { key: "Access-Control-Allow-Methods", value: "GET, OPTIONS" },
-              { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+              ...immutableAssetHeaders,
             ],
           },
           {
+            // Fingerprinted Next.js output (chunks, media, the static build dir).
+            source: "/_next/static/:path*",
+            headers: immutableAssetHeaders,
+          },
+          {
+            // App icons and the web manifest change rarely and are small enough
+            // that a stale copy is never worth a revalidation round-trip.
+            source: "/:all(icon*|apple-touch-icon*|favicon*|manifest.json)",
+            headers: [{ key: "Cache-Control", value: "public, max-age=604800" }],
+          },
+          {
             source: "/(.*)",
-            headers: [
-              { key: "X-Frame-Options", value: "DENY" },
-              { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
-              { key: "X-Content-Type-Options", value: "nosniff" },
-              { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-              { key: "X-XSS-Protection", value: "1; mode=block" },
-              { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" }
-            ],
+            headers: sharedSecurityHeaders,
           },
         ];
+
+        return rules;
       },
     } : {}),
+
+    // No `webpack` override here on purpose: Next 16 builds with Turbopack, and
+    // the old override (which merged every node_modules import into a single
+    // `vendor` chunk) only applied to a `next build --webpack` run, where it
+    // replaced Next's own chunking rather than tuning it.
 
     env: {
       NEXT_PUBLIC_GIT_COMMIT_COUNT: String(commitCount),

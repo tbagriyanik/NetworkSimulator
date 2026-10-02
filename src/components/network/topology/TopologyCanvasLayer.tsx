@@ -21,6 +21,44 @@ import { useUiPreferences } from '@/hooks/useUiPreferences';
 // particles cost more than they communicate, so they are skipped entirely.
 const DECORATIVE_EFFECTS_CONNECTION_BUDGET = 120;
 
+/** Shared empty group so a missing pair never allocates a fresh array per frame. */
+const EMPTY_ID_LIST: string[] = [];
+/** Stable fallback so the connection loop never allocates a pan object per frame. */
+const ZERO_PAN = { x: 0, y: 0 } as const;
+/** Screen-space slack around the canvas an animated cable may drift into. */
+const CONNECTION_VIEWPORT_MARGIN = 80;
+
+/**
+ * True when either cable endpoint projects inside the canvas (plus a margin).
+ *
+ * Kept as a module-level helper rather than inline math so the hot connection
+ * loop stays a single readable call; the previous inline version recomputed the
+ * same pan/zoom projection expressions for both endpoints on every frame.
+ */
+function isEndpointNearViewport(
+    source: { x: number; y: number },
+    target: { x: number; y: number },
+    zoom: number,
+    pan: { x: number; y: number },
+    canvasWidth: number,
+    canvasHeight: number
+): boolean {
+    const margin = CONNECTION_VIEWPORT_MARGIN;
+    const minX = -margin;
+    const maxX = canvasWidth + margin;
+    const minY = -margin;
+    const maxY = canvasHeight + margin;
+
+    for (const point of [source, target]) {
+        const screenX = point.x * zoom + pan.x;
+        const screenY = point.y * zoom + pan.y;
+        if (screenX >= minX && screenX <= maxX && screenY >= minY && screenY <= maxY) {
+            return true;
+        }
+    }
+    return false;
+}
+
 export interface TopologyCanvasLayerProps {
     canvasRef: React.RefObject<HTMLDivElement | null>;
     svgContentGroupRef: React.RefObject<SVGGElement | null>;
@@ -197,15 +235,29 @@ export function TopologyCanvasLayer({
     // and deletion handles are untouched.
     const decorativeEffectsEnabled = visibleConnections.length <= DECORATIVE_EFFECTS_CONNECTION_BUDGET;
 
+    // Hoisted out of the connection loop below: both are constant for the whole
+    // render, and the loop runs once per visible cable on every pan frame.
+    const resolvedPan = pan ?? ZERO_PAN;
+    const hasMeasuredCanvas = canvasSize.width > 0 && canvasSize.height > 0;
+
     const connectionGroups = React.useMemo(() => {
         const groups = new Map<string, string[]>();
+        // Cache the per-pair list index alongside the ids so the render loop can
+        // ask "which slot is this cable?" in O(1) instead of running `indexOf`
+        // over the group for every cable on every canvas render.
+        const indexInGroup = new Map<string, number>();
         connections.forEach((item) => {
             const pair = getDevicePairKey(item.sourceDeviceId, item.targetDeviceId);
             const ids = groups.get(pair);
-            if (ids) ids.push(item.id);
-            else groups.set(pair, [item.id]);
+            if (ids) {
+                ids.push(item.id);
+                indexInGroup.set(item.id, ids.length - 1);
+            } else {
+                groups.set(pair, [item.id]);
+                indexInGroup.set(item.id, 0);
+            }
         });
-        return groups;
+        return { groups, indexInGroup };
     }, [connections]);
 
     // Stable per-cable event handlers.
@@ -408,9 +460,8 @@ export function TopologyCanvasLayer({
                         const targetDevice = deviceMap.get(conn.targetDeviceId);
                         if (!sourceDevice || !targetDevice) return null;
 
-                        const ids = connectionGroups.get(getDevicePairKey(conn.sourceDeviceId, conn.targetDeviceId)) ?? [];
-                        const rawIndex = ids.indexOf(conn.id);
-                        const sameConnIndex = rawIndex >= 0 ? rawIndex : 0;
+                        const ids = connectionGroups.groups.get(getDevicePairKey(conn.sourceDeviceId, conn.targetDeviceId)) ?? EMPTY_ID_LIST;
+                        const sameConnIndex = connectionGroups.indexInGroup.get(conn.id) ?? 0;
                         const totalSameConns = ids.length || 1;
 
                         const handlers = connectionHandlers.get(conn.id);
@@ -419,15 +470,18 @@ export function TopologyCanvasLayer({
                         const sourcePos = getPortPosition(sourceDevice, conn.sourcePort);
                         const targetPos = getPortPosition(targetDevice, conn.targetPort);
 
-                        const margin = 80;
-                        const currentPan = pan ?? { x: 0, y: 0 };
-                        const sourceScreenX = sourcePos.x * zoom + currentPan.x;
-                        const sourceScreenY = sourcePos.y * zoom + currentPan.y;
-                        const targetScreenX = targetPos.x * zoom + currentPan.x;
-                        const targetScreenY = targetPos.y * zoom + currentPan.y;
-                        const isVisibleInViewport = canvasSize.width > 0 && canvasSize.height > 0 && (
-                            (sourceScreenX + margin >= 0 && sourceScreenX - margin <= canvasSize.width && sourceScreenY + margin >= 0 && sourceScreenY - margin <= canvasSize.height) ||
-                            (targetScreenX + margin >= 0 && targetScreenX - margin <= canvasSize.width && targetScreenY + margin >= 0 && targetScreenY - margin <= canvasSize.height)
+                        // The endpoint test only decides whether the flowing
+                        // particle animation runs for this cable. When the canvas
+                        // has not been measured yet there is nothing to compare
+                        // against, so the animation is skipped instead of assumed
+                        // visible — the cable itself still renders either way.
+                        const isVisibleInViewport = !hasMeasuredCanvas || isEndpointNearViewport(
+                            sourcePos,
+                            targetPos,
+                            zoom,
+                            resolvedPan,
+                            canvasSize.width,
+                            canvasSize.height
                         );
 
                         return (

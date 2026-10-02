@@ -284,6 +284,79 @@
   box-shadow: none !important;
 }
 
+/* ---------------------------------------------------------------------------
+   Compositor budget
+
+   Everything below targets machines *with* a usable GPU that are still slow:
+   mid-range laptops and integrated-graphics desktops. The problem there is not
+   the paint cost of a single element but how many elements the compositor is
+   asked to promote. Each hint below either keeps one expensive layer cheap or
+   removes a full-surface blur that has to be re-sampled on every scroll, pan
+   and drag.
+   ------------------------------------------------------------------------- */
+
+/* The canvas group is the one element that genuinely needs its own layer: it
+   carries a `translate3d(...) scale(...)` transform on every pan/zoom frame.
+   Pinning the hint for the whole canvas lifetime (rather than toggling it on
+   pointer-down, as the drag handlers used to) lets the browser keep the layer
+   allocated instead of tearing it down and rebuilding it on every gesture.
+
+   `contain` is deliberately not set here: the group already carries an inline
+   `contain: layout style paint`, and `paint` containment on an SVG group would
+   clip the device shadows and connection glows that intentionally overflow
+   their own bounding box. */
+.topology-canvas [data-content-group="true"] {
+  will-change: transform;
+}
+
+/* Draggable device groups are transformed directly through `setAttribute`
+   during a drag. `layout` containment keeps their geometry change from
+   invalidating the surrounding canvas, while `style` is safe for a `<g>` —
+   `paint` is not, for the same overflow reason as above. */
+.topology-device-draggable {
+  contain: layout style;
+}
+
+/* The ambient mesh backdrop in the page shell animates a very large, heavily
+   blurred surface. On integrated graphics that single element can consume a
+   measurable share of the frame budget, so it is skipped whenever the OS asks
+   for reduced motion or the machine reports low graphics. The decorative look
+   is preserved on capable hardware. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-liquid {
+    animation: none !important;
+  }
+}
+
+.graphics-low .animate-liquid,
+.graphics-low .mesh-gradient {
+  animation: none !important;
+  filter: none !important;
+}
+
+/* Full-viewport blur behind the mesh gradient is the most expensive single
+   paint on the page. Under low graphics it is dropped entirely; the tint layer
+   above it already keeps text contrast intact. */
+.graphics-low .topology-canvas {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* Promoted, always-animating inline SVGs (device icons with live sensor or
+   VoIP indicators) are kept off the compositor unless they are actually
+   animating something. `will-change` on a static icon is pure VRAM cost. */
+.graphics-low .iot-sound-pulse,
+.graphics-low .iot-motion-ping,
+.graphics-low .iot-motion-ping-delayed,
+.graphics-low .animate-cable-source,
+.graphics-low .animate-cable-end,
+.graphics-low .animate-ping-trail,
+.graphics-low .animate-ping-glow,
+.graphics-low .animate-ping-glow-low,
+.graphics-low .ping-envelope {
+  will-change: auto !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   /* Respect the OS setting even in high graphics mode: motion is never
      required to understand the UI. */

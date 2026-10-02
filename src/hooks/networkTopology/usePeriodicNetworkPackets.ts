@@ -77,10 +77,19 @@ export function usePeriodicNetworkPackets({
         // O(1) device lookups: the connection sweep below used to call
         // Array.find twice per cable, which is O(devices x connections) per
         // tick and gets expensive well before the 500-device mark.
+        //
+        // `deviceByCallerId` indexes the same devices by the caller id they
+        // dial, so the VoIP audit further down resolves peers by lookup instead
+        // of the O(devices^2) `Array.find` it used to run.
         const deviceById = new Map<string, CanvasDevice>();
+        const deviceByCallerId = new Map<string, CanvasDevice>();
         for (let di = 0; di < currentDevices.length; di++) {
           const device = currentDevices[di];
           deviceById.set(device.id, device);
+          const candidateCallerId = device.activeVoipCall?.callerId;
+          if (candidateCallerId && !deviceByCallerId.has(candidateCallerId)) {
+            deviceByCallerId.set(candidateCallerId, device);
+          }
         }
 
         // Cable adjacency per device. The hub L1 flood below only needs the
@@ -105,13 +114,14 @@ export function usePeriodicNetworkPackets({
         if (dev.activeVoipCall) {
           const activeVoip = dev.activeVoipCall;
           const callerId = activeVoip.callerId;
-          const peerDev = currentDevices.find(d =>
-            d.id !== dev.id && (
-              d.id === callerId ||
-              d.activeVoipCall?.callerId === dev.id ||
-              (d.activeVoipCall && d.activeVoipCall.callerId === callerId)
-            )
-          );
+          // The original scan matched a peer by its own id, by the caller it
+          // dialled, or by sharing the same caller id — all three are pure
+          // lookups against the two indexes above. The `d.id !== dev.id` guard
+          // is preserved so a device never pairs with itself.
+          const peerById = deviceById.get(callerId) ?? deviceById.get(dev.id);
+          const peerByCaller = deviceByCallerId.get(dev.id) ?? deviceByCallerId.get(callerId);
+          const peerDev = (peerById && peerById.id !== dev.id ? peerById : undefined)
+            ?? (peerByCaller && peerByCaller.id !== dev.id ? peerByCaller : undefined);
 
           if (!peerDev || dev.status === 'offline' || peerDev.status === 'offline') {
             devicesToDisconnect.add(dev.id);

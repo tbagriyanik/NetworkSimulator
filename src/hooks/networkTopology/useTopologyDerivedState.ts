@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import { CanvasDevice, CanvasConnection, CanvasNote } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { buildImplicitWirelessConnections } from '@/lib/network/wireless';
 import { useSpatialPartitioning } from '@/lib/performance/spatial';
@@ -9,6 +9,30 @@ import type { SwitchState } from '@/lib/network/types';
 // skipping the grid keeps small canvases free of per-render bookkeeping.
 const CULLING_DEVICE_THRESHOLD = 60;
 const CULLING_CONNECTION_THRESHOLD = 80;
+
+/**
+ * Cheap fingerprint of the inputs that can change a *derived* wireless link.
+ *
+ * Deliberately excludes the fields the wireless builder never reads (position,
+ * status, IoT readings), so panning a device or a sensor sample does not force
+ * the whole implicit-link graph to be rebuilt. If any of these do change the
+ * builder is re-run, which is the correct — and rare — case.
+ */
+function buildWirelessSignature(devices: CanvasDevice[]): string {
+  let signature = '';
+  for (let i = 0; i < devices.length; i++) {
+    const device = devices[i];
+    const wifi = device.wifi;
+    signature +=
+      device.id + '|' +
+      device.type + '|' +
+      (device.ip || '') + '|' +
+      (device.macAddress || '') + '|' +
+      (wifi ? `${wifi.enabled ? 1 : 0}${wifi.mode || ''}${wifi.ssid || ''}${wifi.security || ''}${wifi.password || ''}${wifi.channel || ''}${wifi.bssid || ''}${wifi.powerDisabled ? 1 : 0}` : '') +
+      ';';
+  }
+  return signature;
+}
 
 interface UseTopologyDerivedStateProps {
   topologyDevices: CanvasDevice[];
@@ -45,6 +69,21 @@ export function useTopologyDerivedState({
   }, [topologyDevices]);
 
   // Wireless clients are implicit in the topology model, but must also be rendered.
+  //
+  // `deviceStates` is replaced wholesale on every protocol tick (ARP/STP/OSPF
+  // sweeps run decoupled from the topology), so this memo re-ran several times a
+  // second even when nothing it reads had actually moved. The surrounding cache
+  // keeps the previous result whenever the derived wireless links are unchanged —
+  // preserving array identity is what lets every downstream memo (connectionMap,
+  // deviceToConnectionsMap, connectionMeta) and every memoized latched cable bail
+  // out instead of rebuilding the whole graph.
+  const wirelessSignature = useMemo(
+    () => buildWirelessSignature(topologyDevices),
+    [topologyDevices]
+  );
+
+  const wirelessCacheRef = useRef<{ signature: string; connections: CanvasConnection[] } | null>(null);
+
   const visualConnections = useMemo(() => {
     const existing = new Set(
       topologyConnections.map(
@@ -52,27 +91,36 @@ export function useTopologyDerivedState({
           `${connection.sourceDeviceId}:${connection.sourcePort}-${connection.targetDeviceId}:${connection.targetPort}`
       )
     );
-    const implicitWireless = buildImplicitWirelessConnections(topologyDevices, deviceStates, 'wireless')
-      .filter(
-        (connection) =>
-          !existing.has(
-            `${connection.sourceDeviceId}:${connection.sourcePort}-${connection.targetDeviceId}:${connection.targetPort}`
-          )
-      )
-      .map((connection) => {
-        const sourceDev = deviceMap.get(connection.sourceDeviceId);
-        const targetDev = deviceMap.get(connection.targetDeviceId);
-        const clientDevice =
-          (sourceDev && (sourceDev.type === 'pc' || sourceDev.type === 'iot')) ? sourceDev :
-          (targetDev && (targetDev.type === 'pc' || targetDev.type === 'iot')) ? targetDev : null;
 
-        if (clientDevice && clientDevice.wifi?.powerDisabled) {
-          return { ...connection, active: false };
-        }
-        return connection;
-      });
+    const cached = wirelessCacheRef.current;
+    const implicitWireless = cached && cached.signature === wirelessSignature
+      ? cached.connections
+      : buildImplicitWirelessConnections(topologyDevices, deviceStates, 'wireless')
+          .filter(
+            (connection) =>
+              !existing.has(
+                `${connection.sourceDeviceId}:${connection.sourcePort}-${connection.targetDeviceId}:${connection.targetPort}`
+              )
+          )
+          .map((connection) => {
+            const sourceDev = deviceMap.get(connection.sourceDeviceId);
+            const targetDev = deviceMap.get(connection.targetDeviceId);
+            const clientDevice =
+              (sourceDev && (sourceDev.type === 'pc' || sourceDev.type === 'iot')) ? sourceDev :
+              (targetDev && (targetDev.type === 'pc' || targetDev.type === 'iot')) ? targetDev : null;
+
+            if (clientDevice && clientDevice.wifi?.powerDisabled) {
+              return { ...connection, active: false };
+            }
+            return connection;
+          });
+
+    if (!cached || cached.signature !== wirelessSignature) {
+      wirelessCacheRef.current = { signature: wirelessSignature, connections: implicitWireless };
+    }
+
     return [...topologyConnections, ...implicitWireless];
-  }, [topologyConnections, topologyDevices, deviceStates, deviceMap]);
+  }, [topologyConnections, topologyDevices, deviceStates, deviceMap, wirelessSignature]);
 
   // Connection map for O(1) lookups during culling
   const connectionMap = useMemo(() => {

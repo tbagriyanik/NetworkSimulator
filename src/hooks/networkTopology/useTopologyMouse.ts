@@ -190,8 +190,10 @@ export function useTopologyMouse(props: UseTopologyMouseProps) {
       panStartRef.current = ps;
       setIsPanning(true);
       isPanningRef.current = true;
+      // `transition` is cleared so the first pan frame lands immediately; the
+      // compositing hint itself lives in the stylesheet now, which keeps the
+      // layer allocated across gestures instead of recreating it per drag.
       if (svgContentGroupRef.current) {
-        svgContentGroupRef.current.style.willChange = 'transform';
         svgContentGroupRef.current.style.transition = 'none';
       }
       setContextMenu(null);
@@ -375,14 +377,11 @@ export function useTopologyMouse(props: UseTopologyMouseProps) {
 
               dragDevicesByIdRef.current = new Map(latestDevicesRef.current.map(device => [device.id, device]));
 
-              for (let wi = 0; wi < dragIds.length; wi++) {
-                const we = getCachedDeviceElement(dragDomCache, dragIds[wi]);
-                if (we) {
-                  we.style.willChange = 'transform';
-                  const ichild = we.querySelector('g');
-                  if (ichild) ichild.style.willChange = 'transform';
-                }
-              }
+              // No `will-change` is set here on purpose. The device groups are
+              // transformed directly every frame, and the stylesheet already
+              // carries a permanent compositing hint for them — promoting and
+              // demoting a layer per drag forced the browser to tear down and
+              // rebuild it on every gesture.
             }
             wasDraggingRef.current = true;
           }
@@ -756,7 +755,6 @@ export function useTopologyMouse(props: UseTopologyMouseProps) {
         const speed = Math.sqrt(vel.x * vel.x + vel.y * vel.y);
         if (speed > MOMENTUM_THRESHOLD && svgContentGroupRef.current) {
           const g = svgContentGroupRef.current;
-          g.style.willChange = 'transform';
           let mVelX = vel.x;
           let mVelY = vel.y;
           let mPanX = panRef.current.x;
@@ -774,7 +772,6 @@ export function useTopologyMouse(props: UseTopologyMouseProps) {
             } else {
               momentumAnimationFrameRef.current = null;
               setPan({ x: mPanX, y: mPanY });
-              g.style.willChange = '';
             }
           };
           momentumAnimationFrameRef.current = requestAnimationFrame(animateMomentum);
@@ -782,12 +779,7 @@ export function useTopologyMouse(props: UseTopologyMouseProps) {
       }
       velocityRef.current = { x: 0, y: 0 };
 
-      if (!momentumAnimationFrameRef.current && svgContentGroupRef.current) {
-        svgContentGroupRef.current.style.willChange = '';
-      }
-
       const finalDragPositions = liveDeviceDragPositionsRef.current;
-      const finalDragDeviceIds = [...finalDragPositions.keys()];
       if (finalDragPositions.size > 0) {
         setDevices(prev => {
           const newDevices = [...prev];
@@ -804,13 +796,6 @@ export function useTopologyMouse(props: UseTopologyMouseProps) {
           return changed ? newDevices : prev;
         });
         finalDragPositions.clear();
-      }
-
-      for (let wi = 0; wi < finalDragDeviceIds.length; wi++) {
-        const we = getCachedDeviceElement(dragDomCache, finalDragDeviceIds[wi]);
-        if (we) {
-          we.style.willChange = '';
-        }
       }
 
       clearDragDomCache(dragDomCache);

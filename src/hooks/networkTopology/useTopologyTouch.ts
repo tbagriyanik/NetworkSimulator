@@ -337,8 +337,10 @@ export function useTopologyTouch({
       setPanStart(ps);
       panStartRef.current = ps;
       isPanningRef.current = true;
+      // The compositing hint is owned by the stylesheet now, so only the
+      // transition reset is done here. Toggling `will-change` per gesture made
+      // the browser destroy and rebuild the layer on every touch pan.
       if (svgContentGroupRef.current) {
-        svgContentGroupRef.current.style.willChange = 'transform';
         svgContentGroupRef.current.style.transition = 'none';
       }
 
@@ -509,7 +511,6 @@ export function useTopologyTouch({
       const speed = Math.sqrt(vel.x * vel.x + vel.y * vel.y);
       if (speed > MOMENTUM_THRESHOLD && svgContentGroupRef.current) {
         const g = svgContentGroupRef.current;
-        g.style.willChange = 'transform';
         let mVelX = vel.x;
         let mVelY = vel.y;
         let mPanX = panRef.current.x;
@@ -527,7 +528,6 @@ export function useTopologyTouch({
           } else {
             touchMomentumFrameRef.current = null;
             setPan({ x: mPanX, y: mPanY });
-            g.style.willChange = '';
           }
         };
         touchMomentumFrameRef.current = requestAnimationFrame(animateMomentum);
@@ -535,10 +535,6 @@ export function useTopologyTouch({
       touchVelocityRef.current = { x: 0, y: 0 };
       lastTouchMoveTimeRef.current = 0;
       lastTouchMovePosRef.current = null;
-
-      if (svgContentGroupRef.current && speed <= MOMENTUM_THRESHOLD) {
-        svgContentGroupRef.current.style.willChange = '';
-      }
     } else if (touchesLength === 1) {
       // Cancel momentum if a new touch starts
       if (touchMomentumFrameRef.current) {
@@ -658,7 +654,6 @@ export function useTopologyTouch({
 
       // PERFORMANCE: Sync touch drag positions back to Zustand state
       const touchFinalPositions = liveDeviceDragPositionsRef.current;
-      const touchFinalDeviceIds = [...touchFinalPositions.keys()];
       if (touchFinalPositions.size > 0) {
         setDevices(prev => {
           const newDevices = [...prev];
@@ -678,14 +673,6 @@ export function useTopologyTouch({
       }
 
       clearDragDomCache(touchDomCache);
-
-      // Remove GPU will-change hints from touch-dragged devices
-      for (let wi = 0; wi < touchFinalDeviceIds.length; wi++) {
-        const we = getCachedDeviceElement(touchDomCache, touchFinalDeviceIds[wi]);
-        if (we) {
-          we.style.willChange = '';
-        }
-      }
 
       setTouchDraggedDevice(null);
       touchDraggedDeviceRef.current = null;
