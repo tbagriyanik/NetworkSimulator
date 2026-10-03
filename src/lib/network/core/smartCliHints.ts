@@ -98,6 +98,16 @@ export const SMART_CLI_HINTS: CliHint[] = [
     missingArgs: ['<VLAN_ID>']
   },
   {
+    pattern: /^vlan$/i,
+    template: 'vlan <VLAN_ID> (1-4094)',
+    example: 'vlan 10',
+    explanation: {
+      tr: 'VLAN oluşturmak ve VLAN yapılandırma moduna geçmek için VLAN ID (1-4094) numarası girilmelidir (Örn: "vlan 10").',
+      en: 'Specify a VLAN ID (1-4094) to create and enter VLAN configuration mode (e.g. "vlan 10").'
+    },
+    missingArgs: ['<VLAN_ID>']
+  },
+  {
     pattern: /^interface$/i,
     template: 'interface <ARAYUZ_ADI> (örn: FastEthernet0/1, GigabitEthernet0/0)',
     example: 'interface GigabitEthernet0/0',

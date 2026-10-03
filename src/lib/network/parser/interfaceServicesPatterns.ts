@@ -60,10 +60,9 @@ export const interfaceServicesPatterns: Record<string, CommandPattern> = {
   },
   'ssid': {
     pattern: /^ssid\s+(.+)$/i,
-    modes: ['interface', 'config-if-range', 'dot11-config'],
+    modes: ['config', 'interface', 'config-if-range', 'dot11-config', 'ssid-config', 'ap-config'],
     minArgs: 1,
-    maxArgs: 1,
-    capability: 'routing'
+    maxArgs: 1
   },
   'encryption': {
     pattern: /^encryption\s+(open|wep|wpa|wpa2|wpa3)$/i,
@@ -274,10 +273,9 @@ export const interfaceServicesPatterns: Record<string, CommandPattern> = {
   },
   'station-role': {
     pattern: /^station-role\s+root$/i,
-    modes: ['config'],
+    modes: ['config', 'interface', 'config-if-range', 'dot11-config', 'ap-config'],
     minArgs: 2,
-    maxArgs: 2,
-    capability: 'routing'
+    maxArgs: 2
   },
   'ip helper-address': {
     pattern: /^ip\s+helper-address\s+([0-9.]+|[\w.-]+)$/i,

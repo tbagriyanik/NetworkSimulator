@@ -101,7 +101,7 @@ export function CurrentStepPanel({
                 </CollapsibleTrigger>
                 <CollapsibleContent>
                     <div className="mt-2 p-2 bg-warning-50 dark:bg-warning-900/30 border border-warning-200 dark:border-warning-800 rounded text-xs text-warning-800 dark:text-warning-200 flex flex-col gap-2">
-                        <div>
+                        <div className="whitespace-pre-wrap">
                             <Lightbulb className="w-3 h-3 inline mr-1" />
                             {currentStep.hint[language]}
                         </div>

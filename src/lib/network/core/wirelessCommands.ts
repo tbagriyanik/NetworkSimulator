@@ -9,11 +9,11 @@ import type { CommandHandler } from './commandTypes';
 
 // Wireless SSID Configuration Handler
 const cmdDot11Ssid: CommandHandler = (state, input, _ctx) => {
-    if (state.currentMode !== 'config') {
+    if (state.currentMode !== 'config' && state.currentMode !== 'ssid-config') {
         return { success: false, error: cliModeError() };
     }
 
-    const match = input.match(/^dot11\s+ssid\s+(\S+)$/i);
+    const match = input.match(/^(?:dot11\s+)?ssid\s+(\S+)$/i);
     if (!match) {
         return { success: false, error: CLI_ERRORS.invalidInput };
     }
@@ -24,7 +24,7 @@ const cmdDot11Ssid: CommandHandler = (state, input, _ctx) => {
     if (ssidName.length < 1 || ssidName.length > 32) {
         return {
             success: false,
-        error: 'Error: SSID name must be between 1-32 characters',
+            error: 'Error: SSID name must be between 1-32 characters',
         };
     }
 
@@ -53,6 +53,11 @@ const cmdDot11Ssid: CommandHandler = (state, input, _ctx) => {
         success: true,
         output: '',
         modeChange: 'ssid-config',
+        newState: {
+            currentMode: 'ssid-config',
+            currentSsid: ssidName,
+            wirelessConfig: state.wirelessConfig,
+        },
     };
 };
 
@@ -205,6 +210,11 @@ const cmdInterfaceDot11Radio: CommandHandler = (state, input, _ctx) => {
         success: true,
         output: '',
         modeChange: 'dot11-config',
+        newState: {
+            currentMode: 'dot11-config',
+            currentRadio: radioId,
+            wirelessRadios: state.wirelessRadios,
+        },
     };
 };
 
@@ -524,7 +534,16 @@ const cmdApName: CommandHandler = (state, input, _ctx) => {
 
     state.currentApName = apName;
 
-    return { success: true, output: '', modeChange: 'ap-config' };
+    return {
+        success: true,
+        output: '',
+        modeChange: 'ap-config',
+        newState: {
+            currentMode: 'ap-config',
+            currentApName: apName,
+            wlcAps: state.wlcAps,
+        },
+    };
 };
 
 const cmdApAuthMac: CommandHandler = (state, input, _ctx) => {

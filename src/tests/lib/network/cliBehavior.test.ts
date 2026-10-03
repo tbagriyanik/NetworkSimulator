@@ -265,10 +265,44 @@ describe('CLI mode control', () => {
     expect(res.success).toBe(false);
   });
 
-  it('vlan command requires global config mode', () => {
+  it('vlan command requires global config mode or submode', () => {
     const s = toPrivileged(createInitialState());
     const res = run(s, 'vlan 10');
     expect(res.success).toBe(false);
+
+    // Enters vlan mode from config mode
+    let sConf = apply(s, run(s, 'configure terminal'));
+    const vlanRes = run(sConf, 'vlan 10');
+    expect(vlanRes.success).toBe(true);
+    sConf = apply(sConf, vlanRes);
+    expect(sConf.currentMode).toBe('vlan');
+    expect(sConf.currentVlan).toBe(10);
+
+    // Switches to vlan 20 directly from vlan mode
+    const vlan20Res = run(sConf, 'vlan 20');
+    expect(vlan20Res.success).toBe(true);
+    sConf = apply(sConf, vlan20Res);
+    expect(sConf.currentMode).toBe('vlan');
+    expect(sConf.currentVlan).toBe(20);
+
+    // Switches to interface mode directly from vlan mode
+    const intRes = run(sConf, 'interface fa0/1');
+    expect(intRes.success).toBe(true);
+    sConf = apply(sConf, intRes);
+    expect(sConf.currentMode).toBe('interface');
+
+    // Switches to vlan 30 directly from interface mode
+    const vlan30Res = run(sConf, 'vlan 30');
+    expect(vlan30Res.success).toBe(true);
+    sConf = apply(sConf, vlan30Res);
+    expect(sConf.currentMode).toBe('vlan');
+    expect(sConf.currentVlan).toBe(30);
+
+    // Works even without sourceDeviceId context
+    const standaloneRes = executeCommand(sConf, 'vlan 40');
+    expect(standaloneRes.success).toBe(true);
+    expect(standaloneRes.newState?.currentMode).toBe('vlan');
+    expect(standaloneRes.newState?.currentVlan).toBe(40);
   });
 
   it('show commands work from user and privileged modes', () => {

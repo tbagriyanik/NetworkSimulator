@@ -8,7 +8,7 @@ export const teachMeAdvancedSteps: GuidedStep[] = [
     description: { tr: 'Router CLI\'ına girin ve yetkili moda geçin.', en: 'Enter Router CLI and switch to privileged mode.' },
     hint: { tr: 'enable', en: 'enable' },
     checkType: 'command',
-    checkParams: { commandPattern: 'enable' },
+    checkParams: { commandPattern: 'enable', deviceType: 'router' },
     completed: false,
     points: 10
   },
@@ -19,7 +19,7 @@ export const teachMeAdvancedSteps: GuidedStep[] = [
     description: { tr: 'Global konfigürasyon moduna geçin.', en: 'Switch to global configuration mode.' },
     hint: { tr: 'configure terminal', en: 'configure terminal' },
     checkType: 'command',
-    checkParams: { commandPattern: 'configure terminal' },
+    checkParams: { commandPattern: 'configure terminal', deviceType: 'router' },
     completed: false,
     points: 10
   },
@@ -30,7 +30,7 @@ export const teachMeAdvancedSteps: GuidedStep[] = [
     description: { tr: 'Router konfigürasyonunda OSPF 1 işlemini başlatın.', en: 'Start OSPF process 1 in router configuration.' },
     hint: { tr: 'router ospf 1', en: 'router ospf 1' },
     checkType: 'command',
-    checkParams: { commandPattern: 'router ospf' },
+    checkParams: { commandPattern: 'router ospf', deviceType: 'router' },
     completed: false,
     points: 10
   },
@@ -41,7 +41,7 @@ export const teachMeAdvancedSteps: GuidedStep[] = [
     description: { tr: '192.168.1.0 ağını Alan 0 olarak OSPF\'e dahil edin.', en: 'Include 192.168.1.0 network in OSPF as Area 0.' },
     hint: { tr: 'network 192.168.1.0 0.0.0.255 area 0', en: 'network 192.168.1.0 0.0.0.255 area 0' },
     checkType: 'command',
-    checkParams: { commandPattern: 'network 192.168.1.0' },
+    checkParams: { commandPattern: 'network 192.168.1.0', deviceType: 'router' },
     completed: false,
     points: 20
   },
@@ -52,7 +52,7 @@ export const teachMeAdvancedSteps: GuidedStep[] = [
     description: { tr: 'exit komutu ile OSPF modundan çıkın.', en: 'Exit OSPF mode with exit command.' },
     hint: { tr: 'exit', en: 'exit' },
     checkType: 'command',
-    checkParams: { commandPattern: 'exit' },
+    checkParams: { commandPattern: 'exit', deviceType: 'router' },
     completed: false,
     points: 10
   },
@@ -63,7 +63,7 @@ export const teachMeAdvancedSteps: GuidedStep[] = [
     description: { tr: 'Sadece 192.168.1.10 IP\'sine izin veren 10 numaralı standart bir ACL oluşturun.', en: 'Create standard ACL 10 permitting only 192.168.1.10 IP.' },
     hint: { tr: 'access-list 10 permit host 192.168.1.10', en: 'access-list 10 permit host 192.168.1.10' },
     checkType: 'command',
-    checkParams: { commandPattern: 'access-list 10 permit' },
+    checkParams: { commandPattern: 'access-list 10 permit', deviceType: 'router' },
     completed: false,
     points: 20
   },
@@ -74,7 +74,7 @@ export const teachMeAdvancedSteps: GuidedStep[] = [
     description: { tr: 'Global konfigürasyon modundan çıkmak için end komutunu çalıştırın.', en: 'Run end command to exit global configuration mode.' },
     hint: { tr: 'end', en: 'end' },
     checkType: 'command',
-    checkParams: { commandPattern: 'end' },
+    checkParams: { commandPattern: 'end', deviceType: 'router' },
     completed: false,
     points: 10
   },
@@ -85,7 +85,7 @@ export const teachMeAdvancedSteps: GuidedStep[] = [
     description: { tr: 'Yetkili moda dönüp ayarlarınızı kaydedin.', en: 'Return to privileged mode and save your configuration.' },
     hint: { tr: 'copy running-config startup-config', en: 'copy running-config startup-config' },
     checkType: 'command',
-    checkParams: { commandPattern: 'copy running-config startup-config' },
+    checkParams: { commandPattern: 'copy running-config startup-config', deviceType: 'router' },
     completed: false,
     points: 10
   }

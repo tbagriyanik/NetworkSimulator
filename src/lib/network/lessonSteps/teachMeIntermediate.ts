@@ -8,7 +8,7 @@ export const teachMeIntermediateSteps: GuidedStep[] = [
     description: { tr: 'Router CLI\'ına girin ve yetkili moda geçin.', en: 'Enter Router CLI and switch to privileged mode.' },
     hint: { tr: 'enable', en: 'enable' },
     checkType: 'command',
-    checkParams: { commandPattern: 'enable' },
+    checkParams: { commandPattern: 'enable', deviceType: 'router' },
     completed: false,
     points: 10
   },
@@ -19,7 +19,7 @@ export const teachMeIntermediateSteps: GuidedStep[] = [
     description: { tr: 'Global konfigürasyon moduna geçin.', en: 'Switch to global configuration mode.' },
     hint: { tr: 'configure terminal', en: 'configure terminal' },
     checkType: 'command',
-    checkParams: { commandPattern: 'configure terminal' },
+    checkParams: { commandPattern: 'configure terminal', deviceType: 'router' },
     completed: false,
     points: 10
   },
@@ -30,7 +30,7 @@ export const teachMeIntermediateSteps: GuidedStep[] = [
     description: { tr: 'GigabitEthernet 0/0 arayüzünün konfigürasyonuna girin.', en: 'Enter configuration of GigabitEthernet 0/0 interface.' },
     hint: { tr: 'interface gi0/0', en: 'interface gi0/0' },
     checkType: 'command',
-    checkParams: { commandPattern: 'interface gi0/0|int gi0/0' },
+    checkParams: { commandPattern: 'interface gi0/0|int gi0/0', deviceType: 'router' },
     completed: false,
     points: 10
   },
@@ -41,7 +41,7 @@ export const teachMeIntermediateSteps: GuidedStep[] = [
     description: { tr: 'Arayüze 192.168.1.1 IP adresini atayın.', en: 'Assign 192.168.1.1 IP address to the interface.' },
     hint: { tr: 'ip address 192.168.1.1 255.255.255.0', en: 'ip address 192.168.1.1 255.255.255.0' },
     checkType: 'command',
-    checkParams: { commandPattern: 'ip address 192.168.1.1' },
+    checkParams: { commandPattern: 'ip address 192.168.1.1', deviceType: 'router' },
     completed: false,
     points: 20
   },
@@ -52,7 +52,7 @@ export const teachMeIntermediateSteps: GuidedStep[] = [
     description: { tr: 'no shutdown komutu ile arayüzü aktif hale getirin.', en: 'Activate the interface using no shutdown command.' },
     hint: { tr: 'no shutdown', en: 'no shutdown' },
     checkType: 'command',
-    checkParams: { commandPattern: 'no shutdown' },
+    checkParams: { commandPattern: 'no shutdown', deviceType: 'router' },
     completed: false,
     points: 10
   }

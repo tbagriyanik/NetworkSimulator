@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { answerSdnQuiz, getQuizQuestionsForProject, lessonQuizzes } from '@/lib/network/sdnQuiz';
+import { answerSdnQuiz, getQuizQuestionsForProject, lessonQuizzes, defaultFallbackQuiz } from '@/lib/network/sdnQuiz';
 
 describe('Lesson-Specific Knowledge Quizzes', () => {
   it('provides 2-3 specific questions per lesson topic', () => {
@@ -36,5 +36,28 @@ describe('Lesson-Specific Knowledge Quizzes', () => {
         expect(q.answer).toBeLessThan(choicesTr.length);
       }
     }
+  });
+
+  it('supports expanded topics (OSPF, BGP, STP, ACL, NAT, IPv6, Wireless, QoS, SDN, Cybersecurity, Subnetting)', () => {
+    expect(getQuizQuestionsForProject('ospf').length).toBe(3);
+    expect(getQuizQuestionsForProject('bgp').length).toBe(3);
+    expect(getQuizQuestionsForProject('stp').length).toBe(3);
+    expect(getQuizQuestionsForProject('acl').length).toBe(3);
+    expect(getQuizQuestionsForProject('nat').length).toBe(3);
+    expect(getQuizQuestionsForProject('ipv6').length).toBe(3);
+    expect(getQuizQuestionsForProject('wireless').length).toBe(3);
+    expect(getQuizQuestionsForProject('qos').length).toBe(3);
+    expect(getQuizQuestionsForProject('sdn').length).toBe(3);
+    expect(getQuizQuestionsForProject('subnetting').length).toBe(3);
+    expect(getQuizQuestionsForProject('tcpUdpOsi').length).toBe(3);
+  });
+
+  it('normalizes project IDs with kebab-case and case-insensitive aliases', () => {
+    expect(getQuizQuestionsForProject('basic-switch').length).toBe(3);
+    expect(getQuizQuestionsForProject('router-dhcp').length).toBe(3);
+    expect(getQuizQuestionsForProject('static-routing').length).toBe(3);
+    expect(getQuizQuestionsForProject('port-security').length).toBe(3);
+    expect(getQuizQuestionsForProject('rip-routing').length).toBe(3);
+    expect(defaultFallbackQuiz.length).toBeGreaterThanOrEqual(20);
   });
 });

@@ -60,10 +60,9 @@ export const interfacePortPatterns: Record<string, CommandPattern> = {
   },
   'ssid': {
     pattern: /^ssid\s+(.+)$/i,
-    modes: ['interface', 'config-if-range', 'dot11-config'],
+    modes: ['config', 'interface', 'config-if-range', 'dot11-config', 'ssid-config', 'ap-config'],
     minArgs: 1,
-    maxArgs: 1,
-    capability: 'routing' // Routers/APs
+    maxArgs: 1
   },
   'encryption': {
     pattern: /^encryption\s+(open|wep|wpa|wpa2|wpa3)$/i,
@@ -256,10 +255,9 @@ export const interfacePortPatterns: Record<string, CommandPattern> = {
   },
   'station-role': {
     pattern: /^station-role\s+root$/i,
-    modes: ['config'],
+    modes: ['config', 'interface', 'config-if-range', 'dot11-config', 'ap-config'],
     minArgs: 2,
-    maxArgs: 2,
-    capability: 'routing'
+    maxArgs: 2
   },
   'ip address': {
     pattern: /^ip\s+address\s+(?:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})(?:\s+(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}))(\s+secondary)?|dhcp)$/i,

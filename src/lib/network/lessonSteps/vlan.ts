@@ -19,7 +19,7 @@ export const vlanGuidedSteps: GuidedStep[] = [
     description: { tr: 'Ayrıcalıklı moda geçin', en: 'Enter privileged EXEC mode' },
     hint: { tr: '"enable" yazın.', en: 'Type "enable".' },
     checkType: 'command',
-    checkParams: { commandPattern: 'enable' },
+    checkParams: { commandPattern: 'enable', deviceType: 'switch' },
     completed: false,
     points: 5
   },
@@ -30,7 +30,7 @@ export const vlanGuidedSteps: GuidedStep[] = [
     description: { tr: 'Global yapılandırma moduna geçin', en: 'Enter global configuration mode' },
     hint: { tr: '"conf t" yazın.', en: 'Type "conf t".' },
     checkType: 'command',
-    checkParams: { commandPattern: 'conf' },
+    checkParams: { commandPattern: 'conf', deviceType: 'switch' },
     completed: false,
     points: 5
   },
@@ -41,7 +41,7 @@ export const vlanGuidedSteps: GuidedStep[] = [
     description: { tr: 'VLAN 10\'u oluşturun', en: 'Create VLAN 10' },
     hint: { tr: '"vlan 10" yazın.', en: 'Type "vlan 10".' },
     checkType: 'command',
-    checkParams: { commandPattern: 'vlan 10' },
+    checkParams: { commandPattern: 'vlan 10', deviceType: 'switch' },
     completed: false,
     points: 10
   },
@@ -52,7 +52,7 @@ export const vlanGuidedSteps: GuidedStep[] = [
     description: { tr: 'VLAN 10\'a SALES ismini verin', en: 'Name VLAN 10 as SALES' },
     hint: { tr: '"name SALES" yazın.', en: 'Type "name SALES".' },
     checkType: 'config',
-    checkParams: { configKey: 'vlans.10.name', configValue: 'SALES' },
+    checkParams: { configKey: 'vlans.10.name', configValue: 'SALES', deviceType: 'switch' },
     completed: false,
     points: 10
   },
@@ -63,7 +63,7 @@ export const vlanGuidedSteps: GuidedStep[] = [
     description: { tr: 'Arayüz seçmeden önce VLAN yapılandırma modundan çıkın', en: 'Exit VLAN configuration mode before selecting the interface' },
     hint: { tr: 'exit', en: 'exit' },
     checkType: 'command',
-    checkParams: { commandPattern: 'exit' },
+    checkParams: { commandPattern: 'exit', deviceType: 'switch' },
     completed: false,
     points: 5
   },
@@ -74,7 +74,7 @@ export const vlanGuidedSteps: GuidedStep[] = [
     description: { tr: 'FastEthernet 0/1 arayüzüne girin', en: 'Enter FastEthernet 0/1 interface' },
     hint: { tr: '"int fa0/1" yazın.', en: 'Type "int fa0/1".' },
     checkType: 'command',
-    checkParams: { commandPattern: 'interface fa0/1|int fa0/1' },
+    checkParams: { commandPattern: 'interface fa0/1|int fa0/1', deviceType: 'switch' },
     completed: false,
     points: 5
   },

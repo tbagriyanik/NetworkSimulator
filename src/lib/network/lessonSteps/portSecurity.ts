@@ -19,7 +19,7 @@ export const portSecurityGuidedSteps: GuidedStep[] = [
     description: { tr: 'Ayrıcalıklı moda geçin', en: 'Enter privileged EXEC mode' },
     hint: { tr: '"enable" yazın.', en: 'Type "enable".' },
     checkType: 'command',
-    checkParams: { commandPattern: 'enable' },
+    checkParams: { commandPattern: 'enable', deviceType: 'switch' },
     completed: false,
     points: 5
   },
@@ -30,7 +30,7 @@ export const portSecurityGuidedSteps: GuidedStep[] = [
     description: { tr: 'Global yapılandırma moduna geçin', en: 'Enter global configuration mode' },
     hint: { tr: '"conf t" yazın.', en: 'Type "conf t".' },
     checkType: 'command',
-    checkParams: { commandPattern: 'conf' },
+    checkParams: { commandPattern: 'conf', deviceType: 'switch' },
     completed: false,
     points: 5
   },
@@ -41,7 +41,7 @@ export const portSecurityGuidedSteps: GuidedStep[] = [
     description: { tr: 'FastEthernet 0/1 arayüzüne girin', en: 'Enter FastEthernet 0/1 interface' },
     hint: { tr: '"int fa0/1" yazın.', en: 'Type "int fa0/1".' },
     checkType: 'command',
-    checkParams: { commandPattern: 'interface fa0/1|int fa0/1' },
+    checkParams: { commandPattern: 'interface fa0/1|int fa0/1', deviceType: 'switch' },
     completed: false,
     points: 5
   },
@@ -52,7 +52,7 @@ export const portSecurityGuidedSteps: GuidedStep[] = [
     description: { tr: 'Portu access moduna alın', en: 'Set port to access mode' },
     hint: { tr: '"switchport mode access" yazın.', en: 'Type "switchport mode access".' },
     checkType: 'config',
-    checkParams: { configKey: 'ports.fa0/1.mode', configValue: 'access' },
+    checkParams: { configKey: 'ports.fa0/1.mode', configValue: 'access', deviceType: 'switch' },
     completed: false,
     points: 5
   },
@@ -63,7 +63,7 @@ export const portSecurityGuidedSteps: GuidedStep[] = [
     description: { tr: 'Port güvenliğini etkinleştirin', en: 'Enable port security' },
     hint: { tr: '"switchport port-security" yazın.', en: 'Type "switchport port-security".' },
     checkType: 'config',
-    checkParams: { configKey: 'ports.fa0/1.portSecurity.enabled', configValue: true },
+    checkParams: { configKey: 'ports.fa0/1.portSecurity.enabled', configValue: true, deviceType: 'switch' },
     completed: false,
     points: 10
   },
@@ -74,7 +74,7 @@ export const portSecurityGuidedSteps: GuidedStep[] = [
     description: { tr: 'MAC adreslerini kalıcı öğrenmeyi açın', en: 'Enable sticky MAC address learning' },
     hint: { tr: '"switchport port-security mac-address sticky" yazın.', en: 'Type "switchport port-security mac-address sticky".' },
     checkType: 'command',
-    checkParams: { commandPattern: 'mac-address sticky' },
+    checkParams: { commandPattern: 'mac-address sticky', deviceType: 'switch' },
     completed: false,
     points: 10
   },
@@ -85,7 +85,7 @@ export const portSecurityGuidedSteps: GuidedStep[] = [
     description: { tr: 'Maksimum 1 MAC adresine izin verin', en: 'Allow maximum 1 MAC address' },
     hint: { tr: '"switchport port-security maximum 1" yazın.', en: 'Type "switchport port-security maximum 1".' },
     checkType: 'command',
-    checkParams: { commandPattern: 'maximum 1' },
+    checkParams: { commandPattern: 'maximum 1', deviceType: 'switch' },
     completed: false,
     points: 10
   }

@@ -284,6 +284,15 @@ export function executeCommand(
     return { success: true };
   }
   let result = handler(state, commandInput, ctx);
+  if (result.success && result.modeChange) {
+    result = {
+      ...result,
+      newState: {
+        ...result.newState,
+        currentMode: result.newState?.currentMode ?? result.modeChange,
+      },
+    };
+  }
   if (pipeFilter && result.success && typeof result.output === 'string') {
     result = { ...result, output: applyPipeFilterOutputExternal(result.output, pipeFilter) };
   }
@@ -332,7 +341,19 @@ export const commandHandlers: Record<string, CommandHandler> = {
   ...lineHandlers,
 
   // Wireless commands
-  ...wirelessHandlers,
+  ...Object.fromEntries(Object.entries(wirelessHandlers).filter(([k]) => k !== 'ssid')),
+  'ssid': (state, input, ctx) => {
+    if (state.currentMode === 'config' || state.currentMode === 'ssid-config') {
+      return wirelessHandlers['dot11 ssid'](state, input, ctx);
+    }
+    if (state.currentMode === 'dot11-config') {
+      return wirelessHandlers['ssid'](state, input, ctx);
+    }
+    if (state.currentMode === 'interface' || state.currentMode === 'config-if-range') {
+      return interfaceHandlers['ssid'](state, input, ctx);
+    }
+    return wirelessHandlers['dot11 ssid'](state, input, ctx);
+  },
 
   // Flexible NetFlow submode commands (flow record/exporter/monitor)
   ...flowSubmodeHandlers,

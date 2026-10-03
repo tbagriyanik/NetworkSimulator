@@ -42,43 +42,62 @@ export function useNetworkEventListeners(params: UseNetworkEventListenersParams)
       if (!eventDevices || !eventConnections || !eventStates) return;
 
       const byId = new Map(eventDevices.map((d: CanvasDevice) => [d.id, d]));
-      const nextStates = new Map(eventStates);
 
-      for (const conn of eventConnections) {
-        if (!conn.active) continue;
-        const a = byId.get(conn.sourceDeviceId);
-        const b = byId.get(conn.targetDeviceId);
-        if (!a || !b) continue;
-        if (!isSwitchDeviceType(a.type) || !isSwitchDeviceType(b.type)) continue;
+      // Compute against the latest committed state via the functional updater
+      // form. The `deviceStates` snapshot riding on the event is captured by the
+      // dispatcher *before* React flushes the pending update produced by the
+      // command itself, so using it as the base would roll that command back —
+      // e.g. `vlan <id>` would lose both the new VLAN and the switch to
+      // (config-vlan)# mode. Fall back to the snapshot only if there is nothing
+      // committed yet.
+      setDeviceStates((prev) => {
+        const nextStates = new Map(prev.size > 0 ? prev : eventStates);
+        let changed = false;
 
-        const aState = nextStates.get(a.id);
-        const bState = nextStates.get(b.id);
-        if (!aState || !bState) continue;
+        for (const conn of eventConnections) {
+          if (!conn.active) continue;
+          const a = byId.get(conn.sourceDeviceId);
+          const b = byId.get(conn.targetDeviceId);
+          if (!a || !b) continue;
+          if (!isSwitchDeviceType(a.type) || !isSwitchDeviceType(b.type)) continue;
 
-        const aPort = aState.ports?.[conn.sourcePort];
-        const bPort = bState.ports?.[conn.targetPort];
-        const aIsTrunk = !!aPort && !aPort.shutdown && aPort.mode === 'trunk';
-        const bIsTrunk = !!bPort && !bPort.shutdown && bPort.mode === 'trunk';
-        if (!aIsTrunk || !bIsTrunk) continue;
+          const aState = nextStates.get(a.id);
+          const bState = nextStates.get(b.id);
+          if (!aState || !bState) continue;
 
-        const aMode = aState.vtpMode || 'server';
-        const bMode = bState.vtpMode || 'server';
-        const aDomain = (aState.vtpDomain || '').trim();
-        const bDomain = (bState.vtpDomain || '').trim();
-        if (!aDomain || !bDomain) continue;
-        if (aDomain !== bDomain) continue;
+          const aPort = aState.ports?.[conn.sourcePort];
+          const bPort = bState.ports?.[conn.targetPort];
+          const aIsTrunk = !!aPort && !aPort.shutdown && aPort.mode === 'trunk';
+          const bIsTrunk = !!bPort && !bPort.shutdown && bPort.mode === 'trunk';
+          if (!aIsTrunk || !bIsTrunk) continue;
 
-        const aRev = aState.vtpRevision || 0;
-        const bRev = bState.vtpRevision || 0;
+          const aMode = aState.vtpMode || 'server';
+          const bMode = bState.vtpMode || 'server';
+          const aDomain = (aState.vtpDomain || '').trim();
+          const bDomain = (bState.vtpDomain || '').trim();
+          if (!aDomain || !bDomain) continue;
+          if (aDomain !== bDomain) continue;
 
-        if (aMode === 'server' && bMode === 'client' && aRev >= bRev) {
-          nextStates.set(b.id, { ...bState, vlans: { ...aState.vlans }, vtpRevision: aRev });
-        } else if (bMode === 'server' && aMode === 'client' && bRev >= aRev) {
-          nextStates.set(a.id, { ...aState, vlans: { ...bState.vlans }, vtpRevision: bRev });
+          const aRev = aState.vtpRevision || 0;
+          const bRev = bState.vtpRevision || 0;
+
+          if (aMode === 'server' && bMode === 'client' && aRev >= bRev) {
+            nextStates.set(b.id, { ...bState, vlans: { ...aState.vlans }, vtpRevision: aRev });
+            changed = true;
+          } else if (bMode === 'server' && aMode === 'client' && bRev >= aRev) {
+            nextStates.set(a.id, { ...aState, vlans: { ...bState.vlans }, vtpRevision: bRev });
+            changed = true;
+          }
         }
-      }
 
-      setDeviceStates(nextStates);
+        // Nothing was propagated (single switch, no trunk peer, mismatched VTP
+        // domain, ...). Return the identical reference so React skips the
+        // re-render instead of publishing an equivalent map.
+        if (!changed) return prev;
+
+        deviceStatesRef.current = nextStates;
+        return nextStates;
+      });
     };
     window.addEventListener('vtp-propagation-needed', handleVtpPropagation);
 

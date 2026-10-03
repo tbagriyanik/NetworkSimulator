@@ -116,6 +116,10 @@ export function GuidedModePanel({
     sdnShuffledChoices,
     setSdnShuffledChoices,
     quizQuestions,
+    availableQuestions,
+    currentQuizQuestion,
+    handleSkipOrNextQuestion,
+    handleResetQuiz,
   } = useGuidedQuiz(project);
 
   const { triggerStepCelebration, triggerLessonCompleteCelebration } = useCelebrationEffects(language, currentStepIndex);
@@ -215,7 +219,7 @@ export function GuidedModePanel({
 
   const progress = project ? getProgressPercentage(project.steps) : 0;
   const currentStep = project ? project.steps[currentStepIndex] : null;
-  const sdnQuestion = quizQuestions[sdnQuizIndex];
+  const sdnQuestion = currentQuizQuestion || (availableQuestions.length > 0 ? availableQuestions[sdnQuizIndex % availableQuestions.length] : undefined);
 
   useEffect(() => {
     if (!sdnQuestion) return;
@@ -446,6 +450,7 @@ export function GuidedModePanel({
             sdnQuizIndex={sdnQuizIndex}
             setSdnQuizIndex={setSdnQuizIndex}
             quizQuestions={quizQuestions}
+            availableQuestions={availableQuestions}
             sdnQuizScore={sdnQuizScore}
             setSdnQuizScore={setSdnQuizScore}
             quizEarnedPoints={quizEarnedPoints}
@@ -455,6 +460,8 @@ export function GuidedModePanel({
             sdnQuizFeedback={sdnQuizFeedback}
             setSdnQuizFeedback={setSdnQuizFeedback}
             sdnShuffledChoices={sdnShuffledChoices}
+            onSkipOrNextQuestion={handleSkipOrNextQuestion}
+            onResetQuiz={handleResetQuiz}
             projectId={project.id}
             language={language}
             t={t as Record<string, string>}

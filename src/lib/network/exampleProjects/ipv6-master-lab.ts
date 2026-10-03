@@ -1,4 +1,4 @@
-﻿import { createPcDevice, createRouterDevice, connectPorts, baseProjectData } from './helpers';
+import { createPcDevice, createRouterDevice, connectPorts, baseProjectData } from './helpers';
 ;
 import type { ExampleProject } from './types';
 import { createInitialRouterState } from '../initialState';
@@ -25,6 +25,26 @@ const example = (isTr: boolean): ExampleProject => {
   ipv6MasterR1.ports['gi0/0'] = { ...ipv6MasterR1.ports['gi0/0'], ipAddress: '192.168.1.1', ipv6Address: '2001:DB8:A::1', ipv6Prefix: 64, status: 'connected', shutdown: false };
   ipv6MasterR1.ports['gi0/1'] = { ...ipv6MasterR1.ports['gi0/1'], ipAddress: '10.0.0.1', ipv6Address: '2001:DB8:AC::1', ipv6Prefix: 64, status: 'connected', shutdown: false };
   ipv6MasterR1.ipv6DynamicRoutes = [{ destination: '2001:DB8:B::', prefixLength: 64, nextHop: '2001:DB8:AC::2', metric: 1, type: 'dynamic', area: 0 }];
+  ipv6MasterR1.runningConfig = [
+    '!',
+    'hostname R1-Internal',
+    '!',
+    'ipv6 unicast-routing',
+    '!',
+    'interface GigabitEthernet0/0',
+    ' ip address 192.168.1.1 255.255.255.0',
+    ' ipv6 address 2001:DB8:A::1/64',
+    ' no shutdown',
+    '!',
+    'interface GigabitEthernet0/1',
+    ' ip address 10.0.0.1 255.255.255.0',
+    ' ipv6 address 2001:DB8:AC::1/64',
+    ' no shutdown',
+    '!',
+    'ipv6 route 2001:DB8:B::/64 2001:DB8:AC::2',
+    '!',
+    'end'
+  ];
 
   const ipv6MasterR2 = createInitialRouterState();
   ipv6MasterR2.hostname = 'R2-Edge';
@@ -39,6 +59,32 @@ const example = (isTr: boolean): ExampleProject => {
   ipv6MasterR2.ports['gi0/0'] = { ...ipv6MasterR2.ports['gi0/0'], ipAddress: '203.0.113.1', ipv6Address: '2001:DB8:B::1', ipv6Prefix: 64, status: 'connected', shutdown: false, accessGroupIn: 'V6-FILTER' };
   ipv6MasterR2.ports['gi0/1'] = { ...ipv6MasterR2.ports['gi0/1'], ipAddress: '10.0.0.2', ipv6Address: '2001:DB8:AC::2', ipv6Prefix: 64, status: 'connected', shutdown: false };
   ipv6MasterR2.ipv6DynamicRoutes = [{ destination: '2001:DB8:A::', prefixLength: 64, nextHop: '2001:DB8:AC::1', metric: 1, type: 'dynamic', area: 0 }];
+  ipv6MasterR2.runningConfig = [
+    '!',
+    'hostname R2-Edge',
+    '!',
+    'ipv6 unicast-routing',
+    '!',
+    'ipv6 access-list V6-FILTER',
+    ' deny ipv6 host 2001:DB8:B::20 any',
+    ' permit ipv6 any any',
+    '!',
+    'interface GigabitEthernet0/0',
+    ' ip address 203.0.113.1 255.255.255.0',
+    ' ipv6 address 2001:DB8:B::1/64',
+    ' ipv6 traffic-filter V6-FILTER in',
+    ' no shutdown',
+    '!',
+    'interface GigabitEthernet0/1',
+    ' ip address 10.0.0.2 255.255.255.0',
+    ' ipv6 address 2001:DB8:AC::2/64',
+    ' no shutdown',
+    '!',
+    'ipv6 route 2001:DB8:A::/64 2001:DB8:AC::1',
+    'ipv6 route ::/0 2001:DB8:B::20',
+    '!',
+    'end'
+  ];
 
   return {
     id: 'ipv6-master-lab',

@@ -74,7 +74,7 @@ export const campusGuidedSteps: GuidedStep[] = [
     description: { tr: 'İdari PC\'den (PC1), Öğrenci PC\'ye (PC2) ping atın.', en: 'Ping from Admin PC (PC1) to Student PC (PC2).' },
     hint: { tr: 'PC-1 CMD > ping 192.168.20.10', en: 'PC-1 CMD > ping 192.168.20.10' },
     checkType: 'ping',
-    checkParams: { fromDevice: 'pc-1', toIp: '192.168.20.10' },
+    checkParams: { fromDevice: 'pc-1', toIp: '192.168.20.10', deviceType: 'pc' },
     completed: false,
     points: 20
   }

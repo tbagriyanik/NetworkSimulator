@@ -75,8 +75,8 @@ export const systemPatternsDhcpWirelessNatShow: Record<string, CommandPattern> =
 
   // Wireless commands
   'dot11 ssid': {
-    pattern: /^dot11\s+ssid\s+(\S+)$/i,
-    modes: ['config'],
+    pattern: /^(?:dot11\s+)?ssid\s+(\S+)$/i,
+    modes: ['config', 'ssid-config'],
     minArgs: 1,
     maxArgs: 1
   },

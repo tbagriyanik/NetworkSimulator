@@ -19,7 +19,7 @@ export const routerDhcpGuidedSteps: GuidedStep[] = [
     description: { tr: 'Ayrıcalıklı moda geçin', en: 'Enter privileged EXEC mode' },
     hint: { tr: '"enable" yazın.', en: 'Type "enable".' },
     checkType: 'command',
-    checkParams: { commandPattern: 'enable' },
+    checkParams: { commandPattern: 'enable', deviceType: 'router' },
     completed: false,
     points: 5
   },
@@ -30,7 +30,7 @@ export const routerDhcpGuidedSteps: GuidedStep[] = [
     description: { tr: 'Global yapılandırma moduna geçin', en: 'Enter global configuration mode' },
     hint: { tr: '"conf t" yazın.', en: 'Type "conf t".' },
     checkType: 'command',
-    checkParams: { commandPattern: 'conf' },
+    checkParams: { commandPattern: 'conf', deviceType: 'router' },
     completed: false,
     points: 5
   },
@@ -41,7 +41,7 @@ export const routerDhcpGuidedSteps: GuidedStep[] = [
     description: { tr: 'GigabitEthernet 0/0 arayüzüne girin', en: 'Enter GigabitEthernet 0/0 interface' },
     hint: { tr: '"int gi0/0" yazın.', en: 'Type "int gi0/0".' },
     checkType: 'command',
-    checkParams: { commandPattern: 'interface gi0/0|int gi0/0' },
+    checkParams: { commandPattern: 'interface gi0/0|int gi0/0', deviceType: 'router' },
     completed: false,
     points: 5
   },
@@ -52,7 +52,7 @@ export const routerDhcpGuidedSteps: GuidedStep[] = [
     description: { tr: 'Arayüze 192.168.1.1 IP adresi atayın', en: 'Assign 192.168.1.1 IP to the interface' },
     hint: { tr: '"ip address 192.168.1.1 255.255.255.0" yazın.', en: 'Type "ip address 192.168.1.1 255.255.255.0".' },
     checkType: 'config',
-    checkParams: { configKey: 'interfaces.gi0/0.ip', configValue: '192.168.1.1' },
+    checkParams: { configKey: 'interfaces.gi0/0.ip', configValue: '192.168.1.1', deviceType: 'router' },
     completed: false,
     points: 10
   },
@@ -63,7 +63,7 @@ export const routerDhcpGuidedSteps: GuidedStep[] = [
     description: { tr: 'Arayüzü aktif hale getirin', en: 'Enable the interface' },
     hint: { tr: '"no shutdown" yazın.', en: 'Type "no shutdown".' },
     checkType: 'config',
-    checkParams: { configKey: 'interfaces.gi0/0.shutdown', configValue: false },
+    checkParams: { configKey: 'interfaces.gi0/0.shutdown', configValue: false, deviceType: 'router' },
     completed: false,
     points: 5
   },
@@ -74,7 +74,7 @@ export const routerDhcpGuidedSteps: GuidedStep[] = [
     description: { tr: 'Arayüz yapılandırmasından çıkın', en: 'Exit interface configuration' },
     hint: { tr: '"exit" yazın.', en: 'Type "exit".' },
     checkType: 'command',
-    checkParams: { commandPattern: 'exit' },
+    checkParams: { commandPattern: 'exit', deviceType: 'router' },
     completed: false,
     points: 5
   },
@@ -85,7 +85,7 @@ export const routerDhcpGuidedSteps: GuidedStep[] = [
     description: { tr: 'LAN isminde bir DHCP havuzu oluşturun', en: 'Create a DHCP pool named LAN' },
     hint: { tr: '"ip dhcp pool LAN" yazın.', en: 'Type "ip dhcp pool LAN".' },
     checkType: 'command',
-    checkParams: { commandPattern: 'ip dhcp pool LAN' },
+    checkParams: { commandPattern: 'ip dhcp pool LAN', deviceType: 'router' },
     completed: false,
     points: 10
   },

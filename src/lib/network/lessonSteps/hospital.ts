@@ -63,7 +63,7 @@ export const hospitalGuidedSteps: GuidedStep[] = [
     description: { tr: 'Hemşire bilgisayarından (PC1) kayıt sunucusuna ping atın.', en: 'Ping the registry server from the nurse station PC (PC1).' },
     hint: { tr: 'PC-1 CMD > ping 192.168.100.10', en: 'PC-1 CMD > ping 192.168.100.10' },
     checkType: 'ping',
-    checkParams: { fromDevice: 'pc-1', toIp: '192.168.100.10' },
+    checkParams: { fromDevice: 'pc-1', toIp: '192.168.100.10', deviceType: 'pc' },
     completed: false,
     points: 25
   }

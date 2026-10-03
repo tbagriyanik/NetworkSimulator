@@ -142,20 +142,9 @@ export function useDeviceCommandHandler({
           });
         }
 
-        // Apply updatedDeviceStates if present (for global STP recalculation)
-        if (updatedDeviceStates && updatedDeviceStates instanceof Map) {
-          setDeviceStates(prev => {
-            const next = new Map(prev);
-            updatedDeviceStates.forEach((state, id: string) => {
-              next.set(id, state);
-            });
-            return next;
-          });
-        }
-
-        if (newState) {
+        if (newState || (updatedDeviceStates && updatedDeviceStates instanceof Map)) {
           const currentState = deviceStatesRef.current.get(deviceId) || deviceState;
-          if (newState.hostname && newState.hostname !== currentState.hostname) {
+          if (newState?.hostname && newState.hostname !== currentState.hostname) {
             window.dispatchEvent(new CustomEvent('update-topology-device-config', {
               detail: { deviceId, config: { name: newState.hostname } }
             }));
@@ -165,10 +154,19 @@ export function useDeviceCommandHandler({
             /^(no\s+)?vlan\s+\d+/i.test(command.trim()) ||
             /^switchport\s+access\s+vlan\s+\d+/i.test(command.trim())
           );
+
           setDeviceStates(prev => {
             const next = new Map(prev);
-            const current = deviceStatesRef.current.get(deviceId) || deviceState;
-            const mergedState = { ...current, ...newState, runningConfig: buildRunningConfig({ ...current, ...newState }) };
+            if (updatedDeviceStates && updatedDeviceStates instanceof Map) {
+              updatedDeviceStates.forEach((st, id: string) => {
+                next.set(id, st);
+              });
+            }
+
+            const current = next.get(deviceId) || deviceStatesRef.current.get(deviceId) || deviceState;
+            const mergedState = newState
+              ? { ...current, ...newState, runningConfig: buildRunningConfig({ ...current, ...newState }) }
+              : current;
             next.set(deviceId, mergedState);
             deviceStatesRef.current = next;
 

@@ -1,8 +1,14 @@
 import { CLI_ERRORS, cliModeError } from './cliErrors';
-import type { CommandResult } from '../types';
-import type { SwitchState } from '../types';
+import type { CommandResult, SwitchState, CommandMode } from '../types';
 import type { CommandContext } from './commandTypes';
 import { getPvstUpdate } from './commandHelpers';
+
+const CONFIG_MODES: CommandMode[] = [
+  'config', 'interface', 'config-if-range', 'line', 'vlan',
+  'router-config', 'dhcp-config', 'config-std-nacl', 'config-ext-nacl',
+  'config-ipv6-acl', 'config-mst', 'config-route-map',
+  'config-flow-record', 'config-flow-exporter', 'config-flow-monitor', 'config-applet'
+];
 
 /**
  * Hostname - Set device hostname
@@ -83,16 +89,17 @@ export function cmdNoHostname(state: SwitchState, _input: string, _ctx: CommandC
  * VLAN - Create/enter VLAN configuration
  */
 export function cmdVlan(state: SwitchState, input: string, ctx: CommandContext): CommandResult {
-  if (state.currentMode !== 'config') {
+  if (!CONFIG_MODES.includes(state.currentMode)) {
     return { success: false, error: cliModeError() };
   }
 
-  const match = input.match(/^vlan\s+(\d+)$/i);
+  const match = input.trim().match(/^vlan\s+(\d+)(?:\s+name\s+(.+))?\s*$/i);
   if (!match) {
     return { success: false, error: CLI_ERRORS.invalidInput };
   }
 
   const vlanId = match[1];
+  const inlineName = match[2]?.trim();
   const vlanNum = parseInt(vlanId, 10);
 
   if (vlanNum < 1 || vlanNum > 4094) {
@@ -104,34 +111,58 @@ export function cmdVlan(state: SwitchState, input: string, ctx: CommandContext):
 
   const newVlans = { ...state.vlans };
 
-  if (!newVlans[vlanId]) {
-    newVlans[vlanId] = {
-      id: vlanNum,
-      name: `VLAN${vlanId}`,
-      status: 'active',
-      ports: []
-    };
+  const vlanObj = newVlans[vlanId] || newVlans[vlanNum] || {
+    id: vlanNum,
+    name: inlineName || `VLAN${vlanId}`,
+    status: 'active',
+    ports: []
+  };
+
+  if (inlineName) {
+    vlanObj.name = inlineName;
   }
+
+  newVlans[vlanId] = vlanObj;
+  newVlans[vlanNum] = vlanObj;
 
   const shouldBumpVtp = (state.vtpMode === 'server') && !!state.vtpDomain;
   const nextVtpRevision = shouldBumpVtp ? ((state.vtpRevision || 0) + 1) : state.vtpRevision;
 
-  const updatedCurrentState = {
+  const updatedCurrentState: SwitchState = {
     ...state,
     vlans: newVlans,
     vtpRevision: nextVtpRevision,
-    currentMode: 'vlan' as const,
-    currentVlan: vlanNum
+    currentMode: 'vlan',
+    currentVlan: vlanNum,
+    currentInterface: undefined,
+    selectedInterfaces: undefined,
+    currentLine: undefined,
+    currentRouteMap: undefined,
+    currentDhcpPool: undefined
   };
 
   const pvst = getPvstUpdate(updatedCurrentState, ctx);
   if ('error' in pvst) return pvst.error;
   const { allUpdatedStates, myUpdatedState } = pvst;
 
+  const finalNewState: SwitchState = {
+    ...(myUpdatedState || updatedCurrentState),
+    currentMode: 'vlan',
+    currentVlan: vlanNum,
+    currentInterface: undefined,
+    selectedInterfaces: undefined,
+    currentLine: undefined
+  };
+
+  if (ctx.sourceDeviceId && allUpdatedStates instanceof Map && allUpdatedStates.has(ctx.sourceDeviceId)) {
+    allUpdatedStates.set(ctx.sourceDeviceId, finalNewState);
+  }
+
   return {
     success: true,
-    newState: myUpdatedState || updatedCurrentState,
+    newState: finalNewState,
     updatedDeviceStates: allUpdatedStates,
+    modeChange: 'vlan',
     hint: {
       tr: `💡 İpucu: VLAN ${vlanId} oluşturuldu. Şimdi 'name' komutu ile isim verebilir veya arayüzleri bu VLAN'a atayabilirsiniz.`,
       en: `💡 Hint: VLAN ${vlanId} created. Now you can give it a name using the 'name' command or assign interfaces to this VLAN.`
@@ -143,11 +174,11 @@ export function cmdVlan(state: SwitchState, input: string, ctx: CommandContext):
  * No VLAN - Delete VLAN
  */
 export function cmdNoVlan(state: SwitchState, input: string, ctx: CommandContext): CommandResult {
-  if (state.currentMode !== 'config') {
+  if (!CONFIG_MODES.includes(state.currentMode)) {
     return { success: false, error: cliModeError() };
   }
 
-  const match = input.match(/^no\s+vlan\s+(\d+)$/i);
+  const match = input.trim().match(/^no\s+vlan\s+(\d+)\s*$/i);
   if (!match) {
     return { success: false, error: '% Invalid VLAN ID' };
   }
@@ -199,7 +230,7 @@ export function cmdVlanName(state: SwitchState, input: string, _ctx: CommandCont
     return { success: false, error: cliModeError() };
   }
 
-  const match = input.match(/^name\s+(.+)$/i);
+  const match = input.trim().match(/^name\s+(.+)$/i);
   if (!match) {
     return { success: false, error: '% Invalid VLAN name command' };
   }
@@ -254,7 +285,7 @@ export function cmdVlanState(state: SwitchState, input: string, _ctx: CommandCon
     return { success: false, error: cliModeError() };
   }
 
-  const match = input.match(/^state\s+(active|suspend)$/i);
+  const match = input.trim().match(/^state\s+(active|suspend)\s*$/i);
   if (!match) {
     return { success: false, error: '% Invalid VLAN state command' };
   }

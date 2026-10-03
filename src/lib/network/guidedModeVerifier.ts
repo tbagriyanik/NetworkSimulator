@@ -52,6 +52,10 @@ export const checkStepCompletion = (
         return false;
       }
 
+      if (step.checkParams.deviceType && context.deviceAccessed && context.deviceAccessed !== step.checkParams.deviceType) {
+        return false;
+      }
+
       const patterns = step.checkParams.commandPattern.split('|');
       const lastCmd = context.lastCommand.toLowerCase().trim();
       return patterns.some(pattern => {
@@ -201,8 +205,8 @@ export const checkStepCompletion = (
       }
 
       if (configKey.startsWith('vlans.')) {
-        const vlanId = configKey.split('.')[1];
-        const vlan = targetState?.vlans?.[Number(vlanId)];
+        const vlanIdStr = configKey.split('.')[1];
+        const vlan = targetState?.vlans?.[vlanIdStr] || targetState?.vlans?.[Number(vlanIdStr)];
         const property = configKey.split('.').pop();
         if (property === 'name') return vlan?.name === configValue;
         return !!vlan;

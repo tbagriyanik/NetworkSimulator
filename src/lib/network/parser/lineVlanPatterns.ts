@@ -25,25 +25,25 @@ export const lineVlanPatterns: Record<string, CommandPattern> = {
   // Line komutları
   'line console': {
     pattern: /^line\s+console\s+0$/i,
-    modes: ['config'],
+    modes: ['config', 'interface', 'config-if-range', 'line', 'vlan', 'router-config', 'dhcp-config', 'config-std-nacl', 'config-ext-nacl', 'config-ipv6-acl', 'config-mst', 'config-route-map', 'config-flow-record', 'config-flow-exporter', 'config-flow-monitor', 'config-applet'],
     minArgs: 0,
     maxArgs: 0
   },
   'line vty': {
     pattern: /^line\s+vty\s+(\d+)(?:\s+(\d+))?$/i,
-    modes: ['config'],
+    modes: ['config', 'interface', 'config-if-range', 'line', 'vlan', 'router-config', 'dhcp-config', 'config-std-nacl', 'config-ext-nacl', 'config-ipv6-acl', 'config-mst', 'config-route-map', 'config-flow-record', 'config-flow-exporter', 'config-flow-monitor', 'config-applet'],
     minArgs: 1,
     maxArgs: 2
   },
   'line aux': {
     pattern: /^line\s+aux\s+0$/i,
-    modes: ['config'],
+    modes: ['config', 'interface', 'config-if-range', 'line', 'vlan', 'router-config', 'dhcp-config', 'config-std-nacl', 'config-ext-nacl', 'config-ipv6-acl', 'config-mst', 'config-route-map', 'config-flow-record', 'config-flow-exporter', 'config-flow-monitor', 'config-applet'],
     minArgs: 0,
     maxArgs: 0
   },
   'line': {
     pattern: /^line\s+(\S+)(\s+(\d+)(\s+(\d+))?)?$/i,
-    modes: ['config'],
+    modes: ['config', 'interface', 'config-if-range', 'line', 'vlan', 'router-config', 'dhcp-config', 'config-std-nacl', 'config-ext-nacl', 'config-ipv6-acl', 'config-mst', 'config-route-map', 'config-flow-record', 'config-flow-exporter', 'config-flow-monitor', 'config-applet'],
     minArgs: 1,
     maxArgs: 4
   },

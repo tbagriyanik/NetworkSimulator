@@ -19,7 +19,7 @@ export const ripRoutingGuidedSteps: GuidedStep[] = [
     description: { tr: 'Ayrıcalıklı moda geçin', en: 'Enter privileged EXEC mode' },
     hint: { tr: '"enable" yazın.', en: 'Type "enable".' },
     checkType: 'command',
-    checkParams: { commandPattern: 'enable' },
+    checkParams: { commandPattern: 'enable', deviceType: 'router' },
     completed: false,
     points: 5
   },
@@ -30,7 +30,7 @@ export const ripRoutingGuidedSteps: GuidedStep[] = [
     description: { tr: 'Global yapılandırma moduna geçin', en: 'Enter global configuration mode' },
     hint: { tr: '"conf t" yazın.', en: 'Type "conf t".' },
     checkType: 'command',
-    checkParams: { commandPattern: 'conf' },
+    checkParams: { commandPattern: 'conf', deviceType: 'router' },
     completed: false,
     points: 5
   },
@@ -41,7 +41,7 @@ export const ripRoutingGuidedSteps: GuidedStep[] = [
     description: { tr: 'RIP yönlendirme protokolünü başlatın', en: 'Start RIP routing protocol' },
     hint: { tr: '"router rip" yazın.', en: 'Type "router rip".' },
     checkType: 'config',
-    checkParams: { configKey: 'routingProtocol', configValue: 'rip' },
+    checkParams: { configKey: 'routingProtocol', configValue: 'rip', deviceType: 'router' },
     completed: false,
     points: 10
   },
@@ -52,7 +52,7 @@ export const ripRoutingGuidedSteps: GuidedStep[] = [
     description: { tr: 'Versiyon 2\'yi seçin', en: 'Set version to 2' },
     hint: { tr: '"version 2" yazın.', en: 'Type "version 2".' },
     checkType: 'command',
-    checkParams: { commandPattern: 'version 2' },
+    checkParams: { commandPattern: 'version 2', deviceType: 'router' },
     completed: false,
     points: 10
   },
@@ -63,7 +63,7 @@ export const ripRoutingGuidedSteps: GuidedStep[] = [
     description: { tr: '192.168.1.0 ağını ekleyin', en: 'Add 192.168.1.0 network' },
     hint: { tr: '"network 192.168.1.0" yazın.', en: 'Type "network 192.168.1.0".' },
     checkType: 'command',
-    checkParams: { commandPattern: 'network 192.168.1.0' },
+    checkParams: { commandPattern: 'network 192.168.1.0', deviceType: 'router' },
     completed: false,
     points: 15
   },
@@ -74,7 +74,7 @@ export const ripRoutingGuidedSteps: GuidedStep[] = [
     description: { tr: 'Otomatik özetlemeyi kapatın', en: 'Disable automatic summarization' },
     hint: { tr: '"no auto-summary" yazın.', en: 'Type "no auto-summary".' },
     checkType: 'command',
-    checkParams: { commandPattern: 'auto-summary' },
+    checkParams: { commandPattern: 'auto-summary', deviceType: 'router' },
     completed: false,
     points: 5
   }

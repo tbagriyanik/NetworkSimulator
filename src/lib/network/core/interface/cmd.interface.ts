@@ -1,6 +1,6 @@
 import { cliModeError } from '../cliErrors';
 import type { CommandContext } from '../commandTypes';
-import type { SwitchState, CommandResult, Port, SpeedMode, DuplexMode } from '../../types';
+import type { SwitchState, CommandResult, Port, SpeedMode, DuplexMode, CommandMode } from '../../types';
 import { normalizePortId } from '../../initialState';
 import { getPvstUpdate, getInterfaceStateUpdate } from '../commandHelpers';
 import {
@@ -11,11 +11,18 @@ import {
   applyToSelectedPorts
 } from './helpers';
 
+const CONFIG_MODES: CommandMode[] = [
+  'config', 'interface', 'config-if-range', 'line', 'vlan',
+  'router-config', 'dhcp-config', 'config-std-nacl', 'config-ext-nacl',
+  'config-ipv6-acl', 'config-mst', 'config-route-map',
+  'config-flow-record', 'config-flow-exporter', 'config-flow-monitor', 'config-applet'
+];
+
 /**
  * Interface - Enter interface configuration mode
  */
 export function cmdInterface(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (state.currentMode !== 'config' && state.currentMode !== 'interface' && state.currentMode !== 'config-if-range') {
+  if (!CONFIG_MODES.includes(state.currentMode)) {
     return { success: false, error: cliModeError() };
   }
 

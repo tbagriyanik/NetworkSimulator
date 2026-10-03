@@ -34,7 +34,7 @@ export const basicSwitchGuidedSteps: GuidedStep[] = [
     description: { tr: 'Ayrıcalıklı moda geçmek için enable komutunu kullanın', en: 'Use the enable command to enter privileged mode' },
     hint: { tr: '"enable" yazıp Enter\'a basın.', en: 'Type "enable" and press Enter.' },
     checkType: 'command',
-    checkParams: { commandPattern: 'enable' },
+    checkParams: { commandPattern: 'enable', deviceType: 'switch' },
     completed: false,
     points: 5
   },
@@ -45,7 +45,7 @@ export const basicSwitchGuidedSteps: GuidedStep[] = [
     description: { tr: 'Global yapılandırma moduna geçmek için conf t komutunu kullanın', en: 'Use conf t command to enter global configuration mode' },
     hint: { tr: '"conf t" yazın.', en: 'Type "conf t".' },
     checkType: 'command',
-    checkParams: { commandPattern: 'conf' },
+    checkParams: { commandPattern: 'conf', deviceType: 'switch' },
     completed: false,
     points: 5
   },
@@ -56,7 +56,7 @@ export const basicSwitchGuidedSteps: GuidedStep[] = [
     description: { tr: 'Switch\'e SW-Lab ismini verin', en: 'Give the Switch the name SW-Lab' },
     hint: { tr: '"hostname SW-Lab" yazın.', en: 'Type "hostname SW-Lab".' },
     checkType: 'command',
-    checkParams: { commandPattern: 'hostname' },
+    checkParams: { commandPattern: 'hostname', deviceType: 'switch' },
     completed: false,
     points: 10
   },
@@ -78,7 +78,7 @@ export const basicSwitchGuidedSteps: GuidedStep[] = [
     description: { tr: 'Global yapılandırma modundan çıkmak için exit komutunu kullanın', en: 'Use exit to leave global configuration mode' },
     hint: { tr: 'exit', en: 'exit' },
     checkType: 'command',
-    checkParams: { commandPattern: 'exit' },
+    checkParams: { commandPattern: 'exit', deviceType: 'switch' },
     completed: false,
     points: 5
   },
@@ -89,7 +89,7 @@ export const basicSwitchGuidedSteps: GuidedStep[] = [
     description: { tr: 'Yaptığınız değişiklikleri kaydedin', en: 'Save your changes' },
     hint: { tr: 'write memory', en: 'write memory' },
     checkType: 'command',
-    checkParams: { commandPattern: 'write|copy' },
+    checkParams: { commandPattern: 'write|copy', deviceType: 'switch' },
     completed: false,
     points: 10
   }

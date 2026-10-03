@@ -21,7 +21,7 @@ export const cliBasicsGuidedSteps: GuidedStep[] = [
     hint: { tr: '"enable" yazın.', en: 'Type "enable".' },
     animationId: 'cli-enable',
     checkType: 'command',
-    checkParams: { commandPattern: 'enable' },
+    checkParams: { commandPattern: 'enable', deviceType: 'switch' },
     completed: false,
     points: 10
   },
@@ -33,7 +33,7 @@ export const cliBasicsGuidedSteps: GuidedStep[] = [
     hint: { tr: '"conf t" yazın.', en: 'Type "conf t".' },
     animationId: 'cli-config',
     checkType: 'command',
-    checkParams: { commandPattern: 'conf' },
+    checkParams: { commandPattern: 'conf', deviceType: 'switch' },
     completed: false,
     points: 10
   }

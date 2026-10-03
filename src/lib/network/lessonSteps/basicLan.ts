@@ -48,7 +48,7 @@ export const basicLanGuidedSteps: GuidedStep[] = [
     hint: { tr: 'PC0 CMD > "ping 192.168.1.20"', en: 'PC0 CMD > "ping 192.168.1.20"' },
     animationId: 'ping-anim',
     checkType: 'ping',
-    checkParams: { fromDevice: 'pc-1', toIp: '192.168.1.20' },
+    checkParams: { fromDevice: 'pc-1', toIp: '192.168.1.20', deviceType: 'pc' },
     completed: false,
     points: 20
   }

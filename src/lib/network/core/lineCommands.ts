@@ -1,8 +1,15 @@
 import { cliModeError } from './cliErrors';
 import type { CommandHandler, CommandContext } from './commandTypes';
-import type { SwitchState, CommandResult } from '../types';
+import type { SwitchState, CommandResult, CommandMode } from '../types';
 
 export type TransportProtocol = 'ssh' | 'telnet' | 'all' | 'none';
+
+const CONFIG_MODES: CommandMode[] = [
+  'config', 'interface', 'config-if-range', 'line', 'vlan',
+  'router-config', 'dhcp-config', 'config-std-nacl', 'config-ext-nacl',
+  'config-ipv6-acl', 'config-mst', 'config-route-map',
+  'config-flow-record', 'config-flow-exporter', 'config-flow-monitor', 'config-applet'
+];
 
 /**
  * Tek kaynak doğruluk: bir hattın belirtilen protokolü kabul edip etmediği.
@@ -57,7 +64,7 @@ export const lineHandlers: Record<string, CommandHandler> = {
  * Line Console
  */
 function cmdLineConsole(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (state.currentMode !== 'config') {
+  if (!CONFIG_MODES.includes(state.currentMode)) {
     return { success: false, error: cliModeError() };
   }
 
@@ -70,7 +77,10 @@ function cmdLineConsole(state: SwitchState, input: string, _ctx: CommandContext)
     success: true,
     newState: {
       currentMode: 'line',
-      currentLine: `console ${match[1]}`
+      currentLine: `console ${match[1]}`,
+      currentInterface: undefined,
+      selectedInterfaces: undefined,
+      currentVlan: undefined
     }
   };
 }
@@ -79,7 +89,7 @@ function cmdLineConsole(state: SwitchState, input: string, _ctx: CommandContext)
  * Line VTY
  */
 function cmdLineVty(state: SwitchState, input: string, _ctx: CommandContext): CommandResult {
-  if (state.currentMode !== 'config') {
+  if (!CONFIG_MODES.includes(state.currentMode)) {
     return { success: false, error: cliModeError() };
   }
 
@@ -92,7 +102,10 @@ function cmdLineVty(state: SwitchState, input: string, _ctx: CommandContext): Co
     success: true,
     newState: {
       currentMode: 'line',
-      currentLine: `vty ${match[1]} ${match[2]}`
+      currentLine: `vty ${match[1]} ${match[2]}`,
+      currentInterface: undefined,
+      selectedInterfaces: undefined,
+      currentVlan: undefined
     }
   };
 }

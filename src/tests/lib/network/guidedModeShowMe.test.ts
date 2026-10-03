@@ -1,4 +1,4 @@
-﻿import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import {
   addDeviceGuidedSteps,
   pcCmdGuidedSteps,
@@ -59,21 +59,32 @@ function extractShowMeCommand(step: GuidedStep, topologyDevices: CanvasDevice[] 
 
   let cleanCommand = '';
 
-  const quoteMatch = rawStr.match(/["'“”]([^"'“”]+)["'“”]/);
+  const rawLines = rawStr.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  const isPromptOrModeLine = (line: string): boolean => {
+    const trimmed = line.trim();
+    if (!trimmed) return false;
+    if (/^([a-zA-Z0-9_.-]+(\([^)]+\))?|[A-Z]:\\[^>]*)[>#]\s*$/i.test(trimmed)) return true;
+    if (/^\(?(örnek|ornek|example|mod|mode|prompt)\s*:\s*[a-zA-Z0-9_.-]+(\([^)]+\))?[>#]\)?\s*$/i.test(trimmed)) return true;
+    return false;
+  };
+  const contentLines = rawLines.filter(l => !isPromptOrModeLine(l));
+  const targetLine = contentLines.length > 0 ? contentLines[0] : (rawLines[0] || '');
+
+  const quoteMatch = targetLine.match(/["'“”`]([^"'“”`]+)["'“”`]/);
   if (quoteMatch && quoteMatch[1].trim()) {
     cleanCommand = quoteMatch[1].trim();
   } else {
-    cleanCommand = rawStr;
+    cleanCommand = targetLine;
   }
 
   cleanCommand = cleanCommand
-    .replace(/[\^$()]/g, '')
     .replace(/^[^:]{1,40}:\s*/i, '')
-    .replace(/^[a-zA-Z0-9_-]+(\([^)]+\))?[>#]\s*/, '')
-    .replace(/^(type|yazın|yazin)\s+/i, '')
-    .replace(/\s+(yazın|yazin)\.?$/i, '')
-    .replace(/\s+(and press enter|press enter)\.?$/i, '')
-    .replace(/^["'“”]+|["'“”.,!?]+$/g, '')
+    .replace(/^PC\d*\s+CMD\s*>\s*/i, '')
+    .replace(/^[a-zA-Z0-9_.-]+(\([^)]+\))?[>#]\s*/, '')
+    .replace(/^(type|yazın|yazin|run|enter)\s+/i, '')
+    .replace(/\s+(yazın|yazin|yazınız|yaziniz)\.?$/i, '')
+    .replace(/\s+(and press enter|press enter|yazıp enter'a basın|yazip enter'a basin|yazıp enter tuşuna basın)\.?$/i, '')
+    .replace(/^["'“”`]+|["'“”`.,!?]+$/g, '')
     .trim();
 
   if (!cleanCommand && commandPattern) {
@@ -82,23 +93,37 @@ function extractShowMeCommand(step: GuidedStep, topologyDevices: CanvasDevice[] 
 
   let resolvedTargetType = 'switch/router';
   if (!deviceId) {
-    if (
-      deviceType === 'pc' ||
-      (stepId && (String(stepId).includes('pc') || String(stepId).startsWith('run-'))) ||
-      cleanCommand === 'help' ||
-      cleanCommand.includes('ipconfig') ||
-      cleanCommand.includes('ping') ||
-      cleanCommand.includes('ftp') ||
-      cleanCommand.includes('tracert') ||
-      cleanCommand.includes('cls') ||
-      cleanCommand.includes('dir') ||
-      cleanCommand.includes('nslookup')
-    ) {
-      resolvedTargetType = 'pc';
-    } else if (deviceType === 'switch') {
+    if (deviceType === 'switch') {
       resolvedTargetType = 'switch';
     } else if (deviceType === 'router') {
       resolvedTargetType = 'router';
+    } else if (deviceType === 'pc') {
+      resolvedTargetType = 'pc';
+    } else if (
+      (stepId && (String(stepId).includes('pc') || String(stepId).startsWith('run-') || String(stepId).startsWith('pc-'))) ||
+      cleanCommand.startsWith('ipconfig') ||
+      cleanCommand.startsWith('tracert') ||
+      cleanCommand.startsWith('cls') ||
+      cleanCommand.startsWith('nslookup')
+    ) {
+      resolvedTargetType = 'pc';
+    } else if (
+      stepId && (String(stepId).includes('router') || String(stepId).startsWith('r-') || String(stepId).includes('route'))
+    ) {
+      resolvedTargetType = 'router';
+    } else if (
+      stepId && (String(stepId).includes('switch') || String(stepId).startsWith('sw-') || String(stepId).includes('vlan') || String(stepId).includes('stp'))
+    ) {
+      resolvedTargetType = 'switch';
+    } else {
+      const hintStr = rawStr.toLowerCase();
+      if (hintStr.includes('s-lab') || hintStr.includes('sw-') || hintStr.includes('switch')) {
+        resolvedTargetType = 'switch';
+      } else if (hintStr.includes('r-lab') || hintStr.includes('router')) {
+        resolvedTargetType = 'router';
+      } else if (hintStr.includes('pc-') || hintStr.includes('pc')) {
+        resolvedTargetType = 'pc';
+      }
     }
   }
 

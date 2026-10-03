@@ -1,4 +1,4 @@
-﻿import { createInitialRouterState, createInitialState } from '../initialState';
+import { createInitialRouterState, createInitialState } from '../initialState';
 import {
   createPcDevice,
   createRouterDevice,
@@ -364,6 +364,16 @@ const example = (isTr: boolean): ExampleProject => {
       mode: 'ap'
     }
   };
+  wap1State.runningConfig = [
+    '!',
+    'hostname WAP-Staff',
+    '!',
+    'interface dot11Radio 0',
+    ' ssid Staff-WiFi',
+    ' station-role root',
+    '!',
+    'end'
+  ];
 
   // WAP-2 State (Guest - L3 Switch NS-L3-24PS)
   const wap2State = createInitialState('00:50:00:00:00:94', 'NS-L3-24PS');
@@ -396,6 +406,16 @@ const example = (isTr: boolean): ExampleProject => {
       mode: 'ap'
     }
   };
+  wap2State.runningConfig = [
+    '!',
+    'hostname WAP-Guest',
+    '!',
+    'interface dot11Radio 0',
+    ' ssid Guest-WiFi',
+    ' station-role root',
+    '!',
+    'end'
+  ];
 
   return {
     id: 'wap-multi-ssid',

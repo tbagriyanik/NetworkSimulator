@@ -1,4 +1,4 @@
-﻿import { isWLCModel, canAssignIPToPhysicalPort } from './switchModels';
+import { isWLCModel, canAssignIPToPhysicalPort } from './switchModels';
 import { CanvasDevice, DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 export type DeviceCapabilities = {
@@ -11,7 +11,7 @@ export type DeviceCapabilities = {
 
 export function getDeviceCapabilities(device?: Pick<CanvasDevice, 'type'> | null, switchModel?: string): DeviceCapabilities {
   const type = (device?.type || '') as DeviceType | '';
-  const isSwitch = type === 'switchL2' || type === 'switchL3';
+  const isSwitch = (type as string) === 'switch' || type === 'switchL2' || type === 'switchL3';
   const isL3Switch = type === 'switchL3' || canAssignIPToPhysicalPort(switchModel);
   const isWLC = type === 'wlc' || isWLCModel(switchModel);
 

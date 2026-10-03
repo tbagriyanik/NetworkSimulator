@@ -1,4 +1,4 @@
-﻿import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { getPvstUpdate } from '@/lib/network/core/commandHelpers';
 import { SwitchState, SecurityConfig } from '@/lib/network/types';
 import { CommandContext } from '@/lib/network/core/commandTypes';
@@ -37,15 +37,11 @@ function mockState(): SwitchState {
 }
 
 describe('getPvstUpdate', () => {
-  it('should return error when sourceDeviceId is missing', () => {
+  it('should handle missing sourceDeviceId gracefully without breaking CLI execution', () => {
     const ctx: CommandContext = { deviceStates: new Map(), language: 'en' };
-    const result = getPvstUpdate(mockState(), ctx);
-    if ('error' in result) {
-      expect(result.error.success).toBe(false);
-      expect(result.error.error).toContain('Internal error');
-    } else {
-      expect.fail('Expected error result');
-    }
+    const state = mockState();
+    const result = getPvstUpdate(state, ctx);
+    expect('myUpdatedState' in result && result.myUpdatedState).toBe(state);
   });
 
   it('should recalculate STP when sourceDeviceId is present', () => {

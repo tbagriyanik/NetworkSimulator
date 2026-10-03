@@ -41,7 +41,7 @@ export const ecommerceGuidedSteps: GuidedStep[] = [
     description: { tr: 'Web sunucusunu dış dünyaya açmak için Static NAT kurun.', en: 'Set up Static NAT to expose the web server to the outside world.' },
     hint: { tr: 'ip nat inside source static 172.16.50.10 203.0.113.10', en: 'ip nat inside source static 172.16.50.10 203.0.113.10' },
     checkType: 'command',
-    checkParams: { targetDeviceId: 'router-1', commandPattern: 'ip nat inside source static' },
+    checkParams: { targetDeviceId: 'router-1', commandPattern: 'ip nat inside source static', deviceType: 'router' },
     completed: false,
     points: 20
   },
@@ -63,7 +63,7 @@ export const ecommerceGuidedSteps: GuidedStep[] = [
     description: { tr: 'İç ağdaki PC\'den (PC1), Web sunucusuna ping atın.', en: 'Ping the web server from the internal PC (PC1).' },
     hint: { tr: 'PC-1 CMD > ping 172.16.50.10', en: 'PC-1 CMD > ping 172.16.50.10' },
     checkType: 'ping',
-    checkParams: { fromDevice: 'pc-1', toIp: '172.16.50.10' },
+    checkParams: { fromDevice: 'pc-1', toIp: '172.16.50.10', deviceType: 'pc' },
     completed: false,
     points: 30
   }

@@ -4,13 +4,13 @@ export const interfaceBasePatterns: Record<string, CommandPattern> = {
   // Interface komutları
   'interface': {
     pattern: /^interface\s+(?!r(?:ange)?\s)(f(?:a(?:st(?:ethernet)?)?)?|g(?:i(?:g(?:abit(?:ethernet)?)?)?)?|e(?:thernet)?|se(?:rial)?|po(?:\s*port-channel)?|vlan|loopback|lo)?\s*(.+)$/i,
-    modes: ['config', 'interface', 'config-if-range'],
+    modes: ['config', 'interface', 'config-if-range', 'line', 'vlan', 'router-config', 'dhcp-config', 'config-std-nacl', 'config-ext-nacl', 'config-ipv6-acl', 'config-mst', 'config-route-map', 'config-flow-record', 'config-flow-exporter', 'config-flow-monitor', 'config-applet'],
     minArgs: 1,
     maxArgs: 2
   },
   'interface range': {
     pattern: /^interface\s+r(?:ange)?\s+(?:(?:f(?:a(?:st(?:ethernet)?)?)?|g(?:i(?:g(?:abit(?:ethernet)?)?)?)?|e(?:thernet)?|se(?:rial)?|po(?:\s*port-channel)?|vlan)\s*)?(.+)$/i,
-    modes: ['config'],
+    modes: ['config', 'interface', 'config-if-range', 'line', 'vlan', 'router-config', 'dhcp-config', 'config-std-nacl', 'config-ext-nacl', 'config-ipv6-acl', 'config-mst', 'config-route-map', 'config-flow-record', 'config-flow-exporter', 'config-flow-monitor', 'config-applet'],
     minArgs: 1,
     maxArgs: 2
   },

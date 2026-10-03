@@ -13,14 +13,14 @@ export function getPvstUpdate(
 ): PvstUpdateResult {
   const sourceDeviceId = ctx.sourceDeviceId;
   if (!sourceDeviceId) {
-    return { error: { success: false, error: '% Internal error: source device not available' } };
+    return { allUpdatedStates: new Map(), myUpdatedState: updatedCurrentState };
   }
 
   const workingDeviceStates = new Map(ctx.deviceStates);
   workingDeviceStates.set(sourceDeviceId, updatedCurrentState);
 
   const allUpdatedStates = recalculateStp(workingDeviceStates, ctx.connections || []);
-  return { allUpdatedStates, myUpdatedState: allUpdatedStates.get(sourceDeviceId) };
+  return { allUpdatedStates, myUpdatedState: allUpdatedStates.get(sourceDeviceId) || updatedCurrentState };
 }
 
 /**

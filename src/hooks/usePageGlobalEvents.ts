@@ -1,4 +1,4 @@
-﻿import { useEffect } from 'react';
+import { useEffect } from 'react';
 import type { SwitchState } from '@/lib/network/types';
 import type { CanvasDevice, CanvasConnection, DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import type { TabType } from '@/app/page.types';
@@ -123,78 +123,118 @@ export function usePageGlobalEvents({
 
       let cleanCommand = '';
 
-      // Check if rawStr contains a quoted command like "ipconfig" or "show ip int brief"
-      const quoteMatch = rawStr.match(/["'“”]([^"'“”]+)["'“”]/);
+      // Extract command line: ignore prompt/mode lines (e.g. "S-Lab(config)#", "S-Lab>", "R-Lab#", "PC-1>", "C:\>")
+      const rawLines = rawStr.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+      const isPromptOrModeLine = (line: string): boolean => {
+        const trimmed = line.trim();
+        if (!trimmed) return false;
+        if (/^([a-zA-Z0-9_.-]+(\([^)]+\))?|[A-Z]:\\[^>]*)[>#]\s*$/i.test(trimmed)) return true;
+        if (/^\(?(örnek|ornek|example|mod|mode|prompt)\s*:\s*[a-zA-Z0-9_.-]+(\([^)]+\))?[>#]\)?\s*$/i.test(trimmed)) return true;
+        return false;
+      };
+      const contentLines = rawLines.filter(l => !isPromptOrModeLine(l));
+      const targetLine = contentLines.length > 0 ? contentLines[0] : (rawLines[0] || '');
+
+      // Check if targetLine contains a quoted command like "ipconfig" or "show ip int brief"
+      const quoteMatch = targetLine.match(/["'“”`]([^"'“”`]+)["'“”`]/);
       if (quoteMatch && quoteMatch[1].trim()) {
         cleanCommand = quoteMatch[1].trim();
       } else {
-        cleanCommand = rawStr;
+        cleanCommand = targetLine;
       }
 
       // Clean device prefixes (e.g. "switch-1: ...") and prompt prefixes (e.g. "Switch# ", "Switch(config)# ", "Switch> ")
       cleanCommand = cleanCommand
-        .replace(/[\^$()]/g, '')
         .replace(/^[^:]{1,40}:\s*/i, '')
-        .replace(/^[a-zA-Z0-9_-]+(\([^)]+\))?[>#]\s*/, '')
-        .replace(/^(type|yazın|yazin)\s+/i, '')
-        .replace(/\s+(yazın|yazin)\.?$/i, '')
-        .replace(/\s+(and press enter|press enter)\.?$/i, '')
-        .replace(/^["'“”]+|["'“”.,!?]+$/g, '')
+        .replace(/^PC\d*\s+CMD\s*>\s*/i, '')
+        .replace(/^[a-zA-Z0-9_.-]+(\([^)]+\))?[>#]\s*/, '')
+        .replace(/^(type|yazın|yazin|run|enter)\s+/i, '')
+        .replace(/\s+(yazın|yazin|yazınız|yaziniz)\.?$/i, '')
+        .replace(/\s+(and press enter|press enter|yazıp enter'a basın|yazip enter'a basin|yazıp enter tuşuna basın)\.?$/i, '')
+        .replace(/^["'“”`]+|["'“”`.,!?]+$/g, '')
         .trim();
 
       if (!cleanCommand && commandPattern) {
         cleanCommand = String(commandPattern).split('|')[0].replace(/[\^$()]/g, '').trim();
       }
 
-      if (!deviceId) {
-        if (
-          deviceType === 'pc' ||
-          (stepId && (String(stepId).includes('pc') || String(stepId).startsWith('run-'))) ||
-          cleanCommand === 'help' ||
-          cleanCommand.includes('ipconfig') ||
-          cleanCommand.includes('ping') ||
-          cleanCommand.includes('ftp') ||
-          cleanCommand.includes('tracert') ||
-          cleanCommand.includes('cls') ||
-          cleanCommand.includes('dir') ||
-          cleanCommand.includes('nslookup')
-        ) {
-          deviceId = topologyDevices.find(d => d.type === 'pc')?.id;
-        } else if (deviceType === 'switch') {
-          deviceId = topologyDevices.find(d => d.type === 'switchL2' || d.type === 'switchL3')?.id;
+      // Resolve device object from topology
+      let targetDevice = null;
+
+      // 1. If explicit deviceId was passed or matched:
+      if (deviceId) {
+        targetDevice = topologyDevices.find(
+          d => d.id === deviceId || d.id.toLowerCase() === deviceId.toLowerCase() || d.name.toLowerCase() === deviceId.toLowerCase()
+        );
+      }
+
+      // 2. If deviceType was explicitly provided ('switch', 'router', 'pc'):
+      if (!targetDevice && deviceType) {
+        if (deviceType === 'switch') {
+          targetDevice = topologyDevices.find(d => d.type === 'switchL2' || d.type === 'switchL3');
         } else if (deviceType === 'router') {
-          deviceId = topologyDevices.find(d => d.type === 'router')?.id;
-        } else {
-          deviceId = topologyDevices.find(d => d.type === 'switchL2' || d.type === 'switchL3' || d.type === 'router')?.id;
+          targetDevice = topologyDevices.find(d => d.type === 'router');
+        } else if (deviceType === 'pc') {
+          targetDevice = topologyDevices.find(d => d.type === 'pc');
         }
       }
 
-      if (deviceId) {
-        const device = topologyDevices.find(d => d.id === deviceId);
-        if (device) {
-          // "Show Me" must focus the lesson target exclusively. Remove all
-          // previously open floating device windows before presenting it.
-          useMultiWindowStore.getState().closeAllDeviceWindows();
-          if (device.type === 'pc') {
-            setShowPCDeviceId(deviceId);
-            setPcPanelInitialTab('desktop');
-            if (window.innerWidth >= 641 && window.innerWidth <= 1024) {
-              setShowPCPanel(true);
-            } else {
-              useMultiWindowStore.getState().openDeviceWindow(deviceId, 'pc', 'desktop');
-            }
-            setTimeout(() => {
-              window.dispatchEvent(new CustomEvent('pc-auto-type', { detail: { deviceId, command: cleanCommand } }));
-            }, 600);
+      // 3. Fallback heuristics if neither resolved a device:
+      if (!targetDevice) {
+        if (
+          (stepId && (String(stepId).includes('pc') || String(stepId).startsWith('run-') || String(stepId).startsWith('pc-'))) ||
+          cleanCommand.startsWith('ipconfig') ||
+          cleanCommand.startsWith('tracert') ||
+          cleanCommand.startsWith('cls') ||
+          cleanCommand.startsWith('nslookup')
+        ) {
+          targetDevice = topologyDevices.find(d => d.type === 'pc');
+        } else if (
+          stepId && (String(stepId).includes('router') || String(stepId).startsWith('r-') || String(stepId).includes('route'))
+        ) {
+          targetDevice = topologyDevices.find(d => d.type === 'router');
+        } else if (
+          stepId && (String(stepId).includes('switch') || String(stepId).startsWith('sw-') || String(stepId).includes('vlan') || String(stepId).includes('stp'))
+        ) {
+          targetDevice = topologyDevices.find(d => d.type === 'switchL2' || d.type === 'switchL3');
+        } else {
+          const hintStr = rawStr.toLowerCase();
+          if (hintStr.includes('s-lab') || hintStr.includes('sw-') || hintStr.includes('switch')) {
+            targetDevice = topologyDevices.find(d => d.type === 'switchL2' || d.type === 'switchL3');
+          } else if (hintStr.includes('r-lab') || hintStr.includes('router')) {
+            targetDevice = topologyDevices.find(d => d.type === 'router');
+          } else if (hintStr.includes('pc-') || hintStr.includes('pc')) {
+            targetDevice = topologyDevices.find(d => d.type === 'pc');
           } else {
-            setActiveDeviceId(deviceId);
-            setActiveDeviceType(device.type);
-            setUnifiedDeviceActiveTab('console');
-            setShowUnifiedDeviceModal(true);
-            setTimeout(() => {
-              window.dispatchEvent(new CustomEvent('terminal-auto-type', { detail: { deviceId, command: cleanCommand } }));
-            }, 600);
+            targetDevice = topologyDevices.find(d => d.type === 'switchL2' || d.type === 'switchL3' || d.type === 'router') || topologyDevices.find(d => d.type === 'pc');
           }
+        }
+      }
+
+      if (targetDevice && cleanCommand) {
+        const resolvedId = targetDevice.id;
+        // "Show Me" must focus the lesson target exclusively. Remove all
+        // previously open floating device windows before presenting it.
+        useMultiWindowStore.getState().closeAllDeviceWindows();
+        if (targetDevice.type === 'pc') {
+          setShowPCDeviceId(resolvedId);
+          setPcPanelInitialTab('desktop');
+          if (window.innerWidth >= 641 && window.innerWidth <= 1024) {
+            setShowPCPanel(true);
+          } else {
+            useMultiWindowStore.getState().openDeviceWindow(resolvedId, 'pc', 'desktop');
+          }
+          setTimeout(() => {
+            window.dispatchEvent(new CustomEvent('pc-auto-type', { detail: { deviceId: resolvedId, command: cleanCommand } }));
+          }, 600);
+        } else {
+          setActiveDeviceId(resolvedId);
+          setActiveDeviceType(targetDevice.type);
+          setUnifiedDeviceActiveTab('console');
+          setShowUnifiedDeviceModal(true);
+          setTimeout(() => {
+            window.dispatchEvent(new CustomEvent('terminal-auto-type', { detail: { deviceId: resolvedId, command: cleanCommand } }));
+          }, 600);
         }
       }
     };

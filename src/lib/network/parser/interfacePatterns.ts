@@ -6,8 +6,8 @@ import { interfaceBasePatterns } from './interfaceBasePatterns';
 import { interfaceServicesPatterns } from './interfaceServicesPatterns';
 
 export const interfacePatterns: Record<string, CommandPattern> = {
-  ...interfaceBasePatterns,
-  ...interfaceServicesPatterns,
   ...interfaceFirewallPatterns,
+  ...interfaceServicesPatterns,
   ...interfacePortPatterns,
+  ...interfaceBasePatterns,
 };

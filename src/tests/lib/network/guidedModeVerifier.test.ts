@@ -97,6 +97,16 @@ describe('guidedModeVerifier', () => {
       expect(checkStepCompletion(step, { lastCommand: 'enable', deviceAccessedId: 'switch-1' })).toBe(true);
       expect(checkStepCompletion(step, { lastCommand: 'enable', deviceAccessedId: 'switch-2' })).toBe(false);
     });
+
+    it('enforces deviceType on command checks', () => {
+      const step = createMockStep({
+        id: 's5-type',
+        checkType: 'command',
+        checkParams: { commandPattern: 'help', deviceType: 'switch' },
+      });
+      expect(checkStepCompletion(step, { lastCommand: 'help', deviceAccessed: 'switch' })).toBe(true);
+      expect(checkStepCompletion(step, { lastCommand: 'help', deviceAccessed: 'pc' })).toBe(false);
+    });
   });
 
   describe('connection check', () => {

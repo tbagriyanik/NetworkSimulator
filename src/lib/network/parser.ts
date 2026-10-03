@@ -563,13 +563,25 @@ export function getInvalidCommandError(
       errorMsg += `\n${isTr ? 'Örnek' : 'Example'}: ${smartHint.example}`;
       errorMsg += `\n${smartHint.explanation[language]}`;
     } else if (firstWord === 'interface' || firstWord === 'int') {
-      errorMsg += isTr
-        ? `\nİpucu: "interface" komutundan sonra arayüz adı bekleniyor (Örn: "fa0/1").`
-        : `\nHint: "interface" command expects interface name (e.g. "fa0/1").`;
+      if (currentMode === 'user' || currentMode === 'privileged') {
+        errorMsg += isTr
+          ? `\nİpucu: "interface" komutu Global Yapılandırma Modunda çalışır. Önce "configure terminal" (conf t) yazın.`
+          : `\nHint: "interface" command requires Global Configuration Mode. Type "configure terminal" (conf t) first.`;
+      } else {
+        errorMsg += isTr
+          ? `\nİpucu: "interface" komutundan sonra arayüz adı bekleniyor (Örn: "fa0/1").`
+          : `\nHint: "interface" command expects interface name (e.g. "fa0/1").`;
+      }
     } else if (firstWord === 'vlan') {
-      errorMsg += isTr
-        ? `\nİpucu: "vlan" komutundan sonra numara bekleniyor (1-4094).`
-        : `\nHint: "vlan" command expects a number (1-4094).`;
+      if (currentMode === 'user' || currentMode === 'privileged') {
+        errorMsg += isTr
+          ? `\nİpucu: "vlan <id>" komutu Global Yapılandırma Modunda çalışır. Önce "configure terminal" (conf t) komutunu yazıp ardından "vlan <id>" girin.`
+          : `\nHint: "vlan <id>" command requires Global Configuration Mode. Type "configure terminal" (conf t) first, then enter "vlan <id>".`;
+      } else {
+        errorMsg += isTr
+          ? `\nİpucu: "vlan" komutundan sonra numara bekleniyor (1-4094). Örn: "vlan 10".`
+          : `\nHint: "vlan" command expects a number (1-4094). E.g. "vlan 10".`;
+      }
     } else if (firstWord === 'ip' && cmdTokens[1] === 'address') {
       errorMsg += isTr
         ? `\nİpucu: "ip address" komutu IP ve alt ağ maskesi bekler.`

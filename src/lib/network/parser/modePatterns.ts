@@ -90,14 +90,14 @@ export const modePatterns: Record<string, CommandPattern> = {
     maxArgs: 0
   },
   'vlan': {
-    pattern: /^vlan\s+(\d+)(\s+name\s+(.+))?$/i,
-    modes: ['config'],
+    pattern: /^vlan\s+(\d+)(?:\s+name\s+(.+))?\s*$/i,
+    modes: ['config', 'interface', 'config-if-range', 'line', 'vlan', 'router-config', 'dhcp-config', 'config-std-nacl', 'config-ext-nacl', 'config-ipv6-acl', 'config-mst', 'config-route-map', 'config-flow-record', 'config-flow-exporter', 'config-flow-monitor', 'config-applet'],
     minArgs: 1,
     maxArgs: 3
   },
   'no vlan': {
-    pattern: /^no\s+vlan\s+(\d+)$/i,
-    modes: ['config'],
+    pattern: /^no\s+vlan\s+(\d+)\s*$/i,
+    modes: ['config', 'interface', 'config-if-range', 'line', 'vlan', 'router-config', 'dhcp-config', 'config-std-nacl', 'config-ext-nacl', 'config-ipv6-acl', 'config-mst', 'config-route-map', 'config-flow-record', 'config-flow-exporter', 'config-flow-monitor', 'config-applet'],
     minArgs: 1,
     maxArgs: 1
   },
