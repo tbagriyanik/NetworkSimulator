@@ -5,10 +5,7 @@ import { areArraysEqual } from '@/lib/network/equality';
 import {
   VIRTUAL_CANVAS_WIDTH_DESKTOP,
   VIRTUAL_CANVAS_HEIGHT_DESKTOP,
-  DRAG_THRESHOLD,
-  MOMENTUM_THRESHOLD,
-  MOMENTUM_DECAY,
-  MOMENTUM_MIN_SPEED
+  DRAG_THRESHOLD
 } from '@/components/network/NetworkTopology/utils/networkTopology.constants';
 import { isSwitchDeviceType, getDeviceIdsInSelectionBox, mergeSelectionIds } from '@/components/network/NetworkTopology/utils/networkTopology.helpers';
 import { computeDeltaPositions } from './topologyMouseUtils';
@@ -60,7 +57,6 @@ export interface UseTopologyMouseProps {
 
   dragAnimationFrameRef: React.MutableRefObject<number | null>;
   mousePosAnimationFrameRef: React.MutableRefObject<number | null>;
-  momentumAnimationFrameRef: React.MutableRefObject<number | null>;
 
   setMousePos: (pos: { x: number; y: number }) => void;
   setDevices: React.Dispatch<React.SetStateAction<CanvasDevice[]>>;
@@ -132,7 +128,6 @@ export function useTopologyMouse(props: UseTopologyMouseProps) {
     lastDragPositionRef,
     dragAnimationFrameRef,
     mousePosAnimationFrameRef,
-    momentumAnimationFrameRef,
     setMousePos,
     setDevices,
     setIsPanning,
@@ -290,8 +285,16 @@ export function useTopologyMouse(props: UseTopologyMouseProps) {
           cancelAnimationFrame(panAnimationFrameRef.current);
         }
         panAnimationFrameRef.current = requestAnimationFrame(() => {
-          const newPanX = capturedX - panStartRef.current.x;
-          const newPanY = capturedY - panStartRef.current.y;
+          // `panStart` is derived from canvas-local coordinates, so the cursor
+          // must be converted the same way. Subtracting it raw mixed in the
+          // canvas `rect` offset, which snapped the view by that amount on the
+          // first frame and made the canvas drift away from the cursor for the
+          // whole gesture until mouse-up snapped it back.
+          const rect = canvasRectRef.current ?? canvasRef.current?.getBoundingClientRect();
+          const localX = capturedX - (rect?.left ?? 0);
+          const localY = capturedY - (rect?.top ?? 0);
+          const newPanX = localX - panStartRef.current.x;
+          const newPanY = localY - panStartRef.current.y;
           const g = svgContentGroupRef.current;
           if (g) {
             g.setAttribute('transform', `translate(${newPanX} ${newPanY}) scale(${zoomRef.current})`);
@@ -675,10 +678,6 @@ export function useTopologyMouse(props: UseTopologyMouseProps) {
         cancelAnimationFrame(mousePosAnimationFrameRef.current);
         mousePosAnimationFrameRef.current = null;
       }
-      if (momentumAnimationFrameRef.current) {
-        cancelAnimationFrame(momentumAnimationFrameRef.current);
-        momentumAnimationFrameRef.current = null;
-      }
       if (selectionAnimationFrameRef.current) {
         cancelAnimationFrame(selectionAnimationFrameRef.current);
         selectionAnimationFrameRef.current = null;
@@ -756,33 +755,13 @@ export function useTopologyMouse(props: UseTopologyMouseProps) {
         pendingPanRef.current = null;
       }
 
-      if (!isActuallyDraggingRef.current && !document.body.classList.contains('graphics-low')) {
-        const vel = velocityRef.current;
-        const speed = Math.sqrt(vel.x * vel.x + vel.y * vel.y);
-        if (speed > MOMENTUM_THRESHOLD && svgContentGroupRef.current) {
-          const g = svgContentGroupRef.current;
-          let mVelX = vel.x;
-          let mVelY = vel.y;
-          let mPanX = panRef.current.x;
-          let mPanY = panRef.current.y;
-          const animateMomentum = () => {
-            mVelX *= MOMENTUM_DECAY;
-            mVelY *= MOMENTUM_DECAY;
-            mPanX += mVelX;
-            mPanY += mVelY;
-            g.setAttribute('transform', `translate(${mPanX} ${mPanY}) scale(${zoomRef.current})`);
-            panRef.current = { x: mPanX, y: mPanY };
-            const remainingSpeed = Math.sqrt(mVelX * mVelX + mVelY * mVelY);
-            if (remainingSpeed > MOMENTUM_MIN_SPEED) {
-              momentumAnimationFrameRef.current = requestAnimationFrame(animateMomentum);
-            } else {
-              momentumAnimationFrameRef.current = null;
-              setPan({ x: mPanX, y: mPanY });
-            }
-          };
-          momentumAnimationFrameRef.current = requestAnimationFrame(animateMomentum);
-        }
-      }
+      // Momentum is a touch affordance: the finger stops but the content keeps
+      // gliding. A mouse is an absolute device, so the view must stop dead when
+      // the button is released. The velocity below is tracked in px/ms while
+      // `MOMENTUM_THRESHOLD` is expressed in px/frame, so a mouse release would
+      // also have been scaled up by ~60x and flung the canvas far past the
+      // cursor. Mouse panning ends deterministically; touch inertia is handled
+      // in `useTopologyTouch`.
       velocityRef.current = { x: 0, y: 0 };
 
       const finalDragPositions = liveDeviceDragPositionsRef.current;
@@ -849,7 +828,6 @@ export function useTopologyMouse(props: UseTopologyMouseProps) {
       if (dragAnimationFrameRef.current) cancelAnimationFrame(dragAnimationFrameRef.current);
       if (panAnimationFrameRef.current) cancelAnimationFrame(panAnimationFrameRef.current);
       if (mousePosAnimationFrameRef.current) cancelAnimationFrame(mousePosAnimationFrameRef.current);
-      if (momentumAnimationFrameRef.current) cancelAnimationFrame(momentumAnimationFrameRef.current);
       if (selectionAnimationFrameRef.current) cancelAnimationFrame(selectionAnimationFrameRef.current);
     };
   }, []);

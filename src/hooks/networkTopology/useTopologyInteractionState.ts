@@ -34,7 +34,6 @@ export function useTopologyInteractionState() {
   const snapToGridRef = useRef(true);
   const isDrawingConnectionRef = useRef(false);
   const panAnimationFrameRef = useRef<number | null>(null);
-  const momentumAnimationFrameRef = useRef<number | null>(null);
   const velocityRef = useRef({ x: 0, y: 0 });
   const lastMouseMoveTimeRef = useRef<number>(0);
   const lastMouseMovePosRef = useRef({ x: 0, y: 0 });
@@ -102,7 +101,6 @@ export function useTopologyInteractionState() {
     snapToGridRef,
     isDrawingConnectionRef,
     panAnimationFrameRef,
-    momentumAnimationFrameRef,
     velocityRef,
     lastMouseMoveTimeRef,
     lastMouseMovePosRef,

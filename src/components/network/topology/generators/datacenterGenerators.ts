@@ -1,4 +1,4 @@
-﻿import type { CanvasDevice } from '../../NetworkTopology/types/networkTopology.types';
+import type { CanvasDevice } from '../../NetworkTopology/types/networkTopology.types';
 import {
   type Ctx,
   newCtx,
