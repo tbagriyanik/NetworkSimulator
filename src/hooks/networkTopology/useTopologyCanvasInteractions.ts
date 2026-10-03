@@ -270,15 +270,12 @@ export function useTopologyCanvasInteractions(
   });
 
   const tooltipHandlers = useTopologyTooltipHandlers({
-    devices,
     canvasRef,
     deviceMap,
     getLivePort: iot.getLivePort,
     activeCaptureConnectionId,
     setActiveCaptureConnection,
     setContextMenu,
-    zoomRef,
-    panRef,
     isDrawingConnection,
     isPanning,
     isSelecting: stateHandlers.isSelecting,

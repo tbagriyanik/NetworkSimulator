@@ -331,9 +331,13 @@ export function useTopologyTouch({
     if (e.touches.length === 1) {
       const touch = e.touches[0];
       const currentPan = panRef.current;
+      const rect = canvasRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      const localX = touch.clientX - rect.left;
+      const localY = touch.clientY - rect.top;
       setTouchStart({ x: touch.clientX, y: touch.clientY });
       setIsPanning(true);
-      const ps = { x: touch.clientX - currentPan.x, y: touch.clientY - currentPan.y };
+      const ps = { x: localX - currentPan.x, y: localY - currentPan.y };
       setPanStart(ps);
       panStartRef.current = ps;
       isPanningRef.current = true;
@@ -546,7 +550,11 @@ export function useTopologyTouch({
       setIsPanning(true);
       isPanningRef.current = true;
       const currentPan = panRef.current;
-      const ps = { x: touch.clientX - currentPan.x, y: touch.clientY - currentPan.y };
+      const rect = canvasRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      const localX = touch.clientX - rect.left;
+      const localY = touch.clientY - rect.top;
+      const ps = { x: localX - currentPan.x, y: localY - currentPan.y };
       setPanStart(ps);
       panStartRef.current = ps;
       setLastTouchDistance(null);

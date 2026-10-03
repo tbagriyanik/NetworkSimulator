@@ -101,10 +101,11 @@ const ConnectionHandle = memo(function ConnectionHandle({
             <circle
               cx="0"
               cy="0"
-              r="10"
+              r="14"
               fill={isDark ? STUB_BG_DARK : STUB_BG}
               opacity="0.85"
               className="drop-shadow-sm group-hover:fill-error-500/20 transition-colors"
+              pointerEvents="all"
             />
             <Trash2
               className="w-3.5 h-3.5 text-error-500"

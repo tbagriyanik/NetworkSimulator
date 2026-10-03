@@ -185,7 +185,13 @@ export function useTopologyMouse(props: UseTopologyMouseProps) {
       cancelConnectionDrawing();
 
       const currentPan = panRef.current;
-      const ps = { x: e.clientX - currentPan.x, y: e.clientY - currentPan.y };
+      // pan is expressed in canvas-local pixels; client coordinates are
+      // viewport coordinates and must be converted when the canvas is not at
+      // (0, 0). This is especially visible in packaged desktop layouts.
+      const rect = canvasRef.current?.getBoundingClientRect();
+      const localX = e.clientX - (rect?.left ?? 0);
+      const localY = e.clientY - (rect?.top ?? 0);
+      const ps = { x: localX - currentPan.x, y: localY - currentPan.y };
       setPanStart(ps);
       panStartRef.current = ps;
       setIsPanning(true);

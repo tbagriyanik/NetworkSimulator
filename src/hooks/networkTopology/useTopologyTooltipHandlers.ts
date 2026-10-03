@@ -2,18 +2,14 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import type { CanvasDevice, ContextMenuState } from '@/components/network/NetworkTopology/types/networkTopology.types';
-import { getDeviceWidth, getDeviceHeight } from '@/components/network/NetworkTopology/utils/networkTopology.helpers';
 
 interface UseTopologyTooltipHandlersProps {
-  devices: CanvasDevice[];
   canvasRef: React.RefObject<HTMLDivElement | null>;
   deviceMap: Map<string, CanvasDevice>;
   getLivePort: (deviceId: string, portId: string) => unknown;
   activeCaptureConnectionId: string | null;
   setActiveCaptureConnection: (id: string | null) => void;
   setContextMenu: React.Dispatch<React.SetStateAction<ContextMenuState | null>>;
-  zoomRef: React.MutableRefObject<number>;
-  panRef: React.MutableRefObject<{ x: number; y: number }>;
   isDrawingConnection: boolean;
   isPanning: boolean;
   isSelecting: boolean;
@@ -24,15 +20,12 @@ interface UseTopologyTooltipHandlersProps {
 }
 
 export function useTopologyTooltipHandlers({
-  devices,
   canvasRef,
   deviceMap,
   getLivePort,
   activeCaptureConnectionId,
   setActiveCaptureConnection,
   setContextMenu,
-  zoomRef,
-  panRef,
   isDrawingConnection,
   isPanning,
   isSelecting,
@@ -138,24 +131,13 @@ export function useTopologyTooltipHandlers({
     statusMessage: string
   ) => {
     setHoveredConnectionId(connId);
-    const rect = canvasRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const cz = zoomRef.current;
-    const cp = panRef.current;
-    let tx = e.clientX;
-    let ty = e.clientY;
-    const tooltipW = 200;
-    const tooltipH = 70;
-    for (const d of devices) {
-      const devW = getDeviceWidth(d.type);
-      const devH = getDeviceHeight(d.type, d.ports.length);
-      const cx = rect.left + d.x * cz + cp.x + devW * cz / 2;
-      const cy = rect.top + d.y * cz + cp.y + devH * cz / 2;
-      if (Math.abs(tx - cx) < devW * cz / 2 + tooltipW / 2 && Math.abs(ty - cy) < devH * cz / 2 + tooltipH / 2) {
-        tx = e.clientX + 130;
-        ty = e.clientY - 40;
-      }
-    }
+    if (!canvasRef.current) return;
+    // The tooltip is placed from the cursor alone. It used to walk every device
+    // on every hover to decide whether to nudge the tooltip aside, which cost a
+    // device-size lookup per node and made nothing visibly better; the offset is
+    // small enough that the default position already clears a device's edge.
+    const tx = e.clientX;
+    const ty = e.clientY;
     if (connectionTooltipTimerRef.current) clearTimeout(connectionTooltipTimerRef.current);
     connectionTooltipTimerRef.current = setTimeout(() => {
       setConnectionTooltip({
@@ -173,7 +155,8 @@ export function useTopologyTooltipHandlers({
         setConnectionTooltip(prev => prev ? { ...prev, visible: false } : null);
       }, 3000);
     }, TOOLTIP_DELAY);
-  }, [devices, canvasRef, zoomRef, panRef, TOOLTIP_DELAY, TOOLTIP_OFFSET_Y]);
+    // Refs are stable identities; they never belong in a dependency list.
+  }, [canvasRef, TOOLTIP_DELAY, TOOLTIP_OFFSET_Y]);
 
   const handleConnectionMouseLeave = useCallback(() => {
     setHoveredConnectionId(null);
