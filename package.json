@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "next dev -p 3000",
+    "dev": "node --no-warnings=ExperimentalWarning node_modules/next/dist/bin/next dev -p 3000",
     "build": "next build",
     "start": "next start",
     "lint": "oxlint",

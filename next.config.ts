@@ -76,6 +76,9 @@ function getAppVersion(): string {
 
 const FALLBACK_COMMIT_COUNT = 1656;
 
+/** Set for the lifetime of a build/dev run so `next.config.ts` can tell them apart. */
+process.env.NEXT_PHASE ??= process.argv.includes('dev') ? 'phase-development-server' : 'phase-production-build';
+
 async function getCommitCount(): Promise<number> {
   // 1. Try querying API first for true commit count (avoids shallow clone depth truncation)
   try {
@@ -117,13 +120,19 @@ async function getCommitCount(): Promise<number> {
 }
 
 const config = async () => {
-  const commitCount = await getCommitCount();
+  const isDev = process.env.NODE_ENV === 'development' || process.env.NEXT_PHASE === 'phase-development-server';
+
+  // Both of these only feed the About dialog badges, and in development they
+  // cost a GitHub API round-trip plus a walk of the whole `src/` tree on every
+  // config reload. Dev builds just reuse the last known values.
+  const commitCount = isDev ? FALLBACK_COMMIT_COUNT : await getCommitCount();
   const loc = getLinesOfCode("src");
   const version = getAppVersion();
 
   const isExport = process.env.NEXT_EXPORT === 'true';
 
   const nextConfig: NextConfig = {
+    agentRules: false,
     ...(isExport ? { output: "export" as const } : {}),
     images: {
       unoptimized: true,
@@ -152,8 +161,10 @@ const config = async () => {
     //
     // Static exports (`NEXT_EXPORT=true`, used by the desktop builds) serve from
     // disk where response headers come from the webview's own cache, so the
-    // rules are only attached to a server-rendered deployment.
-    ...(!isExport ? {
+    // rules are only attached to a server-rendered deployment. In development
+    // they are skipped too: a custom Cache-Control on `/_next/static` breaks
+    // Next's dev-time asset invalidation (and the dev server warns about it).
+    ...(!isExport && !isDev ? {
       async headers() {
         const immutableAssetHeaders = [
           { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
@@ -202,6 +213,13 @@ const config = async () => {
     // the old override (which merged every node_modules import into a single
     // `vendor` chunk) only applied to a `next build --webpack` run, where it
     // replaced Next's own chunking rather than tuning it.
+
+    // In development any `headers()` entry whose source is under `/_next/static`
+    // makes the dev server print "Custom Cache-Control headers detected" and turn
+    // off its own dev-time asset invalidation. The rules above are therefore only
+    // attached to real deployments; this applies to `next start` too, because the
+    // next.config.ts module itself is also re-evaluated inside that process.
+    ...(isDev ? { async headers() { return []; } } : {}),
 
     env: {
       NEXT_PUBLIC_GIT_COMMIT_COUNT: String(commitCount),

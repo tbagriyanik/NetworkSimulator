@@ -40,7 +40,11 @@ export function middleware(request: NextRequest) {
 
   const response = NextResponse.next();
   const isFontRequest = request.nextUrl.pathname.startsWith('/fonts/');
-  if (isFontRequest) {
+  // The immutable asset cache header is a production concern only. Setting a
+  // custom Cache-Control during development makes Next.js warn about
+  // `/_next/static/:path*` and disables its own dev-time asset invalidation,
+  // which is exactly the behaviour the header exists to avoid.
+  if (isFontRequest && isProd) {
     response.headers.set('Access-Control-Allow-Origin', '*');
     response.headers.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
     response.headers.set('Cache-Control', 'public, max-age=31536000, immutable');

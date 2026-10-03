@@ -63,3 +63,4 @@ dev_server.log
 .freebuff/
 _api_backup/
 
+.vscode/settings.json
