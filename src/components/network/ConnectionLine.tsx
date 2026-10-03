@@ -393,9 +393,6 @@ export const ConnectionLine = memo(function ConnectionLine({
         const srcLabel = { x: srcPos.x + perpX + orientX, y: srcPos.y + perpY + orientY };
         const tgtLabel = { x: tgtPos.x + perpX + orientX, y: tgtPos.y + perpY + orientY };
 
-        const badgeX = midX + perpX;
-        const badgeY = midY + perpY - 26;
-
         return (
           <>
             {/* Background for labels to improve readability */}
@@ -443,73 +440,6 @@ export const ConnectionLine = memo(function ConnectionLine({
             >
               {connection.targetPort}
             </text>
-
-            {/* Midpoint Link Telemetry Tooltip Badge when Hovered - elevated above delete button */}
-            {isHovered && (() => {
-              let statusLabel = '⚡ 1 Gbps | UP';
-              let badgeBorderColor = 'var(--color-emerald-500)';
-
-              if (isErrdisabled) {
-                statusLabel = '⛔ Errdisable';
-                badgeBorderColor = 'var(--color-rose-500)';
-              } else if (isShutdown) {
-                statusLabel = '⏹ Admin Down';
-                badgeBorderColor = 'var(--color-slate-500)';
-              } else if (isPoweredOff) {
-                statusLabel = '🔌 Device Off';
-                badgeBorderColor = 'var(--color-amber-500)';
-              } else if (speedMismatch) {
-                statusLabel = `⚠️ Speed Mismatch`;
-                badgeBorderColor = 'var(--color-amber-500)';
-              } else if (duplexMismatch) {
-                statusLabel = `⚠️ Duplex Mismatch`;
-                badgeBorderColor = 'var(--color-amber-500)';
-              } else if (isSTPBlocking) {
-                statusLabel = '🟠 STP Blocking';
-                badgeBorderColor = 'var(--color-amber-500)';
-              } else if (!isCompatible) {
-                statusLabel = '❌ Incompatible Cable';
-                badgeBorderColor = 'var(--color-rose-500)';
-              } else if (isEffectivelyActive) {
-                const speedVal = sourcePort?.speed || '1000';
-                const speedStr = speedVal === '1000' || speedVal === 'auto' ? '1 Gbps' : `${speedVal} Mbps`;
-                const duplexStr = sourcePort?.duplex ? sourcePort.duplex.toUpperCase() : 'FULL';
-                statusLabel = `⚡ ${speedStr} | UP (${duplexStr})`;
-                badgeBorderColor = 'var(--color-emerald-500)';
-              } else {
-                statusLabel = '⛔ Link DOWN';
-                badgeBorderColor = 'var(--color-rose-500)';
-              }
-
-              const badgeWidth = Math.max(118, statusLabel.length * 7.2);
-              return (
-                <g className="pointer-events-none select-none">
-                  <rect
-                    x={badgeX - badgeWidth / 2}
-                    y={badgeY - 11}
-                    width={badgeWidth}
-                    height="22"
-                    rx="6"
-                    fill={isDark ? 'var(--color-slate-900)' : 'var(--color-common-white)'}
-                    stroke={badgeBorderColor}
-                    strokeWidth="1.5"
-                    className="shadow-md"
-                    opacity={0.98}
-                  />
-                  <text
-                    x={badgeX}
-                    y={badgeY + 4}
-                    fill={isDark ? 'var(--color-sky-400)' : 'var(--color-sky-600)'}
-                    fontSize="9.5"
-                    textAnchor="middle"
-                    fontFamily="monospace"
-                    fontWeight="bold"
-                  >
-                    {statusLabel}
-                  </text>
-                </g>
-              );
-            })()}
           </>
         );
       })()}

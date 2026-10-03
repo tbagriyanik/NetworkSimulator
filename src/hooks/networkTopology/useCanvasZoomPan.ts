@@ -102,17 +102,33 @@ export function useCanvasZoomPan({
     };
   }, []);
 
+  /**
+   * The single zoom implementation for every wheel surface (canvas + zoom
+   * toolbar).
+   *
+   * `e.preventDefault()` is intentionally absent. React attaches `wheel` at the
+   * root as a *passive* listener, so calling it here does nothing except make
+   * Chromium log "Unable to preventDefault inside passive event listener" on
+   * every tick. Stopping page scroll and native pinch-zoom is the job of the
+   * non-passive native listener in `useTopologyWindowEvents`.
+   */
   const handleZoomWheel = useCallback((e: React.WheelEvent) => {
-    e.preventDefault();
     const currentZoom = zoomRef.current;
     const currentPan = panRef.current;
 
-    // Normalize wheel delta across browsers and hardware (deltaMode 0: pixels, 1: lines, 2: pages)
+    // Normalize the wheel delta so one physical notch zooms by the same amount
+    // on every engine. deltaMode 0 is pixels, 1 is lines (Linux wheel input
+    // frequently reports this), 2 is pages. Without this a single notch is
+    // worth ~48px on Linux, ~100px on Windows and a couple of pixels per event
+    // on a macOS trackpad, which made the same gesture zoom wildly differently
+    // per platform.
     let delta = e.deltaY;
     if (e.deltaMode === 1) delta *= 16;
     else if (e.deltaMode === 2) delta *= 800;
 
-    // Limit maximum step jump per wheel event tick for extra smoothness
+    // Limit maximum step jump per wheel event tick for extra smoothness. This
+    // also bounds a macOS trackpad flick, which can arrive as a single event
+    // with a delta in the hundreds.
     delta = Math.max(-100, Math.min(100, delta));
 
     // Gentle exponential scaling factor: a smaller base produces finer, more

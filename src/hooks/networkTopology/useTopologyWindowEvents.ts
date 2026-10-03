@@ -62,68 +62,70 @@ export function useTopologyWindowEvents({
   const lastStateRef = useRef<string>('');
   const topologyChangeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Wheel and middle-click auto-scroll prevention on canvas
+  // Wheel and middle-click auto-scroll prevention on canvas.
+  //
+  // This listener deliberately does NOT zoom. Zoom has a single owner,
+  // `handleZoomWheel` in useCanvasZoomPan, which is wired through React's
+  // `onWheel` on this same element. Two zoom implementations used to be
+  // attached here at once — this one anchoring on the viewport centre via
+  // React state, the React one anchoring on the cursor via a direct SVG
+  // transform write — and which of the two landed last depended on render
+  // scheduling, so the same gesture produced a different zoom and pan
+  // depending on the engine.
+  //
+  // It stays native and non-passive for one reason only: React attaches
+  // `wheel` at the root as a *passive* listener, so `preventDefault()` in the
+  // React handler is a no-op. Without this listener the page would scroll and
+  // native pinch-zoom would run on top of the canvas zoom.
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const handleWheel = (e: WheelEvent) => {
+    const shouldLetTargetScroll = (e: WheelEvent): boolean => {
       const path = (typeof e.composedPath === 'function' ? e.composedPath() : []) as EventTarget[];
       for (const entry of path) {
         if (!(entry instanceof HTMLElement)) continue;
         const tag = entry.tagName;
         const isEditable = tag === 'TEXTAREA' || tag === 'INPUT' || entry.isContentEditable;
         const isNoteScrollHost = entry.hasAttribute('data-note-scroll') || !!entry.closest?.('[data-note-scroll]');
-        if (isEditable || isNoteScrollHost) return;
+        if (isEditable || isNoteScrollHost) return true;
       }
 
       const target = e.target as HTMLElement | null;
       if (target) {
         const isEditable = target.tagName === 'TEXTAREA' || target.tagName === 'INPUT' || target.isContentEditable;
         const noteScrollHost = target.closest('[data-note-scroll]');
-        if (isEditable || noteScrollHost) return;
+        if (isEditable || noteScrollHost) return true;
       }
 
-      e.preventDefault();
-
-      const rect = canvas.getBoundingClientRect();
-      const viewportCenterX = rect.width / 2;
-      const viewportCenterY = rect.height / 2;
-
-      const zoomSensitivity = 0.0015;
-      const delta = -e.deltaY;
-
-      setZoom((prevZoom) => {
-        let newZoom = prevZoom * Math.exp(delta * zoomSensitivity);
-        newZoom = Math.max(MIN_ZOOM, Math.min(newZoom, MAX_ZOOM));
-
-        if (newZoom !== prevZoom) {
-          setPan((prevPan) => {
-            const zoomFactor = newZoom / prevZoom;
-            return {
-              x: viewportCenterX - (viewportCenterX - prevPan.x) * zoomFactor,
-              y: viewportCenterY - (viewportCenterY - prevPan.y) * zoomFactor,
-            };
-          });
-        }
-
-        return newZoom;
-      });
+      return false;
     };
 
-    const handleMouseDown = (e: MouseEvent) => {
+    const handleWheel = (e: WheelEvent) => {
+      if (shouldLetTargetScroll(e)) return;
+      e.preventDefault();
+    };
+
+    // Only `button === 1` (the DOM's middle button) is suppressed, and only to
+    // kill the browser's middle-drag autoscroll. Button 2 is left alone on
+    // purpose: under X11 a right-click is commonly bound to physical button 2,
+    // so matching on `button === 2` would swallow real context-menu clicks on
+    // Linux while doing nothing on macOS/Windows.
+    const suppressMiddleClick = (e: MouseEvent) => {
       if (e.button === 1) {
         e.preventDefault();
       }
     };
 
     canvas.addEventListener('wheel', handleWheel, { passive: false });
-    canvas.addEventListener('mousedown', handleMouseDown, { passive: false });
+    canvas.addEventListener('mousedown', suppressMiddleClick, { passive: false });
+    canvas.addEventListener('auxclick', suppressMiddleClick, { passive: false });
     return () => {
       canvas.removeEventListener('wheel', handleWheel);
-      canvas.removeEventListener('mousedown', handleMouseDown);
+      canvas.removeEventListener('mousedown', suppressMiddleClick);
+      canvas.removeEventListener('auxclick', suppressMiddleClick);
     };
-  }, [canvasRef, setPan, setZoom]);
+  }, [canvasRef]);
 
   // Window shortcut and reset custom event listeners
   useEffect(() => {

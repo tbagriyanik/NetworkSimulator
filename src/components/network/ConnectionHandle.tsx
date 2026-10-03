@@ -3,7 +3,7 @@ import { CanvasConnection, CanvasDevice } from './NetworkTopology/types/networkT
 import { isCableCompatible, CableInfo } from '@/lib/network/types';
 import { Trash2 } from 'lucide-react';
 
-const STUB_BG = 'var(--color-secondary-50)';
+const STUB_BG = 'var(--color-secondary-900)';
 const STUB_BG_DARK = 'var(--color-secondary-950)';
 
 interface ConnectionHandleProps {
@@ -103,12 +103,11 @@ const ConnectionHandle = memo(function ConnectionHandle({
               cy="0"
               r="14"
               fill={isDark ? STUB_BG_DARK : STUB_BG}
-              opacity="0.85"
-              className="drop-shadow-sm group-hover:fill-error-500/20 transition-colors"
+              className="opacity-30 group-hover:opacity-100 transition-all duration-200 drop-shadow-sm"
               pointerEvents="all"
             />
             <Trash2
-              className="w-3.5 h-3.5 text-error-500"
+              className="w-3.5 h-3.5 text-error-500 group-hover:text-error-400 transition-colors"
               width={14}
               height={14}
               style={{ transform: 'translate(-7px, -7px)' }}

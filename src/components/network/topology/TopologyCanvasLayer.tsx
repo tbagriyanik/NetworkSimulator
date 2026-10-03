@@ -299,7 +299,7 @@ export function TopologyCanvasLayer({
             }
 
             // The status message is only read on hover, so it stays lazy.
-            const statusMessage = () => getConnectionStatusMessage(conn, deviceMap, language);
+            const statusMessage = () => getConnectionStatusMessage(conn, deviceMap, language, deviceStates);
 
             handlers.set(connId, {
                 signature,
@@ -312,7 +312,7 @@ export function TopologyCanvasLayer({
 
         previousHandlersRef.current = handlers;
         return handlers;
-    }, [visibleConnections, deviceMap, language, handleConnectionMouseEnter, handleConnectionClick]);
+    }, [visibleConnections, deviceMap, deviceStates, language, handleConnectionMouseEnter, handleConnectionClick]);
 
     return (
         <div

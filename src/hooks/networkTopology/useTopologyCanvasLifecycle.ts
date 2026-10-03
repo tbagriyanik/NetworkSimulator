@@ -51,9 +51,25 @@ export function useTopologyCanvasLifecycle({
     const handleUpdate = () => updateCanvasRect();
     window.addEventListener('resize', handleUpdate, { passive: true });
     window.addEventListener('scroll', handleUpdate, { passive: true, capture: true });
+
+    // A window resize or a page scroll is not the only thing that moves the
+    // canvas. Opening/closing a side panel, the minimap, a device window or a
+    // modal all shift it without a `resize`, and moving a window between
+    // displays changes `devicePixelRatio`. `canvasRectRef` is read on every pan
+    // frame, by the in-progress cable endpoint and by hover hit-testing, so a
+    // stale rect offsets all three while the device drag — which re-measures —
+    // stays correct. A ResizeObserver catches layout shifts the window events
+    // never see.
+    let observer: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== 'undefined' && canvasRef.current) {
+      observer = new ResizeObserver(() => updateCanvasRect());
+      observer.observe(canvasRef.current);
+    }
+
     return () => {
       window.removeEventListener('resize', handleUpdate);
       window.removeEventListener('scroll', handleUpdate, { capture: true } as EventListenerOptions);
+      observer?.disconnect();
     };
   }, [updateCanvasRect]);
 

@@ -164,11 +164,12 @@ export function TroubleshootingPanel({
       ref={panelRef}
       onPointerDownCapture={() => bringElementToFront(panelRef.current)}
       className={cn(
-        "absolute right-4 top-20 z-[70] backdrop-blur-2xl transition-all duration-300 flex flex-col overflow-hidden rounded-xl",
-        "bg-white/90 border-secondary-200 shadow-xl text-secondary-900",
-        "dark:bg-secondary-950/30 dark:border-white/10 dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.5)] dark:text-white",
-        isMinimized ? "w-72 h-14" : "w-80 max-h-[80vh]",
-        isDragging ? "transition-none" : "transition-transform"
+        "fixed right-4 top-20 z-[70] flex flex-col overflow-hidden rounded-xl shadow-2xl border liquid-glass-light",
+        allResolved
+          ? "border-success-500/50 dark:border-success-500/30"
+          : "border-warning-500/50 dark:border-warning-500/30",
+        isMinimized ? "w-72 h-14" : "w-80 max-h-[calc(100vh-100px)]",
+        isDragging ? "transition-none" : "transition-transform duration-300"
       )}
       style={{ 
         transform: `translate3d(${position.x}px, ${position.y}px, 0)`,
@@ -181,8 +182,8 @@ export function TroubleshootingPanel({
           "flex items-center justify-between p-3 select-none shrink-0 border-b",
           "cursor-grab active:cursor-grabbing",
           allResolved
-            ? "bg-success-50/80 border-success-200 dark:bg-success-950/40 dark:border-success-900/50"
-            : "bg-warning-50/80 border-warning-200 dark:bg-warning-950/40 dark:border-warning-900/50"
+            ? "bg-success-500/10 border-success-500/20"
+            : "bg-warning-500/10 border-warning-500/20"
         )}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
@@ -256,8 +257,8 @@ export function TroubleshootingPanel({
                         className={cn(
                           "p-3 rounded-lg border transition-all duration-300",
                           isResolved 
-                            ? "bg-success-50/50 border-success-200 text-success-700 dark:bg-success-950/20 dark:border-success-900/50 dark:text-success-400"
-                            : "bg-white border-secondary-100 text-secondary-700 dark:bg-secondary-900/50 dark:border-secondary-800 dark:text-secondary-300"
+                            ? "bg-success-500/10 border-success-500/30 text-success-700 dark:text-success-400"
+                            : "bg-secondary-50/50 border-secondary-200/60 text-secondary-800 dark:bg-secondary-900/40 dark:border-secondary-800/60 dark:text-secondary-300"
                         )}
                       >
                         <div className="flex items-start gap-3">
@@ -305,8 +306,8 @@ export function TroubleshootingPanel({
                         className={cn(
                           "p-3 rounded-lg border transition-all duration-300",
                           isResolved 
-                            ? "bg-primary-50/50 border-primary-200 text-primary-700 dark:bg-primary-950/20 dark:border-primary-900/50 dark:text-primary-400"
-                            : "bg-white border-secondary-100 text-secondary-700 dark:bg-secondary-900/50 dark:border-secondary-800 dark:text-secondary-300"
+                            ? "bg-primary-500/10 border-primary-500/30 text-primary-700 dark:text-primary-400"
+                            : "bg-secondary-50/50 border-secondary-200/60 text-secondary-800 dark:bg-secondary-900/40 dark:border-secondary-800/60 dark:text-secondary-300"
                         )}
                       >
                         <div className="flex items-start gap-3">

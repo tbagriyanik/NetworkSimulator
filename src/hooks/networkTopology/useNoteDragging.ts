@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useEffect } from 'react';
 import { CanvasNote } from '@/components/network/NetworkTopology/types/networkTopology.types';
@@ -35,7 +35,7 @@ export function useNoteDragging({
   setNoteResizeDirection,
 }: UseNoteDraggingProps) {
   useEffect(() => {
-    let animationFrameId: number;
+    let animationFrameId = 0;
 
     const handleMouseMove = (e: globalThis.MouseEvent) => {
       if (!canvasRef.current) return;
@@ -43,13 +43,17 @@ export function useNoteDragging({
       if (draggedNoteIdRef.current && noteDragStartRef.current) {
         if (animationFrameId) cancelAnimationFrame(animationFrameId);
 
-        const dragStart = noteDragStartRef.current;
         const draggedNoteId = draggedNoteIdRef.current;
         animationFrameId = requestAnimationFrame(() => {
+          const start = noteDragStartRef.current;
+          if (!start || draggedNoteIdRef.current !== draggedNoteId) {
+            animationFrameId = 0;
+            return;
+          }
           const currentZoom = zoomRef.current;
 
-          const deltaX = (e.clientX - dragStart.x) / currentZoom;
-          const deltaY = (e.clientY - dragStart.y) / currentZoom;
+          const deltaX = (e.clientX - start.x) / currentZoom;
+          const deltaY = (e.clientY - start.y) / currentZoom;
 
           setNotes((prev) =>
             prev.map((n) =>
@@ -59,7 +63,15 @@ export function useNoteDragging({
             )
           );
 
+          // Advance the ref here rather than routing it through React state.
+          // The ref was previously only synced from `noteDragStart` by an effect
+          // in useTopologyCanvasInteractions, so the delta above was measured
+          // from a stale anchor and the note trailed the cursor by a full frame
+          // — ~16ms at 60Hz but only ~8ms on a 120Hz ProMotion display, which is
+          // why note dragging felt different on macOS than on Windows.
+          noteDragStartRef.current = { x: e.clientX, y: e.clientY };
           setNoteDragStart({ x: e.clientX, y: e.clientY });
+          animationFrameId = 0;
         });
       } else if (resizingNoteIdRef.current && noteResizeStartRef.current) {
         if (animationFrameId) cancelAnimationFrame(animationFrameId);
@@ -100,13 +112,17 @@ export function useNoteDragging({
       if (draggedNoteIdRef.current && noteDragStartRef.current) {
         if (animationFrameId) cancelAnimationFrame(animationFrameId);
 
-        const dragStart = noteDragStartRef.current;
         const draggedNoteId = draggedNoteIdRef.current;
         animationFrameId = requestAnimationFrame(() => {
+          const start = noteDragStartRef.current;
+          if (!start || draggedNoteIdRef.current !== draggedNoteId) {
+            animationFrameId = 0;
+            return;
+          }
           const currentZoom = zoomRef.current;
 
-          const deltaX = (touch.clientX - dragStart.x) / currentZoom;
-          const deltaY = (touch.clientY - dragStart.y) / currentZoom;
+          const deltaX = (touch.clientX - start.x) / currentZoom;
+          const deltaY = (touch.clientY - start.y) / currentZoom;
 
           setNotes((prev) =>
             prev.map((n) =>
@@ -116,7 +132,11 @@ export function useNoteDragging({
             )
           );
 
+          // See the mouse branch: the ref is advanced synchronously so the
+          // delta is never measured from a stale anchor.
+          noteDragStartRef.current = { x: touch.clientX, y: touch.clientY };
           setNoteDragStart({ x: touch.clientX, y: touch.clientY });
+          animationFrameId = 0;
         });
       } else if (resizingNoteIdRef.current && noteResizeStartRef.current) {
         if (animationFrameId) cancelAnimationFrame(animationFrameId);

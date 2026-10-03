@@ -1,6 +1,6 @@
 import { DeviceType, CanvasPort, CanvasDevice, CanvasConnection } from '../types/networkTopology.types';
 import { PORT_SPACING, PORT_START_X, PORT_START_Y, PC_PORT_SPACING } from './networkTopology.constants';
-import { isCableCompatible, CABLE_COMPATIBILITY } from '@/lib/network/types';
+import { isCableCompatible, CABLE_COMPATIBILITY, SwitchState } from '@/lib/network/types';
 import { isModulePort } from '@/lib/network/portUtils';
 
 // Device dimension constants
@@ -37,7 +37,8 @@ export const getDeviceHeight = (deviceType: DeviceType | string, portCount: numb
 export function getConnectionStatusMessage(
   conn: CanvasConnection,
   devices: readonly CanvasDevice[] | ReadonlyMap<string, CanvasDevice>,
-  language: 'tr' | 'en'
+  language: 'tr' | 'en',
+  deviceStates?: Map<string, SwitchState>
 ): string {
   // Accepting a Map matters: the canvas layer already keeps one, so callers do
   // not have to rebuild a lookup for every cable they want to describe.
@@ -57,7 +58,7 @@ export function getConnectionStatusMessage(
   const isCableOk = isCableCompatible(cableInfo);
 
   if (!isCableOk) {
-    if (conn.cableType === 'wireless') return language === 'tr' ? 'Bağlantı sorunsuz' : 'Connection OK';
+    if (conn.cableType === 'wireless') return language === 'tr' ? '⚡ Kablosuz Bağlantı' : '⚡ Wireless Connection';
     const normalize = (t: string) =>
       t === 'switchL2' || t === 'switchL3' || t === 'hub'
         ? 'switch'
@@ -65,20 +66,47 @@ export function getConnectionStatusMessage(
           ? 'pc'
           : t;
     const key = `${normalize(sourceDevice.type)}-${normalize(targetDevice.type)}`;
-    if (!CABLE_COMPATIBILITY[key]) return language === 'tr' ? 'Bu cihaz çifti desteklenmiyor' : 'Device pair not supported';
-    return language === 'tr' ? 'Kablo türü bu cihazlar için uygun değil' : 'Cable type not suitable for these devices';
+    if (!CABLE_COMPATIBILITY[key]) return language === 'tr' ? '❌ Bu cihaz çifti desteklenmiyor' : '❌ Device pair not supported';
+    return language === 'tr' ? '❌ Kablo türü bu cihazlar için uygun değil' : '❌ Cable type not suitable for these devices';
   }
 
-  if (sourceDevice.status === 'offline' || targetDevice.status === 'offline') return language === 'tr' ? 'Cihaz kapalı' : 'Device is offline';
-  // Wireless links use the Wi-Fi association state, not the physical
-  // wlan0 placeholder port. PCs/IoT devices keep that placeholder shutdown
-  // until an association is established, and WLCs do not expose a physical
-  // wlan0 port at all.
-  if (conn.cableType === 'wireless') return language === 'tr' ? 'Bağlantı sorunsuz' : 'Connection OK';
-  if (sourcePort?.shutdown || targetPort?.shutdown) return language === 'tr' ? 'Port kapalı (shutdown)' : 'Port is shutdown';
-  if (sourcePort?.spanningTree?.state === 'blocking' || targetPort?.spanningTree?.state === 'blocking') return language === 'tr' ? 'STP engelliyor (blocking)' : 'STP blocking';
+  if (sourceDevice.status === 'offline' || targetDevice.status === 'offline') {
+    return language === 'tr' ? '🔌 Cihaz kapalı' : '🔌 Device is offline';
+  }
 
-  return language === 'tr' ? 'Bağlantı sorunsuz' : 'Connection OK';
+  if (conn.cableType === 'wireless') return language === 'tr' ? '⚡ Kablosuz Bağlantı Aktif' : '⚡ Wireless Link Active';
+
+  if (sourcePort?.status === 'err-disabled' || targetPort?.status === 'err-disabled') {
+    return language === 'tr' ? '⛔ Port devre dışı (Errdisable)' : '⛔ Port Errdisable';
+  }
+
+  if (sourcePort?.shutdown || targetPort?.shutdown) {
+    return language === 'tr' ? '⏹ Port kapalı (Admin Down)' : '⏹ Port is shutdown';
+  }
+
+  const isSpeedMismatch = !!(sourcePort?.speed && targetPort?.speed && sourcePort.speed !== 'auto' && targetPort.speed !== 'auto' && sourcePort.speed !== targetPort.speed);
+  if (isSpeedMismatch) return language === 'tr' ? '⚠️ Hız uyuşmazlığı (Speed Mismatch)' : '⚠️ Speed Mismatch';
+
+  const isDuplexMismatch = !!(sourcePort?.duplex && targetPort?.duplex && sourcePort.duplex !== 'auto' && targetPort.duplex !== 'auto' && sourcePort.duplex !== targetPort.duplex);
+  if (isDuplexMismatch) return language === 'tr' ? '⚠️ Çift yönlülük uyuşmazlığı (Duplex Mismatch)' : '⚠️ Duplex Mismatch';
+
+  const getSTPBlocking = (device: CanvasDevice, portId: string) => {
+    if (deviceStates) {
+      const sp = deviceStates.get(device.id)?.ports?.[portId];
+      if (sp) return sp.spanningTree?.state === 'blocking' || sp.spanningTree?.role === 'alternate';
+    }
+    return device.ports.find(p => p.id === portId)?.spanningTree?.state === 'blocking';
+  };
+
+  if (getSTPBlocking(sourceDevice, conn.sourcePort) || getSTPBlocking(targetDevice, conn.targetPort)) {
+    return language === 'tr' ? '🟠 STP engelliyor (Blocking)' : '🟠 STP Blocking';
+  }
+
+  const speedVal = sourcePort?.speed || '1000';
+  const speedStr = speedVal === '1000' || speedVal === 'auto' ? '1 Gbps' : `${speedVal} Mbps`;
+  const duplexStr = sourcePort?.duplex ? sourcePort.duplex.toUpperCase() : 'FULL';
+
+  return `⚡ ${speedStr} | UP (${duplexStr})`;
 }
 
 export const isSwitchDeviceType = (type: DeviceType | string): boolean => {

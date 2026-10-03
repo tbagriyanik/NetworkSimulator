@@ -156,6 +156,14 @@ export function useTopologyMouse(props: UseTopologyMouseProps) {
   } = props;
 
   const handleCanvasMouseDown = useCallback((e: ReactMouseEvent) => {
+    // Re-measure at the start of every gesture. Panning, the selection box, the
+    // in-progress cable endpoint and hover hit-testing all read the cached rect,
+    // while the device drag re-measured per frame — so after a layout shift the
+    // two disagreed and the cable end lagged behind the device.
+    if (canvasRef.current) {
+      canvasRectRef.current = canvasRef.current.getBoundingClientRect();
+    }
+
     const targetEl = e.target as HTMLElement;
     const isOnDevice = !!targetEl.closest('[data-device-id]');
     const isOnNote = !!targetEl.closest('[data-note-id]');
@@ -235,7 +243,7 @@ export function useTopologyMouse(props: UseTopologyMouseProps) {
     svgContentGroupRef, setContextMenu, setSelectedDeviceIds, setSelectedNoteIds,
     setSelectAllMode, setPingMode, setPingSource, setPingResult, selectionAdditiveRef,
     selectionBaseIdsRef, selectedDeviceIdsRef, setSelectionBox, selectionBoxRef,
-    setIsSelecting, isSelectingRef, canvasRef
+    setIsSelecting, isSelectingRef, canvasRef, canvasRectRef
   ]);
 
   useEffect(() => {
@@ -405,8 +413,10 @@ export function useTopologyMouse(props: UseTopologyMouseProps) {
           lastDragEventRef.current = { clientX, clientY, ctrlKey };
 
           dragAnimationFrameRef.current = requestAnimationFrame(() => {
-            if (!canvasRef.current) { dragAnimationFrameRef.current = null; return; }
-            const rect = canvasRef.current.getBoundingClientRect();
+            // Same rect source as every other branch, so the drag, the cable
+            // end and hover hit-testing cannot disagree within one gesture.
+            const rect = canvasRectRef.current ?? canvasRef.current?.getBoundingClientRect();
+            if (!rect) { dragAnimationFrameRef.current = null; return; }
             const currentPan = panRef.current;
             const currentZoom = zoomRef.current;
             const currentDragStartPos = dragStartPosRef.current;
@@ -625,8 +635,12 @@ export function useTopologyMouse(props: UseTopologyMouseProps) {
       activePointerDragRef.current = false;
       activeDragPointerIdRef.current = null;
 
-      if (isActuallyDraggingRef.current && draggedDeviceRef.current && canvasRef.current && dragStartPosRef.current) {
-        const rect = canvasRef.current.getBoundingClientRect();
+      // Same rect source as the drag frames and the pan branch, so a commit can
+      // never land on a different coordinate origin than the gesture that
+      // produced it.
+      const commitRect = canvasRectRef.current ?? canvasRef.current?.getBoundingClientRect();
+      if (isActuallyDraggingRef.current && draggedDeviceRef.current && dragStartPosRef.current && commitRect) {
+        const rect = commitRect;
         const currentPan = panRef.current;
         const currentZoom = zoomRef.current;
         const currentDragStartPos = dragStartPosRef.current;

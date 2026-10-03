@@ -8,21 +8,44 @@
   cursor: inherit !important;
 }
 
-/* Cross-platform WebKit (macOS & Linux desktop webview) drag & selection normalization */
+/* Cross-platform WebKit (macOS & Linux desktop webview) drag & selection
+   normalization.
+
+   WebKit starts its *own* drag gesture when a pointer-down lands on selectable
+   or natively draggable content — SVG <text>/<tspan> and <image> being the
+   usual culprits. That gesture fires `pointercancel`, which aborts the topology
+   drag half-way through, and it also paints a native selection highlight over
+   the diagram. Chromium ignores all of this, so the same code path behaved
+   differently per platform until these rules landed.
+
+   Notes live inside a <foreignObject> within the same SVG, and their header /
+   textarea must keep selecting text, so the blanket rule is scoped to the
+   canvas and to the SVG shapes rather than applied to everything. */
 .topology-device-draggable,
-.topology-note-draggable,
+.topology-device-draggable *,
 .topology-canvas,
 .topology-canvas svg image,
 .topology-canvas svg text,
-.topology-canvas svg path {
+.topology-canvas svg tspan,
+.topology-canvas svg use,
+.topology-canvas svg path,
+.topology-canvas svg polygon,
+.topology-canvas svg polyline {
   -webkit-user-drag: none !important;
   -webkit-user-select: none !important;
   user-select: none !important;
   touch-action: none !important;
 }
 
-.topology-canvas-container {
-  -webkit-app-region: no-drag !important;
+/* The note body is the one interactive region inside the canvas: it has a
+   textarea, buttons and a resize handle, all of which need native selection,
+   native scrolling and native click handling. */
+.topology-canvas foreignObject textarea,
+.topology-canvas foreignObject input,
+.topology-canvas foreignObject [contenteditable] {
+  -webkit-user-select: text !important;
+  user-select: text !important;
+  touch-action: auto !important;
 }
 
 @layer base {

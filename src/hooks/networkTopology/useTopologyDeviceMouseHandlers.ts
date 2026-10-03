@@ -309,10 +309,16 @@ export function useTopologyDeviceMouseHandlers({
       activePointerDragRef.current = true;
       activeDragPointerIdRef.current = e.pointerId;
 
+      // Pointer capture is best-effort. WebKit rejects it on an SVG <g> with
+      // `InvalidStateError` (Chromium accepts it), and without capture the
+      // drag still works because useTopologyMouse listens for pointermove /
+      // pointerup on `window`. Swallowing the error silently is what made this
+      // look like a platform bug for so long, so it is spelled out here: a
+      // failure here is expected on WebKit and not an error condition.
       try {
         e.currentTarget.setPointerCapture(e.pointerId);
       } catch {
-        // SVG pointer capture fallback
+        // WebKit: capture unsupported on SVG <g>. Window-level listeners cover it.
       }
 
       const device = deviceMap.get(deviceId);
