@@ -68,7 +68,7 @@ export function useDeviceNavigation({
 
         const g = svgContentGroupRef.current;
         if (g) {
-          g.style.transform = `translate3d(${panRef.current.x}px, ${panRef.current.y}px, 0px) scale(${zoomRef.current})`;
+          g.setAttribute('transform', `translate(${panRef.current.x} ${panRef.current.y}) scale(${zoomRef.current})`);
         }
 
         if (progress < 1) {

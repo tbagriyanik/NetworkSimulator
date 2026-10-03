@@ -159,7 +159,9 @@ export function useCanvasZoomPan({
       if (!g) return;
       const finalPan = pendingPanRef.current ?? newPan;
       const finalZoom = pendingZoomRef.current ?? newZoom;
-      g.style.transform = `translate3d(${finalPan.x}px, ${finalPan.y}px, 0px) scale(${finalZoom})`;
+      // Use the SVG transform attribute so foreignObject-based notes follow
+      // the same coordinate system in Safari and Firefox as devices/cables.
+      g.setAttribute('transform', `translate(${finalPan.x} ${finalPan.y}) scale(${finalZoom})`);
     });
 
     // Debounced state sync: commit to React state 80ms after last wheel tick

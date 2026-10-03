@@ -288,7 +288,7 @@ export function useTopologyMouse(props: UseTopologyMouseProps) {
           const newPanY = capturedY - panStartRef.current.y;
           const g = svgContentGroupRef.current;
           if (g) {
-            g.style.transform = `translate3d(${newPanX}px, ${newPanY}px, 0px) scale(${zoomRef.current})`;
+            g.setAttribute('transform', `translate(${newPanX} ${newPanY}) scale(${zoomRef.current})`);
           }
           pendingPanRef.current = { x: newPanX, y: newPanY };
           panRef.current = { x: newPanX, y: newPanY };
@@ -764,7 +764,7 @@ export function useTopologyMouse(props: UseTopologyMouseProps) {
             mVelY *= MOMENTUM_DECAY;
             mPanX += mVelX;
             mPanY += mVelY;
-            g.style.transform = `translate3d(${mPanX}px, ${mPanY}px, 0px) scale(${zoomRef.current})`;
+            g.setAttribute('transform', `translate(${mPanX} ${mPanY}) scale(${zoomRef.current})`);
             panRef.current = { x: mPanX, y: mPanY };
             const remainingSpeed = Math.sqrt(mVelX * mVelX + mVelY * mVelY);
             if (remainingSpeed > MOMENTUM_MIN_SPEED) {

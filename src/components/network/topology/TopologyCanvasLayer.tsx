@@ -371,7 +371,9 @@ export function TopologyCanvasLayer({
             }}
         >
             <svg width="100%" height="100%" className="block select-none print:w-full print:h-auto print:block overflow-visible">
-                <g ref={svgContentGroupRef} data-content-group="true" style={{ transformOrigin: '0 0', transition: 'none', contain: 'layout style paint' }}>
+                {/* Keep viewport movement as an SVG transform. CSS transforms on an SVG
+                    group can detach foreignObject notes in WebKitGTK/WKWebView. */}
+                <g ref={svgContentGroupRef} data-content-group="true" style={{ transition: 'none' }}>
                     <CanvasDefs isDark={isDark} canvasWidth={canvasSize.width} canvasHeight={canvasSize.height} />
 
                     {/* Empty State - Welcome Screen */}

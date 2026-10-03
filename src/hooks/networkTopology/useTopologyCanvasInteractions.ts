@@ -531,7 +531,7 @@ export function useTopologyCanvasInteractions(
     if (touchHandlers.touchMomentumFrameRef.current) return;
     const g = svgContentGroupRef.current;
     if (!g) return;
-    g.style.transform = `translate3d(${pan.x}px, ${pan.y}px, 0px) scale(${zoom})`;
+    g.setAttribute('transform', `translate(${pan.x} ${pan.y}) scale(${zoom})`);
   }, [pan, zoom, isPanning, deviceDrag.isActuallyDragging, wheelSyncTimerRef, touchHandlers.touchMomentumFrameRef, svgContentGroupRef]);
 
   const isDraggingInteractionDisabled = deviceDrag.isActuallyDragging || touchHandlers.isTouchDragging;

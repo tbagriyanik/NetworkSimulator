@@ -394,7 +394,7 @@ export function useTopologyTouch({
       const newPanY = touch.clientY - ps.y;
       const g = svgContentGroupRef.current;
       if (g) {
-        g.style.transform = `translate3d(${newPanX}px, ${newPanY}px, 0px) scale(${zoomRef.current})`;
+        g.setAttribute('transform', `translate(${newPanX} ${newPanY}) scale(${zoomRef.current})`);
       }
       pendingPanRef.current = { x: newPanX, y: newPanY };
       panRef.current = { x: newPanX, y: newPanY };
@@ -465,7 +465,7 @@ export function useTopologyTouch({
         pendingPanRef.current = newPan;
         const g = svgContentGroupRef.current;
         if (g) {
-          g.style.transform = `translate3d(${newPan.x}px, ${newPan.y}px, 0px) scale(${newZoom})`;
+          g.setAttribute('transform', `translate(${newPan.x} ${newPan.y}) scale(${newZoom})`);
         }
       } else {
         const newPan = { x: currentPan.x + smoothedPanDeltaX, y: currentPan.y + smoothedPanDeltaY };
@@ -473,7 +473,7 @@ export function useTopologyTouch({
         pendingPanRef.current = newPan;
         const g = svgContentGroupRef.current;
         if (g) {
-          g.style.transform = `translate3d(${newPan.x}px, ${newPan.y}px, 0px) scale(${zoomRef.current})`;
+          g.setAttribute('transform', `translate(${newPan.x} ${newPan.y}) scale(${zoomRef.current})`);
         }
       }
 
@@ -520,7 +520,7 @@ export function useTopologyTouch({
           mVelY *= MOMENTUM_DECAY;
           mPanX += mVelX;
           mPanY += mVelY;
-          g.style.transform = `translate3d(${mPanX}px, ${mPanY}px, 0px) scale(${zoomRef.current})`;
+          g.setAttribute('transform', `translate(${mPanX} ${mPanY}) scale(${zoomRef.current})`);
           panRef.current = { x: mPanX, y: mPanY };
           const remainingSpeed = Math.sqrt(mVelX * mVelX + mVelY * mVelY);
           if (remainingSpeed > MOMENTUM_MIN_SPEED) {
