@@ -1,6 +1,6 @@
 # Network Simulator
 
-![Version](https://img.shields.io/badge/version-7.2.1-blue)
+![Version](https://img.shields.io/badge/version-7.3.0-blue)
 ![Next.js](https://img.shields.io/badge/Next.js-16.3.7-black?logo=next.js)
 ![React](https://img.shields.io/badge/React-19.3.0-61DAFB?logo=react&logoColor=black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-7.0.2-3178C6?logo=typescript&logoColor=white)
@@ -64,6 +64,7 @@ Simülatör, standart komut formatının yanı sıra yaygın olarak kullanılan 
 - **📸 Topoloji Anlık Görüntü & Geri Yükleme:** Ağ topolojisini tek tıkla dondurma, kontrol noktaları (Checkpoint) oluşturma, JSON dışa/içe aktarma ve anlık geri yükleme.
 - **🐍 Python Yorumlayıcısı, Dosya & GUI/Ses/3D İşlemleri:** PC terminalinde OOP, Decorator, Generator, `open()` ile sanal dosya I/O; `tkinter`/`form` ile görsel pencereli form uygulamaları; Web Audio API tabanlı dinamik nota/akor/müzik ve ses efekti (`audio`/`music`/`synth`) sentezleme; `scene3d`/`three3d` ile interaktif 3D sahne, katı geometri (CSG) ve ışıklandırma motoru; soket ağ programlama.
 - **🖥️ Çapraz Platform Özellik Eşitliği:** macOS (`Cmd`) ve Windows/Linux (`Ctrl`) kısayol standardizasyonu, native dosya diyalogları ve çevrimdışı çalışma doğrulamaları.
+- **🖼️ Masaüstü (Tauri) WebView Tuval Düzeltmeleri:** Tuval görünümü artık SVG `transform` özniteliğiyle uygulanıyor; macOS (WKWebView) ve Linux (WebKitGTK) üzerinde `foreignObject` notlarının cihaz/kablolardan kopması giderildi. Fare ve dokunmatik kaydırmalar tuval yerel koordinatlarına çevrildiği için paketlenmiş masaüstü yerleşimlerinde imleç kayması yaşanmıyor; fare ile kaydırma bırakıldığı anda dururken dokunmatik inertia korunuyor.
 - **🔍 Gelişmiş Teşhis & Sağlık Denetimi:** Native VLAN mismatch, çakışan IP/MAC tespiti, routing loop tespiti, orphan port denetimi ve tek komutla `show network health` raporu.
 - **🔒 Firewall Stateful SPI & Pipeline İyileştirmeleri:** Conntrack SPI enforcement artık yalnızca firewall tipi cihazlarda aktif; router ve switch'ler paketleri geçirir ve sessizce takip eder. DHCP Relay Engine (`dhcpRelayEngine.ts`) temizlendi; `DhcpHeader` tabanlı `giaddr` + Option 82 işlemesi ile 233 test dosyası, 2096 test tamamı başarılı.
 
@@ -75,8 +76,8 @@ Simülatör, standart komut formatının yanı sıra yaygın olarak kullanılan 
 
 | Metrik / Metric | Değer / Value |
 | --- | --- |
-| Version / Sürüm | 7.2.1 |
-| Total Lines / Toplam Satır (`src/`) | ~243,986 |
+| Version / Sürüm | 7.3.0 |
+| Total Lines / Toplam Satır (`src/`) | ~244,003 |
 | Source Files / Kaynak Dosya | 1171 |
 | Test Files / Test Dosyaları | 243 |
 | Tests / Testler | 2182 |

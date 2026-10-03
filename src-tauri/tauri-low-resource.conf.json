@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Network Simulator (Low Resource)",
-  "version": "7.2.1",
+  "version": "7.3.0",
   "identifier": "com.networksimulator.desktop.lowresource",
   "build": {
     "frontendDist": "../out",

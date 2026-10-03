@@ -1,5 +1,30 @@
 # 📅 Network Simulator — Proje Geçmişi
 
+## v7.3.0 — 2026-10-03
+
+- **🖥️ Linux & macOS Masaüstü Derleme ve Görüntüleme Düzeltmeleri (Tauri / WebKitGTK / WKWebView)**:
+  - Tuval görünümü (pan/zoom) artık CSS `transform` yerine **SVG `transform` özniteliği** ile uygulanıyor (`TopologyCanvasLayer.tsx`, `useCanvasZoomPan.ts`, `useTopologyMouse.ts`, `useTopologyTouch.ts`, `useDeviceNavigation.ts`, `useTopologyCanvasInteractions.ts`). WebKit tabanlı masaüstü webview'lerde SVG grubuna verilen CSS transform, `foreignObject` tabanlı **notları cihaz ve kablolardan koparıyordu**; artık tüm katmanlar aynı koordinat sisteminde hareket ediyor.
+  - `TopologyCanvasLayer` içindeki `transformOrigin: '0 0'` ve `contain: layout style paint` ifadeleri kaldırıldı.
+  - **Tuval yerel koordinat düzeltmesi:** `panStart` tuvele yerel (canvas-local) koordinatlardan türetildiği için `clientX/clientY` değerleri `getBoundingClientRect()` ile yerel koordinata çevriliyor. Paketlenmiş masaüstü yerleşimlerinde tuvelin `(0, 0)` dışında olduğu durumlarda görünümün ilk karede kayması ve gesture boyunca imleçten kopması giderildi.
+  - `ConnectionHandle.tsx`: bağlantı stub dairesinin yarıçapı `10 → 14` büyütüldü ve `pointerEvents="all"` eklendi; ince hedef alanı nedeniyle Linux/macOS'ta bağlantı noktasına tıklamak zorlaşıyordu.
+  - `base.css`: tuval, cihaz ve not sürükleme yüzeyleri için WebKit'e özgü `-webkit-user-drag` / `-webkit-user-select` bastırma ve `touch-action: none` normalizasyonu eklendi; masaüstü webview'da native HTML sürükleme/ metin seçimi davranışı kapatıldı.
+- **🖱️ Fare ile Tuval Kaydırmada Momentum (Atalet) Kaldırıldı (`useTopologyMouse.ts`, `useTopologyInteractionState.ts`)**:
+  - Fare bırakıldığında devam eden "momentum" animasyonu tamamen kaldırıldı. Hız px/ms ölçülürken `MOMENTUM_THRESHOLD` px/frame cinsinden tanımlıydı; fare bırakılışında bu ~60x'lik ölçek farkı tuvali imleçten çok uzağa fırlatıyordu.
+  - Fare mutlak konumlu bir cihaz olduğu için pan artık bırakma anında **deterministik** olarak duruyor. Dokunmatik inertia (`useTopologyTouch`) aynen korundu; `MOMENTUM_*` sabitleri dokunmatik kaydırma için yaşamaya devam ediyor.
+  - Artık kullanılmayan `momentumAnimationFrameRef` ve ilgili prop zinciri kaldırıldı.
+- **🧹 Kablo Tooltip Konumlandırması Sadeleştirildi (`useTopologyTooltipHandlers.ts`)**:
+  - Her hover'da tüm cihaz listesini dolaşan, cihaz kenarına yaklaşınca tooltip'i kaydıran hesaplama kaldırıldı; tooltip artık doğrudan imleç konumundan yerleştiriliyor. Görünür bir fark yaratmadığı halde her hover'da cihaz başına boyut sorgusu tetikliyordu.
+  - Kullanılmayan `devices`, `zoomRef`, `panRef` propları ile `getDeviceWidth/Height` bağımlılığı temizlendi.
+- **🧪 Vitest Ortam Kurulumu ve Çıktı Gürültüsü Bastırma (`src/tests/setup.ts`, `vitest.config.ts`)**:
+  - Tüm test dosyaları için ortak bootstrap eklendi: `EXAM_HMAC_KEY` / `CERTIFICATE_SECRET` test anahtarları (Vitest `.env.local` okumadığı için kripto modülleri aksi halde "güvensiz geliştirme" uyarısı basıyordu), Node'un deneysel `localStorage` `ExperimentalWarning` uyarısının `process.on('warning')` üzerinden filtrelenmesi ve `HTMLCanvasElement.getContext` için jsdom "Not implemented" loglarının bastırılması.
+  - Test çıktısı `✓` satırları arasında kalan gürültüden temizlendi.
+- **🏗️ Geliştirme Sunucusu ve Derleme Düzeltmeleri (`next.config.ts`, `middleware.ts`, `package.json`)**:
+  - `next.config.ts` artık geliştirme sırasında `/_next/static` için özel `Cache-Control` başlığı uygulamıyor. Bu başlık Next.js'in "Custom Cache-Control headers detected" uyarısını tetikliyor ve **geliştirme sırasında kendi asset invalidation mekanizmasını kapatıyordu**.
+  - About diyaloğu rozetlerini besleyen commit sayısı, geliştirmede her config yeniden yüklemesinde GitHub API turu + tüm `src/` ağacı taraması yerine son bilinen değeri kullanıyor.
+  - `NEXT_PHASE` tespiti ile geliştirme derlemeleri ayırt ediliyor; `agentRules: false` eklendi.
+  - `middleware.ts` font `Cache-Control` başlıkları yalnızca üretimde uygulanıyor.
+  - `npm run dev` artık `node --no-warnings=ExperimentalWarning` üzerinden başlatılıyor; Node deneysel uyarıları geliştirme konsolunu kirletmiyor.
+
 ## v7.2.0 — 2026-10-01
 
 - **⚡ Düşük Donanım & Eski Cihaz Performans Optimizasyonu**:

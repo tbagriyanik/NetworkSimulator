@@ -8,6 +8,23 @@
   cursor: inherit !important;
 }
 
+/* Cross-platform WebKit (macOS & Linux desktop webview) drag & selection normalization */
+.topology-device-draggable,
+.topology-note-draggable,
+.topology-canvas,
+.topology-canvas svg image,
+.topology-canvas svg text,
+.topology-canvas svg path {
+  -webkit-user-drag: none !important;
+  -webkit-user-select: none !important;
+  user-select: none !important;
+  touch-action: none !important;
+}
+
+.topology-canvas-container {
+  -webkit-app-region: no-drag !important;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
