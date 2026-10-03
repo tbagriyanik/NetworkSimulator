@@ -76,8 +76,8 @@ Simülatör, standart komut formatının yanı sıra yaygın olarak kullanılan 
 | Metrik / Metric | Değer / Value |
 | --- | --- |
 | Version / Sürüm | 7.2.1 |
-| Total Lines / Toplam Satır (`src/`) | ~243,966 |
-| Source Files / Kaynak Dosya | 1170 |
+| Total Lines / Toplam Satır (`src/`) | ~244,013 |
+| Source Files / Kaynak Dosya | 1171 |
 | Test Files / Test Dosyaları | 243 |
 | Tests / Testler | 2182 |
 | Documentation Files / Dokümantasyon Dosya | 25 |
