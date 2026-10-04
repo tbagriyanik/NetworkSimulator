@@ -17,17 +17,17 @@ const DEVICE_ICON_PATHS = {
 
 export const DEVICE_ICON_COLORS = {
   pc: 'var(--color-primary-400)',
-  iot: 'var(--color-warning-400)',
   switch: 'var(--color-accent-400)',
-  switchL2: 'var(--color-success-400)',
-  switchL3: 'var(--color-purple-400)',
-  router: 'var(--color-warning-400)',
+  switchL2: 'var(--color-accent-400)',
+  switchL3: 'var(--color-indigo-400)',
+  router: 'var(--color-purple-400)',
   firewall: 'var(--color-error-400)',
-  wlc: 'var(--color-indigo-400)',
+  wlc: 'var(--color-yellow-400)',
   hub: 'var(--color-teal-400)',
   cloud: 'var(--color-sky-400)',
-  mobile: 'var(--color-sky-300)',
+  mobile: 'var(--color-emerald-400)',
   printer: 'var(--color-pink-400)',
+  iot: 'var(--color-amber-400)',
 } as const;
 
 export const DEVICE_ICONS = {

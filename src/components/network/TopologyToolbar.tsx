@@ -56,15 +56,15 @@ interface TopologyToolbarProps {
 const TOOLBAR_ITEMS: Array<{ type: DeviceType; labelKey: keyof Translations; colorClass: string }> = [
   { type: 'pc', labelKey: 'addPC', colorClass: 'text-primary-400 hover:bg-primary-400/10' },
   { type: 'switchL2', labelKey: 'addL2Switch', colorClass: 'text-accent-400 hover:bg-accent-400/10' },
-  { type: 'switchL3', labelKey: 'addL3Switch', colorClass: 'text-purple-400 hover:bg-purple-400/10' },
+  { type: 'switchL3', labelKey: 'addL3Switch', colorClass: 'text-indigo-400 hover:bg-indigo-400/10' },
   { type: 'router', labelKey: 'addRouter', colorClass: 'text-purple-400 hover:bg-purple-400/10' },
   { type: 'firewall', labelKey: 'addFirewall', colorClass: 'text-error-400 hover:bg-error-400/10' },
   { type: 'wlc', labelKey: 'addWLC', colorClass: 'text-yellow-400 hover:bg-yellow-400/10' },
-  { type: 'hub', labelKey: 'addHub', colorClass: 'text-cyan-400 hover:bg-cyan-400/10' },
+  { type: 'hub', labelKey: 'addHub', colorClass: 'text-teal-400 hover:bg-teal-400/10' },
   { type: 'cloud', labelKey: 'addCloud', colorClass: 'text-sky-400 hover:bg-sky-400/10' },
   { type: 'mobile', labelKey: 'addMobile', colorClass: 'text-emerald-400 hover:bg-emerald-400/10' },
-  { type: 'printer', labelKey: 'addPrinter', colorClass: 'text-amber-400 hover:bg-amber-400/10' },
-  { type: 'iot', labelKey: 'addIoT', colorClass: 'text-warning-400 hover:bg-warning-400/10' },
+  { type: 'printer', labelKey: 'addPrinter', colorClass: 'text-pink-400 hover:bg-pink-400/10' },
+  { type: 'iot', labelKey: 'addIoT', colorClass: 'text-amber-400 hover:bg-amber-400/10' },
 ];
 
 export function TopologyToolbar({
@@ -315,7 +315,7 @@ export function TopologyToolbar({
               aria-label={t.ping}
               variant="ghost"
               size="icon"
-              className="h-8 w-8 p-0 text-warning-500 hover:bg-warning-500/10"
+              className="h-8 w-8 p-0 text-purple-500 hover:bg-purple-500/10"
               disabled={isPingPanelOpen}
               onClick={() => {
                 const event = new CustomEvent('toggle-ping-mode');
@@ -329,7 +329,7 @@ export function TopologyToolbar({
           </TooltipTrigger>
           <TooltipContent className="flex items-center gap-2">
             <span>{t.ping}</span>
-            <ShortcutBadge shortcut="P" variant="warning" />
+            <ShortcutBadge shortcut="P" variant="primary" />
           </TooltipContent>
         </Tooltip>
 

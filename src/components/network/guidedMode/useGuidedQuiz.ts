@@ -52,7 +52,7 @@ export function useGuidedQuiz(project: GuidedProject | null) {
     }
   }, [availableQuestions.length]);
 
-  // Tüm sorular tamamlandığında veya pratik için sıfırlama
+  // Tüm sorular tamamlandığında veya pratik için sıfırlama (Kazanılan puanlar korunur, mükerrer puan verilmez)
   const handleResetQuiz = useCallback(() => {
     setSdnQuizAnswered([]);
     setSdnQuizScore(0);

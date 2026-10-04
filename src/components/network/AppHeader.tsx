@@ -253,12 +253,12 @@ export function AppHeader({
                   </Tooltip>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <button aria-label={t.contactTitle} className={cn("h-8 w-8 flex items-center justify-center transition-all hover:bg-secondary-200/50", isDark ? 'text-secondary-300 hover:text-primary-400 hover:bg-secondary-700/50' : 'text-secondary-500 hover:text-primary-600')} onClick={(e) => { e.stopPropagation(); setShowAboutModal(true); }}>
+                      <button aria-label={t.help} className={cn("h-8 w-8 flex items-center justify-center transition-all hover:bg-secondary-200/50", isDark ? 'text-secondary-300 hover:text-primary-400 hover:bg-secondary-700/50' : 'text-secondary-500 hover:text-primary-600')} onClick={(e) => { e.stopPropagation(); setShowAboutModal(true); }}>
                         <Info className="w-4 h-4" />
                       </button>
                     </TooltipTrigger>
                     <TooltipContent className="flex items-center gap-2">
-                      <span>{t.contactTitle}</span>
+                      <span>{t.help}</span>
                       <ShortcutBadge shortcut="F1" variant="warning" />
                     </TooltipContent>
                   </Tooltip>
@@ -279,7 +279,7 @@ export function AppHeader({
 
               {setShowStoryMode && <Tooltip>
                 <TooltipTrigger asChild>
-                  <span className="inline-block">
+                  <span className="hidden md:inline-block">
                     <button
                       disabled={isExamActive}
                       aria-label={t.storyMode || (language === 'tr' ? 'Etkileşimli Senaryo Modu' : 'Interactive Story Mode')}
@@ -299,7 +299,7 @@ export function AppHeader({
 
               {setShowSdnModal && <Tooltip>
                 <TooltipTrigger asChild>
-                  <span className="inline-block">
+                  <span className="hidden md:inline-block">
                     <button
                       disabled={isExamActive}
                       aria-label={language === 'tr' ? 'SDN & Intent Denetleyici (APIC-EM/DNA-C)' : 'SDN & Intent Controller (APIC-EM/DNA-C)'}
@@ -596,6 +596,50 @@ export function AppHeader({
                         <Mail className="w-3.5 h-3.5 flex-shrink-0" />
                         <span>{t.ping}</span>
                       </Button>
+                      {setShowSdnModal && (
+                        <Button
+                          variant="outline"
+                          disabled={isExamActive}
+                          className={cn(
+                            "justify-start gap-2 h-11 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover",
+                            isDark ? "hover:text-sky-400" : "hover:text-sky-600",
+                            isExamActive && "opacity-40 cursor-not-allowed"
+                          )}
+                          onClick={() => {
+                            if (!isExamActive) {
+                              setShowSdnModal(true);
+                              setShowMobileMenu(false);
+                            }
+                          }}
+                        >
+                          <Cpu className="w-3.5 h-3.5 flex-shrink-0 text-sky-500" />
+                          <span className="truncate">
+                            {language === 'tr' ? 'SDN Denetleyici' : 'SDN Controller'}
+                          </span>
+                        </Button>
+                      )}
+                      {setShowStoryMode && (
+                        <Button
+                          variant="outline"
+                          disabled={isExamActive}
+                          className={cn(
+                            "justify-start gap-2 h-11 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover",
+                            isDark ? "hover:text-primary-400" : "hover:text-primary-600",
+                            isExamActive && "opacity-40 cursor-not-allowed"
+                          )}
+                          onClick={() => {
+                            if (!isExamActive) {
+                              setShowStoryMode(true);
+                              setShowMobileMenu(false);
+                            }
+                          }}
+                        >
+                          <Gamepad2 className="w-3.5 h-3.5 flex-shrink-0" />
+                          <span className="truncate">
+                            {t.storyMode || (language === 'tr' ? 'Senaryo Modu' : 'Story Mode')}
+                          </span>
+                        </Button>
+                      )}
                     </div>
                   </div>
 

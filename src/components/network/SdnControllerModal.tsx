@@ -57,10 +57,18 @@ export function SdnControllerModal({
   const dragProps = useDrag({
     storageKey: 'sdnControllerPanel',
     defaultPosition: typeof window !== 'undefined'
-      ? { x: Math.max(16, Math.floor((window.innerWidth - 650) / 2)), y: Math.max(100, Math.floor((window.innerHeight - 520) / 2)) }
+      ? {
+        x: Math.max(8, Math.floor((window.innerWidth - Math.min(620, window.innerWidth - 16)) / 2)),
+        y: Math.max(56, Math.floor((window.innerHeight - Math.min(500, window.innerHeight - 70)) / 2))
+      }
       : { x: 80, y: 80 },
-    defaultSize: { width: 620, height: 500 },
-    minSize: { width: 440, height: 380 },
+    defaultSize: typeof window !== 'undefined'
+      ? {
+        width: Math.min(620, Math.max(300, window.innerWidth - 16)),
+        height: Math.min(500, Math.max(350, window.innerHeight - 70))
+      }
+      : { width: 620, height: 500 },
+    minSize: { width: 280, height: 260 },
   });
 
   const controller = useMemo(() => {
@@ -98,7 +106,9 @@ export function SdnControllerModal({
     const res = controller.applyIntentPolicy(
       {
         id: `intent-${Date.now()}`,
-        name: intentType === 'qos-voip' ? 'VoIP QoS Intent' : 'VLAN Isolation Intent',
+        name: intentType === 'qos-voip'
+          ? (isTr ? 'VoIP QoS Niyeti' : 'VoIP QoS Intent')
+          : (isTr ? 'VLAN İzolasyon Niyeti' : 'VLAN Isolation Intent'),
         type: intentType,
         targetDeviceIds: targetIds,
         parameters: { vlanId: 100, bandwidthLimitMbps: 100 },
@@ -116,7 +126,8 @@ export function SdnControllerModal({
       params: { 'intent-type': intentType },
     });
     const xml = controller.netconfRpcXml('urn:msg-1', 'push-intent', { intent: intentType });
-    setNetconfOutput(`${xml}\n\n<!-- Response Received -->\n${JSON.stringify(reply, null, 2)}`);
+    const responseHeader = isTr ? '<!-- Alınan Yanıt -->' : '<!-- Response Received -->';
+    setNetconfOutput(`${xml}\n\n${responseHeader}\n${JSON.stringify(reply, null, 2)}`);
   };
 
   if (!open) return null;
@@ -125,7 +136,7 @@ export function SdnControllerModal({
     <DraggableWindowWrapper
       id="sdn-controller-modal"
       alwaysOnTop={true}
-      title={isTr ? 'SDN & Intent-Based Ağ Denetleyicisi (APIC-EM / DNA-C)' : 'SDN & Intent-Based Controller'}
+      title={isTr ? 'SDN & Niyet Tabanlı Ağ Denetleyicisi (APIC-EM / DNA-C)' : 'SDN & Intent-Based Network Controller (APIC-EM / DNA-C)'}
       icon={<Cpu className="w-4 h-4 text-sky-400 shrink-0" />}
       isOpen={open}
       onClose={() => onOpenChange(false)}
@@ -135,17 +146,17 @@ export function SdnControllerModal({
       handlePointerDown={dragProps.handlePointerDown}
       handleResizeStart={dragProps.handleResizeStart}
       collapsible={true}
-      mobileFullScreen={false}
+      mobileFullScreen={true}
       className={isDark ? '!bg-secondary-950 border-secondary-800' : '!bg-white border-secondary-300'}
-      contentClassName="p-4 overflow-y-auto space-y-4 custom-scrollbar text-xs"
+      contentClassName="p-3 sm:p-4 overflow-y-auto space-y-4 custom-scrollbar text-xs"
     >
       {/* Tabs */}
-      <div className="flex items-center gap-1 border-b border-secondary-800 pb-2">
+      <div className="flex items-center gap-1 border-b border-secondary-800 pb-2 overflow-x-auto custom-scrollbar no-scrollbar flex-nowrap shrink-0">
         <Button
           size="sm"
           variant={activeTab === 'inventory' ? 'default' : 'ghost'}
           onClick={() => setActiveTab('inventory')}
-          className="text-xs h-7"
+          className="text-xs h-7 shrink-0 whitespace-nowrap"
         >
           <Layers className="w-3.5 h-3.5 mr-1" />
           {isTr ? 'Envanter' : 'Inventory'}
@@ -154,25 +165,25 @@ export function SdnControllerModal({
           size="sm"
           variant={activeTab === 'trace' ? 'default' : 'ghost'}
           onClick={() => setActiveTab('trace')}
-          className="text-xs h-7"
+          className="text-xs h-7 shrink-0 whitespace-nowrap"
         >
           <Activity className="w-3.5 h-3.5 mr-1" />
-          {isTr ? 'Yol İzi (Path Trace)' : 'Path Trace'}
+          {isTr ? 'Yol İzi' : 'Path Trace'}
         </Button>
         <Button
           size="sm"
           variant={activeTab === 'intent' ? 'default' : 'ghost'}
           onClick={() => setActiveTab('intent')}
-          className="text-xs h-7"
+          className="text-xs h-7 shrink-0 whitespace-nowrap"
         >
           <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
-          {isTr ? 'Intent Politikası' : 'Intent Policy'}
+          {isTr ? 'Niyet Politikası' : 'Intent Policy'}
         </Button>
         <Button
           size="sm"
           variant={activeTab === 'netconf' ? 'default' : 'ghost'}
           onClick={() => setActiveTab('netconf')}
-          className="text-xs h-7"
+          className="text-xs h-7 shrink-0 whitespace-nowrap"
         >
           <Terminal className="w-3.5 h-3.5 mr-1" />
           NETCONF/YANG
@@ -235,13 +246,13 @@ export function SdnControllerModal({
                 <option value="">{isTr ? '-- Listeden Cihaz Seç (Kaynak) --' : '-- Select Source Device --'}</option>
                 {devices.map(d => (
                   <option key={d.id} value={d.id}>
-                    {d.name} ({d.ip || 'IP Yok'})
+                    {d.name} ({d.ip || (isTr ? 'IP Yok' : 'No IP')})
                   </option>
                 ))}
               </select>
               <input
                 type="text"
-                placeholder={isTr ? 'Kaynak IP (örn. 192.168.1.10)' : 'Source IP'}
+                placeholder={isTr ? 'Kaynak IP (örn. 192.168.1.10)' : 'Source IP (e.g. 192.168.1.10)'}
                 value={sourceIp}
                 onChange={e => setSourceIp(e.target.value)}
                 className="w-full p-1.5 rounded bg-secondary-900 border border-secondary-700 font-mono text-xs text-secondary-100"
@@ -251,7 +262,7 @@ export function SdnControllerModal({
             {/* Destination Device Selection */}
             <div className="space-y-1">
               <label className="text-[11px] font-medium text-secondary-400">
-                {isTr ? 'Hedef Cihaz / IP' : 'Dest Device / IP'}
+                {isTr ? 'Hedef Cihaz / IP' : 'Destination Device / IP'}
               </label>
               <select
                 value={devices.find(d => d.ip === destIp)?.id || ''}
@@ -261,16 +272,16 @@ export function SdnControllerModal({
                 }}
                 className="w-full p-1.5 text-xs rounded bg-secondary-900 border border-secondary-700 font-mono text-secondary-100 outline-none"
               >
-                <option value="">{isTr ? '-- Listeden Cihaz Seç (Hedef) --' : '-- Select Target Device --'}</option>
+                <option value="">{isTr ? '-- Listeden Cihaz Seç (Hedef) --' : '-- Select Destination Device --'}</option>
                 {devices.map(d => (
                   <option key={d.id} value={d.id}>
-                    {d.name} ({d.ip || 'IP Yok'})
+                    {d.name} ({d.ip || (isTr ? 'IP Yok' : 'No IP')})
                   </option>
                 ))}
               </select>
               <input
                 type="text"
-                placeholder={isTr ? 'Hedef IP (örn. 192.168.2.20)' : 'Dest IP'}
+                placeholder={isTr ? 'Hedef IP (örn. 192.168.2.20)' : 'Destination IP (e.g. 192.168.2.20)'}
                 value={destIp}
                 onChange={e => setDestIp(e.target.value)}
                 className="w-full p-1.5 rounded bg-secondary-900 border border-secondary-700 font-mono text-xs text-secondary-100"
@@ -280,7 +291,7 @@ export function SdnControllerModal({
 
           <Button size="sm" onClick={handleRunTrace} className="w-full h-8 flex items-center justify-center gap-1.5">
             <ArrowRight className="w-3.5 h-3.5" />
-            <span>{isTr ? 'Yol İzleme Çalıştır (Run Path Trace)' : 'Run Path Trace'}</span>
+            <span>{isTr ? 'Yol İzlemeyi Çalıştır' : 'Run Path Trace'}</span>
           </Button>
 
           {traceResult && (
@@ -291,9 +302,11 @@ export function SdnControllerModal({
               </div>
               <div className="space-y-1">
                 {traceResult.pathHops.map((h, i) => (
-                  <div key={i} className="flex items-center justify-between p-1 rounded bg-secondary-800/40 text-[11px] font-mono">
-                    <span>{h.hopNumber}. {h.deviceName} ({h.deviceType})</span>
-                    <span className="text-secondary-400">{h.ingressPort || 'IN'} &rarr; {h.egressPort || 'OUT'}</span>
+                  <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 p-1.5 rounded bg-secondary-800/40 text-[11px] font-mono">
+                    <span className="truncate">{h.hopNumber}. {h.deviceName} ({h.deviceType})</span>
+                    <span className="text-secondary-400 shrink-0">
+                      {h.ingressPort ? `${isTr ? 'GİRİŞ' : 'IN'}: ${h.ingressPort}` : (isTr ? 'GİRİŞ' : 'IN')} &rarr; {h.egressPort ? `${isTr ? 'ÇIKIŞ' : 'OUT'}: ${h.egressPort}` : (isTr ? 'ÇIKIŞ' : 'OUT')}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -307,38 +320,38 @@ export function SdnControllerModal({
         <div className="space-y-3">
           <p className="text-secondary-400">
             {isTr
-              ? 'Intent-Based Networking (IBN) ile hedef durumu belirtin; SDN denetleyicisi konfigürasyonları otomatik iletsin.'
-              : 'Specify network intent; SDN controller orchestrates policies directly down to devices.'}
+              ? 'Niyet Tabanlı Ağ Yapılandırması (IBN) ile hedef durumu belirtin; SDN denetleyicisi ilgili politikaları cihazlara otomatik uygulasın.'
+              : 'Specify network intent with Intent-Based Networking (IBN); SDN controller automatically orchestrates policies down to devices.'}
           </p>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap sm:flex-nowrap">
             <Button
               size="sm"
               variant={intentType === 'qos-voip' ? 'default' : 'outline'}
               onClick={() => setIntentType('qos-voip')}
-              className="text-xs"
+              className="text-xs flex-1 min-w-[120px]"
             >
-              VoIP QoS Priority
+              {isTr ? 'VoIP QoS Önceliği' : 'VoIP QoS Priority'}
             </Button>
             <Button
               size="sm"
               variant={intentType === 'isolate-vlan' ? 'default' : 'outline'}
               onClick={() => setIntentType('isolate-vlan')}
-              className="text-xs"
+              className="text-xs flex-1 min-w-[120px]"
             >
-              VLAN 100 Isolation
+              {isTr ? 'VLAN 100 İzolasyonu' : 'VLAN 100 Isolation'}
             </Button>
             <Button
               size="sm"
               variant={intentType === 'rate-limit' ? 'default' : 'outline'}
               onClick={() => setIntentType('rate-limit')}
-              className="text-xs"
+              className="text-xs flex-1 min-w-[120px]"
             >
-              Rate Limit (100Mbps)
+              {isTr ? 'Hız Sınırı (100Mbps)' : 'Rate Limit (100Mbps)'}
             </Button>
           </div>
           <Button size="sm" onClick={handleApplyIntent} className="h-8">
             <Send className="w-3.5 h-3.5 mr-1" />
-            {isTr ? 'Intent Dağıt (Deploy Intent)' : 'Deploy Intent'}
+            {isTr ? 'Niyeti Dağıt (Uygula)' : 'Deploy Intent'}
           </Button>
           {intentLog && (
             <div className="p-2 rounded bg-emerald-950/40 border border-emerald-800 text-emerald-300 font-mono text-[11px]">
@@ -356,7 +369,7 @@ export function SdnControllerModal({
             {isTr ? 'YANG RPC Gönder (<rpc>)' : 'Send YANG RPC (<rpc>)'}
           </Button>
           <pre className="p-2 rounded bg-secondary-900 border border-secondary-800 font-mono text-[11px] whitespace-pre-wrap overflow-x-auto max-h-48 text-sky-300">
-            {netconfOutput || '<!-- NETCONF RPC Session Standby -->'}
+            {netconfOutput || (isTr ? '<!-- NETCONF RPC Oturumu Hazır Beklemede -->' : '<!-- NETCONF RPC Session Standby -->')}
           </pre>
         </div>
       )}

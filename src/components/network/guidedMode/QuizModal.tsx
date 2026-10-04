@@ -153,7 +153,6 @@ export function QuizModal({
                         <div>
                             <div className="flex items-center justify-between text-[11px] font-medium text-secondary-500 dark:text-secondary-400">
                                 <span>{isTr ? `Soru ${(sdnQuizIndex % totalQuestionsCount) + 1} / ${totalQuestionsCount} (${availableQuestions.length} kalan)` : `Question ${(sdnQuizIndex % totalQuestionsCount) + 1} / ${totalQuestionsCount} (${availableQuestions.length} remaining)`}</span>
-                                <span className="text-xs">🎲 {isTr ? 'Rastgele Seçim' : 'Random Pick'}</span>
                             </div>
 
                             <p className="mt-2.5 text-sm font-semibold text-secondary-900 dark:text-secondary-100 leading-relaxed">
@@ -177,7 +176,11 @@ export function QuizModal({
                                                         setSdnQuizAnswered(answered => [...answered, sdnQuestion.id]);
                                                         setSdnQuizScore(score => score + 1);
                                                         const pts = result.points || 10;
-                                                        setQuizEarnedPoints(prev => prev + pts);
+                                                        const maxAllowedPoints = quizQuestions.reduce((acc, q) => acc + (q.points || 10), 0);
+                                                        setQuizEarnedPoints(prev => {
+                                                            const nextVal = prev + pts;
+                                                            return Math.min(nextVal, maxAllowedPoints);
+                                                        });
                                                         toast({
                                                             title: isTr ? `+${pts} Puan Kazanıldı!` : `+${pts} Points Earned!`,
                                                             description: isTr ? 'Quiz sorusu doğru cevaplandı!' : 'Quiz question answered correctly!'

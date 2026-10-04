@@ -119,8 +119,8 @@ async function getCommitCount(): Promise<number> {
   return FALLBACK_COMMIT_COUNT;
 }
 
-const config = async () => {
-  const isDev = process.env.NODE_ENV === 'development' || process.env.NEXT_PHASE === 'phase-development-server';
+const config = async (phase?: string) => {
+  const isDev = phase === 'phase-development-server' || process.env.NODE_ENV === 'development' || process.argv.some(a => a.includes('dev'));
 
   // Both of these only feed the About dialog badges, and in development they
   // cost a GitHub API round-trip plus a walk of the whole `src/` tree on every
@@ -155,15 +155,8 @@ const config = async () => {
     // Performance optimizations for low-resource desktop builds
     compress: true,
 
-    // Long-lived caching for the immutable build output. Next fingerprints these
-    // paths itself, so a `max-age` long enough to survive a deploy cycle removes
-    // a conditional request on every asset when the app is reopened.
-    //
-    // Static exports (`NEXT_EXPORT=true`, used by the desktop builds) serve from
-    // disk where response headers come from the webview's own cache, so the
-    // rules are only attached to a server-rendered deployment. In development
-    // they are skipped too: a custom Cache-Control on `/_next/static` breaks
-    // Next's dev-time asset invalidation (and the dev server warns about it).
+    // Long-lived caching for custom static routes & fonts (Next.js automatically
+    // handles /_next/static immutable caching natively without custom headers).
     ...(!isExport && !isDev ? {
       async headers() {
         const immutableAssetHeaders = [
@@ -187,11 +180,6 @@ const config = async () => {
               { key: "Access-Control-Allow-Methods", value: "GET, OPTIONS" },
               ...immutableAssetHeaders,
             ],
-          },
-          {
-            // Fingerprinted Next.js output (chunks, media, the static build dir).
-            source: "/_next/static/:path*",
-            headers: immutableAssetHeaders,
           },
           {
             // App icons and the web manifest change rarely and are small enough

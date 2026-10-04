@@ -205,7 +205,7 @@ export function AppFooter({
                 <button
                   type="button"
                   onClick={() => setShowAboutModal(true)}
-                  aria-label={t.contactTitle}
+                  aria-label={t.help}
                   className={`text-[11px] font-medium transition-transform hover:scale-110 ${isDark ? 'text-secondary-400 hover:text-primary-400' : 'text-secondary-600 hover:text-primary-600'}`}
                 >
                   {t.tips}

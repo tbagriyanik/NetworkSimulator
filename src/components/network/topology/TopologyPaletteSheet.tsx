@@ -16,6 +16,21 @@ interface TopologyPaletteSheetProps {
   DEVICE_ICONS: Record<string, React.ReactNode>;
 }
 
+/** 11 Cihaz için özel hover ve vurgu renkleri */
+const DEVICE_THEME_MAP: Record<string, { hoverBg: string; hoverBorder: string; textHover: string; badgeBg: string }> = {
+  pc: { hoverBg: 'hover:bg-primary-500/10', hoverBorder: 'hover:border-primary-500/50', textHover: 'group-hover:text-primary-400', badgeBg: 'bg-primary-500' },
+  switchL2: { hoverBg: 'hover:bg-accent-500/10', hoverBorder: 'hover:border-accent-500/50', textHover: 'group-hover:text-accent-400', badgeBg: 'bg-accent-500' },
+  switchL3: { hoverBg: 'hover:bg-indigo-500/10', hoverBorder: 'hover:border-indigo-500/50', textHover: 'group-hover:text-indigo-400', badgeBg: 'bg-indigo-500' },
+  router: { hoverBg: 'hover:bg-purple-500/10', hoverBorder: 'hover:border-purple-500/50', textHover: 'group-hover:text-purple-400', badgeBg: 'bg-purple-500' },
+  firewall: { hoverBg: 'hover:bg-error-500/10', hoverBorder: 'hover:border-error-500/50', textHover: 'group-hover:text-error-400', badgeBg: 'bg-error-500' },
+  wlc: { hoverBg: 'hover:bg-yellow-500/10', hoverBorder: 'hover:border-yellow-500/50', textHover: 'group-hover:text-yellow-400', badgeBg: 'bg-yellow-500' },
+  hub: { hoverBg: 'hover:bg-teal-500/10', hoverBorder: 'hover:border-teal-500/50', textHover: 'group-hover:text-teal-400', badgeBg: 'bg-teal-500' },
+  cloud: { hoverBg: 'hover:bg-sky-500/10', hoverBorder: 'hover:border-sky-500/50', textHover: 'group-hover:text-sky-400', badgeBg: 'bg-sky-500' },
+  mobile: { hoverBg: 'hover:bg-emerald-500/10', hoverBorder: 'hover:border-emerald-500/50', textHover: 'group-hover:text-emerald-400', badgeBg: 'bg-emerald-500' },
+  printer: { hoverBg: 'hover:bg-pink-500/10', hoverBorder: 'hover:border-pink-500/50', textHover: 'group-hover:text-pink-400', badgeBg: 'bg-pink-500' },
+  iot: { hoverBg: 'hover:bg-amber-500/10', hoverBorder: 'hover:border-amber-500/50', textHover: 'group-hover:text-amber-400', badgeBg: 'bg-amber-500' },
+};
+
 /** Toolbar ile birebir aynı renk haritası */
 const CABLE_COLOR_MAP: Record<string, string> = {
   straight: 'text-primary-500',
@@ -98,49 +113,52 @@ export const TopologyPaletteSheet: React.FC<TopologyPaletteSheetProps> = ({
               {isTR ? 'Cihazlar' : 'Devices'}
             </h3>
             <div className="grid grid-cols-2 gap-2">
-              {(['pc', 'switchL2', 'switchL3', 'router', 'firewall', 'wlc', 'hub', 'cloud', 'mobile', 'printer', 'iot'] as const).map((type) => (
-                <Tooltip key={type}>
-                  <TooltipTrigger asChild>
-                    <button
-                      onClick={() => {
-                        if (type === 'switchL2') { addDevice('switch', 'L2'); return; }
-                        if (type === 'switchL3') { addDevice('switch', 'L3'); return; }
-                        addDevice(type);
-                      }}
-                      type="button"
-                      aria-label={getDeviceTooltip(type)}
-                      className={`flex flex-col items-center justify-center p-3 rounded-md border transition-all duration-200 group ${isDark
-                        ? 'border-secondary-700 bg-secondary-800/70 hover:bg-secondary-700 hover:border-secondary-500'
-                        : 'border-secondary-300 bg-secondary-100 hover:bg-secondary-200 hover:border-secondary-400'
-                        }`}
-                    >
-                      <div className="relative mb-2 transition-transform duration-200 group-hover:scale-110 w-8 h-8 flex items-center justify-center">
-                        <div className="absolute inset-0 blur-md opacity-20 group-hover:opacity-40 transition-opacity duration-200" />
-                        {DEVICE_ICONS[type] ?? DEVICE_ICONS['switch']}
-                        <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-primary-500 rounded-full flex items-center justify-center shadow-lg transform scale-0 group-hover:scale-100 transition-transform duration-200">
-                          <Plus className="w-3 h-3 text-white" />
+              {(['pc', 'switchL2', 'switchL3', 'router', 'firewall', 'wlc', 'hub', 'cloud', 'mobile', 'printer', 'iot'] as const).map((type) => {
+                const theme = DEVICE_THEME_MAP[type] ?? DEVICE_THEME_MAP.pc;
+                return (
+                  <Tooltip key={type}>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={() => {
+                          if (type === 'switchL2') { addDevice('switch', 'L2'); return; }
+                          if (type === 'switchL3') { addDevice('switch', 'L3'); return; }
+                          addDevice(type);
+                        }}
+                        type="button"
+                        aria-label={getDeviceTooltip(type)}
+                        className={`flex flex-col items-center justify-center p-3 rounded-md border transition-all duration-200 group ${theme.hoverBg} ${theme.hoverBorder} ${isDark
+                          ? 'border-secondary-700 bg-secondary-800/70 hover:bg-secondary-700/80'
+                          : 'border-secondary-300 bg-secondary-100 hover:bg-secondary-200/80'
+                          }`}
+                      >
+                        <div className="relative mb-2 transition-transform duration-200 group-hover:scale-110 w-8 h-8 flex items-center justify-center">
+                          <div className="absolute inset-0 blur-md opacity-20 group-hover:opacity-40 transition-opacity duration-200" />
+                          {DEVICE_ICONS[type] ?? DEVICE_ICONS['switch']}
+                          <div className={`absolute -bottom-1 -right-1 w-4 h-4 ${theme.badgeBg} rounded-full flex items-center justify-center shadow-lg transform scale-0 group-hover:scale-100 transition-transform duration-200`}>
+                            <Plus className="w-3 h-3 text-white" />
+                          </div>
                         </div>
-                      </div>
-                      <span className={`text-xs font-medium text-center uppercase ${isDark ? 'text-secondary-300 group-hover:text-white' : 'text-secondary-600 group-hover:text-secondary-900'}`}>
+                        <span className={`text-xs font-medium text-center uppercase transition-colors duration-200 ${theme.textHover} ${isDark ? 'text-secondary-300' : 'text-secondary-600'}`}>
+                          {type === 'switchL2'
+                            ? 'L2 SWITCH'
+                            : type === 'switchL3'
+                              ? 'L3 SWITCH'
+                              : getDeviceLabel(type)}
+                        </span>
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="right" className={isDark ? 'bg-secondary-800 border-secondary-700 text-secondary-100' : 'bg-white border-secondary-200 text-secondary-900'}>
+                      <p className="text-xs font-medium">
                         {type === 'switchL2'
-                          ? 'L2 SWITCH'
+                          ? (isTR ? 'Katman 2 Switch ekle' : 'Add Layer 2 Switch')
                           : type === 'switchL3'
-                            ? 'L3 SWITCH'
-                            : getDeviceLabel(type)}
-                      </span>
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="right" className={isDark ? 'bg-secondary-800 border-secondary-700 text-secondary-100' : 'bg-white border-secondary-200 text-secondary-900'}>
-                    <p className="text-xs font-medium">
-                      {type === 'switchL2'
-                        ? (isTR ? 'Katman 2 Switch ekle' : 'Add Layer 2 Switch')
-                        : type === 'switchL3'
-                          ? (isTR ? 'Katman 3 Switch ekle' : 'Add Layer 3 Switch')
-                          : getDeviceTooltip(type)}
-                    </p>
-                  </TooltipContent>
-                </Tooltip>
-              ))}
+                            ? (isTR ? 'Katman 3 Switch ekle' : 'Add Layer 3 Switch')
+                            : getDeviceTooltip(type)}
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                );
+              })}
             </div>
 
           </div>

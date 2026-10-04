@@ -17,7 +17,7 @@ const ToastViewport = React.forwardRef<
     ref={ref}
     aria-live="polite"
     className={cn(
-      "fixed right-0 bottom-0 z-[999999] flex max-h-screen w-full flex-col p-4 md:max-w-[420px] overflow-x-hidden",
+      "fixed bottom-12 left-1/2 -translate-x-1/2 z-[999999] pointer-events-none flex max-h-[80vh] w-full flex-col items-center justify-end p-2 md:max-w-[420px] overflow-x-hidden gap-2",
       className
     )}
     style={{ zIndex: 999999, ...props.style }}
@@ -27,7 +27,7 @@ const ToastViewport = React.forwardRef<
 ToastViewport.displayName = ToastPrimitives.Viewport.displayName
 
 const toastVariants = cva(
-  "group pointer-events-auto relative flex w-full items-center justify-between space-x-2 overflow-hidden rounded-md border p-4 pr-8 shadow-lg transition-all data-[swipe=cancel]:translate-x-0 data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)] data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=move]:transition-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[swipe=end]:animate-out data-[state=closed]:fade-out-80 data-[state=closed]:slide-out-to-right-full data-[state=open]:slide-in-from-bottom-full liquid-glass-light",
+  "group pointer-events-auto relative flex w-full items-center justify-between space-x-2 overflow-hidden rounded-xl border p-3.5 pr-8 shadow-2xl transition-all data-[swipe=cancel]:translate-x-0 data-[swipe=end]:translate-x-[var(--radix-toast-swipe-end-x)] data-[swipe=move]:translate-x-[var(--radix-toast-swipe-move-x)] data-[swipe=move]:transition-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[swipe=end]:animate-out data-[state=closed]:fade-out-80 data-[state=closed]:slide-out-to-bottom-full data-[state=open]:slide-in-from-bottom-full liquid-glass-light",
   {
     variants: {
       variant: {
