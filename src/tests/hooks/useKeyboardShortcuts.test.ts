@@ -2,25 +2,22 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 describe('useKeyboardShortcuts', () => {
   let eventListeners: Map<string, EventListener> = new Map();
+  let addSpy: ReturnType<typeof vi.spyOn>;
+  let removeSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
     eventListeners = new Map();
-    vi.stubGlobal('window', {
-      addEventListener: (event: string, handler: EventListener) => {
-        eventListeners.set(event, handler);
-      },
-      removeEventListener: (event: string, _handler: EventListener) => {
-        eventListeners.delete(event);
-      },
-      document: {
-        hasFocus: () => true,
-        activeElement: { tagName: 'BODY' },
-      },
+    addSpy = vi.spyOn(window, 'addEventListener').mockImplementation((event: string, handler: EventListenerOrEventListenerObject) => {
+      eventListeners.set(event, handler as EventListener);
+    });
+    removeSpy = vi.spyOn(window, 'removeEventListener').mockImplementation((event: string) => {
+      eventListeners.delete(event);
     });
   });
 
   afterEach(() => {
-    vi.unstubAllGlobals();
+    addSpy?.mockRestore();
+    removeSpy?.mockRestore();
     eventListeners.clear();
   });
 

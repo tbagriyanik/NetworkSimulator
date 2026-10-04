@@ -1,3 +1,4 @@
+// @vitest-environment node
 import { describe, it, expect } from 'vitest';
 import {
   encryptMd5Password,
@@ -39,21 +40,17 @@ describe('Crypto Module', () => {
       const origKey = process.env.EXAM_HMAC_KEY;
       const origPubKey = process.env.NEXT_PUBLIC_EXAM_HMAC_KEY;
       const origPhase = process.env.NEXT_PHASE;
-      const origWindow = globalThis.window;
       try {
         Object.defineProperty(process.env, 'NODE_ENV', { value: 'production', configurable: true, writable: true, enumerable: true });
         delete process.env.EXAM_HMAC_KEY;
         delete process.env.NEXT_PUBLIC_EXAM_HMAC_KEY;
         delete process.env.NEXT_PHASE;
-        // @ts-expect-error - Simulating server environment where window is undefined
-        delete globalThis.window;
         expect(() => getExamHmacKey()).toThrow(/EXAM_HMAC_KEY environment variable is missing in production/);
       } finally {
         Object.defineProperty(process.env, 'NODE_ENV', { value: origEnv, configurable: true, writable: true, enumerable: true });
         if (origKey) process.env.EXAM_HMAC_KEY = origKey;
         if (origPubKey) process.env.NEXT_PUBLIC_EXAM_HMAC_KEY = origPubKey;
         if (origPhase) process.env.NEXT_PHASE = origPhase;
-        if (origWindow !== undefined) globalThis.window = origWindow;
       }
     });
 
@@ -67,10 +64,11 @@ describe('Crypto Module', () => {
         delete process.env.EXAM_HMAC_KEY;
         delete process.env.NEXT_PUBLIC_EXAM_HMAC_KEY;
         delete process.env.NEXT_PHASE;
-        expect(typeof window).not.toBe('undefined');
+        globalThis.window = {} as unknown as Window & typeof globalThis;
         expect(() => getExamHmacKey()).not.toThrow();
         expect(getExamHmacKey()).toBe('SENTINEL_EXAM_HMAC_KEY_2026_SECURE_SIGNATURE');
       } finally {
+        delete (globalThis as { window?: unknown }).window;
         Object.defineProperty(process.env, 'NODE_ENV', { value: origEnv, configurable: true, writable: true, enumerable: true });
         if (origKey) process.env.EXAM_HMAC_KEY = origKey;
         if (origPubKey) process.env.NEXT_PUBLIC_EXAM_HMAC_KEY = origPubKey;
