@@ -438,7 +438,12 @@ export function GlobalDragManager() {
 
     const handleDown = (e: MouseEvent) => {
       if (state.active) return;
-      const handle = (e.target as HTMLElement).closest('[data-drag-handle]');
+      if (e.button !== 0) return;
+      const target = e.target as HTMLElement;
+      if (target.closest('button, input, select, textarea, a, [role="button"], .no-drag')) return;
+      if (typeof window !== 'undefined' && window.innerWidth < 640) return;
+
+      const handle = target.closest('[data-drag-handle]');
       if (!handle) return;
       const dialog = (handle as HTMLElement).closest('[data-draggable-id]') as HTMLElement;
       if (!dialog) return;
@@ -539,7 +544,7 @@ export function GlobalDragManager() {
         state.el.style.transform = '';
         state.el.style.transition = '';
       }
-      if (state.id) {
+      if (state.id && typeof window !== 'undefined' && window.innerWidth >= 640) {
         safeSetJSON(`draggable_position_${state.id}`, { x: clampedLeft, y: clampedTop });
       }
       state.active = false;

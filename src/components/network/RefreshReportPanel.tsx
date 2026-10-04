@@ -5,8 +5,6 @@ import { safeGetItem, safeSetItem } from '@/lib/storage/safeStorage';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LiveDeviceList } from '@/components/network/LiveDeviceList';
-import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
-import { RefreshNetworkReport } from '@/hooks/useRefreshReport';
 
 import { RefreshReportPanelProps } from './RefreshReportPanel/types';
 import { RefreshHeader } from './RefreshReportPanel/RefreshHeader';
@@ -42,36 +40,57 @@ export function RefreshReportPanel({
   return (
     <div
       ref={refreshReportRef}
-      data-draggable-id="refresh-network-report"
+      data-draggable-id={!isMobile ? "refresh-network-report" : undefined}
       className={`fixed z-[100] flex flex-col overflow-hidden backdrop-blur-md select-none ${isMobile
-        ? 'top-[84px] left-1/2 -translate-x-1/2 w-[calc(100%-24px)] max-w-[360px] rounded-xl border shadow-2xl'
-        : 'top-20 right-4 w-full max-w-sm rounded-xl border shadow-2xl'
-        } animate-in slide-in-from-right-full duration-300 ${isDark
+        ? 'top-[84px] left-3 right-3 max-w-[360px] mx-auto rounded-xl border shadow-2xl animate-in fade-in duration-200'
+        : 'top-20 right-4 w-full max-w-sm rounded-xl border shadow-2xl animate-in slide-in-from-right-full duration-300'
+        } ${isDark
           ? (focusedOverlay === 'refresh' ? 'bg-secondary-950/85 border-emerald-400 text-secondary-100 shadow-[0_0_0_1px_rgba(52,211,153,0.35),0_20px_40px_rgba(0,0,0,0.4)]' : 'bg-secondary-950/85 border-secondary-850/80 text-secondary-100 shadow-black/40')
           : (focusedOverlay === 'refresh' ? 'bg-white/85 border-emerald-500 text-secondary-900 shadow-[0_0_0_1px_rgba(34,197,94,0.24),0_20px_40px_rgba(15,23,42,0.12)]' : 'bg-white/85 border-secondary-200/80 text-secondary-900 shadow-secondary-200/50')
         }`}
       style={{
         zIndex: 100,
-        maxHeight: isMobile ? 'calc(100dvh - 100px)' : 'calc(100vh - 20px)',
-        resize: isMobile ? 'none' : 'both',
+        maxHeight: isCollapsed ? 'none' : (isMobile ? 'calc(100dvh - 100px)' : 'calc(100vh - 20px)'),
+        height: isCollapsed ? 'auto' : undefined,
+        resize: isMobile || isCollapsed ? 'none' : 'both',
         overflow: 'hidden',
+        ...(isMobile
+          ? {
+              position: 'fixed',
+              top: '84px',
+              left: '12px',
+              right: '12px',
+              margin: '0 auto',
+              width: 'auto',
+              maxWidth: '360px',
+              transform: 'none',
+            }
+          : {}),
       }}
-      onMouseDown={() => setFocusedOverlay('refresh')}
-      onPointerDownCapture={(e) => bringElementToFront(e.currentTarget as HTMLElement)}
+      onMouseDown={(e) => {
+        if ((e.target as HTMLElement).closest('button, input, select, textarea, a, .no-drag')) return;
+        setFocusedOverlay('refresh');
+      }}
+      onPointerDown={(e) => {
+        if ((e.target as HTMLElement).closest('button, input, select, textarea, a, .no-drag')) return;
+        setFocusedOverlay('refresh');
+        bringElementToFront(e.currentTarget as HTMLElement);
+      }}
     >
-      <Collapsible open={!isCollapsed} onOpenChange={(open) => setIsCollapsed(!open)}>
-        <div className="flex h-full min-h-0 flex-col">
-          <RefreshHeader
-            title={refreshNetworkReport.title}
-            isDark={isDark}
-            isCollapsed={isCollapsed}
-            onRefresh={handleRefreshNetwork}
-            onClose={() => setRefreshNetworkReport((prev: RefreshNetworkReport | null) => prev ? { ...prev, show: false } : null)}
-            onToggleCollapse={() => setIsCollapsed((prev: boolean) => !prev)}
-            setFocusedOverlay={setFocusedOverlay}
-            language={language}
-          />
-          <CollapsibleContent className="flex min-h-0 flex-1 flex-col">
+      <div className={`flex min-h-0 flex-col ${isCollapsed ? 'h-auto' : 'h-full flex-1'}`}>
+        <RefreshHeader
+          title={refreshNetworkReport.title}
+          isDark={isDark}
+          isCollapsed={isCollapsed}
+          isMobile={isMobile}
+          onRefresh={handleRefreshNetwork}
+          onClose={() => setRefreshNetworkReport(null)}
+          onToggleCollapse={() => setIsCollapsed((prev) => !prev)}
+          setFocusedOverlay={setFocusedOverlay}
+          language={language}
+        />
+        {!isCollapsed && (
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
             <div className="min-h-0 flex-1 overflow-y-auto p-2">
               <Tabs defaultValue="summary" className="w-full">
                 <TabsList className={`w-full grid grid-cols-2 rounded-lg ${isDark ? 'bg-secondary-800/80' : 'bg-secondary-200/80'}`}>
@@ -209,9 +228,9 @@ export function RefreshReportPanel({
                 </TabsContent>
               </Tabs>
             </div>
-          </CollapsibleContent>
-        </div>
-      </Collapsible>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -217,6 +217,7 @@ export function ExamModePanel({
   // Drag handlers
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
+    if (target.closest('button, input, select, textarea, a, [role="button"], .no-drag')) return;
     if (!target.closest('[data-drag-handle]')) return;
 
     e.preventDefault();

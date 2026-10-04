@@ -201,12 +201,20 @@ export function usePageTopologyActions({
   // Draggable refresh network report saved position
   useEffect(() => {
     if (!refreshNetworkReport?.show || !refreshReportRef.current) return;
-    if (isMobile) return;
+    const el = refreshReportRef.current;
+    if (isMobile) {
+      el.style.left = '';
+      el.style.top = '';
+      el.style.right = '';
+      el.style.bottom = '';
+      el.style.transform = '';
+      el.style.position = '';
+      return;
+    }
     const parsed = safeGetJSON<{ x: number; y: number } | null>('draggable_position_refresh-network-report', null);
     if (parsed && typeof parsed.x === 'number' && typeof parsed.y === 'number') {
       const vw = window.innerWidth;
       const vh = window.innerHeight;
-      const el = refreshReportRef.current;
       const rect = el.getBoundingClientRect();
       const safeX = Math.max(4, Math.min(parsed.x, vw - rect.width - 4));
       const safeY = Math.max(128, Math.min(parsed.y, vh - rect.height - 4));
