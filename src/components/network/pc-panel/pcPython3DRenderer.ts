@@ -62,6 +62,10 @@ export function generate3DSceneHtml(scene: Python3DSceneState, isDark: boolean =
       <select class="theme-select" id="select-theme" title="${isEn ? 'WebGL Theme Selection' : 'WebGL Tema Seçimi'}">
         ${initialThemeOption}
       </select>
+      <select class="theme-select" id="select-quality" title="${isEn ? 'Rendering Quality' : 'Görüntü Kalitesi'}">
+        <option value="high" selected>${isEn ? '⚡ Full Quality' : '⚡ Tam Kalite'}</option>
+        <option value="low">${isEn ? '🔋 Low Quality' : '🔋 Düşük Kalite'}</option>
+      </select>
       <button class="btn" id="btn-wireframe" title="${isEn ? 'Wireframe Mode' : 'Tel Çerçeve Modu'}">${isEn ? '🌐 Wireframe' : '🌐 Tel Kafes'}</button>
       <button class="btn" id="btn-grid" title="${isEn ? 'Toggle Floor Grid' : 'Zemin Izgarasını Göster/Gizle'}">${isEn ? '▦ Grid' : '▦ Izgara'}</button>
       <button class="btn" id="btn-rotate" title="${isEn ? 'Toggle Auto Rotation' : 'Otomatik Dönüşü Aç/Kapat'}">${isEn ? '🔄 Rotate' : '🔄 Döndür'}</button>

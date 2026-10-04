@@ -46,12 +46,16 @@ print("3D Scene Created")
     expect(htmlTr).toContain('<!DOCTYPE html>');
     expect(htmlTr).toContain('Test 3D');
     expect(htmlTr).toContain('render-canvas');
+    expect(htmlTr).toContain('select-quality');
+    expect(htmlTr).toContain('Tam Kalite');
     expect(htmlTr).toContain('btn-wireframe');
     expect(htmlTr).toContain('Tel Kafes');
     expect(htmlTr).toContain('Nesne');
 
     const htmlEn = generate3DSceneHtml(scene!, true, 'en');
     expect(htmlEn).toContain('<!DOCTYPE html>');
+    expect(htmlEn).toContain('select-quality');
+    expect(htmlEn).toContain('Full Quality');
     expect(htmlEn).toContain('Wireframe');
     expect(htmlEn).toContain('Objects');
   });

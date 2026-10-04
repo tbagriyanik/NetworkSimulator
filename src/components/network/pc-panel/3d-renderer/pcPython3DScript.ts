@@ -37,16 +37,22 @@ export function get3DSceneScript(sceneDataJson: string, isDark: boolean = true):
         (typeof navigator.deviceMemory === 'number' && navigator.deviceMemory <= 4);
       const frameInterval = lowEnd || reducedMotion ? 33 : 16;
       let dragButton = 0;
-      let lastMouseX = 0;
-      let lastMouseY = 0;
+      let qualityMode = 'high';
+      const selectQuality = document.getElementById('select-quality');
+      if (selectQuality) {
+        selectQuality.addEventListener('change', (e) => {
+          qualityMode = e.target.value || 'high';
+          resize();
+        });
+      }
 
       function resize() {
         if (!canvas.parentElement) return;
         width = Math.max(1, canvas.parentElement.clientWidth);
         height = Math.max(1, canvas.parentElement.clientHeight);
-        const dpr = Math.min(window.devicePixelRatio || 1, lowEnd ? 1 : 1.5);
-        canvas.width = Math.round(width * dpr);
-        canvas.height = Math.round(height * dpr);
+        const maxDpr = qualityMode === 'low' ? 0.5 : (lowEnd ? 1.0 : Math.min(window.devicePixelRatio || 1, 2.0));
+        canvas.width = Math.max(1, Math.round(width * maxDpr));
+        canvas.height = Math.max(1, Math.round(height * maxDpr));
         if (gl) {
           gl.viewport(0, 0, canvas.width, canvas.height);
         }
@@ -573,24 +579,28 @@ export function get3DSceneScript(sceneDataJson: string, isDark: boolean = true):
 
       const WEBGL_THEMES = {
         dark: {
-          sky: [0.05, 0.08, 0.15, 1.0],
+          bgHex: '#020617',
+          sky: [0.03, 0.05, 0.12, 1.0],
           grid: [0.3, 0.4, 0.5, 0.4],
           ambient: [0.25, 0.28, 0.35],
           sun: [0.9, 0.9, 0.95]
         },
         light: {
+          bgHex: '#f8fafc',
           sky: [0.92, 0.94, 0.97, 1.0],
           grid: [0.5, 0.55, 0.6, 0.5],
           ambient: [0.75, 0.75, 0.8],
           sun: [1.0, 0.98, 0.9]
         },
         neon: {
+          bgHex: '#0f021f',
           sky: [0.08, 0.02, 0.16, 1.0],
           grid: [0.9, 0.2, 0.8, 0.5],
           ambient: [0.4, 0.15, 0.5],
           sun: [1.0, 0.4, 0.8]
         },
         blueprint: {
+          bgHex: '#081a30',
           sky: [0.05, 0.14, 0.28, 1.0],
           grid: [0.8, 0.9, 1.0, 0.6],
           ambient: [0.3, 0.45, 0.65],
@@ -599,10 +609,17 @@ export function get3DSceneScript(sceneDataJson: string, isDark: boolean = true):
       };
 
       let activeThemeKey = '${defaultTheme}';
+      let hasUserSelectedTheme = false;
       const selectTheme = document.getElementById('select-theme');
       if (selectTheme) {
         selectTheme.addEventListener('change', (e) => {
           activeThemeKey = e.target.value || '${defaultTheme}';
+          hasUserSelectedTheme = true;
+          const theme = WEBGL_THEMES[activeThemeKey] || WEBGL_THEMES.dark;
+          if (theme && theme.bgHex) {
+            document.body.style.backgroundColor = theme.bgHex;
+          }
+          requestRender();
         });
       }
 
@@ -646,7 +663,9 @@ export function get3DSceneScript(sceneDataJson: string, isDark: boolean = true):
         camTarget[2] += (targetPan[2] - camTarget[2]) * lerpFactor;
 
         const activeTheme = WEBGL_THEMES[activeThemeKey] || WEBGL_THEMES.dark;
-        const currentSky = selectTheme && activeThemeKey !== 'dark' ? activeTheme.sky : skyTop;
+        const currentSky = (hasUserSelectedTheme || !sceneData.environment || !sceneData.environment.sky)
+          ? activeTheme.sky
+          : skyTop;
 
         gl.viewport(0, 0, canvas.width, canvas.height);
         gl.clearColor(currentSky[0], currentSky[1], currentSky[2], 1.0);
