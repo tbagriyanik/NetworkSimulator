@@ -1,7 +1,22 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { Smartphone, Wifi, Server, Send, BatteryCharging, Signal, Globe, PhoneCall } from 'lucide-react';
+import {
+  Smartphone,
+  Wifi,
+  WifiHigh,
+  WifiLow,
+  WifiOff,
+  Server,
+  Send,
+  BatteryCharging,
+  BatteryFull,
+  BatteryMedium,
+  BatteryLow,
+  BatteryWarning,
+  Globe,
+  PhoneCall,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAppStore } from '@/lib/store/appStore';
 import { checkConnectivity } from '@/lib/network/connectivity/pathResolution';
@@ -50,6 +65,12 @@ export function MobileDeviceView({
   const setDevices = useAppStore(state => state.setDevices);
 
   const [activeScreen, setActiveScreen] = useState<'wifi' | 'ip' | 'ping' | 'voip'>('wifi');
+  const [batteryPercent] = useState(88);
+  const [isCharging, setIsCharging] = useState(true);
+
+  const toggleCharging = () => {
+    setIsCharging(prev => !prev);
+  };
 
   const [currentTime, setCurrentTime] = useState(() => {
     const d = new Date();
@@ -321,7 +342,54 @@ export function MobileDeviceView({
           <span>{currentTime}</span>
           <div className={cn("w-16 h-3 rounded-full border", isDark ? "bg-black border-slate-700" : "bg-slate-200 border-slate-400")} />
           <div className="flex items-center gap-1.5">
-            <Signal className={cn("w-3 h-3 transition-colors", wifiSignalStrength > 0 ? "text-emerald-500" : "opacity-40")} />
+            
+            {/* Dynamic Wi-Fi Indicator */}
+            {!isPowerOn || !isWifiEnabled ? (
+              <span title={isTr ? 'Wi-Fi: Kapalı' : 'Wi-Fi: Off'}>
+                <WifiOff className="w-3.5 h-3.5 opacity-30" />
+              </span>
+            ) : isWifiConnected ? (
+              <span title={isTr ? `Wi-Fi: ${device.wifi?.ssid || 'Bağlı'} (Sinyal: ${wifiSignalStrength}/5)` : `Wi-Fi: ${device.wifi?.ssid || 'Connected'} (Signal: ${wifiSignalStrength}/5)`}>
+                {wifiSignalStrength >= 4 ? (
+                  <Wifi className="w-3.5 h-3.5 text-sky-400 transition-colors" />
+                ) : wifiSignalStrength >= 2 ? (
+                  <WifiHigh className="w-3.5 h-3.5 text-sky-300 transition-colors" />
+                ) : (
+                  <WifiLow className="w-3.5 h-3.5 text-amber-400 transition-colors" />
+                )}
+              </span>
+            ) : (
+              <span title={isTr ? 'Wi-Fi: Bağlı Değil' : 'Wi-Fi: Disconnected'}>
+                <WifiOff className="w-3.5 h-3.5 opacity-40 transition-colors" />
+              </span>
+            )}
+
+            {/* Dynamic Battery with Toggle & Percentage */}
+            <button
+              type="button"
+              onClick={toggleCharging}
+              title={
+                isTr
+                  ? `Pil: %${batteryPercent} (${isCharging ? 'Şarj Oluyor ⚡' : 'Pilde'}) • Tıklayarak şarj durumunu değiştirin`
+                  : `Battery: ${batteryPercent}% (${isCharging ? 'Charging ⚡' : 'On Battery'}) • Click to toggle charging`
+              }
+              className="flex items-center gap-0.5 cursor-pointer hover:opacity-80 transition-opacity outline-none"
+            >
+              <span className="text-[9px] font-mono leading-none">
+                {batteryPercent}%
+              </span>
+              {isCharging ? (
+                <BatteryCharging className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
+              ) : batteryPercent >= 80 ? (
+                <BatteryFull className="w-3.5 h-3.5 text-emerald-400" />
+              ) : batteryPercent >= 40 ? (
+                <BatteryMedium className="w-3.5 h-3.5 text-sky-400" />
+              ) : batteryPercent >= 20 ? (
+                <BatteryLow className="w-3.5 h-3.5 text-amber-400" />
+              ) : (
+                <BatteryWarning className="w-3.5 h-3.5 text-rose-500 animate-pulse" />
+              )}
+            </button>
           </div>
         </div>
 

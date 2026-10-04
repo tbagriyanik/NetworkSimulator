@@ -2,7 +2,17 @@
 
 import { type CSSProperties, useState, useEffect } from 'react';
 import type { LucideIcon } from 'lucide-react';
-import { BatteryCharging, Wifi as WifiIcon } from 'lucide-react';
+import {
+  Wifi,
+  WifiHigh,
+  WifiLow,
+  WifiOff,
+  BatteryCharging,
+  BatteryFull,
+  BatteryMedium,
+  BatteryLow,
+  BatteryWarning,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useGraphicsQuality } from '@/lib/store/appStore';
 import type { PCActiveTab } from './PCPanel.types';
@@ -26,6 +36,7 @@ interface HomeLauncherProps {
   internalPcHostname?: string;
   pcIP?: string;
   wifiSignalStrength?: number;
+  language?: string;
 }
 
 export function HomeLauncher({
@@ -35,9 +46,22 @@ export function HomeLauncher({
   mobileVerticalScrollStyle,
   onNavigate,
   internalPcHostname = 'PC-Workstation',
+  wifiSignalStrength,
+  language = 'tr',
 }: HomeLauncherProps) {
   const graphicsQuality = useGraphicsQuality();
   const isLowGraphics = graphicsQuality === 'low';
+  const isTr = language === 'tr';
+  const signal = wifiSignalStrength ?? 0;
+  const isWifiConnected = signal > 0;
+
+  const [batteryPercent] = useState(92);
+  const [isCharging, setIsCharging] = useState(true);
+
+  const toggleCharging = () => {
+    setIsCharging(prev => !prev);
+  };
+
   const [currentTime, setCurrentTime] = useState<string>('');
 
   useEffect(() => {
@@ -75,8 +99,53 @@ export function HomeLauncher({
             <span className="text-[9px] font-mono text-white/70 truncate max-w-[50px]">{internalPcHostname}</span>
           </div>
           <div className="flex items-center gap-2">
-            <WifiIcon className="w-3.5 h-3.5 text-emerald-400" />
-            <BatteryCharging className="w-4 h-4 text-emerald-400" />
+            {/* Dynamic Wi-Fi Indicator */}
+            {isPoweredOff ? (
+              <span title={isTr ? 'Wi-Fi: Kapalı' : 'Wi-Fi: Off'}>
+                <WifiOff className="w-3.5 h-3.5 opacity-30" />
+              </span>
+            ) : isWifiConnected ? (
+              <span title={isTr ? `Wi-Fi: Bağlı (Sinyal: ${signal}/5)` : `Wi-Fi: Connected (Signal: ${signal}/5)`}>
+                {signal >= 4 ? (
+                  <Wifi className="w-3.5 h-3.5 text-sky-400 transition-colors" />
+                ) : signal >= 2 ? (
+                  <WifiHigh className="w-3.5 h-3.5 text-sky-300 transition-colors" />
+                ) : (
+                  <WifiLow className="w-3.5 h-3.5 text-amber-400 transition-colors" />
+                )}
+              </span>
+            ) : (
+              <span title={isTr ? 'Wi-Fi: Bağlı Değil' : 'Wi-Fi: Disconnected'}>
+                <WifiOff className="w-3.5 h-3.5 opacity-40 transition-colors" />
+              </span>
+            )}
+
+            {/* Dynamic Battery with Toggle & Percentage */}
+            <button
+              type="button"
+              onClick={toggleCharging}
+              title={
+                isTr
+                  ? `Pil: %${batteryPercent} (${isCharging ? 'Şarj Oluyor ⚡' : 'Pilde'}) • Tıklayarak şarj durumunu değiştirin`
+                  : `Battery: ${batteryPercent}% (${isCharging ? 'Charging ⚡' : 'On Battery'}) • Click to toggle charging`
+              }
+              className="flex items-center gap-0.5 cursor-pointer hover:opacity-80 transition-opacity outline-none"
+            >
+              <span className="text-[9px] font-mono leading-none">
+                {batteryPercent}%
+              </span>
+              {isCharging ? (
+                <BatteryCharging className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
+              ) : batteryPercent >= 80 ? (
+                <BatteryFull className="w-3.5 h-3.5 text-emerald-400" />
+              ) : batteryPercent >= 40 ? (
+                <BatteryMedium className="w-3.5 h-3.5 text-sky-400" />
+              ) : batteryPercent >= 20 ? (
+                <BatteryLow className="w-3.5 h-3.5 text-amber-400" />
+              ) : (
+                <BatteryWarning className="w-3.5 h-3.5 text-rose-500 animate-pulse" />
+              )}
+            </button>
           </div>
         </div>
 
