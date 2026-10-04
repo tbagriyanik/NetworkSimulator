@@ -15,6 +15,7 @@ export interface TerminalLine {
 interface UseTerminalOutputSyncOptions {
   output: TerminalOutput[];
   deviceId: string;
+  language?: string;
 }
 
 function splitOutputItem(outputItem: TerminalOutput): TerminalLine[] {
@@ -39,7 +40,7 @@ function splitOutputItem(outputItem: TerminalOutput): TerminalLine[] {
   }];
 }
 
-export function useTerminalOutputSync({ output, deviceId }: UseTerminalOutputSyncOptions) {
+export function useTerminalOutputSync({ output, deviceId, language = 'tr' }: UseTerminalOutputSyncOptions) {
   const [displayedLines, setDisplayedLines] = useState<TerminalLine[]>(() => {
     const initialLines: TerminalLine[] = [];
     if (output && output.length > 0) {
@@ -140,7 +141,9 @@ export function useTerminalOutputSync({ output, deviceId }: UseTerminalOutputSyn
       {
         id: `cleared-${Date.now()}`,
         type: 'output',
-        content: '[Terminal ekranı temizlendi. Komut listesi için \'?\' yazabilirsiniz.]',
+        content: language === 'en'
+          ? "[Terminal screen cleared. Type '?' for command list.]"
+          : "[Terminal ekranı temizlendi. Komut listesi için '?' yazabilirsiniz.]",
         realismLevel: 'sim-only',
       },
     ]);

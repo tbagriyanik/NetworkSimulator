@@ -217,6 +217,7 @@ export const DeviceRenderer = React.memo(function DeviceRenderer({
         isDark={isDark}
         deviceWidth={deviceWidth}
         isPoweredOff={isPoweredOff}
+        language={language}
       />
 
       <g transform={`translate(${deviceWidth / 2 - 16}, 12)`}>

@@ -322,8 +322,6 @@ export function MobileDeviceView({
           <div className={cn("w-16 h-3 rounded-full border", isDark ? "bg-black border-slate-700" : "bg-slate-200 border-slate-400")} />
           <div className="flex items-center gap-1.5">
             <Signal className={cn("w-3 h-3 transition-colors", wifiSignalStrength > 0 ? "text-emerald-500" : "opacity-40")} />
-            <Wifi className={cn("w-3 h-3 transition-colors", isWifiConnected ? "text-sky-500" : "opacity-40")} />
-            <BatteryCharging className="w-3.5 h-3.5 text-emerald-500" />
           </div>
         </div>
 

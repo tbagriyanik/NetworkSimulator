@@ -2,9 +2,12 @@
 /* Ping and IoT Animation Definitions */
 
 @keyframes pulse-subtle {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.8;
   }
@@ -15,6 +18,7 @@
     transform: scale(0.5);
     opacity: 0.6;
   }
+
   100% {
     transform: scale(1.8);
     opacity: 0;
@@ -22,10 +26,13 @@
 }
 
 @keyframes sound-pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 0.3;
     transform: scale(1);
   }
+
   50% {
     opacity: 0.7;
     transform: scale(1.05);
@@ -33,45 +40,60 @@
 }
 
 @keyframes cable-source-scale {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: scale(1);
   }
+
   50% {
     transform: scale(1.333);
   }
 }
 
 @keyframes cable-end-scale {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: scale(1);
   }
+
   50% {
     transform: scale(1.25);
   }
 }
 
 @keyframes ping-trail-opacity {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 0.25;
   }
+
   50% {
     opacity: 0.45;
   }
 }
 
 @keyframes ping-glow-opacity {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 0.15;
   }
+
   50% {
     opacity: 0.35;
   }
 }
 
 @keyframes ping-glow-opacity-low {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 0.08;
   }
+
   50% {
     opacity: 0.2;
   }
@@ -133,17 +155,51 @@
    but their keyframes were lost during the globals.css split, so the elements
    were rendered with the literal `animation-name` unresolvable (dead CSS). */
 @keyframes glitch {
-  0%, 100% { transform: translate(0); opacity: 1; }
-  20% { transform: translate(-2px, 1px); opacity: 0.85; }
-  40% { transform: translate(2px, -1px); opacity: 0.9; }
-  60% { transform: translate(-1px, 2px); opacity: 0.8; }
-  80% { transform: translate(1px, -2px); opacity: 0.95; }
+
+  0%,
+  100% {
+    transform: translate(0);
+    opacity: 1;
+  }
+
+  20% {
+    transform: translate(-2px, 1px);
+    opacity: 0.85;
+  }
+
+  40% {
+    transform: translate(2px, -1px);
+    opacity: 0.9;
+  }
+
+  60% {
+    transform: translate(-1px, 2px);
+    opacity: 0.8;
+  }
+
+  80% {
+    transform: translate(1px, -2px);
+    opacity: 0.95;
+  }
 }
 
 @keyframes glitch-skew {
-  0%, 100% { transform: skewX(0deg) scale(1); opacity: 0.25; }
-  30% { transform: skewX(8deg) scale(1.02); opacity: 0.35; }
-  60% { transform: skewX(-6deg) scale(0.98); opacity: 0.2; }
+
+  0%,
+  100% {
+    transform: skewX(0deg) scale(1);
+    opacity: 0.25;
+  }
+
+  30% {
+    transform: skewX(8deg) scale(1.02);
+    opacity: 0.35;
+  }
+
+  60% {
+    transform: skewX(-6deg) scale(0.98);
+    opacity: 0.2;
+  }
 }
 
 .animate-glitch {
@@ -180,9 +236,19 @@
 
 /* Ambient mesh-gradient backdrop of the main workspace. */
 @keyframes liquid {
-  0%, 100% { transform: translate(0, 0) rotate(12deg) scale(1.5); }
-  33% { transform: translate(2%, -3%) rotate(9deg) scale(1.55); }
-  66% { transform: translate(-3%, 2%) rotate(14deg) scale(1.48); }
+
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(12deg) scale(1.5);
+  }
+
+  33% {
+    transform: translate(2%, -3%) rotate(9deg) scale(1.55);
+  }
+
+  66% {
+    transform: translate(-3%, 2%) rotate(14deg) scale(1.48);
+  }
 }
 
 .animate-liquid {
@@ -191,8 +257,15 @@
 
 /* Shared entrance animations used by page, popovers and toasts. */
 @keyframes scale-in {
-  from { opacity: 0; transform: scale(0.92); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .animate-scale-in {
@@ -200,8 +273,13 @@
 }
 
 @keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .animate-fade-in {
@@ -354,9 +432,9 @@
 }
 
 /* 6. Completely hide decorative lighting blobs and glow pools in low graphics */
-.graphics-low [class*="blur-2xl"],
-.graphics-low [class*="blur-3xl"],
-.graphics-low [class*="blur-xl"] {
+.graphics-low [class~="blur-2xl"],
+.graphics-low [class~="blur-3xl"],
+.graphics-low [class~="blur-xl"] {
   display: none !important;
   opacity: 0 !important;
 }
@@ -435,6 +513,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   /* Respect the OS setting even in high graphics mode: motion is never
      required to understand the UI. */
   .topology-canvas *,

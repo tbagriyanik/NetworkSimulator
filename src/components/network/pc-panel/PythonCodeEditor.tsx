@@ -14,6 +14,7 @@ interface PythonCodeEditorProps {
   fontSize?: number;
   wordWrap?: boolean;
   textareaRef?: React.RefObject<HTMLTextAreaElement | null>;
+  language?: string;
 }
 
 const CODE_WORDS = [
@@ -72,7 +73,7 @@ function highlightCode(code: string): string {
   return result;
 }
 
-export function PythonCodeEditor({ value, onChange, onKeyDown, isDark, placeholder, fontSize = 14, wordWrap = true, textareaRef: externalTextareaRef }: PythonCodeEditorProps) {
+export function PythonCodeEditor({ value, onChange, onKeyDown, isDark, placeholder, fontSize = 14, wordWrap = true, textareaRef: externalTextareaRef, language = 'tr' }: PythonCodeEditorProps) {
   const internalTextareaRef = useRef<HTMLTextAreaElement>(null);
   const textareaRef = externalTextareaRef || internalTextareaRef;
   const preRef = useRef<HTMLPreElement>(null);
@@ -356,12 +357,12 @@ export function PythonCodeEditor({ value, onChange, onKeyDown, isDark, placehold
       {contextMenu && (
         <div className="absolute z-[10020] min-w-40 rounded-md border border-secondary-700 bg-secondary-900 p-1 text-xs text-secondary-100 shadow-xl" style={{ left: contextMenu.x, top: contextMenu.y }} onMouseDown={(event) => event.stopPropagation()}>
           {([
-            ['cut', 'Kes', Scissors],
-            ['copy', 'Kopyala', Copy],
-            ['paste', 'Yapıştır', ClipboardPaste],
+            ['cut', language === 'en' ? 'Cut' : 'Kes', Scissors],
+            ['copy', language === 'en' ? 'Copy' : 'Kopyala', Copy],
+            ['paste', language === 'en' ? 'Paste' : 'Yapıştır', ClipboardPaste],
             ['separator', '', null],
-            ['delete', 'Sil', Trash2],
-            ['selectAll', 'Tümünü seç', ListChecks],
+            ['delete', language === 'en' ? 'Delete' : 'Sil', Trash2],
+            ['selectAll', language === 'en' ? 'Select All' : 'Tümünü seç', ListChecks],
           ] as const).map(([action, label, Icon]) => action === 'separator' ? (
             <div key={action} className="my-1 border-t border-secondary-700" />
           ) : (

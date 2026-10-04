@@ -12,6 +12,7 @@ interface DeviceWifiStatusProps {
   isDark: boolean;
   deviceWidth: number;
   isPoweredOff: boolean;
+  language?: 'tr' | 'en';
 }
 
 const wifiBarRects = [
@@ -29,7 +30,8 @@ export const DeviceWifiStatus: React.FC<DeviceWifiStatusProps> = React.memo(({
   deviceConnections,
   isDark,
   deviceWidth,
-  isPoweredOff
+  isPoweredOff,
+  language = 'tr'
 }) => {
   const wlanPort = device.ports.find(p => p.id === 'wlan0');
   const pcWifi = device.wifi;
@@ -115,7 +117,14 @@ export const DeviceWifiStatus: React.FC<DeviceWifiStatusProps> = React.memo(({
 
     return (
       <g transform={`translate(${deviceWidth - 23}, 7)`}>
-        <title>{[`SSID: ${pcWifi?.ssid ?? 'N/A'}`, isConnected ? 'Bağlı' : 'Bağlı değil', `Sinyal: ${strength}/5`, `Güvenlik: ${pcWifi?.security ?? 'open'}`, `Kanal: ${pcWifi?.channel ?? 'N/A'}`, `Parola: ${pcWifi?.password ? 'Evet' : 'Hayır'}`].join(' • ')}</title>
+        <title>{[
+          `SSID: ${pcWifi?.ssid ?? 'N/A'}`,
+          isConnected ? (language === 'tr' ? 'Bağlı' : 'Connected') : (language === 'tr' ? 'Bağlı değil' : 'Disconnected'),
+          `${language === 'tr' ? 'Sinyal' : 'Signal'}: ${strength}/5`,
+          `${language === 'tr' ? 'Güvenlik' : 'Security'}: ${pcWifi?.security ?? 'open'}`,
+          `${language === 'tr' ? 'Kanal' : 'Channel'}: ${pcWifi?.channel ?? 'N/A'}`,
+          `${language === 'tr' ? 'Parola' : 'Password'}: ${pcWifi?.password ? (language === 'tr' ? 'Evet' : 'Yes') : (language === 'tr' ? 'Hayır' : 'No')}`
+        ].join(' • ')}</title>
         <svg x="-2" y="1" width="22" height="14" viewBox="0 0 22 14" className="pointer-events-none">
           {wifiBarRects.map((bar, index) => (
             <rect

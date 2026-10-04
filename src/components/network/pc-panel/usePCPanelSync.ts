@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, type SetStateAction } from 'react';
+import { useCallback, useEffect, type SetStateAction } from 'react';
 import type { CanvasDevice } from '../NetworkTopology/types/networkTopology.types';
 import { validateIP, validateIPv6 } from './pcPanelHelpers';
 import { isValidMAC, normalizeMAC } from '@/lib/utils';
@@ -133,14 +133,14 @@ export function usePCPanelSync({
 
   const syncToGlobal = useCallback(() => {
     const newErrors: PCPanelErrorMap = {};
-    if (!validateIP(pcIP)) newErrors.ip = 'Geçersiz IP';
-    if (!isValidMAC(pcMAC)) newErrors.mac = 'Geçersiz MAC';
+    if (!validateIP(pcIP)) newErrors.ip = t.invalidIpAddress || 'Invalid IP';
+    if (!isValidMAC(pcMAC)) newErrors.mac = t.invalidMacAddress || 'Invalid MAC';
     if (ipConfigMode === 'static') {
-      if (pcSubnet && !validateIP(pcSubnet)) newErrors.subnet = 'Geçersiz Subnet';
-      if (pcGateway && !validateIP(pcGateway)) newErrors.gateway = 'Geçersiz Gateway';
-      if (pcDNS && !validateIP(pcDNS)) newErrors.dns = 'Geçersiz DNS';
+      if (pcSubnet && !validateIP(pcSubnet)) newErrors.subnet = t.invalidSubnetMask || 'Invalid Subnet';
+      if (pcGateway && !validateIP(pcGateway)) newErrors.gateway = t.invalidGateway || 'Invalid Gateway';
+      if (pcDNS && !validateIP(pcDNS)) newErrors.dns = t.invalidDns || 'Invalid DNS';
     }
-    if (pcIPv6 && !validateIPv6(pcIPv6)) newErrors.ipv6 = 'Geçersiz IPv6';
+    if (pcIPv6 && !validateIPv6(pcIPv6)) newErrors.ipv6 = t.invalidIpv6Address || 'Invalid IPv6';
 
     setErrors(newErrors);
 

@@ -35,6 +35,8 @@ const tr = {
   rawHex: 'Ham Paket Çerçeve Dökümü (Raw Ethernet Frame Hex Dump)',
   filterPlaceholder: 'Filtrele (örn: IP, MAC, VLAN, ICMP, TCP)...',
   noFilterMatches: 'Filtreye uyan katman veya alan bulunamadı.',
+  noInboundLayers: 'Giriş katman verisi bulunmuyor.',
+  noOutboundLayers: 'Çıkış katman verisi bulunmuyor.',
 };
 
 const en = {
@@ -63,6 +65,8 @@ const en = {
   rawHex: 'Raw Ethernet Frame Hex Dump',
   filterPlaceholder: 'Filter (e.g. IP, MAC, VLAN, ICMP, TCP)...',
   noFilterMatches: 'No matching layers or fields found.',
+  noInboundLayers: 'No inbound layer data.',
+  noOutboundLayers: 'No outbound layer data.',
 };
 
 export const EmbeddedPduInspector: React.FC<EmbeddedPduInspectorProps> = ({
@@ -225,7 +229,7 @@ export const EmbeddedPduInspector: React.FC<EmbeddedPduInspectorProps> = ({
               </h4>
               <div className="space-y-3">
                 {filteredInLayers.length === 0 ? (
-                  <p className="text-xs text-slate-500 italic">{filterQuery ? t.noFilterMatches : 'No inbound layer data'}</p>
+                  <p className="text-xs text-slate-500 italic">{filterQuery ? t.noFilterMatches : t.noInboundLayers}</p>
                 ) : (
                   filteredInLayers.map((layer, idx) => (
                     <div key={`in-layer-${layer.layer}-${layer.name}-${idx}`} className={`p-3 rounded-lg border ${isDark ? 'bg-slate-900/90 border-slate-700/80' : 'bg-white border-slate-200'}`}>
@@ -264,7 +268,7 @@ export const EmbeddedPduInspector: React.FC<EmbeddedPduInspectorProps> = ({
               </h4>
               <div className="space-y-3">
                 {filteredOutLayers.length === 0 ? (
-                  <p className="text-xs text-slate-500 italic">{filterQuery ? t.noFilterMatches : 'No outbound layer data'}</p>
+                  <p className="text-xs text-slate-500 italic">{filterQuery ? t.noFilterMatches : t.noOutboundLayers}</p>
                 ) : (
                   filteredOutLayers.map((layer, idx) => (
                     <div key={`out-layer-${layer.layer}-${layer.name}-${idx}`} className={`p-3 rounded-lg border ${isDark ? 'bg-slate-900/90 border-slate-700/80' : 'bg-white border-slate-200'}`}>

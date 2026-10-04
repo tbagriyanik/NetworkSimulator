@@ -13,6 +13,7 @@ interface TempConnectionProps {
   mousePos: { x: number; y: number };
   cableInfo: CableInfo;
   CABLE_COLORS: Record<CableType | 'error', { primary: string; bg: string; text: string; border: string }>;
+  language?: 'tr' | 'en';
 }
 
 export function TempConnection({
@@ -20,7 +21,8 @@ export function TempConnection({
   connectionStart,
   mousePos,
   cableInfo,
-  CABLE_COLORS
+  CABLE_COLORS,
+  language = 'tr'
 }: TempConnectionProps) {
   if (!isDrawingConnection || !connectionStart) return null;
 
@@ -117,16 +119,16 @@ export function TempConnection({
           className="select-none pointer-events-none"
         >
           {cableInfo.cableType === 'straight'
-            ? 'Düz'
+            ? (language === 'tr' ? 'Düz' : 'Straight')
             : cableInfo.cableType === 'crossover'
-              ? 'Çapraz'
+              ? (language === 'tr' ? 'Çapraz' : 'Crossover')
               : cableInfo.cableType === 'serial'
-                ? 'Seri'
+                ? (language === 'tr' ? 'Seri' : 'Serial')
                 : cableInfo.cableType === 'console'
-                  ? 'Konsol'
+                  ? (language === 'tr' ? 'Konsol' : 'Console')
                   : cableInfo.cableType === 'wireless'
-                    ? 'Kablosuz'
-                    : 'Fiber'}
+                    ? (language === 'tr' ? 'Kablosuz' : 'Wireless')
+                    : (language === 'tr' ? 'Fiber' : 'Fiber')}
         </text>
       </g>
     </>

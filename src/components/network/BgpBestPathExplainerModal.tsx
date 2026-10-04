@@ -9,6 +9,7 @@ import { GitCommit, Trophy } from 'lucide-react';
 interface BgpBestPathExplainerModalProps {
   isOpen: boolean;
   onClose: () => void;
+  language?: 'tr' | 'en';
 }
 
 const sampleRouteA: BgpRoute = {
@@ -39,10 +40,66 @@ const sampleRouteB: BgpRoute = {
   routerId: '2.2.2.2',
 };
 
+const tr = {
+  title: 'BGP En İyi Yol Karar Açıklayıcısı',
+  routeA: 'Rota A',
+  routeB: 'Rota B',
+  winner: 'Kazanan',
+  nextHop: 'Next-Hop:',
+  asPath: 'AS Path:',
+  weight: 'Weight:',
+  localPref: 'Local Pref:',
+  decisionHierarchyTitle: '12 Adımlı BGP Karar Sıralaması (Endüstri Standardı)',
+  decisionStepBadge: 'Karar Adımı!',
+  steps: [
+    'En Yüksek Weight (Ağırlık)',
+    'En Yüksek Local Preference (Yerel Tercih)',
+    'Yerel Olarak Başlatılmış (Locally Originated)',
+    'En Kısa AS-Path Uzunluğu',
+    'En Düşük Origin Türü (IGP < EGP < ?)',
+    'En Düşük MED (Multi-Exit Discriminator)',
+    'eBGP Tercihi (iBGP yerine)',
+    'Next-Hop için En Düşük IGP Metriği',
+    'En Eski Rota (En Uzun Süredir Kurulu)',
+    'En Düşük Router ID (Yönlendirici Kimliği)',
+    'En Kısa Cluster List Uzunluğu',
+    'En Düşük Komşu IP Adresi (Eşitlik Bozucu)',
+  ],
+};
+
+const en = {
+  title: 'BGP Best Path Decision Explainer',
+  routeA: 'Route A',
+  routeB: 'Route B',
+  winner: 'Winner',
+  nextHop: 'Next-Hop:',
+  asPath: 'AS Path:',
+  weight: 'Weight:',
+  localPref: 'Local Pref:',
+  decisionHierarchyTitle: '12-Step BGP Decision Order (Industry Standard)',
+  decisionStepBadge: 'Decision Step!',
+  steps: [
+    'Highest Weight',
+    'Highest Local Preference',
+    'Locally Originated',
+    'Shortest AS-Path',
+    'Lowest Origin Type (IGP < EGP < ?)',
+    'Lowest MED (Multi-Exit Discriminator)',
+    'Prefer eBGP over iBGP',
+    'Lowest IGP Metric to Next-Hop',
+    'Oldest Path (Longest-Established)',
+    'Lowest Router ID',
+    'Minimum Cluster List Length',
+    'Lowest Neighbor IP (Tie-Breaker)',
+  ],
+};
+
 export const BgpBestPathExplainerModal: React.FC<BgpBestPathExplainerModalProps> = ({
   isOpen,
   onClose,
+  language = 'tr',
 }) => {
+  const t = language === 'en' ? en : tr;
   const [routeA] = useState<BgpRoute>(sampleRouteA);
   const [routeB] = useState<BgpRoute>(sampleRouteB);
 
@@ -58,7 +115,7 @@ export const BgpBestPathExplainerModal: React.FC<BgpBestPathExplainerModalProps>
           <div className="flex items-center gap-2">
             <GitCommit className="w-5 h-5 text-amber-500" />
             <h2 className="text-base font-bold text-slate-900 dark:text-white">
-              BGP Best Path Decision Explainer
+              {t.title}
             </h2>
           </div>
           <button
@@ -76,28 +133,28 @@ export const BgpBestPathExplainerModal: React.FC<BgpBestPathExplainerModalProps>
             {/* Route A */}
             <div className={`p-4 rounded-xl border ${comparison.winner === -1 ? 'border-emerald-500 bg-emerald-500/5' : 'border-slate-200 dark:border-slate-800'}`}>
               <div className="flex items-center justify-between mb-3">
-                <span className="font-bold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300">Rota A</span>
+                <span className="font-bold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300">{t.routeA}</span>
                 {comparison.winner === -1 && (
                   <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/60 px-2.5 py-0.5 rounded-full">
-                    <Trophy className="w-3.5 h-3.5" /> Kazanan
+                    <Trophy className="w-3.5 h-3.5" /> {t.winner}
                   </span>
                 )}
               </div>
               <div className="space-y-2 text-xs">
                 <div className="flex justify-between">
-                  <span className="text-slate-500">Next-Hop:</span>
+                  <span className="text-slate-500">{t.nextHop}</span>
                   <span className="font-mono text-slate-800 dark:text-slate-200">{routeA.nextHop}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-500">AS Path:</span>
+                  <span className="text-slate-500">{t.asPath}</span>
                   <span className="font-mono text-slate-800 dark:text-slate-200">[{routeA.asPath.join(', ')}]</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-500">Weight:</span>
+                  <span className="text-slate-500">{t.weight}</span>
                   <span className="font-mono text-slate-800 dark:text-slate-200">{routeA.weight}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-500">Local Pref:</span>
+                  <span className="text-slate-500">{t.localPref}</span>
                   <span className="font-mono text-slate-800 dark:text-slate-200">{routeA.localPref}</span>
                 </div>
               </div>
@@ -106,28 +163,28 @@ export const BgpBestPathExplainerModal: React.FC<BgpBestPathExplainerModalProps>
             {/* Route B */}
             <div className={`p-4 rounded-xl border ${comparison.winner === 1 ? 'border-emerald-500 bg-emerald-500/5' : 'border-slate-200 dark:border-slate-800'}`}>
               <div className="flex items-center justify-between mb-3">
-                <span className="font-bold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300">Rota B</span>
+                <span className="font-bold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300">{t.routeB}</span>
                 {comparison.winner === 1 && (
                   <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/60 px-2.5 py-0.5 rounded-full">
-                    <Trophy className="w-3.5 h-3.5" /> Kazanan
+                    <Trophy className="w-3.5 h-3.5" /> {t.winner}
                   </span>
                 )}
               </div>
               <div className="space-y-2 text-xs">
                 <div className="flex justify-between">
-                  <span className="text-slate-500">Next-Hop:</span>
+                  <span className="text-slate-500">{t.nextHop}</span>
                   <span className="font-mono text-slate-800 dark:text-slate-200">{routeB.nextHop}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-500">AS Path:</span>
+                  <span className="text-slate-500">{t.asPath}</span>
                   <span className="font-mono text-slate-800 dark:text-slate-200">[{routeB.asPath.join(', ')}]</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-500">Weight:</span>
+                  <span className="text-slate-500">{t.weight}</span>
                   <span className="font-mono text-slate-800 dark:text-slate-200">{routeB.weight}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-500">Local Pref:</span>
+                  <span className="text-slate-500">{t.localPref}</span>
                   <span className="font-mono text-slate-800 dark:text-slate-200">{routeB.localPref}</span>
                 </div>
               </div>
@@ -137,12 +194,13 @@ export const BgpBestPathExplainerModal: React.FC<BgpBestPathExplainerModalProps>
           {/* Decision Steps Pipeline */}
           <div className="space-y-3">
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-              12 Adımlı BGP Karar Sıralaması (IOS Standartı)
+              {t.decisionHierarchyTitle}
             </h3>
             <div className="space-y-1.5">
               {BGP_BEST_PATH_STEPS.map((step, idx) => {
                 const isDecisionStep = comparison.stepIndex === idx + 1;
                 const isPassedStep = comparison.stepIndex > idx + 1;
+                const stepLabel = t.steps[idx] || step;
                 return (
                   <div
                     key={step}
@@ -158,12 +216,12 @@ export const BgpBestPathExplainerModal: React.FC<BgpBestPathExplainerModalProps>
                       <span className="w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-[10px] font-bold">
                         {idx + 1}
                       </span>
-                      <span>{step}</span>
+                      <span>{stepLabel}</span>
                     </div>
 
                     {isDecisionStep && (
                       <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-950/80 px-2 py-0.5 rounded-lg">
-                        Karar Adımı!
+                        {t.decisionStepBadge}
                       </span>
                     )}
                   </div>
@@ -176,3 +234,4 @@ export const BgpBestPathExplainerModal: React.FC<BgpBestPathExplainerModalProps>
     </div>
   );
 };
+

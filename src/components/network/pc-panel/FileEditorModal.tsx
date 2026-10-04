@@ -578,6 +578,7 @@ export function FileEditorModal({
       <div data-code-editor="true" className="flex-1 relative flex flex-col font-mono text-sm overflow-hidden">
         <PythonCodeEditor
           textareaRef={textareaRef}
+          language={language}
           value={content}
           onChange={updateContent}
           onKeyDown={handleTextareaKeyDown}

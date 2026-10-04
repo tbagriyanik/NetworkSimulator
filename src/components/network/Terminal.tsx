@@ -133,7 +133,7 @@ export function Terminal({
     return () => window.visualViewport?.removeEventListener('resize', handleResize);
   }, []);
 
-  const { displayedLines, clearTerminalLines } = useTerminalOutputSync({ output, deviceId });
+  const { displayedLines, clearTerminalLines } = useTerminalOutputSync({ output, deviceId, language });
 
   const [localPasswordPrompt, setLocalPasswordPrompt] = useState(false);
 

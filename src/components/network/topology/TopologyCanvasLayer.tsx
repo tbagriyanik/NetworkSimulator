@@ -530,6 +530,7 @@ export function TopologyCanvasLayer({
                         mousePos={mousePos}
                         cableInfo={cableInfo}
                         CABLE_COLORS={CABLE_COLORS}
+                        language={language}
                     />
 
                     {devicesSortedForRender.map((device) => (
