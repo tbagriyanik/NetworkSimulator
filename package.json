@@ -48,7 +48,7 @@
     "@types/node": "^26.6.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@vitest/coverage-v8": "^4.1.8",
+    "@vitest/coverage-v8": "^5.0.3",
     "jsdom": "^29.1.1",
     "knip": "^6.38.0",
     "oxlint": "^1.83.0",
