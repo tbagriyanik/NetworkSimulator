@@ -130,10 +130,10 @@ export function getNetSimCommands(isTR: boolean): CommandDefinition[] {
       title: isTR ? 'Telemetry & IoT Protocol Akışları' : 'Telemetry & IoT Protocol Flows',
       type: 'info',
       cmds: [
-        ['sFlow / NetFlow', isTR ? 'Forward edilen paketlerden sample/flow export üretir' : 'Creates sample/flow exports from forwarded packets', 'pipeline'],
-        ['MQTT 1883 / 8883', isTR ? 'CONNECT, PUBLISH, SUBSCRIBE ve QoS 1 PUBACK akışı' : 'CONNECT, PUBLISH, SUBSCRIBE and QoS 1 PUBACK flow', 'TCP'],
-        ['CoAP 5683 / 5684', isTR ? 'GET/PUT/POST/DELETE, ACK ve transaction state' : 'GET/PUT/POST/DELETE, ACK and transaction state', 'UDP'],
-        ['NETCONF 830', isTR ? 'Hello, get, edit-config, commit ve close-session frame akışı' : 'Hello, get, edit-config, commit and close-session frame flow', 'TCP'],
+        ['sFlow / NetFlow', isTR ? 'sim-only: Sentetik sample/flow kayıtları; harici collector bağlantısı yoktur' : 'sim-only: Synthetic sample/flow records; no external collector connection', 'pipeline'],
+        ['MQTT 1883 / 8883', isTR ? 'sim-only: Simüle CONNECT, PUBLISH, SUBSCRIBE ve QoS 1 PUBACK akışı; harici broker yoktur' : 'sim-only: Simulated CONNECT, PUBLISH, SUBSCRIBE and QoS 1 PUBACK flow; no external broker', 'TCP'],
+        ['CoAP 5683 / 5684', isTR ? 'sim-only: Simüle GET/PUT/POST/DELETE, ACK ve transaction state; UDP soketi yoktur' : 'sim-only: Simulated GET/PUT/POST/DELETE, ACK and transaction state; no UDP socket', 'UDP'],
+        ['NETCONF 830', isTR ? 'sim-only: Simüle hello/get/edit-config/commit/close-session akışı; harici NETCONF istemcisi yoktur' : 'sim-only: Simulated hello/get/edit-config/commit/close-session flow; no external NETCONF client', 'TCP'],
         ['CAPWAP', isTR ? 'Discovery → Join → Config → Data → Run state machine' : 'Discovery → Join → Config → Data → Run state machine', 'control/data'],
       ]
     }

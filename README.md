@@ -71,6 +71,8 @@ Simülatör, standart komut formatının yanı sıra yaygın olarak kullanılan 
 
 > **Kapsam notu:** README’de listelenen CLI, parser, state, paket yakalama ve forwarding özellikleri her protokolde aynı olgunluk seviyesinde değildir. NetFlow/sFlow, MQTT, CoAP, NETCONF-YANG ve RESTCONF için mevcut davranışlar eğitim amaçlı simülasyon kapsamındadır; “destekleniyor” ifadesi tek başına tam üretim protokol uygulaması veya gerçek harici collector/server uyumluluğu anlamına gelmez. Kontrol düzlemi komutları çerçeve düzeyinde çalışır: frame'ler süreç içinde sentezlenir, sokete veya kabloya yazılmaz; `netconfTransport.ts` XML yerine düz bir nesne işler ve bu sonuçlar `realismLevel: sim-only` olarak işaretlenir. Bu nedenle harici bir NETCONF/RESTCONF yöneticisiyle veya MQTT/CoAP broker ile birlikte kullanılamazlar.
 
+> **Olgunluk ve paket smoke testi:** Control-plane özelliklerinin sim-only sınırları, v7.0 kanıt matrisi, gerçek `.AppImage`/`.dmg` smoke checklist’i ve low-resource parity tablosu için [Feature Maturity and Desktop Smoke Checklist](doc/development/FEATURE_MATURITY_AND_DESKTOP_SMOKE.md) belgesine bakın.
+
 ---
 
 ## 📊 Proje Durumu / Project Status

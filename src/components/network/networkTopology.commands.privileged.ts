@@ -53,11 +53,11 @@ export function getPrivilegedCommands(isTR: boolean): CommandDefinition {
       ['terminal no monitor', isTR ? 'Log görüntülemeyi kapat' : 'Stop monitoring logs', '#'],
       ['terminal width <n>', isTR ? 'Terminal genişliği' : 'Set terminal width', '#'],
       ['show network health', isTR ? 'Kapsamlı ağ sağlık denetimi raporu' : 'Comprehensive network health audit report', '#'],
-      ['netconf <hello|get|edit-config|close-session>', isTR ? 'NETCONF RFC 6241 kontrol düzlemi oturumu' : 'NETCONF RFC 6241 control plane session', '#'],
+      ['netconf <hello|get|edit-config|close-session>', isTR ? 'sim-only: Simüle NETCONF RFC 6241 tarzı kontrol düzlemi oturumu' : 'sim-only: Simulated NETCONF RFC 6241-style control-plane session', '#'],
       ['show netconf sessions', isTR ? 'Aktif NETCONF oturum durumlarını göster' : 'Show active NETCONF sessions', '#'],
-      ['mqtt <connect|subscribe|publish>', isTR ? 'MQTT broker istemci ve konu yönetimi' : 'MQTT broker client and topic management', '#'],
+      ['mqtt <connect|subscribe|publish>', isTR ? 'sim-only: Simüle MQTT istemci ve konu yönetimi; harici broker yoktur' : 'sim-only: Simulated MQTT client and topic management; no external broker', '#'],
       ['show mqtt <clients|topics>', isTR ? 'MQTT bağlı istemciler ve abonelikler' : 'Show MQTT clients and topic subscriptions', '#'],
-      ['coap <get|put|delete>', isTR ? 'CoAP RESTful UDP kaynak istekleri' : 'CoAP RESTful UDP resource operations', '#'],
+      ['coap <get|put|delete>', isTR ? 'sim-only: Simüle CoAP kaynak işlemleri; harici UDP endpoint yoktur' : 'sim-only: Simulated CoAP resource operations; no external UDP endpoint', '#'],
       ['show coap resources', isTR ? 'CoAP kaynak envanteri ve durumları' : 'Show CoAP resource inventory', '#'],
     ]
   };

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { generateRouterAdminPage } from '@/components/network/WifiControlPanel';
 import type { CanvasDevice } from '@/components/network/NetworkTopology/types/networkTopology.types';
-import type { SwitchState } from '@/lib/network/types';
+import { makeSwitchState, makePort } from '../../helpers/browserGlobals';
 
 const baseDevice: CanvasDevice = {
   id: 'router-1',
@@ -36,13 +36,11 @@ describe('WifiControlPanel', () => {
   });
 
   it('prefers max clients from live wlan state', () => {
-    const state = {
+    const state = makeSwitchState({
       ports: {
-        wlan0: {
-          id: 'wlan0',
-          label: 'WLAN0',
+        wlan0: makePort('wlan0', {
+          name: 'WLAN0',
           status: 'connected',
-          shutdown: false,
           wifi: {
             ssid: 'StateWiFi',
             security: 'wpa2',
@@ -51,9 +49,9 @@ describe('WifiControlPanel', () => {
             mode: 'ap',
             maxClients: 11,
           },
-        },
+        }),
       },
-    } as unknown as SwitchState;
+    });
 
     const html = generateRouterAdminPage({
       ...baseDevice,

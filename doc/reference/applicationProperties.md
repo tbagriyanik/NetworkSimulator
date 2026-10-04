@@ -1,4 +1,4 @@
-## Comprehensive Feature Analysis: Network Simulator v5.3.0
+## Comprehensive Feature Analysis: Network Simulator v7.3.1
 
 ---
 
@@ -76,9 +76,9 @@
 | **SPAN (Port Monitoring)** | **Yes** | `monitor session`, source/destination, rx/tx/both |
 | **QoS** | **Partial** | MQC object/service-policy state plus standalone WFQ/LLQ/CBWFQ scheduler; full path traffic hook is not implemented |
 | **SNMP** | **Configuration supported** | `snmp-server community/contact/location`; values are stored and exposed to show/configuration output |
-| **sFlow/NetFlow** | **No** | Not implemented |
+| **sFlow/NetFlow** | **Sim-only** | Flow/export state and synthetic records are available for training; no external collector interoperability |
 | **VPN (IPsec)** | **Partial** | IKE Phase 1/2 SA and ESP protocol 50 simulation primitives |
-| **IoT Protocols** | Limited | Environment-based rules engine, no CoAP/MQTT simulation |
+| **IoT Protocols** | **Sim-only / Limited** | Environment-based rules engine plus in-process CoAP/MQTT modelling; no external broker or UDP endpoint |
 | **CAPWAP** | Declared | WLC feature declaration |
 
 **File references:**
@@ -294,7 +294,7 @@
 
 ### 14. COMPREHENSIVE CLI & FEATURE INTEGRATION STATUS
 
-All standard CLI command categories (including line configuration, `archive`, `macro`, `configure replace`, `mac access-list`, `template`, `transport output`, `transport preferred`, `access-class`, `session-limit`, `lockable`, VRF-Lite, RESTCONF) are fully integrated into state-mutating execution logic.
+All listed CLI command categories are integrated into the simulator's state-mutating execution logic. This includes line configuration, `archive`, `macro`, `configure replace`, `mac access-list`, `template`, `transport output`, `transport preferred`, `access-class`, `session-limit`, `lockable`, VRF-Lite, and the in-memory RESTCONF-style operations. RESTCONF, like NETCONF/YANG, is not an external HTTP controller daemon or wire-compatible server.
 
 The following non-blocking interactive or diagnostic utilities return informative system notifications:
 1. **`setup` command** - Interactive step-by-step setup wizard mode

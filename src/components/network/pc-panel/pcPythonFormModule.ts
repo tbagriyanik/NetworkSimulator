@@ -44,6 +44,9 @@ function notifyFormChange(deviceId: string, form: PythonFormState | null) {
 
 /** Generate standalone interactive HTML for displaying the form inside PCBrowser */
 export function generateFormHtml(form: PythonFormState, isDark: boolean = true): string {
+  // This module emits a standalone HTML document for the PC browser iframe.
+  // Keep its palette token-backed here: the generated document has no access
+  // to the host application's CSS variables or React theme context.
   const title = form.title || 'Python Form Application';
   const bgCol = isDark ? colors.topology.bg : colors.slate['50'];
   const cardBg = isDark ? withAlpha(colors.slate['800'], 0.85) : colors.common.white;

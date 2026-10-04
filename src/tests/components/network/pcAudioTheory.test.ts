@@ -189,7 +189,7 @@ describe('parseNoteSequence', () => {
 
   it('falls back to defaults instead of producing NaN timings', () => {
     // A non-numeric tempo is the failure mode that used to silence melodies.
-    const events = parseNoteSequence('C4:1 D4:1', { bpm: 'fast' as unknown as number });
+    const events = parseNoteSequence('C4:1 D4:1', { bpm: 'fast' });
     expect(events.every(e => Number.isFinite(e.startMs) && Number.isFinite(e.durationMs))).toBe(true);
     expect(events.map(e => e.startMs)).toEqual([0, 500]);
     expect(parseNoteSequence('C4:abc', { bpm: 120 })[0].durationMs).toBe(460);

@@ -226,6 +226,7 @@ doc/
 ├── README.md                       (Ana sayfa — hiyerarşik harita)
 ├── DOCUMENTATION_INDEX.md          (Bu dosya — master indeks)
 ├── RELEASE_CHECKLIST.md            (Sürüm yayınlama ve senkronizasyon kontrol listesi)
+├── development/FEATURE_MATURITY_AND_DESKTOP_SMOKE.md (Olgunluk, parity ve desktop smoke checklist)
 ├── history.md                      (Proje değişiklik geçmişi)
 │
 ├── getting-started/

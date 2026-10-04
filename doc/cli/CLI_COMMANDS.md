@@ -983,18 +983,18 @@ The simulator automatically parses and maps alternative network operating system
 | `action <id> syslog msg <message>` | Config-Applet | Generate syslog alert action from EEM applet |
 | `action <id> cli command <cmd>` | Config-Applet | Execute CLI command action from EEM applet |
 | `show event manager applet all` | Privileged | Display all registered EEM applets and trigger-action bindings |
-| `netconf-yang` | Config | Initialize and enable NETCONF-YANG model-driven management |
-| `netconf ssh` | Config | Enable NETCONF SSH listening server on standard port 830 |
-| `show netconf-yang status` | Privileged | Display NETCONF-YANG engine and SSH server operational status |
-| `netconf <hello\|get\|edit-config\|close-session>` | Privileged | Execute RFC 6241 NETCONF RPC exchange over control plane |
-| `show netconf sessions` | Privileged | Display active NETCONF sessions and client capabilities |
-| `mqtt connect <broker-ip> [port]` | Privileged | Connect to simulated MQTT broker (port 1883/8883) |
-| `mqtt subscribe <topic>` | Privileged | Subscribe to an MQTT telemetry topic |
-| `mqtt publish <topic> <message>` | Privileged | Publish QoS 1 payload message to MQTT topic |
-| `show mqtt clients` / `show mqtt topics` | Privileged | Display active MQTT broker clients and topic subscriptions |
-| `coap get <uri>` / `coap put <uri> <data>` | Privileged | Execute CoAP RFC 7252 RESTful request over UDP (port 5683) |
-| `coap delete <uri>` | Privileged | Delete resource via CoAP transaction |
-| `show coap resources` | Privileged | Display registered CoAP endpoints and resource attributes |
+| `netconf-yang` **[sim-only]** | Config | Initialize the in-memory NETCONF-YANG model-driven management simulation |
+| `netconf ssh` **[sim-only]** | Config | Configure simulated NETCONF SSH state; no listening socket is opened |
+| `show netconf-yang status` **[sim-only]** | Privileged | Display simulated NETCONF-YANG engine status |
+| `netconf <hello\|get\|edit-config\|close-session>` **[sim-only]** | Privileged | Execute an in-process NETCONF-style RPC exchange; no external client interoperability |
+| `show netconf sessions` **[sim-only]** | Privileged | Display simulated NETCONF sessions and capabilities |
+| `mqtt connect <broker-ip> [port]` **[sim-only]** | Privileged | Create simulated MQTT broker/client state; no external broker connection |
+| `mqtt subscribe <topic>` **[sim-only]** | Privileged | Subscribe to a simulated MQTT telemetry topic |
+| `mqtt publish <topic> <message>` **[sim-only]** | Privileged | Publish a simulated QoS 1 payload message |
+| `show mqtt clients` / `show mqtt topics` **[sim-only]** | Privileged | Display simulated MQTT clients and topic subscriptions |
+| `coap get <uri>` / `coap put <uri> <data>` **[sim-only]** | Privileged | Execute a simulated CoAP-style resource transaction; no UDP socket |
+| `coap delete <uri>` **[sim-only]** | Privileged | Delete a resource in the simulated CoAP store |
+| `show coap resources` **[sim-only]** | Privileged | Display simulated CoAP endpoints and resource attributes |
 
 ### SDN & Intent-Based Networking Controller (v6.9.0)
 
@@ -1010,7 +1010,7 @@ The simulator automatically parses and maps alternative network operating system
 | Feature / Command | Context | Description |
 |-------------------|---------|-------------|
 | `generateNetworkReport(...)` | Report Engine | Export network inventory, IP matrix, VLAN list, and routes to Markdown technical report |
-| `trafficGeneratorEngine` | Telemetry Engine | Simulate HTTP, VoIP, FTP, UDP traffic flows and compute % link bandwidth utilization & latency |
+| `trafficGeneratorEngine` **[sim-only]** | Telemetry Engine | Simulate HTTP, VoIP, FTP, UDP traffic flows and compute link utilization and latency |
 | `evaluateStpGuards(...)` | STP Engine | Enforce PortFast, BPDU Guard (`errdisable`), BPDU Filter, Root Guard (`Root-Inconsistent`), and Loop Guard |
 | `evaluateStormControl(...)` | L2 Storm Engine | Detect L2 Broadcast/Multicast storms and throttle excess pps or shut down interface |
 | `explainBgpBestPath(...)` | BGP Engine | Analyze 13-step BGP decision tie-breakers (Weight, LocalPref, AS-Path, Origin, MED, Neighbor IP) |

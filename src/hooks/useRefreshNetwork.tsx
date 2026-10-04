@@ -269,7 +269,7 @@ export function useRefreshNetwork({
                   }
                   return line;
                 });
-                setPcOutputs(prev => new Map(prev).set(pc.id, updatedOut as unknown as PCOutputLine[]));
+                setPcOutputs(prev => new Map(prev).set(pc.id, updatedOut));
               }
             }
           }

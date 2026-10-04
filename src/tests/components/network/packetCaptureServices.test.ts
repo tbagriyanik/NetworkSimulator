@@ -1,13 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { dispatchCapturedPackets } from '../../../utils/packetCapture';
+import { installWindowDispatchEventShim } from '../../helpers/browserGlobals';
 
 describe('Service Packets in Packet Capture Panel', () => {
   beforeEach(() => {
-    if (typeof globalThis.window === 'undefined') {
-      (globalThis as unknown as { window: unknown }).window = {
-        dispatchEvent: () => true,
-      };
-    }
+    installWindowDispatchEventShim();
   });
 
   afterEach(() => {

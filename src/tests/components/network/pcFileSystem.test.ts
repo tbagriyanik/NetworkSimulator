@@ -14,19 +14,9 @@ import {
   moveNode,
   renameNode,
 } from '../../../components/network/pc-panel/pcFileSystem';
+import { installMemoryLocalStorage } from '../../helpers/browserGlobals';
 
-const mockStorage: Record<string, string> = {};
-
-if (typeof globalThis.localStorage === 'undefined') {
-  (globalThis as unknown as { localStorage: unknown }).localStorage = {
-    getItem: (key: string) => mockStorage[key] || null,
-    setItem: (key: string, val: string) => { mockStorage[key] = val; },
-    clear: () => { Object.keys(mockStorage).forEach(k => delete mockStorage[k]); },
-    removeItem: (key: string) => { delete mockStorage[key]; },
-    length: 0,
-    key: () => null,
-  };
-}
+installMemoryLocalStorage();
 
 describe('pcFileSystem tests', () => {
   beforeEach(() => {

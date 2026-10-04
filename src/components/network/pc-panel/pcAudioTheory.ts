@@ -287,8 +287,13 @@ export interface TimedNote {
 }
 
 export interface SequenceOptions {
-  /** Tempo used to convert beat counts into milliseconds. */
-  bpm?: number;
+  /**
+   * Tempo used to convert beat counts into milliseconds. Typed `unknown`
+   * because the notation is script-authored and `beatDurationMs` coerces junk
+   * (non-numeric or non-positive values) to the 120 bpm default rather than
+   * producing NaN timings.
+   */
+  bpm?: unknown;
   /** Beat length applied to notes that do not specify one. */
   defaultBeats?: number;
   /** Sounded fraction of each slot: 1 = legato, 0.5 = staccato. */

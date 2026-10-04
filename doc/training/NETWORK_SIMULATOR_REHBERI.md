@@ -622,7 +622,7 @@ ISP(config-router)# exit
 
 ## 📌 Özet ve Ek Kaynaklar
 
-Bu rehber dokümanı, **Network Simulator v5.8.0** sürümünün sunduğu tüm kabiliyetleri, arayüz modüllerini, kodlama ortamlarını ve uygulama senaryolarını detaylandırmaktadır. 
+Bu rehber dokümanı, **Network Simulator v7.3.1** sürümünün sunduğu kabiliyetleri, arayüz modüllerini, kodlama ortamlarını ve uygulama senaryolarını detaylandırmaktadır. Tarihsel sürüm notları ayrıca belirtilmiştir.
 
 Daha fazla detaylı teknik döküman için projedeki diğer Markdown rehberlerini inceleyebilirsiniz:
 - 📖 [Tam Özellik Envanteri (ProjeOzellikleri.md)](ProjeOzellikleri.md)

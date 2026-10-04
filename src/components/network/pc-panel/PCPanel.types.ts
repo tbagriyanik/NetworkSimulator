@@ -12,6 +12,36 @@ export interface OutputLine {
   prompt?: string;
 }
 
+/**
+ * The set of `TerminalOutput['type']` values that also exist on `OutputLine`.
+ * The two interfaces overlap but are not identical: `'password-prompt'` only
+ * exists on terminal output, while `'prompt'` and `'html'` only exist on PC
+ * output lines. Converting between them therefore has to drop the terminal-only
+ * variant and relabel the shared ones.
+ */
+export type SharedOutputLineType = Extract<TerminalOutput['type'], OutputLine['type']>;
+
+/** Narrows a terminal output line to one whose type also exists on `OutputLine`. */
+export function isSharedOutputLineType(type: TerminalOutput['type']): type is SharedOutputLineType {
+  return type === 'command' || type === 'output' || type === 'error' || type === 'success';
+}
+
+/**
+ * Convert terminal output lines into PC output lines, dropping the
+ * terminal-only `'password-prompt'` variant. The return type is a real
+ * `OutputLine[]`, so callers need no assertion.
+ */
+export function terminalOutputToOutputLines(lines: TerminalOutput[]): OutputLine[] {
+  return lines
+    .filter((line): line is TerminalOutput & { type: SharedOutputLineType } => isSharedOutputLineType(line.type))
+    .map((line) => ({
+      id: line.id,
+      type: line.type,
+      content: line.content,
+      prompt: line.prompt,
+    }));
+}
+
 export interface DhcpPoolConfig {
   poolName: string;
   defaultGateway: string;

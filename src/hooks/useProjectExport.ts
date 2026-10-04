@@ -4,6 +4,7 @@ import { CanvasDevice, CanvasConnection, CanvasNote, DeviceType } from '@/compon
 import { SwitchState, CableInfo } from '@/lib/network/types';
 import { TerminalOutput } from '@/components/network/Terminal';
 import { PCOutputLine } from '@/types/pageTypes';
+import { terminalOutputToOutputLines } from '@/components/network/pc-panel/PCPanel.types';
 import type { ExamProject } from '@/lib/network/examMode';
 import type { HistoryEntry } from '@/hooks/useHistory';
 import { encodeHistoryForFile } from '@/lib/network/historySerialization';
@@ -67,8 +68,8 @@ export function useProjectExport({
     iotDeviceIds.forEach(iotId => {
       const iotOutput = deviceOutputs.get(iotId);
       if (iotOutput) {
-        const filteredOutput = iotOutput.filter(o => o.type !== 'password-prompt');
-        adjustedPcOutputs.set(iotId, filteredOutput as unknown as PCOutputLine[]);
+        const filteredOutput = terminalOutputToOutputLines(iotOutput);
+        adjustedPcOutputs.set(iotId, filteredOutput);
         adjustedDeviceOutputs.delete(iotId);
       }
     });

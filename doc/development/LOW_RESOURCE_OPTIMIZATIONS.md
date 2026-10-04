@@ -94,6 +94,10 @@ Reduce CPU usage from ~20% to 3-5% and RAM usage from 1GB to 250-400MB for deskt
 
 ## 🚀 Usage
 
+Low-resource builds are expected to preserve simulator behaviour. Before
+release, use the platform and parity checklist in
+[FEATURE_MATURITY_AND_DESKTOP_SMOKE.md](FEATURE_MATURITY_AND_DESKTOP_SMOKE.md).
+
 ### Standard Desktop Build
 ```bash
 npm run build:desktop

@@ -85,7 +85,7 @@ export function getGlobalConfigCommands(isTR: boolean): CommandDefinition {
       ['alias {exec|configure|interface|line} <name> <cmd>', isTR ? 'Mod bazlı komut kısayolu (alias) tanımla' : 'Define mode-specific command alias', '(config)#'],
       ['ip multicast-routing', isTR ? 'Global multicast yönlendirmeyi aç' : 'Enable multicast routing', '(config)#'],
       ['ip pim rp-address <ip>', isTR ? 'PIM statik RP (Rendezvous Point) adresi ata' : 'Set static PIM RP address', '(config)#'],
-      ['ip restconf', isTR ? 'RESTCONF / HTTP RESTful API servisini aç' : 'Enable RESTCONF HTTP API server', '(config)#'],
+      ['ip restconf', isTR ? 'sim-only: Bellek içi RESTCONF tarzı işlemleri etkinleştir; harici HTTP sunucusu açılmaz' : 'sim-only: Enable in-memory RESTCONF-style operations; no external HTTP server is opened', '(config)#'],
     ]
   };
 }

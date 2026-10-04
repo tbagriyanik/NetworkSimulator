@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { executePythonScript } from '../../../components/network/pc-panel/pcPythonRunner';
+import { installMemoryLocalStorage } from '../../helpers/browserGlobals';
 
 /**
  * Tests for the Python GUI Form (Tkinter) sample + the underlying fixes that
@@ -9,18 +10,7 @@ import { executePythonScript } from '../../../components/network/pc-panel/pcPyth
  *  - StringVar/IntVar/BooleanVar accept the value= keyword form
  */
 
-const mockStorage: Record<string, string> = {};
-
-if (typeof globalThis.localStorage === 'undefined') {
-    (globalThis as unknown as { localStorage: unknown }).localStorage = {
-        getItem: (key: string) => mockStorage[key] || null,
-        setItem: (key: string, val: string) => { mockStorage[key] = val; },
-        clear: () => { Object.keys(mockStorage).forEach(k => delete mockStorage[k]); },
-        removeItem: (key: string) => { delete mockStorage[key]; },
-        length: 0,
-        key: () => null,
-    };
-}
+installMemoryLocalStorage();
 
 let devCounter = 0;
 
