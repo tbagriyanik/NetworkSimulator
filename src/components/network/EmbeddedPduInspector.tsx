@@ -234,15 +234,15 @@ export const EmbeddedPduInspector: React.FC<EmbeddedPduInspectorProps> = ({
                   filteredInLayers.map((layer, idx) => (
                     <div key={`in-layer-${layer.layer}-${layer.name}-${idx}`} className={`p-3 rounded-lg border ${isDark ? 'bg-slate-900/90 border-slate-700/80' : 'bg-white border-slate-200'}`}>
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-bold text-cyan-300">{t.layer(layer.layer)}: {layer.name}</span>
+                        <span className={`text-xs font-bold ${isDark ? 'text-cyan-300' : 'text-cyan-700'}`}>{t.layer(layer.layer)}: {layer.name}</span>
                         <span className="text-[10px] font-mono text-slate-400">{layer.title}</span>
                       </div>
                       {layer.fields && layer.fields.length > 0 && (
                         <div className="space-y-1 my-2">
                           {layer.fields.map((f, fIdx) => (
-                            <div key={`in-field-${layer.layer}-${f.label}-${fIdx}`} className="flex justify-between text-xs py-0.5 border-b border-slate-700/30">
+                            <div key={`in-field-${layer.layer}-${f.label}-${fIdx}`} className={`flex justify-between text-xs py-0.5 border-b ${isDark ? 'border-slate-700/30' : 'border-slate-200'}`}>
                               <span className="text-slate-400">{f.label}:</span>
-                              <span className="font-mono text-slate-200 font-medium">{String(f.value)}</span>
+                              <span className={`font-mono font-medium ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>{String(f.value)}</span>
                             </div>
                           ))}
                         </div>
@@ -273,15 +273,15 @@ export const EmbeddedPduInspector: React.FC<EmbeddedPduInspectorProps> = ({
                   filteredOutLayers.map((layer, idx) => (
                     <div key={`out-layer-${layer.layer}-${layer.name}-${idx}`} className={`p-3 rounded-lg border ${isDark ? 'bg-slate-900/90 border-slate-700/80' : 'bg-white border-slate-200'}`}>
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-bold text-emerald-300">{t.layer(layer.layer)}: {layer.name}</span>
+                        <span className={`text-xs font-bold ${isDark ? 'text-emerald-300' : 'text-emerald-700'}`}>{t.layer(layer.layer)}: {layer.name}</span>
                         <span className="text-[10px] font-mono text-slate-400">{layer.title}</span>
                       </div>
                       {layer.fields && layer.fields.length > 0 && (
                         <div className="space-y-1 my-2">
                           {layer.fields.map((f, fIdx) => (
-                            <div key={`out-field-${layer.layer}-${f.label}-${fIdx}`} className="flex justify-between text-xs py-0.5 border-b border-slate-700/30">
+                            <div key={`out-field-${layer.layer}-${f.label}-${fIdx}`} className={`flex justify-between text-xs py-0.5 border-b ${isDark ? 'border-slate-700/30' : 'border-slate-200'}`}>
                               <span className="text-slate-400">{f.label}:</span>
-                              <span className="font-mono text-slate-200 font-medium">{String(f.value)}</span>
+                              <span className={`font-mono font-medium ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>{String(f.value)}</span>
                             </div>
                           ))}
                         </div>
@@ -302,10 +302,10 @@ export const EmbeddedPduInspector: React.FC<EmbeddedPduInspectorProps> = ({
             {/* Decisions */}
             {filteredDecisions && filteredDecisions.length > 0 && (
               <div className={`col-span-1 md:col-span-2 p-4 rounded-lg border ${isDark ? 'bg-slate-950/50 border-slate-800' : 'bg-slate-50 border-slate-200'}`}>
-                <h4 className="text-xs font-bold text-slate-300 mb-2">{t.deviceLog(currentHop?.deviceId || 'Device')}</h4>
-                <div className="space-y-1 font-mono text-xs text-slate-300">
+                <h4 className={`text-xs font-bold mb-2 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>{t.deviceLog(currentHop?.deviceId || 'Device')}</h4>
+                <div className={`space-y-1 font-mono text-xs ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
                   {filteredDecisions.map((d, dIdx) => (
-                    <div key={`decision-${currentHop?.deviceId || 'dev'}-${dIdx}`} className="p-1.5 rounded bg-slate-900/60 border border-slate-800">
+                    <div key={`decision-${currentHop?.deviceId || 'dev'}-${dIdx}`} className={`p-1.5 rounded border ${isDark ? 'bg-slate-900/60 border-slate-800' : 'bg-white border-slate-200'}`}>
                       {d}
                     </div>
                   ))}
@@ -319,26 +319,26 @@ export const EmbeddedPduInspector: React.FC<EmbeddedPduInspectorProps> = ({
           <div className={`p-4 rounded-lg border space-y-3 ${isDark ? 'bg-slate-950/40 border-slate-800 text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-800'}`}>
             <h4 className="text-sm font-bold text-cyan-400">{t.protocolTree}</h4>
             <div className="font-mono text-xs space-y-2">
-              <div className="p-2.5 rounded bg-slate-900 border border-slate-800">
+              <div className={`p-2.5 rounded border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
                 <span className="text-indigo-400 font-bold">Ethernet II</span> (Src: {activeFrame.srcMac || '00:00:00:00:00:00'}, Dst: {activeFrame.dstMac || 'FF:FF:FF:FF:FF:FF'})
               </div>
               {activeFrame.vlanId && activeFrame.vlanId > 1 && (
-                <div className="ml-4 p-2.5 rounded bg-slate-900 border border-slate-800">
+                <div className={`ml-4 p-2.5 rounded border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
                   <span className="text-cyan-400 font-bold">802.1Q Virtual LAN</span> (ID: {activeFrame.vlanId}, Priority: {activeFrame.priority || 0})
                 </div>
               )}
               {activeFrame.srcIp && (
-                <div className="ml-4 p-2.5 rounded bg-slate-900 border border-slate-800">
+                <div className={`ml-4 p-2.5 rounded border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
                   <span className="text-emerald-400 font-bold">Internet Protocol Version 4</span> (Src: {activeFrame.srcIp}, Dst: {activeFrame.dstIp}, TTL: {activeFrame.ttl ?? 64})
                 </div>
               )}
               {activeFrame.arpPayload && (
-                <div className="ml-4 p-2.5 rounded bg-slate-900 border border-slate-800">
+                <div className={`ml-4 p-2.5 rounded border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
                   <span className="text-emerald-400 font-bold">Address Resolution Protocol ({activeFrame.arpPayload.operation})</span> (Sender: {activeFrame.arpPayload.senderIp}, Target: {activeFrame.arpPayload.targetIp})
                 </div>
               )}
               {activeFrame.protocol && activeFrame.protocol !== 'ARP' && (
-                <div className="ml-8 p-2.5 rounded bg-slate-900 border border-slate-800">
+                <div className={`ml-8 p-2.5 rounded border ${isDark ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
                   <span className="text-amber-400 font-bold">{activeFrame.protocol}</span> (Details: {activeFrame.info || 'Payload Data'})
                 </div>
               )}
@@ -347,7 +347,7 @@ export const EmbeddedPduInspector: React.FC<EmbeddedPduInspectorProps> = ({
         )}
 
         {activeTab === 'hex' && (
-          <div className={`p-4 rounded-lg border font-mono text-xs ${isDark ? 'bg-slate-950/80 border-slate-800 text-cyan-300' : 'bg-slate-900 border-slate-700 text-cyan-300'}`}>
+          <div className={`p-4 rounded-lg border font-mono text-xs ${isDark ? 'bg-slate-950/80 border-slate-800 text-cyan-300' : 'bg-slate-50 border-slate-200 text-cyan-700'}`}>
             <h4 className="text-xs font-bold text-slate-400 mb-2">{t.rawHex}</h4>
             <pre className="whitespace-pre-wrap leading-relaxed overflow-x-auto selection:bg-cyan-600 selection:text-white" style={{ wordBreak: 'break-all' }}>{hexDump}</pre>
           </div>

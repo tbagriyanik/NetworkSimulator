@@ -53,6 +53,8 @@ export function generateFormHtml(form: PythonFormState, isDark: boolean = true):
   const textCol = isDark ? colors.terminal.fg : colors.slate['900'];
   const textMuted = isDark ? colors.topology.subText : colors.slate['600'];
   const borderCol = isDark ? withAlpha(colors.slate['700'], 0.8) : colors.slate['300'];
+  // These fallback values are embedded in the generated standalone HTML form;
+  // the React shell uses design tokens, but the form must render without it.
   const primaryCol = isDark ? colors.theme.accent : '#0284c7';
   const primaryHover = isDark ? colors.sky[500] : '#0369a1';
   const primaryFg = isDark ? colors.topology.bg : colors.common.white;
@@ -381,6 +383,7 @@ function escapeHtml(str: string): string {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     // Intentional HTML entity: generated form HTML is escaped before insertion.
+    // &#039; is an intentional HTML entity used by the standalone form sanitizer.
     .replace(/'/g, '&#039;');
 }
 

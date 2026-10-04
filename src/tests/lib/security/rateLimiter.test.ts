@@ -1,4 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+
+// Keep tests independent from Upstash configuration and network access.
+vi.mock('@upstash/redis', () => ({
+  Redis: class {
+    async incr() { return 1; }
+    async ttl() { return -1; }
+    async expire() { return 1; }
+  },
+}));
+
 import { isRateLimited, cleanupRateLimits } from '@/lib/security/rateLimiter';
 
 describe('RateLimiter', () => {

@@ -113,4 +113,121 @@ describe('multicastEngine – core behaviours', () => {
     }
     expect(engine.groupMembers(group)).toHaveLength(0);
   });
+
+  it.each([
+    ['239.10.0.1', '10.10.0.1'],
+    ['239.10.0.2', '10.10.0.2'],
+    ['239.10.0.3', '10.10.0.3'],
+  ])('keeps independent membership state for %s', (group, source) => {
+    engine.processIGMP({ type: 'join', group, source });
+    expect(engine.groupMembers(group)).toEqual([source]);
+    expect(engine.groupMembers('239.10.0.254')).toEqual([]);
+  });
+
+  it('rejects leaving a group that the source did not join', () => {
+    const result = engine.processIGMP({ type: 'leave', group: '239.11.0.1', source: '10.11.0.1' });
+    expect(result).toEqual({ success: false, error: 'not a member' });
+  });
+
+  it('allows a source to rejoin after leaving', () => {
+    const message = { group: '239.11.0.2', source: '10.11.0.2' };
+    expect(engine.processIGMP({ type: 'join', ...message }).success).toBe(true);
+    expect(engine.processIGMP({ type: 'leave', ...message }).success).toBe(true);
+    expect(engine.processIGMP({ type: 'join', ...message }).success).toBe(true);
+    expect(engine.groupMembers(message.group)).toEqual([message.source]);
+  });
+
+  it('removes only the leaving source from a shared group', () => {
+    const group = '239.11.0.3';
+    engine.processIGMP({ type: 'join', group, source: '10.11.0.3' });
+    engine.processIGMP({ type: 'join', group, source: '10.11.0.4' });
+    engine.processIGMP({ type: 'leave', group, source: '10.11.0.3' });
+    expect(engine.groupMembers(group)).toEqual(['10.11.0.4']);
+  });
+
+  it('supports multiple sources in a shared-tree group', () => {
+    const group = '239.12.0.1';
+    ['10.12.0.1', '10.12.0.2', '10.12.0.3'].forEach(source =>
+      engine.processIGMP({ type: 'join', group, source }));
+    expect(engine.sourceTree(group)).toHaveLength(3);
+  });
+
+  it('transitions a source-tree group back to empty after all leaves', () => {
+    const group = '239.12.0.2';
+    const sources = ['10.12.0.4', '10.12.0.5'];
+    sources.forEach(source => engine.processIGMP({ type: 'join', group, source }));
+    sources.forEach(source => engine.processIGMP({ type: 'leave', group, source }));
+    expect(engine.sourceTree(group)).toEqual([]);
+    expect(engine.groupMembers(group)).toEqual([]);
+  });
+
+  it('does not duplicate a source in the source tree', () => {
+    const group = '239.12.0.3';
+    engine.processIGMP({ type: 'join', group, source: '10.12.0.6' });
+    expect(engine.sourceTree(group)).toEqual(['10.12.0.6']);
+  });
+
+  it('selects the first advertised RP for a group', () => {
+    engine.processRP({ type: 'announce', rp: '10.20.0.1', group: '239.20.0.1' });
+    engine.processRP({ type: 'announce', rp: '10.20.0.2', group: '239.20.0.1' });
+    expect(engine.activeRP('239.20.0.1')).toBe('10.20.0.1');
+  });
+
+  it('fails over through multiple RPs in announcement order', () => {
+    const group = '239.20.0.2';
+    ['10.20.0.3', '10.20.0.4', '10.20.0.5'].forEach(rp =>
+      engine.processRP({ type: 'announce', rp, group }));
+    engine.markRPUnreachable('10.20.0.3');
+    expect(engine.activeRP(group)).toBe('10.20.0.4');
+    engine.markRPUnreachable('10.20.0.4');
+    expect(engine.activeRP(group)).toBe('10.20.0.5');
+  });
+
+  it('returns the default RP after all advertised RPs fail', () => {
+    const group = '239.20.0.3';
+    engine.processRP({ type: 'announce', rp: '10.20.0.6', group });
+    engine.markRPUnreachable('10.20.0.6');
+    expect(engine.activeRP(group)).toBe(engine.defaultRP());
+  });
+
+  it('does not add duplicate RP announcements', () => {
+    const group = '239.20.0.4';
+    engine.processRP({ type: 'announce', rp: '10.20.0.7', group });
+    engine.processRP({ type: 'announce', rp: '10.20.0.7', group });
+    engine.markRPUnreachable('10.20.0.7');
+    expect(engine.activeRP(group)).toBe(engine.defaultRP());
+  });
+
+  it('isolates RP failover between groups', () => {
+    engine.processRP({ type: 'announce', rp: '10.21.0.1', group: '239.21.0.1' });
+    engine.processRP({ type: 'announce', rp: '10.21.0.1', group: '239.21.0.2' });
+    engine.processRP({ type: 'announce', rp: '10.21.0.2', group: '239.21.0.2' });
+    engine.markRPUnreachable('10.21.0.1');
+    expect(engine.activeRP('239.21.0.1')).toBe(engine.defaultRP());
+    expect(engine.activeRP('239.21.0.2')).toBe('10.21.0.2');
+  });
+
+  it('keeps membership state while the RP changes', () => {
+    const group = '239.22.0.1';
+    engine.processIGMP({ type: 'join', group, source: '10.22.0.1' });
+    engine.processRP({ type: 'announce', rp: '10.22.0.1', group });
+    engine.processRP({ type: 'announce', rp: '10.22.0.2', group });
+    engine.markRPUnreachable('10.22.0.1');
+    expect(engine.activeRP(group)).toBe('10.22.0.2');
+    expect(engine.groupMembers(group)).toEqual(['10.22.0.1']);
+  });
+
+  it('handles malformed RP messages without affecting the default RP', () => {
+    engine.processRP({ type: 'announce', rp: '', group: '' });
+    expect(engine.activeRP('239.23.0.1')).toBe(engine.defaultRP());
+  });
+
+  it('keeps group membership isolated across repeated join/leave cycles', () => {
+    const group = '239.24.0.1';
+    for (let i = 0; i < 5; i++) {
+      expect(engine.processIGMP({ type: 'join', group, source: '10.24.0.1' }).success).toBe(true);
+      expect(engine.processIGMP({ type: 'leave', group, source: '10.24.0.1' }).success).toBe(true);
+    }
+    expect(engine.groupMembers(group)).toEqual([]);
+  });
 });

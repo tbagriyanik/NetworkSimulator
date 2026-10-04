@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { processIpFragmentation } from '../../../lib/network/ipFragmentationEngine';
+import { checkOspfMtuCompatibility, processIpFragmentation } from '../../../lib/network/ipFragmentationEngine';
 
 describe('ipFragmentationEngine', () => {
   it('does not fragment packet when size is within MTU', () => {
@@ -140,5 +140,27 @@ describe('ipFragmentationEngine', () => {
     result.fragments.forEach(frag => {
       expect(Number.isInteger(frag.fragmentOffset)).toBe(true);
     });
+  });
+
+  it('preserves a caller-provided IP identification across all fragments', () => {
+    const result = processIpFragmentation({
+      id: 'packet-8', sourceIp: '10.0.0.1', targetIp: '10.0.0.2', protocol: 'UDP',
+      totalLength: 3000, identification: 4242,
+    }, 1500);
+    expect(result.fragments.every(fragment => fragment.identification === 4242)).toBe(true);
+  });
+
+  it('accepts an exact MTU boundary without fragmentation', () => {
+    const result = processIpFragmentation({
+      id: 'packet-9', sourceIp: '10.0.0.1', targetIp: '10.0.0.2', protocol: 'UDP', totalLength: 1500,
+    }, 1500);
+    expect(result).toMatchObject({ fragmented: false, dropped: false });
+    expect(result.fragments).toHaveLength(1);
+  });
+
+  it('models OSPF MTU mismatch as a stuck EXSTART adjacency', () => {
+    const result = checkOspfMtuCompatibility(1500, 1400);
+    expect(result).toMatchObject({ isCompatible: false, state: 'EXSTART', stuck: true });
+    expect(result.detail).toContain('MTU mismatch');
   });
 });
