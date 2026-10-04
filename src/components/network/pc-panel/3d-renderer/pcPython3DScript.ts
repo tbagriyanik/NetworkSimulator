@@ -579,28 +579,28 @@ export function get3DSceneScript(sceneDataJson: string, isDark: boolean = true):
 
       const WEBGL_THEMES = {
         dark: {
-          bgHex: '#020617',
+          bgHex: '${colors.slate['950']}',
           sky: [0.03, 0.05, 0.12, 1.0],
           grid: [0.3, 0.4, 0.5, 0.4],
           ambient: [0.25, 0.28, 0.35],
           sun: [0.9, 0.9, 0.95]
         },
         light: {
-          bgHex: '#f8fafc',
+          bgHex: '${colors.slate['50']}',
           sky: [0.92, 0.94, 0.97, 1.0],
           grid: [0.5, 0.55, 0.6, 0.5],
           ambient: [0.75, 0.75, 0.8],
           sun: [1.0, 0.98, 0.9]
         },
         neon: {
-          bgHex: '#0f021f',
+          bgHex: '${colors.terminal.bg}',
           sky: [0.08, 0.02, 0.16, 1.0],
           grid: [0.9, 0.2, 0.8, 0.5],
           ambient: [0.4, 0.15, 0.5],
           sun: [1.0, 0.4, 0.8]
         },
         blueprint: {
-          bgHex: '#081a30',
+          bgHex: '${colors.topology.bg}',
           sky: [0.05, 0.14, 0.28, 1.0],
           grid: [0.8, 0.9, 1.0, 0.6],
           ambient: [0.3, 0.45, 0.65],

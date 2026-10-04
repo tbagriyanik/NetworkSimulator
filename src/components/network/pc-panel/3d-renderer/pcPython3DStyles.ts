@@ -3,19 +3,19 @@ import { colors, withAlpha } from '@/lib/design-tokens/colors';
 export function get3DSceneStyles(isDark: boolean = true): string {
   const bgBody = isDark ? colors.terminal.bg : colors.neutral['50'];
   const textBody = isDark ? colors.topology.noteText : colors.slate['900'];
-  const bgGroup = isDark ? withAlpha(colors.topology.bg, 0.75) : 'rgba(255, 255, 255, 0.92)';
-  const borderGroup = isDark ? withAlpha(colors.common.white, 0.12) : 'rgba(203, 213, 225, 0.9)';
+  const bgGroup = isDark ? withAlpha(colors.topology.bg, 0.75) : withAlpha(colors.common.white, 0.92);
+  const borderGroup = isDark ? withAlpha(colors.common.white, 0.12) : withAlpha(colors.slate['300'], 0.9);
   const shadowGroup = isDark ? withAlpha(colors.common.black, 0.5) : 'rgba(15, 23, 42, 0.12)';
-  
+
   const bgBtn = isDark ? withAlpha(colors.common.white, 0.06) : withAlpha(colors.neutral['100'], 0.9);
   const borderBtn = isDark ? withAlpha(colors.common.white, 0.1) : withAlpha(colors.neutral['300'], 0.8);
   const textBtn = isDark ? colors.topology.noteText : colors.slate['800'];
   const bgBtnHover = isDark ? withAlpha(colors.common.white, 0.14) : colors.neutral['200'];
-  
+
   const bgSelect = isDark ? withAlpha(colors.common.black, 0.4) : colors.common.white;
   const borderSelect = isDark ? withAlpha(colors.common.white, 0.15) : colors.neutral['400'];
   const textSelect = isDark ? colors.theme.accent : colors.theme.primary;
-  
+
   const bgFooter = isDark ? withAlpha(colors.topology.bg, 0.7) : withAlpha(colors.common.white, 0.9);
   const borderFooter = isDark ? withAlpha(colors.common.white, 0.08) : withAlpha(colors.neutral['300'], 0.8);
   const textFooter = isDark ? colors.topology.subText : colors.neutral['500'];

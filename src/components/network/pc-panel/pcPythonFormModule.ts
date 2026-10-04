@@ -45,14 +45,14 @@ function notifyFormChange(deviceId: string, form: PythonFormState | null) {
 /** Generate standalone interactive HTML for displaying the form inside PCBrowser */
 export function generateFormHtml(form: PythonFormState, isDark: boolean = true): string {
   const title = form.title || 'Python Form Application';
-  const bgCol = isDark ? colors.topology.bg : '#f8fafc';
-  const cardBg = isDark ? withAlpha(colors.slate['800'], 0.85) : '#ffffff';
-  const textCol = isDark ? colors.terminal.fg : '#0f172a';
-  const textMuted = isDark ? colors.topology.subText : '#475569';
-  const borderCol = isDark ? withAlpha(colors.slate['700'], 0.8) : '#cbd5e1';
+  const bgCol = isDark ? colors.topology.bg : colors.slate['50'];
+  const cardBg = isDark ? withAlpha(colors.slate['800'], 0.85) : colors.common.white;
+  const textCol = isDark ? colors.terminal.fg : colors.slate['900'];
+  const textMuted = isDark ? colors.topology.subText : colors.slate['600'];
+  const borderCol = isDark ? withAlpha(colors.slate['700'], 0.8) : colors.slate['300'];
   const primaryCol = isDark ? colors.theme.accent : '#0284c7';
   const primaryHover = isDark ? colors.sky[500] : '#0369a1';
-  const primaryFg = isDark ? colors.topology.bg : '#ffffff';
+  const primaryFg = isDark ? colors.topology.bg : colors.common.white;
   const inputBg = isDark ? colors.topology.canvasBg : '#f1f5f9';
   const cardShadow = isDark
     ? `0 10px 25px -5px ${withAlpha(colors.common.black, 0.5)}, 0 8px 10px -6px ${withAlpha(colors.common.black, 0.4)}`

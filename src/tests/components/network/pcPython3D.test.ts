@@ -51,6 +51,10 @@ print("3D Scene Created")
     expect(htmlTr).toContain('btn-wireframe');
     expect(htmlTr).toContain('Tel Kafes');
     expect(htmlTr).toContain('Nesne');
+    expect(htmlTr).toContain("bgHex: '#020617'");
+    expect(htmlTr).toContain("bgHex: '#f8fafc'");
+    expect(htmlTr).toContain("bgHex: '#090d16'");
+    expect(htmlTr).toContain("bgHex: '#0f172a'");
 
     const htmlEn = generate3DSceneHtml(scene!, true, 'en');
     expect(htmlEn).toContain('<!DOCTYPE html>');

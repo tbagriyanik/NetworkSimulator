@@ -155,6 +155,7 @@ export const colors = {
     200: '#fde68a',
     light: '#ffeaa7',
     400: '#ffc107',
+    500: '#f59e0b',
     600: '#d97706',
     700: '#b45309',
     800: '#92400e',
@@ -173,6 +174,7 @@ export const colors = {
   purple: {
     400: '#c084fc',
     500: '#a855f7',
+    600: '#9333ea',
     900: '#581c87',
   },
 
@@ -184,6 +186,13 @@ export const colors = {
 
   // Slate shades
   slate: {
+    50: '#f8fafc',
+    100: '#f1f5f9',
+    200: '#e2e8f0',
+    300: '#cbd5e1',
+    400: '#94a3b8',
+    500: '#64748b',
+    600: '#475569',
     700: '#334155',
     800: '#1e293b',
     900: '#0f172a',
@@ -198,7 +207,9 @@ export const colors = {
 
   // Rose shades
   rose: {
+    400: '#fb7185',
     500: '#f43f5e',
+    600: '#e11d48',
     700: '#be123c',
     950: '#4c0519',
   },
@@ -210,12 +221,14 @@ export const colors = {
 
   // Pink shades
   pink: {
+    400: '#f472b6',
     500: '#ec4899',
     600: '#db2777',
   },
 
   // Cyan shades
   cyan: {
+    400: '#22d3ee',
     500: '#06b6d4',
     600: '#0891b2',
     950: '#083344',

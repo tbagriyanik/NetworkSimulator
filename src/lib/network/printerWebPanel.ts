@@ -1,4 +1,4 @@
-// Renk değerleri kasıtlı hardcoded — bağımsız HTML sayfa üretimi, CSS token erişimi yok.
+import { colors, withAlpha } from '@/lib/design-tokens/colors';
 import type { CanvasDevice } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 export function generatePrinterWebPanelContent(device: CanvasDevice, language: string, isDark: boolean = true): string {
@@ -12,41 +12,41 @@ export function generatePrinterWebPanelContent(device: CanvasDevice, language: s
   const mode = device.ipConfigMode === 'dhcp' ? 'DHCP' : 'Static';
   const wifiSsid = device.wifi?.ssid || '';
 
-  // Theme-specific colors
+  // Design token colors
   const themeColors = {
-    bg: isDark ? '#0f172a' : '#ffffff',
-    canvasBg: isDark ? '#1e293b' : '#f8fafc',
-    gridLine: isDark ? '#334155' : '#e2e8f0',
-    deviceText: isDark ? '#f1f5f9' : '#1e293b',
-    subText: isDark ? '#94a3b8' : '#64748b',
-    noteText: isDark ? '#e2e8f0' : '#475569',
-    deviceBorder: isDark ? '#475569' : '#cbd5e1',
-    deviceSelectedBorder: isDark ? '#3b82f6' : '#2563eb',
-    pinkBg: isDark ? 'rgba(236, 72, 153, 0.15)' : 'rgba(236, 72, 153, 0.1)',
-    pinkBorder: isDark ? 'rgba(236, 72, 153, 0.3)' : 'rgba(236, 72, 153, 0.4)',
-    serialColor: isDark ? '#f472b6' : '#db2777',
-    consoleColor: isDark ? '#a855f7' : '#9333ea',
-    onlineBg: isDark ? 'rgba(34, 197, 94, 0.2)' : 'rgba(34, 197, 94, 0.15)',
-    onlineColor: isDark ? '#22c55e' : '#16a34a',
-    offlineBg: isDark ? 'rgba(239, 68, 68, 0.2)' : 'rgba(239, 68, 68, 0.15)',
-    offlineColor: isDark ? '#ef4444' : '#dc2626',
-    terminalOutput: isDark ? '#94a3b8' : '#475569',
-    purple500: isDark ? '#a855f7' : '#9333ea',
-    purple400: isDark ? '#c084fc' : '#a855f7',
-    warningColor: isDark ? '#f59e0b' : '#d97706',
-    cyanBg: isDark ? 'rgba(6, 182, 212, 0.8)' : 'rgba(6, 182, 212, 0.15)',
-    cyanBorder: isDark ? 'rgba(6, 182, 212, 0.8)' : 'rgba(6, 182, 212, 0.4)',
-    cyanColor: isDark ? '#22d3ee' : '#0891b2',
-    roseBg: isDark ? 'rgba(244, 63, 94, 0.8)' : 'rgba(244, 63, 94, 0.15)',
-    roseBorder: isDark ? 'rgba(244, 63, 94, 0.8)' : 'rgba(244, 63, 94, 0.4)',
-    roseColor: isDark ? '#fb7185' : '#e11d48',
-    amberBg: isDark ? 'rgba(245, 158, 11, 0.4)' : 'rgba(245, 158, 11, 0.2)',
-    amberBorder: isDark ? 'rgba(245, 158, 11, 0.8)' : 'rgba(245, 158, 11, 0.4)',
-    amber200: isDark ? '#fcd34d' : '#fcd34d',
-    amber400: isDark ? '#fbbf24' : '#f59e0b',
-    amber700: isDark ? '#b45309' : '#b45309',
-    rose500: isDark ? 'rgba(244, 63, 94, 0.2)' : 'rgba(244, 63, 94, 0.15)',
-    rose500Border: isDark ? 'rgba(244, 63, 94, 0.4)' : 'rgba(244, 63, 94, 0.3)',
+    bg: isDark ? colors.topology.bg : colors.common.white,
+    canvasBg: isDark ? colors.topology.canvasBg : colors.slate['50'],
+    gridLine: isDark ? colors.topology.gridLine : colors.slate['200'],
+    deviceText: isDark ? colors.slate['100'] : colors.topology.canvasBg,
+    subText: isDark ? colors.topology.subText : colors.slate['500'],
+    noteText: isDark ? colors.topology.noteText : colors.slate['600'],
+    deviceBorder: isDark ? colors.slate['600'] : colors.slate['300'],
+    deviceSelectedBorder: isDark ? colors.sky['500'] : colors.blue['600'],
+    pinkBg: isDark ? withAlpha(colors.pink['500'], 0.15) : withAlpha(colors.pink['500'], 0.1),
+    pinkBorder: isDark ? withAlpha(colors.pink['500'], 0.3) : withAlpha(colors.pink['500'], 0.4),
+    serialColor: isDark ? colors.pink['400'] : colors.pink['600'],
+    consoleColor: isDark ? colors.purple['500'] : colors.purple['600'],
+    onlineBg: isDark ? withAlpha(colors.status.active, 0.2) : withAlpha(colors.status.active, 0.15),
+    onlineColor: isDark ? colors.status.active : colors.green['600'],
+    offlineBg: isDark ? withAlpha(colors.status.offline, 0.2) : withAlpha(colors.status.offline, 0.15),
+    offlineColor: isDark ? colors.status.offline : colors.red['600'],
+    terminalOutput: isDark ? colors.topology.subText : colors.slate['600'],
+    purple500: isDark ? colors.purple['500'] : colors.purple['600'],
+    purple400: isDark ? colors.purple['400'] : colors.purple['500'],
+    warningColor: isDark ? colors.amber['500'] : colors.amber['600'],
+    cyanBg: isDark ? withAlpha(colors.cyan['500'], 0.8) : withAlpha(colors.cyan['500'], 0.15),
+    cyanBorder: isDark ? withAlpha(colors.cyan['500'], 0.8) : withAlpha(colors.cyan['500'], 0.4),
+    cyanColor: isDark ? colors.cyan['400'] : colors.cyan['600'],
+    roseBg: isDark ? withAlpha(colors.rose['500'], 0.8) : withAlpha(colors.rose['500'], 0.15),
+    roseBorder: isDark ? withAlpha(colors.rose['500'], 0.8) : withAlpha(colors.rose['500'], 0.4),
+    roseColor: isDark ? colors.rose['400'] : colors.rose['600'],
+    amberBg: isDark ? withAlpha(colors.amber['500'], 0.4) : withAlpha(colors.amber['500'], 0.2),
+    amberBorder: isDark ? withAlpha(colors.amber['500'], 0.8) : withAlpha(colors.amber['500'], 0.4),
+    amber200: colors.amber['200'],
+    amber400: isDark ? colors.amber['400'] : colors.amber['500'],
+    amber700: colors.amber['700'],
+    rose500: isDark ? withAlpha(colors.rose['500'], 0.2) : withAlpha(colors.rose['500'], 0.15),
+    rose500Border: isDark ? withAlpha(colors.rose['500'], 0.4) : withAlpha(colors.rose['500'], 0.3),
   };
 
   const printerSvgIcon = `<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z"/></svg>`;
@@ -63,7 +63,7 @@ export function generatePrinterWebPanelContent(device: CanvasDevice, language: s
 
   return `
     <div style="font-family:'Inria Sans',sans-serif;background:${themeColors.bg};color:${themeColors.deviceText};padding:24px;min-height:100%;box-sizing:border-box;">
-      <div style="max-width:800px;margin:0 auto;background:${themeColors.canvasBg};border:1px solid ${themeColors.gridLine};border-radius:16px;padding:24px;box-shadow:0 20px 25px -5px rgba(0,0,0,0.5);">
+      <div style="max-width:800px;margin:0 auto;background:${themeColors.canvasBg};border:1px solid ${themeColors.gridLine};border-radius:16px;padding:24px;box-shadow:0 20px 25px -5px ${withAlpha(colors.common.black, 0.5)};">
         
         <!-- Header -->
         <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid ${themeColors.gridLine};padding-bottom:16px;margin-bottom:20px;">
