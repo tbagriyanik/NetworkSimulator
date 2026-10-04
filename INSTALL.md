@@ -2,6 +2,15 @@
 
 ## 🚀 Hızlı Başlangıç
 
+```bash
+# 1. Depoyu klonlayın ve bağımlılıkları yükleyin
+npm install
+
+# 2. Geliştirme sunucusunu başlatın
+npm run dev
+```
+
+Tarayıcınızda açın: [http://localhost:3000](http://localhost:3000)
 
 ## 📦 Derleme & Dağıtım / Build & Releases
 
@@ -35,8 +44,8 @@ Depoda `.github/workflows/release.yml` iş akışı bulunmaktadır. Yeni bir sü
 
 ```bash
 git add .
-git commit -m "chore: release v6.9.0"
-git tag v6.9.0
+git commit -m "chore: release v7.3.1"
+git tag v7.3.1
 git push origin main --tags
 ```
 
@@ -44,8 +53,6 @@ git push origin main --tags
 - 🪟 **Windows:** `.exe` (NSIS Yükleyici) & `.msi`
 - 🍏 **macOS:** `.dmg` (Disk Kalıbı) & `.app`
 - 🐧 **Linux:** `.deb` (Debian/Ubuntu paketi) & `.AppImage` (Evrensel Linux paketi)
-
-Tarayıcıda açın: [http://localhost:3000](http://localhost:3000)
 
 ## 📋 Sistem Gereksinimleri
 

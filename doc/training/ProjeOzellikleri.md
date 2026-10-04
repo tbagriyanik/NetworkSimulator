@@ -1,4 +1,12 @@
 
+## Linux/macOS Not Nesnesi Uyumlaştırması, Yüksek/Düşük Grafik Modu Derinleştirmesi & Masaüstü IPC/WebView İyileştirmeleri (2026-10-04 - v7.3.1)
+
+| Özellik | Güncel kapsam ve sınır |
+|---|---|
+| **Linux (WebKitGTK) & macOS (WKWebView) Not Nesnesi Düzeltmesi (`NoteNode.tsx`)** | Tuval zoom/pan yapıldığında notların cihazlardan kopup ekranda sabit kalması sorunu, `foreignObject` sarmalayıcısının `<g transform="translate(x, y)">` içine alınmasıyla çözüldü. |
+| **Yüksek ve Düşük Grafik Modu Derinleştirmesi (`ThemeContext.tsx`, CSS token'ları)** | Yüksek modda radial ambient ışık havuzları ve neon parıltı çizgileri; düşük modda tüm efektlerin, gölgelerin, blur filtrelerinin ve animasyonların kapatıldığı %100 düz (flat 2D) sıfır efektli performans modu. |
+| **Test Paketi Optimizasyonu (`vitest.config.ts`)** | `pool: 'vmThreads'` yapılandırması ile 249 test dosyası ve 2250 testin tamamı 6 saniye civarında hızlı ve izole bir şekilde başarıyla koşturulur (`npm run check` kod 0 ile çıkar). |
+
 ## Ağ Dokümantasyon Raporlama, Trafik Jeneratörü, STP Güvenlik Korumaları, BGP Yol Karar Açıklayıcısı & Stateful Connection Tracking, Paket Pipeline İyileştirmeleri, DHCP Relay Temizleme & Conntrack Kapsamı (2026-09-30 - v7.0.0)
 
 | Özellik | Güncel kapsam ve sınır |

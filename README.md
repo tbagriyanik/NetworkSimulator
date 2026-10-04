@@ -1,7 +1,7 @@
 # Network Simulator
 
 ![Version](https://img.shields.io/badge/version-7.3.1-blue)
-![Next.js](https://img.shields.io/badge/Next.js-16.3.7-black?logo=next.js)
+![Next.js](https://img.shields.io/badge/Next.js-16.3.8-black?logo=next.js)
 ![React](https://img.shields.io/badge/React-19.3.0-61DAFB?logo=react&logoColor=black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-7.0.2-3178C6?logo=typescript&logoColor=white)
 ![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-4.3.3-06B6D4?logo=tailwindcss&logoColor=white)
@@ -80,8 +80,8 @@ Simülatör, standart komut formatının yanı sıra yaygın olarak kullanılan 
 | Version / Sürüm | 7.3.1 |
 | Total Lines / Toplam Satır (`src/`) | ~246,439 |
 | Source Files / Kaynak Dosya | 1174 |
-| Test Files / Test Dosyaları | 243 |
-| Tests / Testler | 2182 |
+| Test Files / Test Dosyaları | 249 |
+| Tests / Testler | 2250 |
 | Documentation Files / Dokümantasyon Dosya | 25 |
 | Example Projects / Örnek Proje | 49 |
 | Guided Lessons / Rehberli Ders | 19 |
