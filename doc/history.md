@@ -1,5 +1,12 @@
 # 📅 Network Simulator — Proje Geçmişi
 
+## v7.3.1 — 2026-10-04
+
+- **🖥️ Linux (WebKitGTK) ve macOS (WKWebView) Uyumlaştırması & Not Nesnesi Düzeltmeleri**:
+  - `NoteNode.tsx`: Not nesneleri (`foreignObject`) `<g transform="translate(x, y)">` sarmalayıcısına alındı ve `foreignObject`'in `x`/`y` değerleri `0` olarak sıfırlandı. Linux ve macOS WebKit motorlarında tuval zoom ve pan yapıldığında notların cihazlardan kopup ekranda sabit kalması sorunu çözüldü.
+  - `TopologyToolbar.tsx`: Kablo butonlarının simgelerine `shrink-0` kuralı eklendi, hardcoded `orange` ve `Turquoise` renkleri temizlenerek tema renkleriyle standartlaştırıldı. TypeScript `CableType` içindeki `'fiber'` tipi `cableIconMap` nesnesine eklendi.
+  - `base.css` & `utilities.css`: Not kutuları için `note-scrollbar` WebKit kaydırma çubuğu kuralları eklendi, pencere sürükleme bölgeleri (`-webkit-app-region`) ve form girdisi sıfırlamaları (`-webkit-appearance: none`) eklendi.
+
 ## v7.3.0 — 2026-10-03
 
 - **🖥️ Linux & macOS Masaüstü Derleme ve Görüntüleme Düzeltmeleri (Tauri / WebKitGTK / WKWebView)**:

@@ -121,15 +121,16 @@ export const NoteNode = memo(function NoteNode({
   }, [note.id, searchQuery, lastQuery, matchIndex, noteTextareaRefs]);
 
   return (
-    <foreignObject
-      key={note.id}
-      x={note.x}
-      y={note.y}
-      width={note.width}
-      height={note.height}
-      data-note-id={note.id}
-      className="pointer-events-none"
-    >
+    <g transform={`translate(${note.x}, ${note.y})`}>
+      <foreignObject
+        key={note.id}
+        x={0}
+        y={0}
+        width={note.width}
+        height={note.height}
+        data-note-id={note.id}
+        className="pointer-events-none"
+      >
       <div
         className={`pointer-events-auto relative flex flex-col w-full h-full overflow-hidden rounded-lg shadow-lg border ${isDark
           ? 'border-warning-300/60'
@@ -506,6 +507,7 @@ export const NoteNode = memo(function NoteNode({
         </div>
       </div>
     </foreignObject>
+  </g>
   );
 });
 

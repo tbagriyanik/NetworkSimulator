@@ -48,6 +48,24 @@
   touch-action: auto !important;
 }
 
+/* WebKitGTK / WKWebView Window & Input Fixes */
+[data-tauri-drag-region] {
+  -webkit-app-region: drag;
+}
+
+button, input, textarea, select {
+  -webkit-app-region: no-drag;
+}
+
+/* WebKit native input appearance reset */
+input[type="text"],
+input[type="search"],
+input[type="number"],
+textarea {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

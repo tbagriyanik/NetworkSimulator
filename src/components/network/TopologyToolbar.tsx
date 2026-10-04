@@ -249,11 +249,13 @@ export function TopologyToolbar({
             serial: t.serialCable,
             console: t.consoleCable,
           };
-          const cableIconMap: Partial<Record<CableType, ReactNode>> = {
-            straight: <Cable className={`w-full h-full ${toolbarGlowClass}`} />,
-            crossover: <LineSquiggle className={`w-full h-full ${toolbarGlowClass}`} />,
-            serial: <Plug className={`w-full h-full ${toolbarGlowClass}`} />,
-            console: <TrendingUpDown className={`w-full h-full ${toolbarGlowClass}`} />,
+          const cableIconMap: Record<CableType, ReactNode> = {
+            straight: <Cable className={`w-4 h-4 shrink-0 ${toolbarGlowClass}`} />,
+            crossover: <LineSquiggle className={`w-4 h-4 shrink-0 ${toolbarGlowClass}`} />,
+            serial: <Plug className={`w-4 h-4 shrink-0 ${toolbarGlowClass}`} />,
+            console: <TrendingUpDown className={`w-4 h-4 shrink-0 ${toolbarGlowClass}`} />,
+            fiber: <Cable className={`w-4 h-4 shrink-0 ${toolbarGlowClass}`} />,
+            wireless: <Cable className={`w-4 h-4 shrink-0 ${toolbarGlowClass}`} />,
           };
           return (
             <Tooltip key={type}>
@@ -262,7 +264,7 @@ export function TopologyToolbar({
                   aria-label={cableLabelMap[type]}
                   variant="ghost"
                   size="icon"
-                  className={`h-8 w-8 p-0.5 flex items-center justify-center font-bold transition-all
+                  className={`h-8 w-8 p-1 flex items-center justify-center font-bold transition-all shrink-0
                   ${cableInfo.cableType === type
                       ? isDark ? 'bg-secondary-700/80' : 'bg-secondary-200/80'
                       : ''
@@ -320,7 +322,7 @@ export function TopologyToolbar({
                 window.dispatchEvent(event);
               }}
             >
-              <svg className={`w-4 h-4 ${toolbarGlowClass}`} fill="none" stroke="Turquoise" viewBox="0 0 24 24">
+              <svg className={`w-4 h-4 ${toolbarGlowClass}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
             </Button>
@@ -338,13 +340,13 @@ export function TopologyToolbar({
               aria-label={t.addNote}
               variant="ghost"
               size="icon"
-              className="h-8 w-8 p-0 text-secondary-500 hover:bg-secondary-500/10"
+              className="h-8 w-8 p-0 text-amber-500 hover:bg-amber-500/10"
               onClick={() => {
                 const event = new CustomEvent('add-note');
                 window.dispatchEvent(event);
               }}
             >
-              <svg className={`w-4 h-4 ${toolbarGlowClass}`} fill="none" stroke="orange" viewBox="0 0 24 24">
+              <svg className={`w-4 h-4 ${toolbarGlowClass}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 0 0 -2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5m-1.414-9.414a2 2 0 1 1 2.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
               </svg>
             </Button>
