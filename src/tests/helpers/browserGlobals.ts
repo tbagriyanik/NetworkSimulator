@@ -14,6 +14,7 @@
 
 import type { SwitchState } from '@/lib/network/types';
 import type { Port } from '@/lib/network/types/ports';
+import type { CanvasDevice, CanvasPort } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 /** In-memory `Storage` implementation backed by a plain object. */
 export function createMemoryStorage(seed: Record<string, string> = {}): Storage {
@@ -130,5 +131,35 @@ export function makePort(id: string, overrides: Partial<Port> = {}): Port {
     shutdown: false,
     type: 'gigabitethernet',
     ...overrides,
+  };
+}/**
+ * Build a `CanvasPort` with the three required fields populated.
+ * `CanvasDevice.ports` is a `CanvasPort[]`, not a string array, so tests that
+ * used `ports: ['Fa0/1']` needed a cast to compile.
+ */
+export function makeCanvasPort(id: string, overrides: Partial<CanvasPort> = {}): CanvasPort {
+  return {
+    id,
+    label: id,
+    status: 'disconnected',
+    ...overrides,
+  };
+}
+
+/**
+ * Build a `CanvasDevice` with the required fields populated. `ip` is required
+ * on the interface even for switches, which is why partial literals previously
+ * had to be forced through `as unknown as CanvasDevice`.
+ */
+export function makeCanvasDevice(
+  overrides: Partial<CanvasDevice> & Pick<CanvasDevice, 'id' | 'type' | 'name'>,
+): CanvasDevice {
+  return {
+    x: 0,
+    y: 0,
+    status: 'online',
+    ports: [],
+    ...overrides,
+    ip: overrides.ip ?? '0.0.0.0',
   };
 }

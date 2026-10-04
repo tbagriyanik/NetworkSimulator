@@ -6,6 +6,7 @@ import { getRoutingTable } from '@/lib/network/routing';
 import { detectEtherChannelBundles, computeEtherChannelChanges } from '@/lib/network/etherchannel';
 import { runFullPacketPipeline } from '@/lib/network/forwarding/packetPipeline';
 import { runNetworkEventPipeline } from '@/lib/network/forwarding/eventPipeline';
+import { makeSwitchState, makePort, makeCanvasDevice, makeCanvasPort } from '../helpers/browserGlobals';
 
 describe('500-Device Scale Smoke / Benchmark', () => {
   const TOTAL = 500;
@@ -13,38 +14,38 @@ describe('500-Device Scale Smoke / Benchmark', () => {
 
   function makeDevice(i: number): CanvasDevice {
     if (i < 240) {
-      return { id: `PC${i}`, name: `PC${i}`, type: 'pc', x: (i * 7) % 3000, y: (i * 13) % 3000, status: 'online', ip: `10.${(i >> 8) & 255}.${i & 255}.2`, subnet: '255.255.255.0', macAddress: `00:00:00:00:${(i >> 8) & 255}:${i & 255}`, ports: [] } as unknown as CanvasDevice;
+      return makeCanvasDevice({ id: `PC${i}`, name: `PC${i}`, type: 'pc', x: (i * 7) % 3000, y: (i * 13) % 3000, ip: `10.${(i >> 8) & 255}.${i & 255}.2`, subnet: '255.255.255.0', macAddress: `00:00:00:00:${(i >> 8) & 255}:${i & 255}` });
     }
     if (i < PARTITION) {
-      return { id: `SW${i}`, name: `SW${i}`, type: 'switchL2', x: (i * 11) % 3000, y: (i * 3) % 3000, status: 'online', spanwnigTreePriority: undefined, ports: ['Fa0/1', 'Fa0/2', 'Gi1/0/1'] } as unknown as CanvasDevice;
+      return makeCanvasDevice({ id: `SW${i}`, name: `SW${i}`, type: 'switchL2', x: (i * 11) % 3000, y: (i * 3) % 3000, ports: [makeCanvasPort('Fa0/1'), makeCanvasPort('Fa0/2'), makeCanvasPort('Gi1/0/1')] });
     }
     const isRouter = i % 2 === 0;
-    return { id: `L3${i}`, name: `L3${i}`, type: isRouter ? 'router' : 'switchL3', x: (i * 5) % 3000, y: (i * 17) % 3000, status: 'online', ports: ['Gi1/0/1', 'Gi1/0/2', 'Gi1/0/3'] } as unknown as CanvasDevice;
+    return makeCanvasDevice({ id: `L3${i}`, name: `L3${i}`, type: isRouter ? 'router' : 'switchL3', x: (i * 5) % 3000, y: (i * 17) % 3000, ports: [makeCanvasPort('Gi1/0/1'), makeCanvasPort('Gi1/0/2'), makeCanvasPort('Gi1/0/3')] });
   }
 
   function makeState(device: CanvasDevice, i: number): SwitchState {
     if (device.type === 'pc') {
-      return {
+      return makeSwitchState({
         hostname: device.name,
         ports: {
-          Eth0: { id: 'Eth0', name: 'Ethernet0', status: 'connected', shutdown: false, vlan: 1, mode: 'access', duplex: 'full', speed: '1000', type: 'fastethernet', ipAddress: device.ip, subnetMask: '255.255.255.0' },
+          Eth0: makePort('Eth0', { name: 'Ethernet0', status: 'connected', duplex: 'full', speed: '1000', type: 'fastethernet', ipAddress: device.ip, subnetMask: '255.255.255.0' }),
         },
-      } as unknown as SwitchState;
+      });
     }
     if (device.type === 'switchL2') {
-      return {
+      return makeSwitchState({
         hostname: device.name,
         ports: {
-          'Fa0/1': { id: 'Fa0/1', name: 'FastEthernet0/1', status: 'connected', shutdown: false, vlan: 1, mode: 'access', duplex: 'full', speed: '100', type: 'fastethernet' },
-          'Fa0/2': { id: 'Fa0/2', name: 'FastEthernet0/2', status: 'connected', shutdown: false, vlan: 1, mode: 'access', duplex: 'full', speed: '100', type: 'fastethernet' },
-          'Gi1/0/1': { id: 'Gi1/0/1', name: 'GigabitEthernet1/0/1', status: 'connected', shutdown: false, vlan: 1, mode: 'access', duplex: 'full', speed: '1000', type: 'gigabitethernet' },
+          'Fa0/1': makePort('Fa0/1', { name: 'FastEthernet0/1', status: 'connected', duplex: 'full', speed: '100', type: 'fastethernet' }),
+          'Fa0/2': makePort('Fa0/2', { name: 'FastEthernet0/2', status: 'connected', duplex: 'full', speed: '100', type: 'fastethernet' }),
+          'Gi1/0/1': makePort('Gi1/0/1', { name: 'GigabitEthernet1/0/1', status: 'connected', duplex: 'full', speed: '1000' }),
         },
-      } as unknown as SwitchState;
+      });
     }
     const octetA = ((i & 15) * 10) + 10;
     const octetB = i & 255;
     const base = `10.${octetA}.${octetB}`;
-    return {
+    return makeSwitchState({
       hostname: device.name,
       ipRouting: true,
       routingProtocol: 'ospf',
@@ -53,11 +54,11 @@ describe('500-Device Scale Smoke / Benchmark', () => {
         ? [{ destination: '192.168.99.0', subnetMask: '255.255.255.0', nextHop: `${base}.2`, type: 'static', metric: 1 }]
         : [],
       ports: {
-        'Gi1/0/1': { id: 'Gi1/0/1', name: 'GigabitEthernet1/0/1', status: 'connected', shutdown: false, vlan: 1, mode: 'routed', duplex: 'full', speed: '1000', type: 'gigabitethernet', ipAddress: `${base}.1`, subnetMask: '255.255.255.0' },
-        'Gi1/0/2': { id: 'Gi1/0/2', name: 'GigabitEthernet1/0/2', status: 'connected', shutdown: false, vlan: 1, mode: 'routed', duplex: 'full', speed: '1000', type: 'gigabitethernet', ipAddress: `${base}.3`, subnetMask: '255.255.255.0' },
-        'Gi1/0/3': { id: 'Gi1/0/3', name: 'GigabitEthernet1/0/3', status: 'connected', shutdown: false, vlan: 1, mode: 'routed', duplex: 'full', speed: '1000', type: 'gigabitethernet', ipAddress: `${base}.5`, subnetMask: '255.255.255.0' },
+        'Gi1/0/1': makePort('Gi1/0/1', { name: 'GigabitEthernet1/0/1', status: 'connected', mode: 'routed', duplex: 'full', speed: '1000', ipAddress: `${base}.1`, subnetMask: '255.255.255.0' }),
+        'Gi1/0/2': makePort('Gi1/0/2', { name: 'GigabitEthernet1/0/2', status: 'connected', mode: 'routed', duplex: 'full', speed: '1000', ipAddress: `${base}.3`, subnetMask: '255.255.255.0' }),
+        'Gi1/0/3': makePort('Gi1/0/3', { name: 'GigabitEthernet1/0/3', status: 'connected', mode: 'routed', duplex: 'full', speed: '1000', ipAddress: `${base}.5`, subnetMask: '255.255.255.0' }),
       },
-    } as unknown as SwitchState;
+    });
   }
 
   function pairPorts(a: CanvasDevice, b: CanvasDevice): [string, string] {

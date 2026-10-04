@@ -586,16 +586,24 @@ export function PrinterDeviceView({
             </div>
 
             {/* Print Queue */}
-            <div className="p-3 rounded-lg bg-secondary-950 border border-secondary-800 space-y-2">
+            <div className={cn(
+              "p-3 rounded-lg border space-y-2",
+              isDark ? "bg-secondary-950 border-secondary-800" : "bg-slate-50 border-secondary-200"
+            )}>
               <div className="flex justify-between items-center text-[11px] font-semibold">
                 <span>{isTr ? 'Yazdırma Kuyruğu & Gelen Belgeler' : 'Print Queue & Incoming Documents'}</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-purple-400 font-mono">{(liveDevice.printJobs || []).length} {isTr ? 'Belge' : 'Jobs'}</span>
+                  <span className={cn("font-mono", isDark ? "text-purple-400" : "text-purple-600")}>{(liveDevice.printJobs || []).length} {isTr ? 'Belge' : 'Jobs'}</span>
                   {(liveDevice.printJobs || []).length > 0 && (
                     <button
                       type="button"
                       onClick={handleClearPrintJobs}
-                      className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded bg-red-950/60 hover:bg-red-900 border border-red-700/50 text-red-300 transition-colors cursor-pointer"
+                      className={cn(
+                        "flex items-center gap-1 text-[10px] px-2 py-0.5 rounded border transition-colors cursor-pointer",
+                        isDark
+                          ? "bg-red-950/60 hover:bg-red-900 border-red-700/50 text-red-300"
+                          : "bg-red-50 hover:bg-red-100 border-red-300 text-red-600"
+                      )}
                       title={isTr ? 'Yazdırma kuyruğunu temizle' : 'Clear print queue'}
                     >
                       <Trash2 className="w-3 h-3" />
@@ -612,13 +620,22 @@ export function PrinterDeviceView({
               ) : (
                 <div className="space-y-1.5 max-h-[140px] overflow-y-auto custom-scrollbar">
                   {liveDevice.printJobs.map((job, idx) => (
-                    <div key={`print-job-${job.documentTitle}-${job.timestamp}-${idx}`} className="p-2 rounded bg-slate-900 border border-slate-800 text-[11px] flex justify-between items-center">
+                    <div
+                      key={`print-job-${job.documentTitle}-${job.timestamp}-${idx}`}
+                      className={cn(
+                        "p-2 rounded border text-[11px] flex justify-between items-center",
+                        isDark ? "bg-slate-900 border-slate-800" : "bg-white border-secondary-200"
+                      )}
+                    >
                       <div>
-                        <div className="font-semibold text-purple-300 truncate max-w-[160px]">{job.documentTitle}</div>
+                        <div className={cn("font-semibold truncate max-w-[160px]", isDark ? "text-purple-300" : "text-purple-700")}>{job.documentTitle}</div>
                         <div className="text-[9px] opacity-60 font-mono">{job.senderName} • {job.pages} {isTr ? 'sayfa' : 'pg'}</div>
                       </div>
                       <div className="text-right">
-                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-mono">
+                        <span className={cn(
+                          "text-[9px] px-1.5 py-0.5 rounded font-mono",
+                          isDark ? "bg-emerald-500/20 text-emerald-400" : "bg-emerald-100 text-emerald-700"
+                        )}>
                           {isTr ? 'TAMAMLANDI' : 'COMPLETED'}
                         </span>
                         <div className="text-[9px] opacity-40 font-mono mt-0.5">{job.timestamp}</div>
@@ -637,8 +654,11 @@ export function PrinterDeviceView({
         "p-5 rounded-xl border space-y-3",
         isDark ? "bg-secondary-900/40 border-secondary-800" : "bg-white border-secondary-200 shadow-sm"
       )}>
-        <h3 className="text-sm font-bold flex items-center gap-2 border-b pb-3 border-secondary-700/40">
-          <Send className="w-4 h-4 text-purple-400" />
+        <h3 className={cn(
+          "text-sm font-bold flex items-center gap-2 border-b pb-3",
+          isDark ? "border-secondary-700/40" : "border-secondary-200"
+        )}>
+          <Send className={cn("w-4 h-4", isDark ? "text-purple-400" : "text-purple-600")} />
           {isTr ? 'Yazıcı Ağ Teşhisi (Ping Testi)' : 'Printer Network Diagnostics (Ping Test)'}
         </h3>
 
@@ -670,7 +690,10 @@ export function PrinterDeviceView({
         </div>
 
         {pingResults.length > 0 && (
-          <div className="p-3 rounded-lg bg-slate-950 font-mono text-xs text-emerald-400 space-y-1 overflow-x-auto border border-slate-800">
+          <div className={cn(
+            "p-3 rounded-lg font-mono text-xs space-y-1 overflow-x-auto border",
+            isDark ? "bg-slate-950 text-emerald-400 border-slate-800" : "bg-slate-50 text-emerald-700 border-secondary-200"
+          )}>
             {pingResults.map((line, idx) => (
               <div key={`ping-line-${idx}-${line.slice(0, 16)}`}>{line}</div>
             ))}

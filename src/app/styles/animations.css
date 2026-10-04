@@ -419,7 +419,13 @@
   background-image: none !important;
 }
 
-/* 5. Disable all blur, glow, gradient, and visual effect classes */
+/* 5. Disable all blur, glow, and visual effect filters.
+
+   Gradient backgrounds are deliberately kept. A linear/radial fill is a cheap
+   static paint, and many surfaces are *only* a gradient: clearing
+   `background-image` left them transparent, so the PC panel home screen lost its
+   wallpaper, gradient buttons lost their fill (white label on a light bar) and
+   `bg-clip-text` headings lost their text entirely. */
 .graphics-low [class*="blur-"],
 .graphics-low [class*="glow-"],
 .graphics-low .ambient-glow,
@@ -428,7 +434,6 @@
 .graphics-low [class*="bg-gradient-"] {
   filter: none !important;
   -webkit-filter: none !important;
-  background-image: none !important;
 }
 
 /* 6. Completely hide decorative lighting blobs and glow pools in low graphics */

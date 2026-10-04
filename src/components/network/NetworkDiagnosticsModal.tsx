@@ -189,19 +189,18 @@ export function NetworkDiagnosticsModal({
   if (!open) return null;
 
   const headerActions = (
-    <div className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold flex items-center gap-1.5 border ${
-      diagnosticResult.canCommunicate
-        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-        : 'bg-rose-500/10 text-rose-400 border-rose-500/30'
-    }`}>
+    <div className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold flex items-center gap-1.5 border ${diagnosticResult.canCommunicate
+        ? (isDark ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' : 'bg-emerald-50 text-emerald-700 border-emerald-200')
+        : (isDark ? 'bg-rose-500/10 text-rose-400 border-rose-500/30' : 'bg-rose-50 text-rose-700 border-rose-200')
+      }`}>
       {diagnosticResult.canCommunicate ? (
         <>
-          <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+          <CheckCircle2 className={`w-3 h-3 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
           <span>{isTr ? 'Bağlantı Başarılı' : 'Healthy'}</span>
         </>
       ) : (
         <>
-          <XCircle className="w-3 h-3 text-rose-400" />
+          <XCircle className={`w-3 h-3 ${isDark ? 'text-rose-400' : 'text-rose-600'}`} />
           <span>{isTr ? `${diagnosticResult.issues.length} Sorun` : `${diagnosticResult.issues.length} Issue(s)`}</span>
         </>
       )}
@@ -214,7 +213,7 @@ export function NetworkDiagnosticsModal({
       alwaysOnTop={true}
       title={
         <div className="flex items-center gap-2">
-          <Stethoscope className="w-4 h-4 text-emerald-400 shrink-0" />
+          <Stethoscope className={`w-4 h-4 shrink-0 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
           <span className="truncate">{isTr ? 'Ağ Sorun Neden Analizcisi' : 'Network Diagnostics & Root Cause Analyzer'}</span>
         </div>
       }
@@ -232,16 +231,16 @@ export function NetworkDiagnosticsModal({
       contentClassName="p-3 sm:p-4 overflow-y-auto space-y-3 sm:space-y-4 custom-scrollbar flex-1 min-h-0"
     >
       {/* Source & Target Selection */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-2 shrink-0 bg-secondary-900/40 p-2.5 sm:p-3 rounded-xl border border-secondary-800/60">
+      <div className={`flex flex-col sm:flex-row items-stretch sm:items-end gap-2 shrink-0 p-2.5 sm:p-3 rounded-xl border ${isDark ? 'bg-secondary-900/40 border-secondary-800/60' : 'bg-secondary-50 border-secondary-200'}`}>
         {/* Source Device */}
         <div className="flex-1 space-y-1.5">
           <div className="flex items-center justify-between">
-            <label className="text-xs font-semibold text-sky-400 flex items-center gap-1.5">
-              <Network className="w-3.5 h-3.5 text-sky-400" />
+            <label className={`text-xs font-semibold flex items-center gap-1.5 ${isDark ? 'text-sky-400' : 'text-sky-700'}`}>
+              <Network className={`w-3.5 h-3.5 ${isDark ? 'text-sky-400' : 'text-sky-700'}`} />
               {isTr ? 'Kaynak Cihaz' : 'Source Device'}
             </label>
             {selectedSourceDevice && (
-              <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-sky-500/10 text-sky-400 border border-sky-500/20">
+              <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded ${isDark ? 'bg-sky-500/10 text-sky-400 border border-sky-500/20' : 'bg-sky-100 text-sky-700 border border-sky-200'}`}>
                 {selectedSourceDevice.ip || (selectedSourceDevice.type === 'cloud' ? (isTr ? 'Bulut' : 'Cloud') : 'L2')}
               </span>
             )}
@@ -250,7 +249,7 @@ export function NetworkDiagnosticsModal({
             <SelectTrigger className={`w-full text-xs h-9 ${isDark ? 'bg-secondary-900 border-secondary-800 text-secondary-100' : 'bg-white border-secondary-200 text-secondary-900'}`}>
               {selectedSourceDevice ? (
                 <div className="flex items-center gap-2 truncate">
-                  <DeviceIcon type={selectedSourceDevice.type} size={16} switchModel={selectedSourceDevice.switchModel} className="shrink-0 text-sky-400" />
+                  <DeviceIcon type={selectedSourceDevice.type} size={16} switchModel={selectedSourceDevice.switchModel} className={`shrink-0 ${isDark ? 'text-sky-400' : 'text-sky-700'}`} />
                   <span className="font-semibold">{selectedSourceDevice.name}</span>
                   {selectedSourceDevice.ip && (
                     <span className="text-[10px] font-mono opacity-70">({selectedSourceDevice.ip})</span>
@@ -275,7 +274,7 @@ export function NetworkDiagnosticsModal({
                           <span>{d.name}</span>
                         </span>
                         {d.ip ? (
-                          <span className="text-[10px] font-mono opacity-80 px-1.5 py-0.5 rounded bg-sky-500/10 text-sky-400 border border-sky-500/20">
+                          <span className={`text-[10px] font-mono opacity-80 px-1.5 py-0.5 rounded ${isDark ? 'bg-sky-500/10 text-sky-400 border border-sky-500/20' : 'bg-sky-100 text-sky-700 border border-sky-200'}`}>
                             {d.ip}
                           </span>
                         ) : (
@@ -302,19 +301,19 @@ export function NetworkDiagnosticsModal({
             title={isTr ? 'Kaynak ve Hedef Cihazı Yer Değiştir (⇄)' : 'Swap Source & Target'}
             className={`h-9 w-9 shrink-0 ${isDark ? 'bg-secondary-900 border-secondary-800 text-secondary-300 hover:text-white hover:bg-secondary-800' : 'bg-secondary-100 border-secondary-200 text-secondary-700 hover:bg-secondary-200'}`}
           >
-            <ArrowLeftRight className="w-4 h-4 text-emerald-400" />
+            <ArrowLeftRight className={`w-4 h-4 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
           </Button>
         </div>
 
         {/* Target Device */}
         <div className="flex-1 space-y-1.5">
           <div className="flex items-center justify-between">
-            <label className="text-xs font-semibold text-purple-400 flex items-center gap-1.5">
-              <Network className="w-3.5 h-3.5 text-purple-400" />
+            <label className={`text-xs font-semibold flex items-center gap-1.5 ${isDark ? 'text-purple-400' : 'text-purple-700'}`}>
+              <Network className={`w-3.5 h-3.5 ${isDark ? 'text-purple-400' : 'text-purple-700'}`} />
               {isTr ? 'Hedef Cihaz' : 'Target Device'}
             </label>
             {selectedTargetDevice && (
-              <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20">
+              <span className={`text-[10px] font-mono px-1.5 py-0.2 rounded ${isDark ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20' : 'bg-purple-100 text-purple-700 border border-purple-200'}`}>
                 {selectedTargetDevice.ip || (selectedTargetDevice.type === 'cloud' ? (isTr ? 'Bulut' : 'Cloud') : 'L2')}
               </span>
             )}
@@ -323,7 +322,7 @@ export function NetworkDiagnosticsModal({
             <SelectTrigger className={`w-full text-xs h-9 ${isDark ? 'bg-secondary-900 border-secondary-800 text-secondary-100' : 'bg-white border-secondary-200 text-secondary-900'}`}>
               {selectedTargetDevice ? (
                 <div className="flex items-center gap-2 truncate">
-                  <DeviceIcon type={selectedTargetDevice.type} size={16} switchModel={selectedTargetDevice.switchModel} className="shrink-0 text-purple-400" />
+                  <DeviceIcon type={selectedTargetDevice.type} size={16} switchModel={selectedTargetDevice.switchModel} className={`shrink-0 ${isDark ? 'text-purple-400' : 'text-purple-700'}`} />
                   <span className="font-semibold">{selectedTargetDevice.name}</span>
                   {selectedTargetDevice.ip && (
                     <span className="text-[10px] font-mono opacity-70">({selectedTargetDevice.ip})</span>
@@ -348,7 +347,7 @@ export function NetworkDiagnosticsModal({
                           <span>{d.name}</span>
                         </span>
                         {d.ip ? (
-                          <span className="text-[10px] font-mono opacity-80 px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                          <span className={`text-[10px] font-mono opacity-80 px-1.5 py-0.5 rounded ${isDark ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20' : 'bg-purple-100 text-purple-700 border border-purple-200'}`}>
                             {d.ip}
                           </span>
                         ) : (
@@ -368,16 +367,15 @@ export function NetworkDiagnosticsModal({
 
       {/* Status Banner */}
       <div
-        className={`p-3.5 rounded-xl border flex items-center gap-3 transition-all shrink-0 ${
-          diagnosticResult.canCommunicate
-            ? 'bg-emerald-950/30 border-emerald-500/40 text-emerald-300'
-            : 'bg-rose-950/30 border-rose-500/40 text-rose-300'
-        }`}
+        className={`p-3.5 rounded-xl border flex items-center gap-3 transition-all shrink-0 ${diagnosticResult.canCommunicate
+            ? (isDark ? 'bg-emerald-950/30 border-emerald-500/40 text-emerald-300' : 'bg-emerald-50 border-emerald-200 text-emerald-900')
+            : (isDark ? 'bg-rose-950/30 border-rose-500/40 text-rose-300' : 'bg-rose-50 border-rose-200 text-rose-900')
+          }`}
       >
         {diagnosticResult.canCommunicate ? (
-          <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+          <CheckCircle2 className={`w-5 h-5 shrink-0 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
         ) : (
-          <XCircle className="w-5 h-5 text-rose-400 shrink-0" />
+          <XCircle className={`w-5 h-5 shrink-0 ${isDark ? 'text-rose-400' : 'text-rose-600'}`} />
         )}
         <div className="flex-1">
           <div className="text-sm font-bold">
@@ -404,7 +402,7 @@ export function NetworkDiagnosticsModal({
       {/* Identified Issues */}
       {diagnosticResult.issues.length > 0 && (
         <div className="space-y-2.5 shrink-0">
-          <div className="text-xs font-bold uppercase tracking-wider text-rose-400 flex items-center gap-1.5">
+          <div className={`text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 ${isDark ? 'text-rose-400' : 'text-rose-700'}`}>
             <AlertTriangle className="w-4 h-4" />
             {isTr ? 'Tespit Edilen Kök Nedenler' : 'Identified Root Causes'}
           </div>
@@ -412,16 +410,15 @@ export function NetworkDiagnosticsModal({
             {diagnosticResult.issues.map((issue) => (
               <div
                 key={issue.id}
-                className={`p-3 rounded-xl border ${
-                  isDark ? 'bg-secondary-900/60 border-rose-900/40' : 'bg-rose-50/50 border-rose-200'
-                }`}
+                className={`p-3 rounded-xl border ${isDark ? 'bg-secondary-900/60 border-rose-900/40' : 'bg-rose-50/50 border-rose-200'
+                  }`}
               >
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-xs font-bold text-rose-400 flex items-center gap-1.5">
+                  <span className={`text-xs font-bold flex items-center gap-1.5 ${isDark ? 'text-rose-400' : 'text-rose-700'}`}>
                     <ShieldAlert className="w-3.5 h-3.5" />
                     {issue.title[language]}
                   </span>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20 font-mono font-bold">
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-bold ${isDark ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' : 'bg-rose-100 text-rose-700 border border-rose-200'}`}>
                     {issue.category === 'ip' ? 'IP' :
                       issue.category === 'physical' ? (isTr ? 'Fiziksel' : 'Physical') :
                         issue.category === 'gateway' ? (isTr ? 'Gateway' : 'Gateway') :
@@ -430,11 +427,10 @@ export function NetworkDiagnosticsModal({
                               issue.category.toUpperCase()}
                   </span>
                 </div>
-                <p className="text-xs text-secondary-300 mt-1">{issue.description[language]}</p>
-                <div className={`mt-2 p-2 rounded-lg text-xs flex items-start gap-1.5 border ${
-                  isDark ? 'bg-amber-950/20 border-amber-500/20 text-amber-200' : 'bg-amber-50 border-amber-200 text-amber-800'
-                }`}>
-                  <Lightbulb className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
+                <p className={`text-xs mt-1 ${isDark ? 'text-secondary-300' : 'text-secondary-700'}`}>{issue.description[language]}</p>
+                <div className={`mt-2 p-2 rounded-lg text-xs flex items-start gap-1.5 border ${isDark ? 'bg-amber-950/20 border-amber-500/20 text-amber-200' : 'bg-amber-50 border-amber-200 text-amber-800'
+                  }`}>
+                  <Lightbulb className={`w-3.5 h-3.5 shrink-0 mt-0.5 ${isDark ? 'text-amber-400' : 'text-amber-700'}`} />
                   <div className="flex-1">
                     <span className="font-semibold">{isTr ? 'Çözüm Önerisi: ' : 'Suggested Fix: '}</span>
                     {issue.suggestedFix[language]}
@@ -451,7 +447,7 @@ export function NetworkDiagnosticsModal({
                         onOpenChange(false);
                         window.dispatchEvent(new CustomEvent('open-device-cli', { detail: { deviceId: diagnosticResult.sourceDevice!.id } }));
                       }}
-                      className="h-6 px-2 text-[10.5px] font-mono text-sky-400 hover:text-sky-300 hover:bg-sky-500/10 flex items-center gap-1"
+                      className={`h-6 px-2 text-[10.5px] font-mono flex items-center gap-1 ${isDark ? 'text-sky-400 hover:text-sky-300 hover:bg-sky-500/10' : 'text-sky-700 hover:text-sky-800 hover:bg-sky-100'}`}
                     >
                       <DeviceIcon type={diagnosticResult.sourceDevice.type} size={13} className="shrink-0" />
                       <span>{diagnosticResult.sourceDevice.name} {diagnosticResult.sourceDevice.type === 'pc' ? (isTr ? 'CMD Aç' : 'Open CMD') : (isTr ? 'CLI Aç' : 'Open CLI')}</span>
@@ -465,7 +461,7 @@ export function NetworkDiagnosticsModal({
                         onOpenChange(false);
                         window.dispatchEvent(new CustomEvent('open-device-cli', { detail: { deviceId: diagnosticResult.targetDevice!.id } }));
                       }}
-                      className="h-6 px-2 text-[10.5px] font-mono text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 flex items-center gap-1"
+                      className={`h-6 px-2 text-[10.5px] font-mono flex items-center gap-1 ${isDark ? 'text-purple-400 hover:text-purple-300 hover:bg-purple-500/10' : 'text-purple-700 hover:text-purple-800 hover:bg-purple-100'}`}
                     >
                       <DeviceIcon type={diagnosticResult.targetDevice.type} size={13} className="shrink-0" />
                       <span>{diagnosticResult.targetDevice.name} {diagnosticResult.targetDevice.type === 'pc' ? (isTr ? 'CMD Aç' : 'Open CMD') : (isTr ? 'CLI Aç' : 'Open CLI')}</span>
@@ -481,7 +477,7 @@ export function NetworkDiagnosticsModal({
       {/* Passed Checks */}
       {diagnosticResult.passedChecks.length > 0 && (
         <div className="space-y-2 shrink-0">
-          <div className="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
+          <div className={`text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 ${isDark ? 'text-emerald-400' : 'text-emerald-700'}`}>
             <CheckCircle2 className="w-4 h-4" />
             {isTr ? 'Başarılı Kontroller' : 'Passed Checks'}
           </div>
@@ -489,9 +485,8 @@ export function NetworkDiagnosticsModal({
             {diagnosticResult.passedChecks.map((check, idx) => (
               <div
                 key={`passed-${idx}-${check.en.slice(0, 15)}`}
-                className={`p-2 rounded-lg text-xs flex items-center gap-2 border ${
-                  isDark ? 'bg-secondary-900/40 border-secondary-800/60 text-secondary-300' : 'bg-secondary-50 border-secondary-200 text-secondary-700'
-                }`}
+                className={`p-2 rounded-lg text-xs flex items-center gap-2 border ${isDark ? 'bg-secondary-900/40 border-secondary-800/60 text-secondary-300' : 'bg-secondary-50 border-secondary-200 text-secondary-700'
+                  }`}
               >
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
                 <span className="truncate">{check[language]}</span>
@@ -502,13 +497,13 @@ export function NetworkDiagnosticsModal({
       )}
 
       {/* Automated Network Verification & Assertion Section */}
-      <div className="p-3 rounded-xl border border-sky-500/30 bg-sky-950/20 space-y-2 shrink-0">
-        <div className="text-xs font-bold text-sky-400 flex items-center justify-between">
+      <div className={`p-3 rounded-xl border space-y-2 shrink-0 ${isDark ? 'border-sky-500/30 bg-sky-950/20' : 'border-sky-200 bg-sky-50'}`}>
+        <div className={`text-xs font-bold flex items-center justify-between ${isDark ? 'text-sky-400' : 'text-sky-700'}`}>
           <span className="flex items-center gap-1.5">
-            <ShieldAlert className="w-4 h-4 text-sky-400" />
+            <ShieldAlert className={`w-4 h-4 ${isDark ? 'text-sky-400' : 'text-sky-700'}`} />
             {isTr ? 'Otomatik Ağ Doğrulama & Test Assertion\'ı' : 'Automated Network Verification & Assertions'}
           </span>
-          <span className="text-[10px] font-mono opacity-80 px-1.5 py-0.5 rounded bg-sky-500/10 text-sky-300">
+          <span className={`text-[10px] font-mono opacity-80 px-1.5 py-0.5 rounded ${isDark ? 'bg-sky-500/10 text-sky-300' : 'bg-sky-100 text-sky-700'}`}>
             {selectedSourceDevice?.name || 'Src'} ↔ {selectedTargetDevice?.name || 'Dst'}
           </span>
         </div>
@@ -563,25 +558,25 @@ export function NetworkDiagnosticsModal({
             return results.map(res => (
               <div
                 key={res.ruleId}
-                className={`p-2 rounded-lg border flex items-center justify-between gap-2 ${
-                  res.passed
+                className={`p-2 rounded-lg border flex items-center justify-between gap-2 ${res.passed
                     ? (isDark ? 'bg-emerald-950/30 border-emerald-500/40 text-emerald-200' : 'bg-emerald-50 border-emerald-300 text-emerald-900')
                     : (isDark ? 'bg-amber-950/30 border-amber-500/40 text-amber-200' : 'bg-amber-50 border-amber-300 text-amber-900')
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-1.5 truncate">
                   {res.passed ? (
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <CheckCircle2 className={`w-3.5 h-3.5 shrink-0 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
                   ) : (
-                    <XCircle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                    <XCircle className={`w-3.5 h-3.5 shrink-0 ${isDark ? 'text-amber-400' : 'text-amber-700'}`} />
                   )}
                   <span className="font-mono text-[11px] truncate">
                     {isTr ? res.messageTr : res.messageEn}
                   </span>
                 </div>
-                <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase shrink-0 ${
-                  res.passed ? 'bg-emerald-500/20 text-emerald-300' : 'bg-amber-500/20 text-amber-300'
-                }`}>
+                <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase shrink-0 ${res.passed
+                    ? (isDark ? 'bg-emerald-500/20 text-emerald-300' : 'bg-emerald-100 text-emerald-800')
+                    : (isDark ? 'bg-amber-500/20 text-amber-300' : 'bg-amber-100 text-amber-800')
+                  }`}>
                   {res.passed ? 'PASSED' : 'FAILED'}
                 </span>
               </div>

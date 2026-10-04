@@ -31,6 +31,13 @@ export function generatePrinterWebPanelContent(device: CanvasDevice, language: s
     offlineBg: isDark ? withAlpha(colors.status.offline, 0.2) : withAlpha(colors.status.offline, 0.15),
     offlineColor: isDark ? colors.status.offline : colors.red['600'],
     terminalOutput: isDark ? colors.topology.subText : colors.slate['600'],
+    queueText: isDark ? colors.topology.noteText : colors.slate['800'],
+    queueTitle: isDark ? colors.topology.noteText : colors.slate['900'],
+    queueMeta: isDark ? colors.purple['500'] : colors.purple['900'],
+    queueMuted: isDark ? colors.topology.subText : colors.slate['600'],
+    queueDocument: isDark ? colors.purple['400'] : colors.purple['900'],
+    queueStatus: isDark ? colors.status.active : colors.green['700'],
+    queueTimestamp: isDark ? colors.topology.subText : colors.slate['600'],
     purple500: isDark ? colors.purple['500'] : colors.purple['600'],
     purple400: isDark ? colors.purple['400'] : colors.purple['500'],
     warningColor: isDark ? colors.amber['500'] : colors.amber['600'],
@@ -45,6 +52,8 @@ export function generatePrinterWebPanelContent(device: CanvasDevice, language: s
     amber200: colors.amber['200'],
     amber400: isDark ? colors.amber['400'] : colors.amber['500'],
     amber700: colors.amber['700'],
+    supplyAmberText: isDark ? colors.amber['200'] : colors.amber['700'],
+    supplyAmberValue: isDark ? colors.amber['400'] : colors.amber['700'],
     rose500: isDark ? withAlpha(colors.rose['500'], 0.2) : withAlpha(colors.rose['500'], 0.15),
     rose500Border: isDark ? withAlpha(colors.rose['500'], 0.4) : withAlpha(colors.rose['500'], 0.3),
   };
@@ -141,9 +150,9 @@ export function generatePrinterWebPanelContent(device: CanvasDevice, language: s
               <div style="font-weight:700;">MAGENTA</div>
               <div style="color:${themeColors.roseColor};margin-top:4px;font-weight:700;">95%</div>
             </div>
-            <div style="background:${themeColors.amberBg};border:1px solid ${themeColors.amberBorder};border-radius:8px;padding:10px;color:${themeColors.amber200};">
+            <div style="background:${themeColors.amberBg};border:1px solid ${themeColors.amberBorder};border-radius:8px;padding:10px;color:${themeColors.supplyAmberText};">
               <div style="font-weight:700;">YELLOW</div>
-              <div style="color:${themeColors.amber400};margin-top:4px;font-weight:700;">90%</div>
+              <div style="color:${themeColors.supplyAmberValue};margin-top:4px;font-weight:700;">90%</div>
             </div>
           </div>
         </div>
@@ -178,11 +187,11 @@ export function generatePrinterWebPanelContent(device: CanvasDevice, language: s
         <!-- Print Queue -->
         <div style="background:${themeColors.bg};border:1px solid ${themeColors.gridLine};border-radius:12px;padding:16px;">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-            <h2 style="margin:0;font-size:14px;font-weight:600;color:${themeColors.noteText};display:flex;align-items:center;">
+            <h2 style="margin:0;font-size:14px;font-weight:600;color:${themeColors.queueTitle};display:flex;align-items:center;">
               ${queueSvgIcon} ${isTr ? 'Yazdırma Kuyruğu & Gelen Belgeler' : 'Print Queue & Received Documents'}
             </h2>
             <div style="display:flex;align-items:center;gap:8px;">
-              <span style="font-size:11px;color:${themeColors.purple500};font-family:'Geist Mono','Courier New',monospace;font-weight:600;">${(device.printJobs || []).length} ${isTr ? 'Aktif Görev / Belge' : 'Active Jobs'}</span>
+              <span style="font-size:11px;color:${themeColors.queueMeta};font-family:'Geist Mono','Courier New',monospace;font-weight:600;">${(device.printJobs || []).length} ${isTr ? 'Aktif Görev / Belge' : 'Active Jobs'}</span>
               ${(device.printJobs || []).length > 0 ? `
                 <button
                   type="button"
@@ -197,7 +206,7 @@ export function generatePrinterWebPanelContent(device: CanvasDevice, language: s
             </div>
           </div>
           ${(!device.printJobs || device.printJobs.length === 0) ? `
-            <div style="font-size:12px;color:${themeColors.consoleColor};font-style:italic;">
+            <div style="font-size:12px;color:${themeColors.queueText};font-style:italic;">
               ${isTr ? 'Kuyrukta bekleyen yazdırma görevi yok. Sistem yazdırmaya hazır.' : 'No active jobs in print spooler. Ready to process network print jobs.'}
             </div>
           ` : `
@@ -205,14 +214,14 @@ export function generatePrinterWebPanelContent(device: CanvasDevice, language: s
               ${device.printJobs.map(j => `
                 <div style="background:${themeColors.canvasBg};border:1px solid ${themeColors.gridLine};border-radius:8px;padding:10px;display:flex;justify-content:space-between;align-items:center;font-size:12px;">
                   <div>
-                    <div style="font-weight:700;color:${themeColors.purple400};display:flex;align-items:center;">${docSvgIcon} ${j.documentTitle}</div>
-                    <div style="font-size:10px;color:${themeColors.subText};font-family:'Geist Mono','Courier New',monospace;margin-top:2px;display:flex;align-items:center;">Sender: <span style="display:inline-flex;align-items:center;margin-left:4px;">${pcSvgIcon}${j.senderName}</span> • ${j.pages} page(s)</div>
+                    <div style="font-weight:700;color:${themeColors.queueDocument};display:flex;align-items:center;">${docSvgIcon} ${j.documentTitle}</div>
+                    <div style="font-size:10px;color:${themeColors.queueMuted};font-family:'Geist Mono','Courier New',monospace;margin-top:2px;display:flex;align-items:center;">Sender: <span style="display:inline-flex;align-items:center;margin-left:4px;">${pcSvgIcon}${j.senderName}</span> • ${j.pages} page(s)</div>
                   </div>
                   <div style="text-align:right;">
-                    <span style="display:inline-block;padding:2px 8px;border-radius:4px;background:${themeColors.onlineBg};color:${themeColors.onlineColor};font-size:10px;font-weight:600;font-family:'Geist Mono','Courier New',monospace;">
+                    <span style="display:inline-block;padding:2px 8px;border-radius:4px;background:${themeColors.onlineBg};color:${themeColors.queueStatus};font-size:10px;font-weight:600;font-family:'Geist Mono','Courier New',monospace;">
                       COMPLETED
                     </span>
-                    <div style="font-size:10px;color:${themeColors.consoleColor};font-family:'Geist Mono','Courier New',monospace;margin-top:2px;">${j.timestamp}</div>
+                    <div style="font-size:10px;color:${themeColors.queueTimestamp};font-family:'Geist Mono','Courier New',monospace;margin-top:2px;">${j.timestamp}</div>
                   </div>
                 </div>
               `).join('')}

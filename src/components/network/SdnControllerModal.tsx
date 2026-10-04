@@ -53,6 +53,16 @@ export function SdnControllerModal({
   language = 'tr',
 }: SdnControllerModalProps) {
   const isTr = language === 'tr';
+  const cardSurfaceClass = isDark
+    ? 'bg-secondary-900/60 border-secondary-800'
+    : 'bg-secondary-50 border-secondary-200';
+  const softSurfaceClass = isDark
+    ? 'bg-secondary-900/40 border-secondary-800'
+    : 'bg-secondary-50 border-secondary-200';
+  const inputClass = isDark
+    ? 'bg-secondary-900 border-secondary-700 text-secondary-100'
+    : 'bg-white border-secondary-300 text-secondary-900';
+  const mutedTextClass = isDark ? 'text-secondary-400' : 'text-secondary-600';
 
   const dragProps = useDrag({
     storageKey: 'sdnControllerPanel',
@@ -137,7 +147,7 @@ export function SdnControllerModal({
       id="sdn-controller-modal"
       alwaysOnTop={true}
       title={isTr ? 'SDN & Niyet Tabanlı Ağ Denetleyicisi (APIC-EM / DNA-C)' : 'SDN & Intent-Based Network Controller (APIC-EM / DNA-C)'}
-      icon={<Cpu className="w-4 h-4 text-sky-400 shrink-0" />}
+      icon={<Cpu className={`w-4 h-4 shrink-0 ${isDark ? 'text-sky-400' : 'text-sky-700'}`} />}
       isOpen={open}
       onClose={() => onOpenChange(false)}
       isDark={isDark}
@@ -151,7 +161,7 @@ export function SdnControllerModal({
       contentClassName="p-3 sm:p-4 overflow-y-auto space-y-4 custom-scrollbar text-xs"
     >
       {/* Tabs */}
-      <div className="flex items-center gap-1 border-b border-secondary-800 pb-2 overflow-x-auto custom-scrollbar no-scrollbar flex-nowrap shrink-0">
+      <div className={`flex items-center gap-1 border-b pb-2 overflow-x-auto custom-scrollbar no-scrollbar flex-nowrap shrink-0 ${isDark ? 'border-secondary-800' : 'border-secondary-200'}`}>
         <Button
           size="sm"
           variant={activeTab === 'inventory' ? 'default' : 'ghost'}
@@ -194,29 +204,29 @@ export function SdnControllerModal({
       {activeTab === 'inventory' && (
         <div className="space-y-3">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-            <div className="p-2 rounded bg-secondary-900/60 border border-secondary-800">
+            <div className={`p-2 rounded border ${cardSurfaceClass}`}>
               <span className="opacity-70">{isTr ? 'Toplam Cihaz' : 'Total Devices'}</span>
-              <p className="text-lg font-bold text-sky-400">{inventory.totalDevices}</p>
+              <p className={`text-lg font-bold ${isDark ? 'text-sky-400' : 'text-sky-700'}`}>{inventory.totalDevices}</p>
             </div>
-            <div className="p-2 rounded bg-secondary-900/60 border border-secondary-800">
+            <div className={`p-2 rounded border ${cardSurfaceClass}`}>
               <span className="opacity-70">{isTr ? 'Anahtarlar' : 'Switches'}</span>
-              <p className="text-lg font-bold text-emerald-400">{inventory.switchesCount}</p>
+              <p className={`text-lg font-bold ${isDark ? 'text-emerald-400' : 'text-emerald-700'}`}>{inventory.switchesCount}</p>
             </div>
-            <div className="p-2 rounded bg-secondary-900/60 border border-secondary-800">
+            <div className={`p-2 rounded border ${cardSurfaceClass}`}>
               <span className="opacity-70">{isTr ? 'Yönlendiriciler' : 'Routers'}</span>
-              <p className="text-lg font-bold text-purple-400">{inventory.routersCount}</p>
+              <p className={`text-lg font-bold ${isDark ? 'text-purple-400' : 'text-purple-700'}`}>{inventory.routersCount}</p>
             </div>
-            <div className="p-2 rounded bg-secondary-900/60 border border-secondary-800">
+            <div className={`p-2 rounded border ${cardSurfaceClass}`}>
               <span className="opacity-70">{isTr ? 'Aktif Hatlar' : 'Active Links'}</span>
-              <p className="text-lg font-bold text-amber-400">{inventory.activeLinksCount}</p>
+              <p className={`text-lg font-bold ${isDark ? 'text-amber-400' : 'text-amber-700'}`}>{inventory.activeLinksCount}</p>
             </div>
           </div>
-          <div className="p-2 rounded bg-secondary-900/40 border border-secondary-800">
+          <div className={`p-2 rounded border ${softSurfaceClass}`}>
             <span className="font-semibold block mb-1">{isTr ? 'Keşfedilen VLAN Dağılımı:' : 'Discovered VLANs:'}</span>
             <div className="flex gap-1.5 flex-wrap">
               {inventory.discoveredVlans.length > 0 ? (
                 inventory.discoveredVlans.map(v => (
-                  <span key={v} className="px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 font-mono text-[11px]">VLAN {v}</span>
+                  <span key={v} className={`px-1.5 py-0.5 rounded font-mono text-[11px] ${isDark ? 'bg-sky-500/20 text-sky-300' : 'bg-sky-100 text-sky-700'}`}>VLAN {v}</span>
                 ))
               ) : (
                 <span className="opacity-60">{isTr ? 'VLAN bulunamadı' : 'No VLANs found'}</span>
@@ -232,7 +242,7 @@ export function SdnControllerModal({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {/* Source Device Selection */}
             <div className="space-y-1">
-              <label className="text-[11px] font-medium text-secondary-400">
+              <label className={`text-[11px] font-medium ${mutedTextClass}`}>
                 {isTr ? 'Kaynak Cihaz / IP' : 'Source Device / IP'}
               </label>
               <select
@@ -241,7 +251,7 @@ export function SdnControllerModal({
                   const dev = devices.find(d => d.id === e.target.value);
                   if (dev?.ip) setSourceIp(dev.ip);
                 }}
-                className="w-full p-1.5 text-xs rounded bg-secondary-900 border border-secondary-700 font-mono text-secondary-100 outline-none"
+                className={`w-full p-1.5 text-xs rounded border font-mono outline-none ${inputClass}`}
               >
                 <option value="">{isTr ? '-- Listeden Cihaz Seç (Kaynak) --' : '-- Select Source Device --'}</option>
                 {devices.map(d => (
@@ -255,13 +265,13 @@ export function SdnControllerModal({
                 placeholder={isTr ? 'Kaynak IP (örn. 192.168.1.10)' : 'Source IP (e.g. 192.168.1.10)'}
                 value={sourceIp}
                 onChange={e => setSourceIp(e.target.value)}
-                className="w-full p-1.5 rounded bg-secondary-900 border border-secondary-700 font-mono text-xs text-secondary-100"
+                className={`w-full p-1.5 rounded border font-mono text-xs ${inputClass}`}
               />
             </div>
 
             {/* Destination Device Selection */}
             <div className="space-y-1">
-              <label className="text-[11px] font-medium text-secondary-400">
+              <label className={`text-[11px] font-medium ${mutedTextClass}`}>
                 {isTr ? 'Hedef Cihaz / IP' : 'Destination Device / IP'}
               </label>
               <select
@@ -270,7 +280,7 @@ export function SdnControllerModal({
                   const dev = devices.find(d => d.id === e.target.value);
                   if (dev?.ip) setDestIp(dev.ip);
                 }}
-                className="w-full p-1.5 text-xs rounded bg-secondary-900 border border-secondary-700 font-mono text-secondary-100 outline-none"
+                className={`w-full p-1.5 text-xs rounded border font-mono outline-none ${inputClass}`}
               >
                 <option value="">{isTr ? '-- Listeden Cihaz Seç (Hedef) --' : '-- Select Destination Device --'}</option>
                 {devices.map(d => (
@@ -284,7 +294,7 @@ export function SdnControllerModal({
                 placeholder={isTr ? 'Hedef IP (örn. 192.168.2.20)' : 'Destination IP (e.g. 192.168.2.20)'}
                 value={destIp}
                 onChange={e => setDestIp(e.target.value)}
-                className="w-full p-1.5 rounded bg-secondary-900 border border-secondary-700 font-mono text-xs text-secondary-100"
+                className={`w-full p-1.5 rounded border font-mono text-xs ${inputClass}`}
               />
             </div>
           </div>
@@ -295,16 +305,16 @@ export function SdnControllerModal({
           </Button>
 
           {traceResult && (
-            <div className="p-2.5 rounded bg-secondary-900/60 border border-secondary-800 space-y-2">
+            <div className={`p-2.5 rounded border space-y-2 ${cardSurfaceClass}`}>
               <div className="flex items-center justify-between font-semibold">
                 <span>{isTr ? 'Durum:' : 'Status:'} {traceResult.healthStatus}</span>
-                <span className="font-mono text-emerald-400">{traceResult.totalHops} {isTr ? 'Sekme' : 'Hops'} / {traceResult.latencyMs}ms</span>
+                <span className={`font-mono ${isDark ? 'text-emerald-400' : 'text-emerald-700'}`}>{traceResult.totalHops} {isTr ? 'Sekme' : 'Hops'} / {traceResult.latencyMs}ms</span>
               </div>
               <div className="space-y-1">
                 {traceResult.pathHops.map((h, i) => (
-                  <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 p-1.5 rounded bg-secondary-800/40 text-[11px] font-mono">
+                  <div key={i} className={`flex flex-col sm:flex-row sm:items-center justify-between gap-1 p-1.5 rounded text-[11px] font-mono ${isDark ? 'bg-secondary-800/40' : 'bg-secondary-100'}`}>
                     <span className="truncate">{h.hopNumber}. {h.deviceName} ({h.deviceType})</span>
-                    <span className="text-secondary-400 shrink-0">
+                    <span className={`${mutedTextClass} shrink-0`}>
                       {h.ingressPort ? `${isTr ? 'GİRİŞ' : 'IN'}: ${h.ingressPort}` : (isTr ? 'GİRİŞ' : 'IN')} &rarr; {h.egressPort ? `${isTr ? 'ÇIKIŞ' : 'OUT'}: ${h.egressPort}` : (isTr ? 'ÇIKIŞ' : 'OUT')}
                     </span>
                   </div>
@@ -318,7 +328,7 @@ export function SdnControllerModal({
       {/* Tab: Intent Policy */}
       {activeTab === 'intent' && (
         <div className="space-y-3">
-          <p className="text-secondary-400">
+          <p className={mutedTextClass}>
             {isTr
               ? 'Niyet Tabanlı Ağ Yapılandırması (IBN) ile hedef durumu belirtin; SDN denetleyicisi ilgili politikaları cihazlara otomatik uygulasın.'
               : 'Specify network intent with Intent-Based Networking (IBN); SDN controller automatically orchestrates policies down to devices.'}
@@ -354,7 +364,7 @@ export function SdnControllerModal({
             {isTr ? 'Niyeti Dağıt (Uygula)' : 'Deploy Intent'}
           </Button>
           {intentLog && (
-            <div className="p-2 rounded bg-emerald-950/40 border border-emerald-800 text-emerald-300 font-mono text-[11px]">
+            <div className={`p-2 rounded border font-mono text-[11px] ${isDark ? 'bg-emerald-950/40 border-emerald-800 text-emerald-300' : 'bg-emerald-50 border-emerald-200 text-emerald-800'}`}>
               {intentLog}
             </div>
           )}
@@ -368,7 +378,7 @@ export function SdnControllerModal({
             <Terminal className="w-3.5 h-3.5 mr-1" />
             {isTr ? 'YANG RPC Gönder (<rpc>)' : 'Send YANG RPC (<rpc>)'}
           </Button>
-          <pre className="p-2 rounded bg-secondary-900 border border-secondary-800 font-mono text-[11px] whitespace-pre-wrap overflow-x-auto max-h-48 text-sky-300">
+          <pre className={`p-2 rounded border font-mono text-[11px] whitespace-pre-wrap overflow-x-auto max-h-48 ${isDark ? 'bg-secondary-900 border-secondary-800 text-sky-300' : 'bg-secondary-50 border-secondary-200 text-sky-800'}`}>
             {netconfOutput || (isTr ? '<!-- NETCONF RPC Oturumu Hazır Beklemede -->' : '<!-- NETCONF RPC Session Standby -->')}
           </pre>
         </div>

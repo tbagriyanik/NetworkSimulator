@@ -80,7 +80,7 @@ export function HomeLauncher({
       style={mobileVerticalScrollStyle}
     >
       {/* ---------------- 1. MOBILE SMARTPHONE VIEW (Telefon Ana Ekranı) ---------------- */}
-      <div className="flex @[640px]:hidden flex-1 min-h-0 flex-col relative overflow-hidden rounded-2xl border shadow-2xl bg-gradient-to-b from-slate-950/90 via-slate-900/90 to-slate-950/95 border-white/10 backdrop-blur-xl">
+      <div className="flex @[640px]:hidden flex-1 min-h-0 flex-col relative overflow-hidden rounded-2xl border shadow-2xl bg-slate-950 bg-gradient-to-b from-slate-950/90 via-slate-900/90 to-slate-950/95 border-white/10 backdrop-blur-xl">
         {/* Phone Ambient Wallpaper Glow */}
         {!isLowGraphics && (
           <div className="pointer-events-none absolute inset-0 overflow-hidden">

@@ -437,7 +437,7 @@ export function MobileDeviceView({
           </button>
           <button
             onClick={() => handleOpenBrowserWindow()}
-            className="py-1.5 rounded-lg font-medium flex items-center justify-center gap-1 transition-colors text-[10px] bg-gradient-to-r from-sky-600 to-blue-600 text-white hover:from-sky-500 hover:to-blue-500 shadow-sm"
+            className="py-1.5 rounded-lg font-medium flex items-center justify-center gap-1 transition-colors text-[10px] bg-sky-600 bg-gradient-to-r from-sky-600 to-blue-600 text-white hover:from-sky-500 hover:to-blue-500 shadow-sm"
             title={isTr ? 'Mobil Web Tarayıcısı' : 'Mobile Web Browser'}
           >
             <Globe className="w-3 h-3" />
