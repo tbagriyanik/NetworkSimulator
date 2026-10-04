@@ -41,12 +41,19 @@ print("3D Scene Created")
     expect(types).toContain('cylinder');
     expect(types).toContain('prism');
 
-    // Test HTML generation
-    const html = generate3DSceneHtml(scene!);
-    expect(html).toContain('<!DOCTYPE html>');
-    expect(html).toContain('Test 3D');
-    expect(html).toContain('render-canvas');
-    expect(html).toContain('btn-wireframe');
+    // Test HTML generation (TR & EN)
+    const htmlTr = generate3DSceneHtml(scene!, true, 'tr');
+    expect(htmlTr).toContain('<!DOCTYPE html>');
+    expect(htmlTr).toContain('Test 3D');
+    expect(htmlTr).toContain('render-canvas');
+    expect(htmlTr).toContain('btn-wireframe');
+    expect(htmlTr).toContain('Tel Kafes');
+    expect(htmlTr).toContain('Nesne');
+
+    const htmlEn = generate3DSceneHtml(scene!, true, 'en');
+    expect(htmlEn).toContain('<!DOCTYPE html>');
+    expect(htmlEn).toContain('Wireframe');
+    expect(htmlEn).toContain('Objects');
   });
 
   it('supports combining objects (union) and subtracting objects (CSG difference)', () => {

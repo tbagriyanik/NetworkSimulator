@@ -24,6 +24,11 @@ export function usePCPanelNavigation({
     const tabletHistoryIndexRef = useRef(0);
     const isInternalTabletNavRef = useRef(false);
 
+    const onNavigateRef = useRef(onNavigate);
+    useEffect(() => {
+        onNavigateRef.current = onNavigate;
+    }, [onNavigate]);
+
     useEffect(() => {
         activeTabRef.current = activeTab;
     }, [activeTab]);
@@ -40,8 +45,8 @@ export function usePCPanelNavigation({
         setActiveTab('home');
         tabletHistoryRef.current = ['home'];
         tabletHistoryIndexRef.current = 0;
-        onNavigate?.('home');
-    }, [onNavigate]);
+        onNavigateRef.current?.('home');
+    }, []);
 
     const navigateToProgram = useCallback((program: PCActiveTab) => {
         if (program === 'home') {
@@ -49,19 +54,19 @@ export function usePCPanelNavigation({
                 tabletHistoryIndexRef.current--;
                 isInternalTabletNavRef.current = true;
                 setActiveTab(tabletHistoryRef.current[tabletHistoryIndexRef.current]);
-                onNavigate?.('home');
+                onNavigateRef.current?.('home');
             } else {
                 setActiveTab('home');
-                onNavigate?.('home');
+                onNavigateRef.current?.('home');
             }
         } else {
             tabletHistoryRef.current = tabletHistoryRef.current.slice(0, tabletHistoryIndexRef.current + 1);
             tabletHistoryRef.current.push(program);
             tabletHistoryIndexRef.current = tabletHistoryRef.current.length - 1;
             setActiveTab(program);
-            onNavigate?.(program);
+            onNavigateRef.current?.(program);
         }
-    }, [onNavigate]);
+    }, []);
 
     useEffect(() => {
         const handleTabletPopState = (event: CustomEvent) => {
@@ -79,12 +84,11 @@ export function usePCPanelNavigation({
     useEffect(() => {
         if (isVisible && isPoweredOn) {
             const targetTab = initialTab || 'home';
-            setTimeout(() => setActiveTab(targetTab), 0);
+            setActiveTab(targetTab);
             tabletHistoryRef.current = [targetTab];
             tabletHistoryIndexRef.current = 0;
-            onNavigate?.(targetTab);
         }
-    }, [initialTab, isPoweredOn, isVisible, onNavigate]);
+    }, [initialTab, isPoweredOn, isVisible]);
 
     return { activeTab, setActiveTab, activeTabRef, goHome, navigateToProgram };
 }

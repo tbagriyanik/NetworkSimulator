@@ -142,7 +142,65 @@ export function TopologyToolbar({
   ]);
 
   return (
-    <div className={cn("fixed top-14 sm:top-16 left-0 right-0 z-30 px-2 sm:px-4 py-1 sm:py-1.5 border-b backdrop-blur-md flex items-center gap-1.5 sm:gap-3 overflow-x-auto", isDark ? "bg-secondary-900/95 border-secondary-800" : "bg-white/95 border-secondary-200 shadow-sm")}>
+    <div
+      className={cn(
+        "fixed top-14 sm:top-16 left-0 right-0 z-30 px-2 sm:px-4 py-1 sm:py-1.5 border-b flex items-center gap-1.5 sm:gap-3 overflow-x-auto transition-colors duration-300",
+        isHighQuality
+          ? cn(
+              "backdrop-blur-xl shadow-md",
+              isDark
+                ? "bg-secondary-950/75 border-secondary-800/80 shadow-black/20"
+                : "bg-white/80 border-secondary-200/80 shadow-primary-500/5"
+            )
+          : cn(
+              "backdrop-blur-md",
+              isDark
+                ? "bg-secondary-900/95 border-secondary-800"
+                : "bg-white/95 border-secondary-200 shadow-xs"
+            )
+      )}
+    >
+      {/* Modern High-Quality Background Fill */}
+      {isHighQuality && (
+        <div className="pointer-events-none absolute inset-0 overflow-hidden -z-10 select-none">
+          <div
+            className={cn(
+              "absolute inset-0 transition-opacity duration-500",
+              isDark
+                ? "bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary-500/10 via-secondary-900/60 to-secondary-950/90"
+                : "bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary-400/10 via-white/70 to-secondary-50/90"
+            )}
+          />
+          <div
+            className={cn(
+              "absolute -top-12 left-1/4 h-24 w-96 rounded-full blur-3xl opacity-35",
+              isDark ? "bg-primary-500/20" : "bg-primary-400/20"
+            )}
+          />
+          <div
+            className={cn(
+              "absolute -top-12 right-1/4 h-24 w-96 rounded-full blur-3xl opacity-25",
+              isDark ? "bg-accent-500/20" : "bg-accent-400/15"
+            )}
+          />
+          <div
+            className={cn(
+              "absolute inset-x-0 top-0 h-px",
+              isDark
+                ? "bg-gradient-to-r from-transparent via-primary-400/25 to-transparent"
+                : "bg-gradient-to-r from-transparent via-primary-500/20 to-transparent"
+            )}
+          />
+          <div
+            className={cn(
+              "absolute inset-x-0 bottom-0 h-px",
+              isDark
+                ? "bg-gradient-to-r from-transparent via-cyan-400/30 to-transparent"
+                : "bg-gradient-to-r from-transparent via-primary-500/25 to-transparent"
+            )}
+          />
+        </div>
+      )}
       {/* Reset View Button */}
       <Tooltip>
         <TooltipTrigger asChild>

@@ -120,13 +120,19 @@ export const useMultiWindowStore = create<MultiWindowStoreState>((set, get) => (
   },
 
   openDeviceWindow: (id: string, type: string, initialTab?: string) => {
-    const { openWindows, windowPositions, windowSizes } = get();
+    const { openWindows, windowPositions, windowSizes, activeTabId } = get();
     const existingIndex = openWindows.findIndex((w) => w.id === id);
 
     if (existingIndex !== -1) {
+      const current = openWindows[existingIndex];
+      const isSameTab = !initialTab || current.initialTab === initialTab;
+      const isSameType = current.type === type;
+      if (isSameTab && isSameType && activeTabId === id) {
+        return;
+      }
       const updated = [...openWindows];
       updated[existingIndex] = {
-        ...updated[existingIndex],
+        ...current,
         type,
         ...(initialTab ? { initialTab } : {}),
       };

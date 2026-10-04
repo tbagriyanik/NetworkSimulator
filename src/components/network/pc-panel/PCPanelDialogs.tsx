@@ -167,12 +167,13 @@ export function PCPanelDialogs() {
         form={activePythonForm || null}
         isDark={isDark}
         isMobile={isMobile}
+        language={language}
         onClose={() => {
           closeActiveDeviceForm(deviceId);
           setActivePythonForm?.(null);
         }}
         onOpenInBrowser={(html, title) => {
-          setHttpAppTitle(title || 'Python Form');
+          setHttpAppTitle(title || (language === 'en' ? 'Python Form' : 'Python Form'));
           setHttpAppUrl('http://localhost/python-form');
           setHttpAppDeviceId(deviceId);
           setHttpAppContent(html);
@@ -183,12 +184,13 @@ export function PCPanelDialogs() {
         scene={activePython3DScene || null}
         isDark={isDark}
         isMobile={isMobile}
+        language={language}
         onClose={() => {
           closeActiveDevice3DScene(deviceId);
           setActivePython3DScene?.(null);
         }}
         onOpenInBrowser={(html, title) => {
-          setHttpAppTitle(title || '3D Sahne');
+          setHttpAppTitle(title || (language === 'en' ? '3D Scene' : '3D Sahne'));
           setHttpAppUrl('http://localhost/scene3d');
           setHttpAppDeviceId(deviceId);
           setHttpAppContent(html);

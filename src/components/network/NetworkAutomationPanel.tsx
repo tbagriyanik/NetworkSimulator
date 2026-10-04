@@ -5,6 +5,7 @@ import type { SwitchState } from '@/lib/network/types';
 import { handleRestconfRequest, executeNetDevOpsPythonScript, RestconfResponse } from '@/lib/network/netdevopsEngine';
 import { DraggableWindowWrapper } from './DraggableWindowWrapper';
 import { useDrag } from '@/hooks/useDrag';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 export interface NetworkAutomationPanelProps {
   isOpen: boolean;
@@ -140,6 +141,9 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
   onUpdateDeviceState,
   onUpdateDeviceStates,
 }) => {
+  const { language } = useLanguage();
+  const isTr = language === 'tr';
+
   const [activeTab, setActiveTab] = useState<'restconf' | 'python'>('restconf');
   const [restconfSplitPercent, setRestconfSplitPercent] = useState(50);
   const restconfSplitRef = useRef<HTMLDivElement>(null);
@@ -242,7 +246,7 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
 
   const handleRunPython = () => {
     setIsRunningScript(true);
-    setPythonOutput('Python betiği yürütülüyor...\n');
+    setPythonOutput(isTr ? 'Python betiği yürütülüyor...\n' : 'Executing Python script...\n');
     setTimeout(() => {
       const res = executeNetDevOpsPythonScript(pythonScript, devices, deviceStates);
       setPythonOutput(res.output);
@@ -350,7 +354,7 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
               <div className="flex items-center justify-between">
                 <div className={`text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
                   <Server className="w-3.5 h-3.5 text-emerald-500" />
-                  RESTCONF İstek Oluşturucu (Request Builder)
+                  {isTr ? 'RESTCONF İstek Oluşturucu' : 'RESTCONF Request Builder'}
                 </div>
                 {targetState && (
                   <span className={`text-[10px] font-mono px-2 py-0.5 rounded border ${isDark ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-emerald-50 text-emerald-700 border-emerald-300'}`}>
@@ -363,7 +367,7 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
               <div className="space-y-1">
                 <span className={`text-[10px] font-semibold flex items-center gap-1 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
                   <Sparkles className="w-3 h-3 text-amber-500" />
-                  Hazır YANG RESTCONF Şablonları:
+                  {isTr ? 'Hazır YANG RESTCONF Şablonları:' : 'YANG RESTCONF Presets:'}
                 </span>
                 <div className="flex flex-wrap gap-1.5">
                   <button
@@ -382,7 +386,7 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
                     onClick={() => handleSelectRestconfPreset('patch_ip')}
                     className={`text-[10px] px-2 py-0.5 rounded border font-mono transition ${isDark ? 'border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-amber-300' : 'border-slate-300 bg-white hover:bg-slate-100 text-amber-700 shadow-xs'}`}
                   >
-                    PATCH Interface IP
+                    {isTr ? 'PATCH Arayüz IP' : 'PATCH Interface IP'}
                   </button>
                   <button
                     onClick={() => handleSelectRestconfPreset('put_hostname')}
@@ -394,14 +398,16 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
                     onClick={() => handleSelectRestconfPreset('delete_ip')}
                     className={`text-[10px] px-2 py-0.5 rounded border font-mono transition ${isDark ? 'border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-rose-300' : 'border-slate-300 bg-white hover:bg-slate-100 text-rose-700 shadow-xs'}`}
                   >
-                    DELETE Interface IP
+                    {isTr ? 'DELETE Arayüz IP' : 'DELETE Interface IP'}
                   </button>
                 </div>
               </div>
 
               <div className="grid grid-cols-3 gap-2">
                 <div className="col-span-1">
-                  <label htmlFor="restconf-method-select" className={`text-[11px] font-semibold mb-1 block ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>Metod</label>
+                  <label htmlFor="restconf-method-select" className={`text-[11px] font-semibold mb-1 block ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                    {isTr ? 'Metod' : 'Method'}
+                  </label>
                   <select
                     id="restconf-method-select"
                     value={restconfMethod}
@@ -418,7 +424,9 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
                 </div>
 
                 <div className="col-span-2">
-                  <label htmlFor="restconf-device-select" className={`text-[11px] font-semibold mb-1 block ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>Hedef Cihaz</label>
+                  <label htmlFor="restconf-device-select" className={`text-[11px] font-semibold mb-1 block ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                    {isTr ? 'Hedef Cihaz' : 'Target Device'}
+                  </label>
                   <select
                     id="restconf-device-select"
                     value={selectedDeviceId}
@@ -449,7 +457,9 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
 
               {restconfMethod !== 'GET' && restconfMethod !== 'DELETE' && (
                 <div>
-                  <label htmlFor="restconf-body-textarea" className={`text-[11px] font-semibold mb-1 block ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>Request Body (JSON Payload)</label>
+                  <label htmlFor="restconf-body-textarea" className={`text-[11px] font-semibold mb-1 block ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                    {isTr ? 'İstek Gövdesi (JSON Payload)' : 'Request Body (JSON Payload)'}
+                  </label>
                   <textarea
                     id="restconf-body-textarea"
                     value={restconfBody}
@@ -466,17 +476,22 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
                 className="w-full py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition shadow active:scale-[0.99]"
               >
                 <Send className="w-3.5 h-3.5" />
-                RESTCONF İsteği Gönder (Send Request)
+                {isTr ? 'RESTCONF İsteği Gönder' : 'Send RESTCONF Request'}
               </button>
             </div>
 
-            <div role="separator" aria-label="RESTCONF istek ve yanıt bölmesi genişliğini ayarla" onPointerDown={startRestconfSplitResize} className={`hidden md:block w-1.5 mx-1 rounded-full cursor-col-resize transition-colors ${isDark ? 'bg-slate-700/60 hover:bg-emerald-500/70' : 'bg-slate-300 hover:bg-emerald-500'}`} />
+            <div
+              role="separator"
+              aria-label={isTr ? "RESTCONF istek ve yanıt bölmesi genişliğini ayarla" : "Adjust RESTCONF request and response pane width"}
+              onPointerDown={startRestconfSplitResize}
+              className={`hidden md:block w-1.5 mx-1 rounded-full cursor-col-resize transition-colors ${isDark ? 'bg-slate-700/60 hover:bg-emerald-500/70' : 'bg-slate-300 hover:bg-emerald-500'}`}
+            />
 
             {/* Right: Response Viewer */}
             <div className="w-full md:w-auto p-4 overflow-y-auto space-y-3 min-h-0 flex flex-col">
               <div className="flex items-center justify-between">
                 <div className={`text-xs font-bold uppercase tracking-wider ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-                  Sunucu Yanıtı (YANG JSON Output)
+                  {isTr ? 'Sunucu Yanıtı (YANG JSON Çıktısı)' : 'Server Response (YANG JSON Output)'}
                 </div>
                 {restconfResponse && (
                   <div className="flex items-center gap-2">
@@ -491,7 +506,7 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
                     <button
                       onClick={handleCopyJson}
                       className={`p-1 rounded ${isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-900'}`}
-                      title="JSON Kopyala"
+                      title={isTr ? "JSON Kopyala" : "Copy JSON"}
                     >
                       {isCopied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
                     </button>
@@ -505,7 +520,9 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
               >
                 {restconfResponse
                   ? JSON.stringify(restconfResponse.data, null, 2)
-                  : '// RESTCONF isteği gönderildiğinde JSON çıktısı burada gerçek zamanlı olarak görüntülenecektir.'}
+                  : (isTr
+                      ? '// RESTCONF isteği gönderildiğinde JSON çıktısı burada gerçek zamanlı olarak görüntülenecektir.'
+                      : '// JSON output will be displayed here in real time when a RESTCONF request is sent.')}
               </pre>
             </div>
           </div>
@@ -518,7 +535,7 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
               <div className="flex items-center justify-between">
                 <div className={`text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
                   <Code className="w-3.5 h-3.5 text-emerald-500" />
-                  Python Script Editörü
+                  {isTr ? 'Python Betik Editörü' : 'Python Script Editor'}
                 </div>
                 <div className="flex items-center gap-2">
                   <select
@@ -533,16 +550,16 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
                     className={`text-[11px] px-2 py-1 rounded border outline-none font-mono ${isDark ? 'bg-slate-950 border-slate-700 text-emerald-400' : 'bg-white border-slate-300 text-emerald-700 shadow-xs'
                       }`}
                   >
-                    <option value="netmiko_provision">Netmiko Toplu Yapılandırma</option>
-                    <option value="netmiko_audit">Ağ & IP Sağlık Denetimi</option>
+                    <option value="netmiko_provision">{isTr ? 'Netmiko Toplu Yapılandırma' : 'Netmiko Batch Provisioning'}</option>
+                    <option value="netmiko_audit">{isTr ? 'Ağ & IP Sağlık Denetimi' : 'Network & IP Health Audit'}</option>
                     <option value="restconf_requests">RESTCONF Python Requests</option>
-                    <option value="vlan_automation">Otomatik VLAN Dağıtımı</option>
-                    <option value="ospf_bgp_automation">Dinamik Rotalama (OSPF & BGP) Otomasyonu</option>
+                    <option value="vlan_automation">{isTr ? 'Otomatik VLAN Dağıtımı' : 'Automated VLAN Deployment'}</option>
+                    <option value="ospf_bgp_automation">{isTr ? 'Dinamik Yönlendirme (OSPF & BGP) Otomasyonu' : 'Dynamic Routing (OSPF & BGP) Automation'}</option>
                   </select>
                   <button
                     onClick={() => setPythonScript(PYTHON_TEMPLATES[selectedPythonPreset as keyof typeof PYTHON_TEMPLATES] || PYTHON_TEMPLATES.netmiko_provision)}
                     className={`text-[11px] p-1 ${isDark ? 'text-slate-400 hover:text-slate-200' : 'text-slate-500 hover:text-slate-800'}`}
-                    title="Şablonu Sıfırla"
+                    title={isTr ? "Şablonu Sıfırla" : "Reset Template"}
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
                   </button>
@@ -562,18 +579,25 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
                 className="w-full py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition shadow disabled:opacity-50 active:scale-[0.99]"
               >
                 <Play className="w-3.5 h-3.5" />
-                {isRunningScript ? 'Yürütülüyor...' : 'Python Betiğini Çalıştır (Run NetDevOps Script)'}
+                {isRunningScript
+                  ? (isTr ? 'Yürütülüyor...' : 'Executing...')
+                  : (isTr ? 'Python Betiğini Çalıştır' : 'Run NetDevOps Script')}
               </button>
             </div>
 
-            <div role="separator" aria-label="Python editör ve konsol genişliğini ayarla" onPointerDown={startPythonSplitResize} className={`hidden md:block w-1.5 mx-1 rounded-full cursor-col-resize transition-colors ${isDark ? 'bg-slate-700/60 hover:bg-emerald-500/70' : 'bg-slate-300 hover:bg-emerald-500'}`} />
+            <div
+              role="separator"
+              aria-label={isTr ? "Python editör ve konsol genişliğini ayarla" : "Adjust Python editor and console width"}
+              onPointerDown={startPythonSplitResize}
+              className={`hidden md:block w-1.5 mx-1 rounded-full cursor-col-resize transition-colors ${isDark ? 'bg-slate-700/60 hover:bg-emerald-500/70' : 'bg-slate-300 hover:bg-emerald-500'}`}
+            />
 
             {/* Right: Execution Console Output */}
             <div className="w-full md:w-auto p-4 overflow-y-auto space-y-3 min-h-0 flex flex-col">
               <div className="flex items-center justify-between">
                 <div className={`text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                  Konsol Çıktısı (NetDevOps Console Output)
+                  {isTr ? 'Konsol Çıktısı (NetDevOps Konsol Çıktısı)' : 'Console Output (NetDevOps Console Output)'}
                 </div>
               </div>
 
@@ -581,7 +605,7 @@ export const NetworkAutomationPanel: React.FC<NetworkAutomationPanelProps> = ({
                 className={`flex-1 p-4 rounded-lg border font-mono text-xs overflow-auto leading-relaxed custom-scrollbar ${isDark ? 'bg-slate-950 border-slate-800 text-slate-200' : 'bg-slate-900 text-slate-200 shadow-inner'
                   }`}
               >
-                {pythonOutput || '// Betiği çalıştırmak için "Python Betiğini Çalıştır" butonuna basın.'}
+                {pythonOutput || (isTr ? '// Betiği çalıştırmak için "Python Betiğini Çalıştır" butonuna basın.' : '// Click "Run NetDevOps Script" to execute the script.')}
               </pre>
             </div>
           </div>

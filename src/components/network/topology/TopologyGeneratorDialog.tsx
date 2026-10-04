@@ -779,7 +779,7 @@ export function TopologyGeneratorDialog({
             <Button
               onClick={handleGenerate}
               disabled={isLoading}
-              className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold text-xs h-8.5 px-4.5 rounded-lg shadow-md shadow-purple-600/30 transition-all active:scale-[0.98]"
+              className="bg-gradient-to-r from-purple-600 via-indigo-600 to-primary-600 hover:from-purple-700 hover:via-indigo-700 hover:to-primary-700 text-white font-bold text-xs h-8.5 px-5 rounded-lg shadow-md shadow-purple-600/30 transition-all active:scale-[0.98] border border-purple-400/30 gap-1.5"
             >
               {isLoading ? (
                 <>
@@ -788,7 +788,7 @@ export function TopologyGeneratorDialog({
                 </>
               ) : (
                 <>
-                  <Wand2 className="w-3.5 h-3.5 mr-1" />
+                  <Wand2 className="w-3.5 h-3.5 text-purple-200" />
                   {isTr ? 'Topolojiyi Üret & Yükle' : 'Generate & Load'}
                 </>
               )}

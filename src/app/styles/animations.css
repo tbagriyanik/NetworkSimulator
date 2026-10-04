@@ -217,13 +217,11 @@
   background-size: 200% 200%;
 }
 
-/* Low graphics mode: turn off cosmetic micro-animations and transitions for a
-   snappier, lighter render. Functional one-shot animations that carry layout
-   state (e.g. the progress bar fill) are kept.
+/* ===========================================================================
+   Low graphics mode: Flat icons, no transparency (opaque surfaces), and no effects
+   =========================================================================== */
 
-   The class is deliberately unqualified rather than `body.graphics-low`: the
-   pre-paint script in app/layout.tsx runs in <head> and can only reach the
-   document element, so both nodes have to be accepted. */
+/* 1. Disable all animations and transitions */
 .graphics-low,
 .graphics-low *,
 .graphics-low *::before,
@@ -241,20 +239,38 @@
   animation: progress-width-fill 0.3s ease-out forwards !important;
 }
 
-/* Disable expensive filter effects in low graphics mode */
-.graphics-low .topology-canvas {
+/* 2. Flat icons: strip SVG filters, drop-shadows, and glows for clean 2D rendering */
+.graphics-low svg,
+.graphics-low svg *,
+.graphics-low .device-icon,
+.graphics-low [data-device-icon],
+.graphics-low svg [filter],
+.graphics-low svg [style*="filter"],
+.graphics-low svg path[style*="drop-shadow"] {
   filter: none !important;
+  -webkit-filter: none !important;
 }
 
-/* Disable backdrop filters in low graphics mode. The inline-style rule below
-   only caught React inline styles, but most blurred surfaces are Tailwind
-   utility classes (backdrop-blur-*) or the liquid-glass helpers, and blurring
-   a full-width header/window is one of the most expensive things a machine
-   without a real GPU can be asked to do. */
-.graphics-low [style*="backdrop-filter"] {
-  backdrop-filter: none !important;
+/* 3. Disable all shadows (box-shadow, drop-shadow, text-shadow) */
+.graphics-low,
+.graphics-low *,
+.graphics-low *::before,
+.graphics-low *::after {
+  box-shadow: none !important;
+  text-shadow: none !important;
 }
 
+.graphics-low [class*="shadow"] {
+  box-shadow: none !important;
+}
+
+.graphics-low [class*="drop-shadow"] {
+  filter: none !important;
+  -webkit-filter: none !important;
+}
+
+/* 4. No transparency: opaque backgrounds and no backdrop-filter */
+.graphics-low [style*="backdrop-filter"],
 .graphics-low [class*="backdrop-blur"],
 .graphics-low .liquid-glass,
 .graphics-low .liquid-glass-light,
@@ -263,25 +279,86 @@
   backdrop-filter: none !important;
 }
 
-/* Blur/drop-shadow utility filters are purely cosmetic and get rasterized on
-   the CPU when there is no GPU. */
-.graphics-low [class*="blur-"] {
-  filter: none !important;
-}
-
-/* SVG filters (device shadows, selection glow, IoT glow) force off-screen
-   raster passes per element. They are the first thing to go on weak hardware. */
-.graphics-low svg [filter],
-.graphics-low svg [style*="filter"],
-.graphics-low svg path[style*="drop-shadow"] {
-  filter: none !important;
-}
-
-/* Long, expensive paint paths: the canvas keeps its cheap dot grid, but the
-   full-page gradients and ambient glow layers are already skipped in React
-   when graphics quality is low. */
+.graphics-low [data-modal-content="true"],
+.graphics-low dialog,
+.graphics-low [role="dialog"],
+.graphics-low [role="menu"],
+.graphics-low [role="tooltip"],
+.graphics-low [role="alertdialog"],
+.graphics-low [role="listbox"],
+.graphics-low [role="toolbar"],
+.graphics-low header,
+.graphics-low footer,
+.graphics-low nav,
+.graphics-low .panel-ambient-glow,
+.graphics-low .selection-toolbar,
+.graphics-low .liquid-glass,
+.graphics-low .liquid-glass-light,
+.graphics-low .liquid-glass-strong,
 .graphics-low .topology-print-area {
   box-shadow: none !important;
+  text-shadow: none !important;
+  filter: none !important;
+  -webkit-filter: none !important;
+  opacity: 1 !important;
+  background-image: none !important;
+  background-color: var(--background) !important;
+}
+
+.dark.graphics-low [data-modal-content="true"],
+.dark.graphics-low dialog,
+.dark.graphics-low [role="dialog"],
+.dark.graphics-low [role="menu"],
+.dark.graphics-low [role="tooltip"],
+.dark.graphics-low [role="alertdialog"],
+.dark.graphics-low [role="listbox"],
+.dark.graphics-low [role="toolbar"],
+.dark.graphics-low header,
+.dark.graphics-low footer,
+.dark.graphics-low nav,
+.dark.graphics-low .panel-ambient-glow,
+.dark.graphics-low .selection-toolbar,
+.dark.graphics-low .liquid-glass,
+.dark.graphics-low .liquid-glass-light,
+.dark.graphics-low .liquid-glass-strong,
+.graphics-low.dark [data-modal-content="true"],
+.graphics-low.dark dialog,
+.graphics-low.dark [role="dialog"],
+.graphics-low.dark [role="menu"],
+.graphics-low.dark [role="tooltip"],
+.graphics-low.dark [role="alertdialog"],
+.graphics-low.dark [role="listbox"],
+.graphics-low.dark [role="toolbar"],
+.graphics-low.dark header,
+.graphics-low.dark footer,
+.graphics-low.dark nav,
+.graphics-low.dark .panel-ambient-glow,
+.graphics-low.dark .selection-toolbar,
+.graphics-low.dark .liquid-glass,
+.graphics-low.dark .liquid-glass-light,
+.graphics-low.dark .liquid-glass-strong {
+  background-color: var(--color-secondary-950, #020617) !important;
+  background-image: none !important;
+}
+
+/* 5. Disable all blur, glow, gradient, and visual effect classes */
+.graphics-low [class*="blur-"],
+.graphics-low [class*="glow-"],
+.graphics-low .ambient-glow,
+.graphics-low .panel-ambient-glow,
+.graphics-low .topology-canvas,
+.graphics-low [class*="bg-gradient-"] {
+  filter: none !important;
+  -webkit-filter: none !important;
+  background-image: none !important;
+}
+
+/* 6. Completely hide decorative lighting blobs and glow pools in low graphics */
+.graphics-low [class*="blur-2xl"],
+.graphics-low [class*="blur-3xl"],
+.graphics-low [class*="blur-xl"] {
+  display: none !important;
+  opacity: 0 !important;
 }
 
 /* ---------------------------------------------------------------------------

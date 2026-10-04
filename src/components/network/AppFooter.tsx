@@ -7,6 +7,8 @@ import type { Translations } from '@/contexts/LanguageContext';
 import { TooltipWrapper } from '@/components/ui/TooltipWrapper';
 import { useMultiWindowStore } from '@/hooks/useMultiWindowStore';
 import { useUiPreferences } from '@/hooks/useUiPreferences';
+import { useAppStore } from '@/lib/store/appStore';
+import { cn } from '@/lib/utils';
 import { Activity, Cpu, HardDrive, Gauge } from 'lucide-react';
 
 interface AppFooterProps {
@@ -30,6 +32,8 @@ export function AppFooter({
   topologyDevices, showProjectPicker, showOnboarding,
   setShowAboutModal, onShortcut
 }: AppFooterProps) {
+  const graphicsQuality = useAppStore((state) => state.graphicsQuality);
+  const isHighQuality = graphicsQuality === 'high';
   const hasMultipleWindows = useMultiWindowStore((state) => state.openWindows.length >= 2);
   const { preferences } = useUiPreferences();
 
@@ -158,8 +162,58 @@ export function AppFooter({
   return (
     <>
       {/* Desktop Footer */}
-      <footer className={`hidden md:block fixed bottom-0 inset-x-0 z-40 border-t transition-all min-h-[48px] pb-3 pb-safe ${isDark ? 'bg-secondary-950/95 border-secondary-900' : 'bg-white/95 border-secondary-200'
-        } ${showProjectPicker || showOnboarding ? 'hidden' : ''}`}>
+      {/* Desktop Footer */}
+      <footer
+        className={cn(
+          "hidden md:block fixed bottom-0 inset-x-0 z-40 border-t min-h-[48px] pb-3 pb-safe transition-colors duration-300",
+          isHighQuality
+            ? cn(
+                "backdrop-blur-xl shadow-lg",
+                isDark
+                  ? "bg-secondary-950/75 border-secondary-800/80 shadow-black/20"
+                  : "bg-white/80 border-secondary-200/80 shadow-primary-500/5"
+              )
+            : cn(
+                isDark
+                  ? "bg-secondary-950/95 border-secondary-900"
+                  : "bg-white/95 border-secondary-200"
+              ),
+          (showProjectPicker || showOnboarding) && "hidden"
+        )}
+      >
+        {/* Modern High-Quality Background Fill */}
+        {isHighQuality && (
+          <div className="pointer-events-none absolute inset-0 overflow-hidden -z-10 select-none">
+            <div
+              className={cn(
+                "absolute inset-0 transition-opacity duration-500",
+                isDark
+                  ? "bg-[radial-gradient(ellipse_at_bottom,_var(--tw-gradient-stops))] from-primary-500/10 via-secondary-900/60 to-secondary-950/90"
+                  : "bg-[radial-gradient(ellipse_at_bottom,_var(--tw-gradient-stops))] from-primary-400/10 via-white/70 to-secondary-50/90"
+              )}
+            />
+            <div
+              className={cn(
+                "absolute -bottom-10 left-1/4 h-24 w-96 rounded-full blur-3xl opacity-35",
+                isDark ? "bg-primary-500/20" : "bg-primary-400/20"
+              )}
+            />
+            <div
+              className={cn(
+                "absolute -bottom-10 right-1/4 h-24 w-96 rounded-full blur-3xl opacity-25",
+                isDark ? "bg-accent-500/20" : "bg-accent-400/15"
+              )}
+            />
+            <div
+              className={cn(
+                "absolute inset-x-0 top-0 h-px",
+                isDark
+                  ? "bg-gradient-to-r from-transparent via-cyan-400/30 to-transparent"
+                  : "bg-gradient-to-r from-transparent via-primary-500/25 to-transparent"
+              )}
+            />
+          </div>
+        )}
         <div className="w-full px-5 py-2 pb-3">
           <div className="flex items-center justify-between gap-4">
             {/* Save Status & Performance Icon */}
@@ -257,8 +311,46 @@ export function AppFooter({
       </footer>
 
       {/* Mobile Footer — status bar / informational messages */}
-      <footer className={`md:hidden fixed bottom-0 inset-x-0 z-2 border-t backdrop-blur-xl transition-all min-h-[44px] pb-3 flex items-center px-3 text-[11px] select-none pb-safe ${isDark ? 'bg-secondary-900/95 border-secondary-800 text-secondary-300' : 'bg-white/95 border-secondary-200 text-secondary-600'
-        } ${showProjectPicker || showOnboarding ? 'hidden' : ''}`}>
+      <footer
+        className={cn(
+          "md:hidden fixed bottom-0 inset-x-0 z-2 border-t min-h-[44px] pb-3 flex items-center px-3 text-[11px] select-none pb-safe transition-colors duration-300",
+          isHighQuality
+            ? cn(
+                "backdrop-blur-xl shadow-lg",
+                isDark
+                  ? "bg-secondary-950/75 border-secondary-800/80 text-secondary-300 shadow-black/20"
+                  : "bg-white/80 border-secondary-200/80 text-secondary-600 shadow-primary-500/5"
+              )
+            : cn(
+                "backdrop-blur-xl",
+                isDark
+                  ? "bg-secondary-900/95 border-secondary-800 text-secondary-300"
+                  : "bg-white/95 border-secondary-200 text-secondary-600"
+              ),
+          (showProjectPicker || showOnboarding) && "hidden"
+        )}
+      >
+        {/* Modern High-Quality Background Fill */}
+        {isHighQuality && (
+          <div className="pointer-events-none absolute inset-0 overflow-hidden -z-10 select-none">
+            <div
+              className={cn(
+                "absolute inset-0 transition-opacity duration-500",
+                isDark
+                  ? "bg-[radial-gradient(ellipse_at_bottom,_var(--tw-gradient-stops))] from-primary-500/10 via-secondary-900/60 to-secondary-950/90"
+                  : "bg-[radial-gradient(ellipse_at_bottom,_var(--tw-gradient-stops))] from-primary-400/10 via-white/70 to-secondary-50/90"
+              )}
+            />
+            <div
+              className={cn(
+                "absolute inset-x-0 top-0 h-px",
+                isDark
+                  ? "bg-gradient-to-r from-transparent via-cyan-400/30 to-transparent"
+                  : "bg-gradient-to-r from-transparent via-primary-500/25 to-transparent"
+              )}
+            />
+          </div>
+        )}
         <div className="w-full flex items-center justify-between gap-2 overflow-hidden">
           {/* Status & Device count */}
           <div className="flex items-center gap-2 truncate">

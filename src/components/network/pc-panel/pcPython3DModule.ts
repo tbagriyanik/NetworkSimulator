@@ -641,9 +641,9 @@ export class PyScene {
     this.show(mode);
   }
 
-  public export_html(): string {
+  public export_html(language: string = 'tr'): string {
     const state = this.toState('browser');
-    return generate3DSceneHtml(state);
+    return generate3DSceneHtml(state, true, language);
   }
 }
 

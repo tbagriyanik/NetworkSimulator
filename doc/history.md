@@ -6,6 +6,9 @@
   - `NoteNode.tsx`: Not nesneleri (`foreignObject`) `<g transform="translate(x, y)">` sarmalayıcısına alındı ve `foreignObject`'in `x`/`y` değerleri `0` olarak sıfırlandı. Linux ve macOS WebKit motorlarında tuval zoom ve pan yapıldığında notların cihazlardan kopup ekranda sabit kalması sorunu çözüldü.
   - `TopologyToolbar.tsx`: Kablo butonlarının simgelerine `shrink-0` kuralı eklendi, hardcoded `orange` ve `Turquoise` renkleri temizlenerek tema renkleriyle standartlaştırıldı. TypeScript `CableType` içindeki `'fiber'` tipi `cableIconMap` nesnesine eklendi.
   - `base.css` & `utilities.css`: Not kutuları için `note-scrollbar` WebKit kaydırma çubuğu kuralları eklendi, pencere sürükleme bölgeleri (`-webkit-app-region`) ve form girdisi sıfırlamaları (`-webkit-appearance: none`) eklendi.
+- **🎨 Yüksek ve Düşük Grafik Modu Derinleştirmesi & Performans Ayrımı**:
+  - **Yüksek Grafik Modu (`High`)**: `TopologyToolbar`, `AppHeader` ve `AppFooter` bileşenlerine modern `radial-gradient` ambiyans ışık havuzları (`blur-3xl`), üst/alt kenarlık neon parıltı çizgileri (`linear-gradient`), `backdrop-blur-xl` cam efekti ve dinamik başlık gradyanları entegre edildi.
+  - **Düşük Grafik Modu (`Low` / Sıfır Efekt)**: Düşük grafik modunda tüm efektler, gölgeler (`box-shadow`, `text-shadow`, `drop-shadow`), blur filtreleri, gradyanlar ve animasyonlar tamamen kapatıldı; tüm pencereler, paneller, menüler ve araç çubukları %100 opak (solid) hale getirildi; SVG simgeler düz (flat) 2D rendering moduna geçirildi.
 
 ## v7.3.0 — 2026-10-03
 

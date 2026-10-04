@@ -11,6 +11,7 @@ interface PythonFormWindowProps {
   form: PythonFormState | null;
   isDark?: boolean;
   isMobile?: boolean;
+  language?: string;
   onClose: () => void;
   onOpenInBrowser?: (htmlContent: string, title?: string) => void;
 }
@@ -19,9 +20,11 @@ export const PythonFormWindow: React.FC<PythonFormWindowProps> = ({
   form,
   isDark = true,
   isMobile = false,
+  language = 'tr',
   onClose,
   onOpenInBrowser,
 }) => {
+  const isEn = language === 'en';
   if (!form) return null;
 
   // Local state copy for interactive editing of elements inside the window
@@ -92,10 +95,10 @@ export const PythonFormWindow: React.FC<PythonFormWindowProps> = ({
         variant="ghost"
         onClick={handleOpenBrowser}
         className="h-7 px-2 text-xs flex items-center gap-1 text-sky-400 hover:text-sky-300 hover:bg-sky-500/10"
-        title="Web Tarayıcısında Aç (Browser Mode)"
+        title={isEn ? 'Open in Web Browser (Browser Mode)' : 'Web Tarayıcısında Aç (Browser Mode)'}
       >
         <Globe className="w-3.5 h-3.5" />
-        <span className="hidden sm:inline text-xs">Web Tarayıcısında Aç</span>
+        <span className="hidden sm:inline text-xs">{isEn ? 'Open in Browser' : 'Web Tarayıcısında Aç'}</span>
       </Button>
     </div>
   );
@@ -130,7 +133,7 @@ export const PythonFormWindow: React.FC<PythonFormWindowProps> = ({
                     className="inline-flex items-center gap-1.5 px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg shadow-sm transition-all duration-150 bg-sky-600 hover:bg-sky-500 active:scale-95 text-white disabled:opacity-50 disabled:pointer-events-none"
                   >
                     <Play className="w-3.5 h-3.5 fill-current" />
-                    <span>{elem.text || 'Düğme'}</span>
+                    <span>{elem.text || (isEn ? 'Button' : 'Düğme')}</span>
                   </button>
                 </div>
               );

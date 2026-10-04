@@ -48,6 +48,7 @@ Network Simulator; bilgisayar ağları, anahtarlama (switching), yönlendirme (r
 - **Sürükle-Bırak Topoloji Tasarımı:** Cihazları tuval üzerine sürükleyerek saniyeler içinde karmaşık kurumsal ağ topolojileri oluşturabilirsiniz.
 - **Yüksek Performanslı Çizim ve Spatial Partitioning:** 100+ cihaz ve yüzlerce kablo bağlantısı içeren büyük ağlarda bile 60 FPS akıcı performans sağlar.
 - **Gerçekçi CLI Terminali:** Cihazlarda `User EXEC`, `Privileged EXEC`, `Global Configuration`, `Interface`, `VLAN`, `Router`, `DHCP` ve `ACL` modlarında gerçek zamanlı komut çalıştırma.
+- **🎨 Çift Kademeli Grafik & Performans Modu (High / Low):** Yüksek grafik modunda modern `radial-gradient` ambiyans ışık havuzları, neon parıltı çizgileri ve `backdrop-blur-xl` cam efekti; düşük grafik modunda eski veya zayıf donanımlar için tüm gölgeleri, filtreleri, saydamlıkları ve animasyonları kapatan tam sıfır efektli (Zero Effects) flat 2D performans modu.
 - **Canlı Paket Yakalama ve İnceleme (Packet Capture):** Ağdaki paket trafiğini derinlemesine katman katman (L2 Ethernet, L3 IP, L4 TCP/UDP/ICMP/DHCP/DNS/ARP) inceleme imkanı.
 - **Rehberli Dersler ve İnteraktif Quiz Motoru:** 19 adet adım adım rehberli laboratuvar dersi, her konuya özel bilgi quiz'leri ve canlı skor puanlama sistemi.
 - **High-DPI Türkçe Destekli Sertifika Motoru:** Tamamlanan başarılar için Türkçe karakterleri (`Ş`, `İ`, `Ğ`, `Ç`, `Ö`, `Ü`) kusursuz işleyen yüksek çözünürlüklü PDF sertifika üretimi.

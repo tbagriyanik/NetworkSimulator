@@ -22,7 +22,8 @@ function escapeHtml(str: string): string {
  * Generates an interactive, standalone HTML5 3D WebGL application
  * that can run inside an iframe (PCBrowser) or saved as a .html file.
  */
-export function generate3DSceneHtml(scene: Python3DSceneState, isDark: boolean = true): string {
+export function generate3DSceneHtml(scene: Python3DSceneState, isDark: boolean = true, language: string = 'tr'): string {
+  const isEn = language === 'en';
   const sceneDataJson = JSON.stringify(scene).replace(/</g, '\\u003c');
   const styles = get3DSceneStyles(isDark);
   const script = get3DSceneScript(sceneDataJson, isDark);
@@ -37,12 +38,14 @@ export function generate3DSceneHtml(scene: Python3DSceneState, isDark: boolean =
         <option value="neon">🟣 Neon Synth</option>
         <option value="blueprint">📐 Blueprint</option>`;
 
+  const objLabel = isEn ? (scene.objects.length === 1 ? 'Object' : 'Objects') : 'Nesne';
+
   return `<!DOCTYPE html>
-<html lang="tr">
+<html lang="${isEn ? 'en' : 'tr'}">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>${escapeHtml(scene.title || '3D WebGL Sahne')}</title>
+  <title>${escapeHtml(scene.title || (isEn ? '3D WebGL Scene' : '3D WebGL Sahne'))}</title>
   <style>${styles}</style>
 </head>
 <body>
@@ -52,26 +55,26 @@ export function generate3DSceneHtml(scene: Python3DSceneState, isDark: boolean =
 
   <header class="toolbar">
     <div class="toolbar-group">
-      <span style="font-weight: 700; font-size: 12px; color: ${isDark ? colors.theme.accent : colors.theme.primary}; margin-right: 4px;">🧊 ${escapeHtml(scene.title || '3D Sahne')}</span>
-      <span class="badge" id="obj-count-badge">${scene.objects.length} Nesne</span>
+      <span style="font-weight: 700; font-size: 12px; color: ${isDark ? colors.theme.accent : colors.theme.primary}; margin-right: 4px;">🧊 ${escapeHtml(scene.title || (isEn ? '3D Scene' : '3D Sahne'))}</span>
+      <span class="badge" id="obj-count-badge">${scene.objects.length} ${objLabel}</span>
     </div>
     <div class="toolbar-group">
-      <select class="theme-select" id="select-theme" title="WebGL Tema Seçimi">
+      <select class="theme-select" id="select-theme" title="${isEn ? 'WebGL Theme Selection' : 'WebGL Tema Seçimi'}">
         ${initialThemeOption}
       </select>
-      <button class="btn" id="btn-wireframe" title="Tel Çerçeve Modu">🌐 Tel Kafes</button>
-      <button class="btn" id="btn-grid" title="Zemin Izgarasını Göster/Gizle">▦ Izgara</button>
-      <button class="btn" id="btn-rotate" title="Otomatik Dönüşü Aç/Kapat">🔄 Döndür</button>
-      <button class="btn" id="btn-reset" title="Kamerayı Sıfırla">🎯 Sıfırla</button>
+      <button class="btn" id="btn-wireframe" title="${isEn ? 'Wireframe Mode' : 'Tel Çerçeve Modu'}">${isEn ? '🌐 Wireframe' : '🌐 Tel Kafes'}</button>
+      <button class="btn" id="btn-grid" title="${isEn ? 'Toggle Floor Grid' : 'Zemin Izgarasını Göster/Gizle'}">${isEn ? '▦ Grid' : '▦ Izgara'}</button>
+      <button class="btn" id="btn-rotate" title="${isEn ? 'Toggle Auto Rotation' : 'Otomatik Dönüşü Aç/Kapat'}">${isEn ? '🔄 Rotate' : '🔄 Döndür'}</button>
+      <button class="btn" id="btn-reset" title="${isEn ? 'Reset Camera' : 'Kamerayı Sıfırla'}">${isEn ? '🎯 Reset' : '🎯 Sıfırla'}</button>
     </div>
   </header>
 
   <footer class="footer-help">
-    <span><kbd>Sol Tık + Sürükle</kbd> Döndür</span>
+    <span><kbd>${isEn ? 'Left Click + Drag' : 'Sol Tık + Sürükle'}</kbd> ${isEn ? 'Rotate' : 'Döndür'}</span>
     <span>•</span>
-    <span><kbd>Sağ Tık + Sürükle</kbd> Kaydır</span>
+    <span><kbd>${isEn ? 'Right Click + Drag' : 'Sağ Tık + Sürükle'}</kbd> ${isEn ? 'Pan' : 'Kaydır'}</span>
     <span>•</span>
-    <span><kbd>Tekerlek / Pinch</kbd> Yakınlaştır</span>
+    <span><kbd>${isEn ? 'Wheel / Pinch' : 'Tekerlek / Pinch'}</kbd> ${isEn ? 'Zoom' : 'Yakınlaştır'}</span>
   </footer>
 
   <script>${script}</script>

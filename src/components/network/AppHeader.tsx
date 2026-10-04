@@ -97,7 +97,56 @@ export function AppHeader({
   };
 
   return (
-    <header className={cn("fixed top-0 left-0 right-0 z-[50] border-b px-3 sm:px-5 h-14 sm:h-16 flex items-center", isDark ? "liquid-glass border-secondary-800" : "bg-white/90 backdrop-blur-md border-secondary-200")}>
+    <header
+      className={cn(
+        "fixed top-0 left-0 right-0 z-[50] border-b px-3 sm:px-5 h-14 sm:h-16 flex items-center transition-colors duration-300",
+        graphicsQuality === 'high'
+          ? cn(
+              "backdrop-blur-xl shadow-md",
+              isDark
+                ? "bg-secondary-950/75 border-secondary-800/80 shadow-black/20"
+                : "bg-white/80 border-secondary-200/80 shadow-primary-500/5"
+            )
+          : cn(
+              isDark
+                ? "bg-secondary-950 border-secondary-800"
+                : "bg-white border-secondary-200"
+            )
+      )}
+    >
+      {/* Modern High-Quality Background Fill */}
+      {graphicsQuality === 'high' && (
+        <div className="pointer-events-none absolute inset-0 overflow-hidden -z-10 select-none">
+          <div
+            className={cn(
+              "absolute inset-0 transition-opacity duration-500",
+              isDark
+                ? "bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary-500/10 via-secondary-900/60 to-secondary-950/90"
+                : "bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary-400/10 via-white/70 to-secondary-50/90"
+            )}
+          />
+          <div
+            className={cn(
+              "absolute -top-10 left-1/4 h-24 w-96 rounded-full blur-3xl opacity-35",
+              isDark ? "bg-primary-500/20" : "bg-primary-400/20"
+            )}
+          />
+          <div
+            className={cn(
+              "absolute -top-10 right-1/4 h-24 w-96 rounded-full blur-3xl opacity-25",
+              isDark ? "bg-accent-500/20" : "bg-accent-400/15"
+            )}
+          />
+          <div
+            className={cn(
+              "absolute inset-x-0 bottom-0 h-px",
+              isDark
+                ? "bg-gradient-to-r from-transparent via-cyan-400/30 to-transparent"
+                : "bg-gradient-to-r from-transparent via-primary-500/25 to-transparent"
+            )}
+          />
+        </div>
+      )}
       <div className="w-full">
         <div className="flex items-center justify-between">
           {/* Logo & Title */}
@@ -116,7 +165,14 @@ export function AppHeader({
                 <Image src="/icon192.svg" alt="Logo" width={28} height={28} loading="eager" className="w-7 h-7 object-contain" />
               </div>
               <div className="hidden md:flex flex-col text-left py-0.5">
-                <h2 className="text-lg font-bold tracking-tight bg-gradient-to-r from-accent-400 to-primary-500 bg-clip-text text-transparent leading-none">
+                <h2
+                  className={cn(
+                    "text-lg font-bold tracking-tight leading-none",
+                    graphicsQuality === 'high'
+                      ? "bg-gradient-to-r from-accent-400 to-primary-500 bg-clip-text text-transparent"
+                      : (isDark ? "text-secondary-100" : "text-secondary-900")
+                  )}
+                >
                   {t.title}
                 </h2>
                 <p className="text-xs font-medium mt-1 text-secondary-600 dark:text-secondary-200 leading-normal pb-0.5">{t.subtitle}</p>
@@ -226,11 +282,17 @@ export function AppHeader({
                   </Tooltip>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <button aria-label={t.topologyGenerator}
-                        className={cn("h-8 w-8 flex items-center justify-center transition-all hover:bg-secondary-200/50", isDark ? 'text-secondary-300 hover:text-primary-400 hover:bg-secondary-700/50' : 'text-secondary-600 hover:text-primary-600')}
+                      <button
+                        aria-label={t.topologyGenerator}
+                        className={cn(
+                          "h-8 w-8 rounded-lg flex items-center justify-center transition-all border shrink-0",
+                          isDark
+                            ? "bg-purple-500/20 border-purple-500/40 text-purple-300 hover:bg-purple-500/30 hover:border-purple-400 hover:text-purple-200 shadow-[0_0_8px_rgba(168,85,247,0.25)]"
+                            : "bg-purple-100/90 border-purple-300 text-purple-700 hover:bg-purple-200 hover:border-purple-400 hover:text-purple-800 shadow-xs"
+                        )}
                         onClick={() => window.dispatchEvent(new CustomEvent('trigger-topology-generator'))}
                       >
-                        <Wand2 className="w-4 h-4 text-purple-500 animate-pulse" />
+                        <Wand2 className="w-4 h-4 text-purple-500 dark:text-purple-300 animate-pulse" />
                       </button>
                     </TooltipTrigger>
                     <TooltipContent className="flex items-center gap-2">
@@ -437,7 +499,12 @@ export function AppHeader({
                       </Button>
                       <Button
                         variant="outline"
-                        className={cn("justify-start gap-2 h-11 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap animate-marquee-hover", isDark ? "hover:text-purple-400" : "hover:text-purple-600")}
+                        className={cn(
+                          "justify-start gap-2 h-11 text-xs font-bold min-w-0 overflow-hidden text-ellipsis whitespace-nowrap border-purple-400/50",
+                          isDark
+                            ? "bg-purple-500/15 text-purple-300 hover:bg-purple-500/25 hover:text-purple-200"
+                            : "bg-purple-50 text-purple-700 hover:bg-purple-100 hover:text-purple-800"
+                        )}
                         onClick={() => {
                           if (typeof window !== 'undefined') {
                             window.dispatchEvent(new CustomEvent('trigger-topology-generator'));
@@ -445,7 +512,7 @@ export function AppHeader({
                           setShowMobileMenu(false);
                         }}
                       >
-                        <Wand2 className="w-3.5 h-3.5 flex-shrink-0 text-purple-500" />
+                        <Wand2 className="w-3.5 h-3.5 flex-shrink-0 text-purple-500 dark:text-purple-300" />
                         <span className="truncate">{t.topologyGenerator || (language === 'tr' ? 'Otomatik Topoloji Üretici' : 'Automatic Topology Generator')}</span>
                       </Button>
                       <Button

@@ -62,7 +62,7 @@ export function NetworkDiagnosticsModal({
       ? { x: Math.max(16, Math.floor((window.innerWidth - 680) / 2)), y: Math.max(136, Math.floor((window.innerHeight - 560) / 2)) }
       : { x: 120, y: 136 },
     defaultSize: { width: 680, height: 560 },
-    minSize: { width: 440, height: 320 },
+    minSize: { width: 300, height: 260 },
     mode: 'drag-resize',
     disableSnap: true,
   });
@@ -226,13 +226,13 @@ export function NetworkDiagnosticsModal({
       handlePointerDown={dragProps.handlePointerDown}
       handleResizeStart={dragProps.handleResizeStart}
       collapsible={true}
-      mobileFullScreen={false}
+      mobileFullScreen={true}
       headerActions={headerActions}
       className={isDark ? '!bg-secondary-950 border-secondary-800' : '!bg-white border-secondary-300'}
-      contentClassName="p-4 overflow-y-auto space-y-4 custom-scrollbar"
+      contentClassName="p-3 sm:p-4 overflow-y-auto space-y-3 sm:space-y-4 custom-scrollbar flex-1 min-h-0"
     >
       {/* Source & Target Selection */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-2 shrink-0 bg-secondary-900/40 p-3 rounded-xl border border-secondary-800/60">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-end gap-2 shrink-0 bg-secondary-900/40 p-2.5 sm:p-3 rounded-xl border border-secondary-800/60">
         {/* Source Device */}
         <div className="flex-1 space-y-1.5">
           <div className="flex items-center justify-between">

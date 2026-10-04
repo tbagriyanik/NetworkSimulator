@@ -10,6 +10,10 @@ import { CableInfo, SwitchState } from '@/lib/network/types';
 import { TerminalOutput } from './Terminal';
 import { OutputLine as PCOutputLine, PcOutputsSetter, type PCActiveTab } from './pc-panel/PCPanel.types';
 import { useMultiWindowStore, DeviceWindowItem } from '@/hooks/useMultiWindowStore';
+
+function isPCActiveTab(tab?: string): tab is PCActiveTab {
+  return typeof tab === 'string' && (['home', 'desktop', 'terminal', 'settings', 'services', 'wireless', 'iot', 'rest-api'] as const).some((t) => t === tab);
+}
 import { useWindowStore } from '@/hooks/useWindowStore';
 import { DeviceIcon } from './DeviceIcon';
 import { TaskDefinition, TaskContext } from '@/lib/network/taskDefinitions';
@@ -351,7 +355,7 @@ export function MultiDeviceWindowManager({
                   className="h-full min-h-0 !border-none"
                   deviceId={win.id}
                   cableInfo={cableInfo}
-                  initialTab={(win.initialTab as PCActiveTab) || 'home'}
+                  initialTab={isPCActiveTab(win.initialTab) ? win.initialTab : 'home'}
                   isVisible={true}
                   onClose={() => closeDeviceWindow(win.id)}
                   onTogglePower={toggleDevicePower}
@@ -364,6 +368,9 @@ export function MultiDeviceWindowManager({
                   pcHistories={pcHistories}
                   onUpdatePCHistory={handleUpdatePCHistory}
                   onExecuteDeviceCommand={handleExecuteCommand}
+                  onNavigate={(program: string) => {
+                    useMultiWindowStore.getState().openDeviceWindow(win.id, 'pc', program);
+                  }}
                   onDeleteDevice={handleDeviceDelete}
                   handleResizeStart={handleResizeStart}
                 />

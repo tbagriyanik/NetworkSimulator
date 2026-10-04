@@ -51,10 +51,23 @@ export function getConnectionStatusMessage(
   const targetDevice = lookup(conn.targetDeviceId);
   if (!sourceDevice || !targetDevice) return language === 'tr' ? 'Cihaz bulunamadı' : 'Device not found';
 
-  const sourcePort = sourceDevice.ports.find(p => p.id === conn.sourcePort);
-  const targetPort = targetDevice.ports.find(p => p.id === conn.targetPort);
+  const sourcePortFromDevice = sourceDevice.ports.find(p => p.id === conn.sourcePort);
+  const targetPortFromDevice = targetDevice.ports.find(p => p.id === conn.targetPort);
 
-  const cableInfo = { connected: true, cableType: conn.cableType, sourceDevice: sourceDevice.type, targetDevice: targetDevice.type, sourcePort: conn.sourcePort, targetPort: conn.targetPort } as import('@/lib/network/types').CableInfo;
+  const sourcePortState = deviceStates?.get(sourceDevice.id)?.ports?.[conn.sourcePort];
+  const targetPortState = deviceStates?.get(targetDevice.id)?.ports?.[conn.targetPort];
+
+  const sourcePort = sourcePortState ? { ...sourcePortFromDevice, ...sourcePortState } : sourcePortFromDevice;
+  const targetPort = targetPortState ? { ...targetPortFromDevice, ...targetPortState } : targetPortFromDevice;
+
+  const cableInfo = {
+    connected: true,
+    cableType: conn.cableType,
+    sourceDevice: sourceDevice.type,
+    targetDevice: targetDevice.type,
+    sourcePort: conn.sourcePort,
+    targetPort: conn.targetPort
+  } as import('@/lib/network/types').CableInfo;
   const isCableOk = isCableCompatible(cableInfo);
 
   if (!isCableOk) {
@@ -74,6 +87,10 @@ export function getConnectionStatusMessage(
     return language === 'tr' ? '🔌 Cihaz kapalı' : '🔌 Device is offline';
   }
 
+  if (conn.active === false) {
+    return language === 'tr' ? '🔌 Bağlantı pasif (Down)' : '🔌 Link is Down';
+  }
+
   if (conn.cableType === 'wireless') return language === 'tr' ? '⚡ Kablosuz Bağlantı Aktif' : '⚡ Wireless Link Active';
 
   if (sourcePort?.status === 'err-disabled' || targetPort?.status === 'err-disabled') {
@@ -84,22 +101,57 @@ export function getConnectionStatusMessage(
     return language === 'tr' ? '⏹ Port kapalı (Admin Down)' : '⏹ Port is shutdown';
   }
 
+  if (sourcePort?.status === 'disabled' || targetPort?.status === 'disabled' || sourcePort?.status === 'notconnect' || targetPort?.status === 'notconnect') {
+    return language === 'tr' ? '⏹ Port pasif (Down)' : '⏹ Port is down';
+  }
+
+  if (sourcePort?.status === 'disconnected' || targetPort?.status === 'disconnected') {
+    return language === 'tr' ? '🔌 Port bağlı değil (Disconnected)' : '🔌 Port disconnected';
+  }
+
+  if (sourcePort?.status === 'blocked' || targetPort?.status === 'blocked') {
+    return language === 'tr' ? '🟠 Port bloke (Blocked)' : '🟠 Port Blocked';
+  }
+
   const isSpeedMismatch = !!(sourcePort?.speed && targetPort?.speed && sourcePort.speed !== 'auto' && targetPort.speed !== 'auto' && sourcePort.speed !== targetPort.speed);
   if (isSpeedMismatch) return language === 'tr' ? '⚠️ Hız uyuşmazlığı (Speed Mismatch)' : '⚠️ Speed Mismatch';
 
   const isDuplexMismatch = !!(sourcePort?.duplex && targetPort?.duplex && sourcePort.duplex !== 'auto' && targetPort.duplex !== 'auto' && sourcePort.duplex !== targetPort.duplex);
   if (isDuplexMismatch) return language === 'tr' ? '⚠️ Çift yönlülük uyuşmazlığı (Duplex Mismatch)' : '⚠️ Duplex Mismatch';
 
-  const getSTPBlocking = (device: CanvasDevice, portId: string) => {
+  const getSTPState = (device: CanvasDevice, portId: string): string | undefined => {
     if (deviceStates) {
       const sp = deviceStates.get(device.id)?.ports?.[portId];
-      if (sp) return sp.spanningTree?.state === 'blocking' || sp.spanningTree?.role === 'alternate';
+      if (sp?.spanningTree) {
+        if (sp.spanningTree.state === 'blocking' || sp.spanningTree.role === 'alternate') return 'blocking';
+        return sp.spanningTree.state;
+      }
     }
-    return device.ports.find(p => p.id === portId)?.spanningTree?.state === 'blocking';
+    const p = device.ports.find(pt => pt.id === portId);
+    if (p?.spanningTree) {
+      if (p.spanningTree.state === 'blocking' || p.spanningTree.role === 'alternate') return 'blocking';
+      return p.spanningTree.state;
+    }
+    return undefined;
   };
 
-  if (getSTPBlocking(sourceDevice, conn.sourcePort) || getSTPBlocking(targetDevice, conn.targetPort)) {
+  const srcSTP = getSTPState(sourceDevice, conn.sourcePort);
+  const tgtSTP = getSTPState(targetDevice, conn.targetPort);
+
+  if (srcSTP === 'blocking' || tgtSTP === 'blocking') {
     return language === 'tr' ? '🟠 STP engelliyor (Blocking)' : '🟠 STP Blocking';
+  }
+
+  if (srcSTP === 'listening' || tgtSTP === 'listening') {
+    return language === 'tr' ? '🟡 STP dinliyor (Listening)' : '🟡 STP Listening';
+  }
+
+  if (srcSTP === 'learning' || tgtSTP === 'learning') {
+    return language === 'tr' ? '🟡 STP öğreniyor (Learning)' : '🟡 STP Learning';
+  }
+
+  if (srcSTP === 'disabled' || tgtSTP === 'disabled') {
+    return language === 'tr' ? '⛔ STP devre dışı (Disabled)' : '⛔ STP Disabled';
   }
 
   const speedVal = sourcePort?.speed || '1000';

@@ -11,6 +11,7 @@ interface Python3DWindowProps {
   scene: Python3DSceneState | null;
   isDark?: boolean;
   isMobile?: boolean;
+  language?: string;
   onClose: () => void;
   onOpenInBrowser?: (htmlContent: string, title?: string) => void;
 }
@@ -19,15 +20,21 @@ export const Python3DWindow: React.FC<Python3DWindowProps> = ({
   scene,
   isDark = true,
   isMobile = false,
+  language = 'tr',
   onClose,
   onOpenInBrowser,
 }) => {
+  const isEn = language === 'en';
+
   const htmlContent = useMemo(() => {
     if (!scene) return '';
-    return generate3DSceneHtml(scene, isDark);
-  }, [scene, isDark]);
+    return generate3DSceneHtml(scene, isDark, language);
+  }, [scene, isDark, language]);
 
   if (!scene) return null;
+
+  const defaultSceneTitle = isEn ? '3D Scene' : '3D Sahne';
+  const defaultTitle = isEn ? 'Scene' : 'Sahne';
 
   const headerActions = (
     <div className="flex items-center gap-1.5 shrink-0">
@@ -36,7 +43,7 @@ export const Python3DWindow: React.FC<Python3DWindowProps> = ({
         variant="ghost"
         onClick={() => {
           if (onOpenInBrowser) {
-            onOpenInBrowser(htmlContent, scene.title || '3D Sahne');
+            onOpenInBrowser(htmlContent, scene.title || defaultSceneTitle);
           }
         }}
         className={`h-7 px-2 text-xs font-semibold border ${
@@ -44,19 +51,21 @@ export const Python3DWindow: React.FC<Python3DWindowProps> = ({
             ? 'text-sky-400 hover:text-sky-300 hover:bg-sky-500/10 border-sky-500/20'
             : 'text-sky-700 hover:text-sky-900 hover:bg-sky-50 border-sky-300'
         }`}
-        title="Sahneyi PC Web Tarayıcısında Aç"
+        title={isEn ? 'Open Scene in PC Web Browser' : 'Sahneyi PC Web Tarayıcısında Aç'}
       >
         <Globe className={`w-3.5 h-3.5 mr-1 ${isDark ? 'text-sky-400' : 'text-sky-600'}`} />
-        Tarayıcıda Aç
+        {isEn ? 'Open in Browser' : 'Tarayıcıda Aç'}
       </Button>
     </div>
   );
+
+  const objLabel = isEn ? (scene.objects.length === 1 ? 'Object' : 'Objects') : 'Nesne';
 
   return (
     <ResizablePortalWindow
       isOpen={!!scene}
       onClose={onClose}
-      title={`Python 3D - ${scene.title || 'Sahne'}`}
+      title={`Python 3D - ${scene.title || defaultTitle}`}
       icon={<Box className={`w-4 h-4 shrink-0 animate-pulse ${isDark ? 'text-cyan-400' : 'text-cyan-600'}`} />}
       isDark={isDark}
       isMobile={isMobile}
@@ -82,15 +91,15 @@ export const Python3DWindow: React.FC<Python3DWindowProps> = ({
           <div className="flex items-center gap-2">
             <span className={`flex items-center gap-1 font-mono font-medium ${isDark ? 'text-cyan-300' : 'text-cyan-800'}`}>
               <Layers className={`w-3 h-3 ${isDark ? 'text-cyan-400' : 'text-cyan-600'}`} />
-              {scene.objects.length} Nesne
+              {scene.objects.length} {objLabel}
             </span>
             <span>•</span>
             <span>
-              Gökyüzü: <strong className={`capitalize ${isDark ? 'text-slate-200' : 'text-slate-900'}`}>{scene.environment.sky.type}</strong>
+              {isEn ? 'Sky:' : 'Gökyüzü:'} <strong className={`capitalize ${isDark ? 'text-slate-200' : 'text-slate-900'}`}>{scene.environment.sky.type}</strong>
             </span>
             <span>•</span>
             <span>
-              Işıklar: <strong className={isDark ? 'text-slate-200' : 'text-slate-900'}>{scene.environment.lights.length}</strong>
+              {isEn ? 'Lights:' : 'Işıklar:'} <strong className={isDark ? 'text-slate-200' : 'text-slate-900'}>{scene.environment.lights.length}</strong>
             </span>
           </div>
           <div className={`flex items-center gap-2 text-[10px] font-mono ${isDark ? 'text-slate-500' : 'text-slate-600'}`}>
@@ -102,7 +111,7 @@ export const Python3DWindow: React.FC<Python3DWindowProps> = ({
         {/* 3D WebGL Interactive Canvas in Sandbox IFrame */}
         <div className="flex-1 w-full h-full relative overflow-hidden">
           <iframe
-            title={scene.title || '3D Sahne'}
+            title={scene.title || defaultSceneTitle}
             srcDoc={htmlContent}
             sandbox="allow-scripts allow-forms allow-modals"
             className={`w-full h-full border-0 block ${isDark ? 'bg-slate-950' : 'bg-slate-100'}`}

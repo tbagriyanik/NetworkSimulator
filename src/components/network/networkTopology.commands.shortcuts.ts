@@ -58,6 +58,7 @@ export function getKeyboardShortcuts(isTR: boolean): CommandDefinition {
       ['Çoklu Cihaz Dağıtım', isTR ? '3+ cihaz seçilince Araç Çubuğunda Yatay / Dikey Eşit Dağıt' : 'Distribute Horizontally / Vertically on 3+ devices selected'],
       ['Çevresel Ayarlar', isTR ? 'Gelişmiş Çevresel Ayarlar panelini aç' : 'Open Environmental Settings panel'],
       ['Topoloji Kayıt Yöneticisi', isTR ? 'Anlık görüntü al, JSON içe/dışa aktar (Uyumsuz JSON doğrulama & hata korumalı)' : 'Take topology snapshot, import/export JSON (with strict structure validation)'],
+      ['Grafik Kalitesi (High/Low)', isTR ? 'Yüksekte modern ambiyans & cam dolgusu, düşükte sıfır efekt ve tam akıcılık' : 'High quality with modern ambient glass fills, low quality with zero-effects max performance'],
       ['MQTT Paket Yakalama', isTR ? 'MQTT CONNECT, PUBLISH, SUBSCRIBE, Topic, QoS ve Payload bilgilerini incele' : 'Inspect MQTT CONNECT, PUBLISH, SUBSCRIBE, Topic, QoS and Payload details'],
       ['REST / RESTCONF', isTR ? 'İstek ve yanıt panellerini ayraçtan sürükleyerek yeniden boyutlandır' : 'Resize request and response panes using the draggable divider'],
     ]
