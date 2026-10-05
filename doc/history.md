@@ -6,6 +6,9 @@
   - `tauri.conf.json` & `tauri-low-resource.conf.json`: macOS için minimum sistem gereksinimi `13.0` (macOS Ventura) olarak yapılandırıldı.
   - `.github/workflows/release.yml`: macOS release derlemesi hem Intel (`x86_64`) hem Apple Silicon (`aarch64`) mimarilerini destekleyen `universal-apple-darwin` evrensel ikili paketine geçirildi.
   - `MACOSX_DEPLOYMENT_TARGET: '13.0'` ortam değişkeni eklenerek macOS 13+ sistemlerde açılış uyumluluğu garanti altına alındı.
+- **🐧 Linux WebKitGTK Not Nesnesi Konumlandırma Düzeltmesi (`NoteNode.tsx`)**:
+  - Linux WebKitGTK'da `<foreignObject>` elementi, parent `<g transform="translate(x, y)">` SVG dönüşümünü uygulamıyor; bu nedenle notlar her zaman canvas'ın sol üst köşesine (0, 0) yapışıyordu ve zoom/drag ile hareket etmiyordu.
+  - `<g>` sarmalayıcısı kaldırılarak `x={note.x}` ve `y={note.y}` değerleri doğrudan `<foreignObject>` üzerine taşındı. Bu yaklaşım Chromium, WebKitGTK (Linux) ve WKWebView (macOS) üzerinde tutarlı biçimde çalışmaktadır.
 
 ## v7.3.1 — 2026-10-04
 

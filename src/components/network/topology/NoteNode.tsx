@@ -121,11 +121,16 @@ export const NoteNode = memo(function NoteNode({
   }, [note.id, searchQuery, lastQuery, matchIndex, noteTextareaRefs]);
 
   return (
-    <g transform={`translate(${note.x}, ${note.y})`}>
+    <>
+      {/* Use x/y directly on foreignObject — WebKitGTK (Linux) does not reliably
+          apply a parent <g transform> to foreignObject children, causing notes to
+          stick to (0, 0). Positioning via the SVG x/y attributes is consistent
+          across Chromium, WebKitGTK, and WKWebView. The canvas content group's
+          scale() transform still applies for zoom. */}
       <foreignObject
         key={note.id}
-        x={0}
-        y={0}
+        x={note.x}
+        y={note.y}
         width={note.width}
         height={note.height}
         data-note-id={note.id}
@@ -507,7 +512,7 @@ export const NoteNode = memo(function NoteNode({
         </div>
       </div>
     </foreignObject>
-  </g>
+  </>
   );
 });
 
