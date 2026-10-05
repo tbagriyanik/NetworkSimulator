@@ -1,5 +1,12 @@
 # 📅 Network Simulator — Proje Geçmişi
 
+## v7.4.0 — 2026-10-05
+
+- **🍏 macOS Uyumluluğu & Universal Binary Desteği**:
+  - `tauri.conf.json` & `tauri-low-resource.conf.json`: macOS için minimum sistem gereksinimi `13.0` (macOS Ventura) olarak yapılandırıldı.
+  - `.github/workflows/release.yml`: macOS release derlemesi hem Intel (`x86_64`) hem Apple Silicon (`aarch64`) mimarilerini destekleyen `universal-apple-darwin` evrensel ikili paketine geçirildi.
+  - `MACOSX_DEPLOYMENT_TARGET: '13.0'` ortam değişkeni eklenerek macOS 13+ sistemlerde açılış uyumluluğu garanti altına alındı.
+
 ## v7.3.1 — 2026-10-04
 
 - **🖥️ Linux (WebKitGTK) ve macOS (WKWebView) Uyumlaştırması & Not Nesnesi Düzeltmeleri**:
