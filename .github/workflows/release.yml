@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Release Tag (e.g. v6.7.1)'
+        description: 'Release Tag (e.g. v7.4.0)'
         required: false
         type: string
   push:
@@ -12,7 +12,65 @@ on:
       - 'v*'
 
 jobs:
+  create-release:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    outputs:
+      release_id: ${{ steps.create-release.outputs.result }}
+      tag_name: ${{ steps.tag.outputs.tag_name }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Determine Release Tag
+        id: tag
+        shell: bash
+        run: |
+          if [ -n "${{ inputs.tag }}" ]; then
+            TAG_NAME="${{ inputs.tag }}"
+          elif [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            TAG_NAME="${{ github.ref_name }}"
+          else
+            VERSION=$(node -p "require('./package.json').version")
+            TAG_NAME="v${VERSION}"
+          fi
+          echo "tag_name=${TAG_NAME}" >> $GITHUB_OUTPUT
+
+      - name: Create or Get Release
+        id: create-release
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const tag = '${{ steps.tag.outputs.tag_name }}';
+            try {
+              const res = await github.rest.repos.getReleaseByTag({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag: tag
+              });
+              return res.data.id;
+            } catch (e) {
+              const res = await github.rest.repos.createRelease({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag_name: tag,
+                name: `Network Simulator ${tag}`,
+                body: 'Cross-platform Desktop releases for Windows (.exe), macOS (.dmg), and Linux (.deb, .AppImage).',
+                draft: false,
+                prerelease: false
+              });
+              return res.data.id;
+            }
+
   release:
+    needs: create-release
     permissions:
       contents: write
     strategy:
@@ -53,28 +111,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Determine Release Tag
-        id: tag
-        shell: bash
-        run: |
-          if [ -n "${{ inputs.tag }}" ]; then
-            TAG_NAME="${{ inputs.tag }}"
-          elif [[ "${{ github.ref }}" == refs/tags/* ]]; then
-            TAG_NAME="${{ github.ref_name }}"
-          else
-            VERSION=$(node -p "require('./package.json').version")
-            TAG_NAME="v${VERSION}"
-          fi
-          echo "tag_name=${TAG_NAME}" >> $GITHUB_OUTPUT
-
       - name: Build Desktop and Publish Release
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           MACOSX_DEPLOYMENT_TARGET: '13.0'
         with:
-          tagName: ${{ steps.tag.outputs.tag_name }}
-          releaseName: 'Network Simulator ${{ steps.tag.outputs.tag_name }}'
+          releaseId: ${{ needs.create-release.outputs.release_id }}
+          tagName: ${{ needs.create-release.outputs.tag_name }}
+          releaseName: 'Network Simulator ${{ needs.create-release.outputs.tag_name }}'
           releaseBody: 'Cross-platform Desktop releases for Windows (.exe), macOS (.dmg), and Linux (.deb, .AppImage).'
           releaseDraft: false
           prerelease: false
