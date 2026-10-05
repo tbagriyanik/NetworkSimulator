@@ -45,7 +45,7 @@ jobs:
 
       - name: Create or Get Release
         id: create-release
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const tag = '${{ steps.tag.outputs.tag_name }}';
@@ -112,7 +112,7 @@ jobs:
         run: npm ci
 
       - name: Build Desktop and Publish Release
-        uses: tauri-apps/tauri-action@v0
+        uses: tauri-apps/tauri-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           MACOSX_DEPLOYMENT_TARGET: '13.0'
