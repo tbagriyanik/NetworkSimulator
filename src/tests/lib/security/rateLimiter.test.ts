@@ -1,11 +1,27 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-// Keep tests independent from Upstash configuration and network access.
+const mockRedisStore = new Map<string, { count: number; ttl: number }>();
+
+// Keep tests independent from external store configuration and network access.
 vi.mock('@upstash/redis', () => ({
   Redis: class {
-    async incr() { return 1; }
-    async ttl() { return -1; }
-    async expire() { return 1; }
+    async incr(key: string) {
+      const record = mockRedisStore.get(key) ?? { count: 0, ttl: -1 };
+      record.count += 1;
+      mockRedisStore.set(key, record);
+      return record.count;
+    }
+    async ttl(key: string) {
+      const record = mockRedisStore.get(key);
+      return record ? record.ttl : -1;
+    }
+    async expire(key: string, seconds: number) {
+      const record = mockRedisStore.get(key);
+      if (record) {
+        record.ttl = seconds;
+      }
+      return 1;
+    }
   },
 }));
 
@@ -14,6 +30,7 @@ import { isRateLimited, cleanupRateLimits } from '@/lib/security/rateLimiter';
 describe('RateLimiter', () => {
   beforeEach(() => {
     vi.useFakeTimers();
+    mockRedisStore.clear();
     cleanupRateLimits();
   });
 
@@ -52,6 +69,7 @@ describe('RateLimiter', () => {
 
     // Advance time past window
     vi.advanceTimersByTime(1001);
+    mockRedisStore.clear();
 
     const res2 = await isRateLimited(key, limit, windowMs);
     expect(res2.allowed).toBe(true);
