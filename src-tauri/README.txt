@@ -29,7 +29,7 @@ terminali dahil olmak üzere zengin bir ağ laboratuvarı ortamı sunar.
   Harici Node.js, Rust veya başka bir bağımlılık kurmanıza GEREK YOKTUR.
 
 [ macOS ]
-- Desteklenen Sürümler: macOS 10.15 (Catalina) ve üzeri (Intel & Apple Silicon).
+- Desteklenen Sürümler: macOS 13 (Ventura) ve üzeri (Intel & Apple Silicon).
 - Kurulum: "network-simulator_VERSION_x64.dmg" dosyasını açın. Network Simulator 
   simgesini "Applications" (Uygulamalar) klasörüne sürükleyip bırakın.
 

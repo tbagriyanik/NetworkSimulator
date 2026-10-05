@@ -45,6 +45,9 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
+    "macOS": {
+      "minimumSystemVersion": "13.0"
+    },
     "publisher": "Network Simulator"
   }
 }

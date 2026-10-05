@@ -48,7 +48,7 @@ Simülatör, standart komut formatının yanı sıra yaygın olarak kullanılan 
 | Rol / Platform | Gereksinimler | Açıklama |
 | :--- | :--- | :--- |
 | **Son Kullanıcı (Windows)** | Windows 10/11 | Edge WebView2 yerleşiktir. Ekstra hiçbir kurulum gerekmez. |
-| **Son Kullanıcı (macOS)** | macOS 10.15+ | WebKit yerleşiktir. `.dmg` çift tıklanarak doğrudan kurulur. |
+| **Son Kullanıcı (macOS)** | macOS 13+ (Ventura) | WebKit yerleşiktir. `.dmg` çift tıklanarak doğrudan kurulur. |
 | **Son Kullanıcı (Linux)** | Ubuntu, Debian, Fedora, Arch vb. | `webkit2gtk` kütüphanesi gerekir. `.AppImage` doğrudan çalışır. |
 | **Son Kullanıcı (Mobil/PWA)** | iOS Safari / Android Chrome | Tarayıcıdan "Ana Ekrana Ekle" ile anında uygulama gibi kurulur. |
 | **Geliştirici (Masaüstü Derleme)** | Node.js (>=20.9), Rust & Cargo, C++ Build Tools | `npm run build:exe` için gereklidir. |

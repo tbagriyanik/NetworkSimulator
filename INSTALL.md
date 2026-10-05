@@ -65,7 +65,7 @@ git push origin main --tags
 
 #### 1. Son Kullanıcı Bilgisayarı
 - **Windows:** Windows 10 (güncel) veya Windows 11 (64-bit). Edge WebView2 yerleşiktir. Setup (.exe / .msi) ile doğrudan kurulur.
-- **macOS:** macOS 10.15+ (Intel & ARM64). `.dmg` dosyası açılarak Applications klasörüne sürüklenir.
+- **macOS:** macOS 13+ (Ventura, Intel & Apple Silicon). `.dmg` dosyası açılarak Applications klasörüne sürüklenir.
 - **Linux:** Ubuntu, Debian, Fedora, Arch vb. `.deb` paketi kurulabilir veya `.AppImage` doğrudan çift tıklanarak çalıştırılır.
 - *Son kullanıcının bilgisayarında Node.js, Rust veya Git bulunmasına gerek yoktur.*
 

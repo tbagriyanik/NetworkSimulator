@@ -22,7 +22,7 @@ jobs:
           - platform: 'windows-latest'
             args: ''
           - platform: 'macos-latest'
-            args: ''
+            args: '--target universal-apple-darwin'
           - platform: 'ubuntu-22.04'
             args: ''
 
@@ -40,6 +40,8 @@ jobs:
 
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.platform == 'macos-latest' && 'x86_64-apple-darwin,aarch64-apple-darwin' || '' }}
 
       # Linux derlemesi için WebKit ve GTK kütüphaneleri
       - name: Install Linux system dependencies
@@ -69,6 +71,7 @@ jobs:
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MACOSX_DEPLOYMENT_TARGET: '13.0'
         with:
           tagName: ${{ steps.tag.outputs.tag_name }}
           releaseName: 'Network Simulator ${{ steps.tag.outputs.tag_name }}'
