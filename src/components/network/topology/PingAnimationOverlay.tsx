@@ -50,7 +50,7 @@ export const PingAnimationOverlay: React.FC<PingAnimationOverlayProps> = ({
   if (success === false && error) {
     return (
       <g key="ping-error" opacity={0.95}>
-        <foreignObject x="20" y="20" width="300" height="auto">
+        <foreignObject x="20" y="20" width="300" height="150">
           <div className={`p-3 rounded-lg shadow-lg border ${isDark ? 'bg-red-950/80 border-red-500/50' : 'bg-red-50 border-red-200'}`}>
             <div className={`text-sm font-bold ${isDark ? 'text-red-300' : 'text-red-800'}`}>
               {t.pingFailed}
@@ -68,7 +68,7 @@ export const PingAnimationOverlay: React.FC<PingAnimationOverlayProps> = ({
   if (success === true) {
     return (
       <g key="ping-success" opacity={0.95}>
-        <foreignObject x="20" y="20" width="300" height="auto">
+        <foreignObject x="20" y="20" width="300" height="150">
           <div className={`p-3 rounded-lg shadow-lg border ${isDark ? 'bg-success-500/20 border-success-500/50' : 'bg-success-50 border-success-200'}`}>
             <div className={`text-sm font-bold ${isDark ? 'text-success-300' : 'text-success-700'}`}>
               {t.pingSuccess}
