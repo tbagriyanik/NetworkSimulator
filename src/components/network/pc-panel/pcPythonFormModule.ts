@@ -55,13 +55,13 @@ export function generateFormHtml(form: PythonFormState, isDark: boolean = true):
   const borderCol = isDark ? withAlpha(colors.slate['700'], 0.8) : colors.slate['300'];
   // These fallback values are embedded in the generated standalone HTML form;
   // the React shell uses design tokens, but the form must render without it.
-  const primaryCol = isDark ? colors.theme.accent : '#0284c7';
-  const primaryHover = isDark ? colors.sky[500] : '#0369a1';
+  const primaryCol = isDark ? colors.theme.accent : colors.theme.primary;
+  const primaryHover = isDark ? colors.sky[500] : colors.theme.primaryHover;
   const primaryFg = isDark ? colors.topology.bg : colors.common.white;
-  const inputBg = isDark ? colors.topology.canvasBg : '#f1f5f9';
+  const inputBg = isDark ? colors.topology.canvasBg : colors.slate['100'];
   const cardShadow = isDark
     ? `0 10px 25px -5px ${withAlpha(colors.common.black, 0.5)}, 0 8px 10px -6px ${withAlpha(colors.common.black, 0.4)}`
-    : `0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 4px 6px -2px rgba(15, 23, 42, 0.04)`;
+    : `0 10px 25px -5px ${withAlpha(colors.slate['900'], 0.08)}, 0 4px 6px -2px ${withAlpha(colors.slate['900'], 0.04)}`;
 
   return `<!doctype html>
 <html lang="tr">

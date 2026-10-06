@@ -160,20 +160,23 @@ describe('500-Device Scale Smoke / Benchmark', () => {
       connections.push({ id: `c${i}`, sourceDeviceId: a.id, sourcePort: sp, targetDeviceId: b.id, targetPort: tp, cableType: 'straight' as const, active: true });
     }
 
-    const frame = {
+    const frame: NetworkPacketFrame = {
       id: 'bench-1',
       srcMac: '00:00:00:00:00:01',
       dstMac: 'ff:ff:ff:ff:ff:ff',
+      etherType: '0x0800',
       srcIp: '10.10.10.2',
       dstIp: '10.10.20.2',
       protocol: 'ICMP',
       timestamp: Date.now(),
       ttl: 64,
       ingressPortId: 'Gi1/0/1',
+      length: 64,
+      info: 'Echo Request',
     };
 
     const started = performance.now();
-    const res = runFullPacketPipeline(frame as NetworkPacketFrame, 'L3100', devices, states, connections, 12);
+    const res = runFullPacketPipeline(frame, 'L3100', devices, states, connections, 12);
     const elapsed = performance.now() - started;
     expect(Array.isArray(res.allTraces)).toBe(true);
     expect(elapsed).toBeLessThan(3000);

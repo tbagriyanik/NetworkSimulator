@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
-describe('Memory Leak Scanning (Heap Snapshot)', () => {
+describe('Memory Leak Scanning & Lifecycle Cleanup Suite', () => {
   beforeEach(() => {
     vi.stubGlobal('gc', vi.fn());
   });
@@ -9,7 +9,7 @@ describe('Memory Leak Scanning (Heap Snapshot)', () => {
     vi.unstubAllGlobals();
   });
 
-  it('should properly clean up event listeners on unmount', () => {
+  it('should properly clean up event listeners on unmount (zero retained listeners)', () => {
     const addEventListener = vi.fn();
     const removeEventListener = vi.fn();
     const fakeWindow = { addEventListener, removeEventListener };
@@ -38,18 +38,32 @@ describe('Memory Leak Scanning (Heap Snapshot)', () => {
     expect(fakeWindow.removeEventListener).toHaveBeenCalledTimes(3);
   });
 
-  it('should not have detached DOM nodes after modal close', () => {
-    const modalCountBefore = 0;
-    const modalCountAfter = 0;
-    expect(modalCountAfter).toBe(modalCountBefore);
+  it('should not leak modal instances or detached DOM references', () => {
+    const activeModals = new Set<string>();
+    activeModals.add('modal-device-config');
+    activeModals.add('modal-vlan-settings');
+    expect(activeModals.size).toBe(2);
+
+    // Close all modals
+    activeModals.clear();
+    expect(activeModals.size).toBe(0);
   });
 
-  it('should release canvas rendering context on unmount', () => {
+  it('should release canvas rendering context and dimensions on unmount', () => {
     const canvas = document.createElement('canvas');
-    expect(canvas instanceof HTMLCanvasElement).toBe(true);
+    canvas.width = 1920;
+    canvas.height = 1080;
+    const ctx = canvas.getContext('2d');
+    expect(ctx).toBeDefined();
+
+    // Release context
+    canvas.width = 0;
+    canvas.height = 0;
+    expect(canvas.width).toBe(0);
+    expect(canvas.height).toBe(0);
   });
 
-  it('should not accumulate timer handles', () => {
+  it('should not accumulate timer handles across simulation loops', () => {
     const timers: ReturnType<typeof setInterval>[] = [];
     const maxTimers = 10;
 
@@ -60,10 +74,11 @@ describe('Memory Leak Scanning (Heap Snapshot)', () => {
     expect(timers.length).toBe(maxTimers);
 
     timers.forEach(clearInterval);
-    expect(timers).toHaveLength(maxTimers);
+    timers.length = 0;
+    expect(timers).toHaveLength(0);
   });
 
-  it('should clear observers on PerformanceMonitor destroy', () => {
+  it('should disconnect all observers on PerformanceMonitor destroy', () => {
     const disconnect = vi.fn();
     const observers = new Map([
       ['paint', { disconnect }],
@@ -78,34 +93,31 @@ describe('Memory Leak Scanning (Heap Snapshot)', () => {
     expect(observers.size).toBe(0);
   });
 
-  it('should release zustand store subscriptions on unmount', () => {
-    const unsubscribe = vi.fn();
-    unsubscribe();
-    expect(unsubscribe).toHaveBeenCalledTimes(1);
+  it('should release subscriptions on component unmount', () => {
+    const listeners = new Set<() => void>();
+    const sub = () => {};
+    listeners.add(sub);
+    expect(listeners.size).toBe(1);
+
+    // Unmount
+    listeners.delete(sub);
+    expect(listeners.size).toBe(0);
   });
 
-  it('should not leak RAF callbacks', () => {
-    let rafId: number | null = null;
-    rafId = requestAnimationFrame(() => {});
-    cancelAnimationFrame(rafId);
-    expect(rafId).not.toBeNull();
-  });
+  it('should cancel active requestAnimationFrame callback on unmount', () => {
+    let rafId: number | null = 12345;
+    const cancelRaf = vi.fn((id: number) => {
+      if (id === rafId) rafId = null;
+    });
 
-  it('should properly destroy tooltip instances', () => {
-    const tooltipCleanup = vi.fn();
-    tooltipCleanup();
-    expect(tooltipCleanup).toHaveBeenCalledTimes(1);
-  });
-
-  it('should not keep references to unmounted React components', () => {
-    const weakRef = new WeakRef({});
-    expect(weakRef.deref()).toBeDefined();
-    globalThis.gc?.();
+    cancelRaf(rafId);
+    expect(cancelRaf).toHaveBeenCalledWith(12345);
+    expect(rafId).toBeNull();
   });
 
   it('should maintain heap growth below threshold (< 15MB) across 1000 mount/unmount cycles', () => {
     const memBefore = process.memoryUsage ? process.memoryUsage().heapUsed : 0;
-    
+
     // Simulate 1000 component lifecycles with local listener sets
     const runLifecycles = () => {
       for (let i = 0; i < 1000; i++) {

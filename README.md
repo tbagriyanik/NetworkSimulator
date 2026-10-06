@@ -81,7 +81,7 @@ Simülatör, standart komut formatının yanı sıra yaygın olarak kullanılan 
 | --- | --- |
 | Version / Sürüm | 7.4.1 |
 | Total Lines / Toplam Satır (`src/`) | ~249,072 |
-| Source Files / Kaynak Dosya | 1178 |
+| Source Files / Kaynak Dosya | 1181 |
 | Test Files / Test Dosyaları | 249 |
 | Tests / Testler | 2250 |
 | Documentation Files / Dokümantasyon Dosya | 26 |
