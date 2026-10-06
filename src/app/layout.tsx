@@ -212,8 +212,17 @@ export default function RootLayout({
                 var gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
                 var renderer = '';
                 if (gl) {
-                  var info = gl.getExtension('WEBGL_debug_renderer_info');
-                  renderer = String((info && gl.getParameter(info.UNMASKED_RENDERER_WEBGL)) || gl.getParameter(gl.RENDERER) || '');
+                  renderer = String(gl.getParameter(gl.RENDERER) || '');
+                  // In browsers that do not mask the renderer, gl.RENDERER is already sufficient.
+                  // Only query UNMASKED_RENDERER_WEBGL if gl.RENDERER returned a generic placeholder and the extension is present.
+                  if (!renderer || /webgl|generic/i.test(renderer)) {
+                    try {
+                      var info = gl.getExtension('WEBGL_debug_renderer_info');
+                      if (info) {
+                        renderer = String(gl.getParameter(info.UNMASKED_RENDERER_WEBGL) || renderer);
+                      }
+                    } catch (extErr) {}
+                  }
                   var lose = gl.getExtension('WEBGL_lose_context');
                   if (lose) lose.loseContext();
                 }

@@ -142,19 +142,42 @@ export function ResizablePortalWindow({
   // Handle mobile back button and escape key
   useEffect(() => {
     if (!isOpen || !onClose) return;
+
+    let historyPushed = false;
+    if (typeof window !== 'undefined') {
+      try {
+        window.history.pushState({ resizablePortal: true }, '');
+        historyPushed = true;
+      } catch {
+        // Ignore
+      }
+    }
+
+    const handlePopState = () => {
+      historyPushed = false;
+      onClose();
+    };
+
     const handleMobileBack = () => {
       onClose();
     };
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         onClose();
       }
     };
+
     window.addEventListener('mobile-back-pressed', handleMobileBack);
     window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('popstate', handlePopState);
     return () => {
       window.removeEventListener('mobile-back-pressed', handleMobileBack);
       window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('popstate', handlePopState);
+      if (historyPushed && window.history.state?.resizablePortal) {
+        window.history.back();
+      }
     };
   }, [isOpen, onClose]);
 

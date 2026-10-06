@@ -206,7 +206,7 @@ export function AboutModal({ isOpen, onClose, onStartTour, isExamActive = false 
   }, [isExamActive, activeTab, isContactEnabled]);
 
   return (
-    <Dialog open={isOpen}>
+    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) onClose(); }}>
       <DialogContent showCloseButton={false} className="sm:max-w-[600px] md:max-w-2xl lg:max-w-3xl h-[85vh] flex flex-col p-0 gap-0 overflow-hidden liquid-glass-light">
         <TooltipWrapper title={t.close}>
           <button
@@ -364,7 +364,7 @@ export function AboutModal({ isOpen, onClose, onStartTour, isExamActive = false 
                       {isTR ? 'Sürüm' : 'Version'}
                     </span>
                     <span className="text-xs font-semibold text-secondary-800 dark:text-secondary-200">
-                      {process.env.APP_VERSION || '7.4.0'}
+                      {process.env.APP_VERSION || '7.4.1'}
                     </span>
                   </div>
                   <div className="flex flex-col">

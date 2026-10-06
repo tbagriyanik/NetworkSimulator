@@ -57,17 +57,46 @@ function DialogContent({
   className,
   children,
   showCloseButton = true,
+  onEscapeKeyDown,
+  onPointerDownOutside,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
   showCloseButton?: boolean
 }) {
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const stateKey = `dialog_${Date.now()}`;
+    window.history.pushState({ modalOpen: true, stateKey }, '');
+    let hasPushed = true;
+
+    const handlePopState = () => {
+      if (hasPushed) {
+        hasPushed = false;
+        window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      if (hasPushed) {
+        hasPushed = false;
+        try {
+          window.history.back();
+        } catch {
+          // Ignore history rollback failure if unmounting
+        }
+      }
+    };
+  }, []);
+
   return (
     <DialogPortal data-slot="dialog-portal">
       <DialogOverlay />
       <DialogPrimitive.Content
         data-slot="dialog-content"
-        onEscapeKeyDown={(event) => event.preventDefault()}
-        onPointerDownOutside={(event) => event.preventDefault()}
+        onEscapeKeyDown={onEscapeKeyDown}
+        onPointerDownOutside={onPointerDownOutside}
         className={cn(
           "bg-background dark:bg-secondary-950 text-secondary-900 dark:text-secondary-100 border-2 border-success-500/60 dark:border-success-500/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-[10001] grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg p-6 shadow-lg duration-200 sm:max-w-lg liquid-glass-light max-h-[calc(100dvh-2rem)] overflow-y-auto",
           className

@@ -10,6 +10,7 @@ import { createInitialState } from '../../lib/network/initialState';
 import type { SwitchState } from '../../lib/network/types';
 import { validateIP, validateIPv6 } from './pc-panel/pcPanelHelpers';
 import { isNetworkOrBroadcastAddress, isValidSubnetMask } from '@/lib/network/core/interface/helpers';
+import { useModalDismiss } from '@/hooks/useModalDismiss';
 
 interface DeviceConfigModalProps {
   device: CanvasDevice;
@@ -391,6 +392,14 @@ export function DeviceConfigModal({
     const currentRun = buildRunningConfig(switchState).join('\n').trim();
     return switchState.savedConfig.trim() !== currentRun;
   }, [switchState]);
+
+  useModalDismiss({
+    isOpen: true,
+    onClose,
+    modalId: `device-config-${device.id}`,
+    enableEscape: true,
+    enableMobileBack: true,
+  });
 
   return (
     <div

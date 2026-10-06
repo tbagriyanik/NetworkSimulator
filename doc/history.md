@@ -1,5 +1,17 @@
 # 📅 Network Simulator — Proje Geçmişi
 
+## v7.4.1 — 2026-10-06
+
+- **🪟 Evrensel Modal Mimarisi & Mobil Geri Tuşu Entegrasyonu**:
+  - `useModalDismiss`: Açılan tüm modal ve sürüklenebilir/portal pencereler için global `Escape` yakalama aşaması dinleyicisi ve Browser History API (`popstate`) entegrasyonu sağlandı. Mobilde geri tuşu veya geri kaydırma hareketi yapıldığında siteden çıkış yapılmadan yalnızca aktif modal kapatılıyor.
+  - `AppModal`: Standart z-index, arka plan bulanıklığı (`backdrop-blur-sm`), modern kart yapısı, standart başlık (kapat butonu) ve alt çubuk (`Vazgeç` / onay) bileşeni oluşturuldu.
+  - Radix UI `Dialog` ve `AlertDialog` bileşenlerine de `popstate` dinleyicisi eklenerek tüm diyaloglarda tekdüze ESC ve mobil geri uyumu sağlandı.
+  - `AssertionPanelModal`, `BgpBestPathExplainerModal`, `DeviceConfigModal`, `SnapshotManagerModal`, `VisualPduInspectorModal`, `DraggableWindowWrapper` ve `ResizablePortalWindow` pencereleri güncellendi.
+- **⚡ WebGL Standartlaştırması (Firefox & Modern Tarayıcı Uyumu)**:
+  - Kullanımdan kaldırılan (deprecated) `WEBGL_debug_renderer_info` uzantısı yerine doğrudan standart `gl.getParameter(gl.RENDERER)` sorgusu önceliklendirildi. Konsola basılan WebGL uyarıları temizlendi.
+- **📱 Tipografi & Erişilebilirlik İyileştirmeleri**:
+  - Tüm arayüz genelinde minimum font boyutu 10px altına inmeyecek şekilde normalize edildi.
+
 ## v7.4.0 — 2026-10-05
 
 - **🍏 macOS Uyumluluğu & Universal Binary Desteği**:

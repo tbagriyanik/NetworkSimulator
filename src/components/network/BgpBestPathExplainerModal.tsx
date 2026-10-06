@@ -5,6 +5,7 @@ import {
 } from '@/lib/network/bgpBestPathExplainer';
 import type { BgpRoute } from '@/lib/network/bgpEngine';
 import { GitCommit, Trophy } from 'lucide-react';
+import { useModalDismiss } from '@/hooks/useModalDismiss';
 
 interface BgpBestPathExplainerModalProps {
   isOpen: boolean;
@@ -103,6 +104,11 @@ export const BgpBestPathExplainerModal: React.FC<BgpBestPathExplainerModalProps>
   const [routeA] = useState<BgpRoute>(sampleRouteA);
   const [routeB] = useState<BgpRoute>(sampleRouteB);
 
+  useModalDismiss({
+    isOpen,
+    onClose,
+  });
+
   if (!isOpen) return null;
 
   const comparison = compareBgpRoutes(routeA, routeB);
@@ -120,9 +126,10 @@ export const BgpBestPathExplainerModal: React.FC<BgpBestPathExplainerModalProps>
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 font-bold text-lg px-2"
+            aria-label={language === 'tr' ? 'Kapat' : 'Close'}
+            className="text-xs px-2.5 py-1 rounded-md border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition"
           >
-            ✕
+            {language === 'tr' ? 'Kapat (ESC)' : 'Close (ESC)'}
           </button>
         </div>
 
@@ -229,6 +236,16 @@ export const BgpBestPathExplainerModal: React.FC<BgpBestPathExplainerModalProps>
               })}
             </div>
           </div>
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 py-3 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex items-center justify-end">
+          <button
+            onClick={onClose}
+            className="px-4 py-1.5 text-xs font-semibold rounded-lg border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition"
+          >
+            {language === 'tr' ? 'Vazgeç' : 'Cancel'}
+          </button>
         </div>
       </div>
     </div>

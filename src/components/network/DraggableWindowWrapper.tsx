@@ -101,8 +101,26 @@ export function DraggableWindowWrapper({
 
   // Handle escape key and mobile back button
   useEffect(() => {
+    if (!isOpen) return;
+
+    let localHistoryPushed = false;
+    if (typeof window !== 'undefined' && (isActive || (parentWindowId && activeWindowId !== parentWindowId))) {
+      try {
+        window.history.pushState({ floatingWindowId: id }, '');
+        localHistoryPushed = true;
+      } catch {
+        // Ignore if pushState fails
+      }
+    }
+
+    const handlePopState = () => {
+      localHistoryPushed = false;
+      onClose();
+      if (escapeRestoreWindowId) setActiveWindow(escapeRestoreWindowId);
+    };
+
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen && (isActive || (parentWindowId && activeWindowId !== parentWindowId))) {
+      if (e.key === 'Escape' && (isActive || (parentWindowId && activeWindowId !== parentWindowId))) {
         e.stopImmediatePropagation();
         if (onEscapeKeyDown) {
           onEscapeKeyDown();
@@ -114,7 +132,7 @@ export function DraggableWindowWrapper({
     };
 
     const handleMobileBack = () => {
-      if (isOpen && (isActive || (parentWindowId && activeWindowId !== parentWindowId))) {
+      if (isActive || (parentWindowId && activeWindowId !== parentWindowId)) {
         onClose();
         if (escapeRestoreWindowId) setActiveWindow(escapeRestoreWindowId);
       }
@@ -122,11 +140,16 @@ export function DraggableWindowWrapper({
 
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('mobile-back-pressed', handleMobileBack);
+    window.addEventListener('popstate', handlePopState);
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('mobile-back-pressed', handleMobileBack);
+      window.removeEventListener('popstate', handlePopState);
+      if (localHistoryPushed && window.history.state?.floatingWindowId === id) {
+        window.history.back();
+      }
     };
-  }, [isOpen, isActive, parentWindowId, activeWindowId, onClose, onEscapeKeyDown, escapeRestoreWindowId, setActiveWindow]);
+  }, [isOpen, isActive, parentWindowId, activeWindowId, onClose, onEscapeKeyDown, escapeRestoreWindowId, setActiveWindow, id]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

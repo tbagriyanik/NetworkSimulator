@@ -47,6 +47,33 @@ function AlertDialogContent({
     className,
     ...props
 }: React.ComponentProps<typeof AlertDialogPrimitive.Content>) {
+    React.useEffect(() => {
+        if (typeof window === 'undefined') return;
+        const stateKey = `alert_dialog_${Date.now()}`;
+        window.history.pushState({ modalOpen: true, stateKey }, '');
+        let hasPushed = true;
+
+        const handlePopState = () => {
+            if (hasPushed) {
+                hasPushed = false;
+                window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+            }
+        };
+
+        window.addEventListener('popstate', handlePopState);
+        return () => {
+            window.removeEventListener('popstate', handlePopState);
+            if (hasPushed) {
+                hasPushed = false;
+                try {
+                    window.history.back();
+                } catch {
+                    // Ignore history rollback failure if unmounting
+                }
+            }
+        };
+    }, []);
+
     return (
         <AlertDialogPortal data-slot="alert-dialog-portal">
             <AlertDialogOverlay />

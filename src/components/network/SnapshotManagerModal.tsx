@@ -28,6 +28,7 @@ import {
   deleteCheckpointFromList,
   validateTopologyCheckpoint,
 } from '@/lib/network/snapshotManager';
+import { useModalDismiss } from '@/hooks/useModalDismiss';
 
 interface SnapshotManagerModalProps {
   isOpen: boolean;
@@ -56,6 +57,14 @@ export const SnapshotManagerModal: React.FC<SnapshotManagerModalProps> = ({
 }) => {
   const isTr = language === 'tr';
   const [mounted, setMounted] = useState(false);
+
+  useModalDismiss({
+    isOpen,
+    onClose,
+    modalId: 'snapshot-manager',
+    enableEscape: true,
+    enableMobileBack: true,
+  });
   const [checkpoints, setCheckpoints] = useState<TopologyCheckpoint[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreating, setIsCreating] = useState(false);

@@ -77,10 +77,17 @@ export function detectSoftwareRendering(): boolean {
       return true;
     }
 
-    const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
-    const renderer = debugInfo
-      ? String(gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) || '')
-      : String(gl.getParameter(gl.RENDERER) || '');
+    let renderer = String(gl.getParameter(gl.RENDERER) || '');
+    if (!renderer || /webgl|generic/i.test(renderer)) {
+      try {
+        const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+        if (debugInfo) {
+          renderer = String(gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) || renderer);
+        }
+      } catch {
+        // Fallback silently if extension is unsupported or deprecated
+      }
+    }
 
     const software = /swiftshader|llvmpipe|softpipe|software|basic render|microsoft basic|mesa offscreen|angle \(google, vulkan 1\.\d+ \(swiftshader/i.test(
       renderer

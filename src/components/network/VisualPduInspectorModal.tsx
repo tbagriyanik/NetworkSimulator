@@ -2,6 +2,7 @@ import React from 'react';
 import { Layers } from 'lucide-react';
 import type { PipelineResult } from '@/lib/network/forwarding/packetPipeline';
 import { EmbeddedPduInspector } from './EmbeddedPduInspector';
+import { useModalDismiss } from '@/hooks/useModalDismiss';
 
 interface VisualPduInspectorModalProps {
   isOpen: boolean;
@@ -18,6 +19,11 @@ export const VisualPduInspectorModal: React.FC<VisualPduInspectorModalProps> = (
   isDark = true,
   language = 'tr',
 }) => {
+  useModalDismiss({
+    isOpen: Boolean(isOpen && pipelineResult),
+    onClose,
+  });
+
   // Render nothing when modal is closed or data missing
   if (!isOpen || !pipelineResult) return null;
 
