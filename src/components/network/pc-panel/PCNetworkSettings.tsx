@@ -47,6 +47,9 @@ export const PCNetworkSettings: React.FC<PCNetworkSettingsProps> = () => {
       dispatchDeviceConfig={ctx.dispatchDeviceConfig}
       validateIpField={ctx.validateIpField}
       validateSubnetField={ctx.validateSubnetField}
+      validateMacField={ctx.validateMacField}
+      validateIpv6Field={ctx.validateIpv6Field}
+      validateIpv6PrefixField={ctx.validateIpv6PrefixField}
       isValidIpAddress={ctx.isValidIpAddress}
       applyNtpServerTime={ctx.applyNtpServerTime}
       deviceId={ctx.deviceId}

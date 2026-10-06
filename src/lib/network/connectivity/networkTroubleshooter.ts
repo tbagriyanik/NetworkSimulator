@@ -1,7 +1,7 @@
 import { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { SwitchState } from '@/lib/network/types';
 import { ensureDeviceStatesMap } from '@/lib/network/networkUtils';
-import { isIpInSubnet, isPortShutdown, isConnectionCableCompatible } from '@/lib/network/connectivity.utils';
+import { isIpInSubnet, isPortShutdown, isConnectionCableCompatible, checkAddressConflicts } from '@/lib/network/connectivity.utils';
 import { checkConnectivity } from './pathResolution/algorithm';
 import { checkDeviceConnectivity } from './pingDiagnostics';
 import { buildImplicitWirelessConnections } from '@/lib/network/wireless';
@@ -100,6 +100,51 @@ export function runRootCauseAnalysis(
   const targetIp = target.ip || '';
   const sourceSubnet = source.subnet || '255.255.255.0';
   const targetSubnet = target.subnet || '255.255.255.0';
+
+  // IP / MAC Çakışma Kontrolleri
+  const conflictCheck = checkAddressConflicts({
+    sourceId: source.id,
+    targetDeviceId: target.id,
+    devices,
+    safeDeviceStates
+  });
+
+  if (conflictCheck.hasConflict) {
+    if (conflictCheck.ipConflict) {
+      issues.push({
+        id: 'ip-conflict',
+        category: 'ip',
+        severity: 'error',
+        title: { tr: 'IP Adresi Çakışması', en: 'IP Address Conflict' },
+        description: {
+          tr: `Ağda IP adresi çakışması tespit edildi (${conflictCheck.conflictingIp || sourceIp || targetIp}). Birden fazla cihaz aynı IP adresini kullanıyor.`,
+          en: `IP address conflict detected on the network (${conflictCheck.conflictingIp || sourceIp || targetIp}). Multiple devices are using the same IP address.`
+        },
+        suggestedFix: {
+          tr: 'Cihazların her birine ağda benzersiz bir IP adresi atayın.',
+          en: 'Assign a unique IP address to each device.'
+        },
+        deviceId: source.id
+      });
+    }
+    if (conflictCheck.macConflict) {
+      issues.push({
+        id: 'mac-conflict',
+        category: 'physical',
+        severity: 'error',
+        title: { tr: 'MAC Adresi Çakışması', en: 'MAC Address Conflict' },
+        description: {
+          tr: `Ağda MAC adresi çakışması tespit edildi (${conflictCheck.conflictingMac || 'MAC'}). Birden fazla cihaz aynı donanım (MAC) adresine sahip.`,
+          en: `MAC address conflict detected on the network (${conflictCheck.conflictingMac || 'MAC'}). Multiple devices share the same MAC address.`
+        },
+        suggestedFix: {
+          tr: 'Cihaz ayarlarından veya konfigürasyondan her cihaza benzersiz bir MAC adresi atayın.',
+          en: 'Assign a unique MAC address to each device in configuration.'
+        },
+        deviceId: source.id
+      });
+    }
+  }
 
   if (!sourceIp) {
     if (requiresIpAddress(source)) {

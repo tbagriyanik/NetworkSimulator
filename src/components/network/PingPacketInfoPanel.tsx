@@ -93,12 +93,18 @@ export function PingPacketInfoPanel({
 
     const pipelineResult = React.useMemo<PipelineResult | null>(() => {
         if (!hopPacketInfos || hopPacketInfos.length === 0) return null;
+        const isFailed = success === false;
+        const lastHopIdx = hopPacketInfos.length - 1;
+
         return {
             success: success !== false,
-            dropReason: errorMessage || (success === false ? 'Packet delivery failed' : undefined),
+            dropReason: errorMessage || (isFailed ? 'Packet delivery failed' : undefined),
             capturedOnLinks: [],
-            allTraces: hopPacketInfos.flatMap((hop, idx) => [
-                {
+            allTraces: hopPacketInfos.flatMap((hop, idx) => {
+                const isLastHop = idx === lastHopIdx;
+                const isDroppedHop = Boolean(hop.isDropped || (isFailed && isLastHop));
+
+                const stage1 = {
                     hopIndex: idx,
                     deviceId: hop.fromDevice.name,
                     deviceName: hop.fromDevice.name,
@@ -121,15 +127,18 @@ export function PingPacketInfoPanel({
                         vlanId: 1,
                         info: `${hop.protocol} Echo Request seq ${hop.icmpSeq}`,
                     },
-                },
-                {
+                };
+
+                const stage2 = {
                     hopIndex: idx,
                     deviceId: hop.fromDevice.name,
                     deviceName: hop.fromDevice.name,
                     portId: 'Fa0/1',
-                    stage: (hop.fromDevice.type.includes('router') ? 'route-lookup' : 'mac-lookup'),
-                    action: 'forward' as const,
-                    reason: hop.actionDescription || `Forwarding frame from ${hop.fromDevice.name} to ${hop.toDevice.name}`,
+                    stage: isDroppedHop ? ('egress' as const) : (hop.fromDevice.type.includes('router') ? ('route-lookup' as const) : ('mac-lookup' as const)),
+                    action: isDroppedHop ? ('drop' as const) : ('forward' as const),
+                    reason: isDroppedHop
+                        ? (errorMessage || hop.dropReason || `Packet dropped at ${hop.fromDevice.name}: Delivery failed`)
+                        : (hop.actionDescription || `Forwarding frame from ${hop.fromDevice.name} to ${hop.toDevice.name}`),
                     frameSnapshot: {
                         id: `frame-${idx}-2`,
                         timestamp: Date.now(),
@@ -143,67 +152,76 @@ export function PingPacketInfoPanel({
                         ttl: hop.ttl,
                         ingressPortId: 'Fa0/1',
                         vlanId: 1,
-                        info: `${hop.protocol} forwarding`,
+                        info: isDroppedHop ? `[DROPPED] ${errorMessage || hop.dropReason || 'Packet delivery failed'}` : `${hop.protocol} forwarding`,
                     },
-                },
-            ]),
-            hopResults: hopPacketInfos.map((hop, idx) => ({
-                deviceId: hop.fromDevice.name,
-                accepted: true,
-                trapToControlPlane: false,
-                egressPorts: ['Fa0/1'],
-                nextDeviceId: hop.toDevice.name,
-                traces: [
-                    {
-                        hopIndex: idx,
-                        deviceId: hop.fromDevice.name,
-                        deviceName: hop.fromDevice.name,
-                        portId: 'Fa0/1',
-                        stage: 'ingress-l1' as const,
-                        action: 'pass' as const,
-                        reason: `Physical link check OK (${hop.cableType})`,
-                        frameSnapshot: {
-                            id: `frame-${idx}-1`,
-                            timestamp: Date.now(),
-                            etherType: '0x0800',
-                            srcMac: hop.srcMac,
-                            dstMac: hop.dstMac,
-                            srcIp: hop.srcIp,
-                            dstIp: hop.dstIp,
-                            protocol: (hop.protocol || 'ICMP') as PacketProtocolType,
-                            length: 64,
-                            ttl: hop.ttl,
-                            ingressPortId: 'Fa0/1',
-                            vlanId: 1,
-                            info: `${hop.protocol} Echo Request seq ${hop.icmpSeq}`,
+                };
+
+                return [stage1, stage2];
+            }),
+            hopResults: hopPacketInfos.map((hop, idx) => {
+                const isLastHop = idx === lastHopIdx;
+                const isDroppedHop = Boolean(hop.isDropped || (isFailed && isLastHop));
+
+                return {
+                    deviceId: hop.fromDevice.name,
+                    accepted: !isDroppedHop,
+                    trapToControlPlane: false,
+                    egressPorts: isDroppedHop ? [] : ['Fa0/1'],
+                    nextDeviceId: isDroppedHop ? undefined : hop.toDevice.name,
+                    traces: [
+                        {
+                            hopIndex: idx,
+                            deviceId: hop.fromDevice.name,
+                            deviceName: hop.fromDevice.name,
+                            portId: 'Fa0/1',
+                            stage: 'ingress-l1' as const,
+                            action: 'pass' as const,
+                            reason: `Physical link check OK (${hop.cableType})`,
+                            frameSnapshot: {
+                                id: `frame-${idx}-1`,
+                                timestamp: Date.now(),
+                                etherType: '0x0800',
+                                srcMac: hop.srcMac,
+                                dstMac: hop.dstMac,
+                                srcIp: hop.srcIp,
+                                dstIp: hop.dstIp,
+                                protocol: (hop.protocol || 'ICMP') as PacketProtocolType,
+                                length: 64,
+                                ttl: hop.ttl,
+                                ingressPortId: 'Fa0/1',
+                                vlanId: 1,
+                                info: `${hop.protocol} Echo Request seq ${hop.icmpSeq}`,
+                            },
                         },
-                    },
-                    {
-                        hopIndex: idx,
-                        deviceId: hop.fromDevice.name,
-                        deviceName: hop.fromDevice.name,
-                        portId: 'Fa0/1',
-                        stage: (hop.fromDevice.type.includes('router') ? 'route-lookup' : 'mac-lookup'),
-                        action: 'forward' as const,
-                        reason: hop.actionDescription || `Forwarding frame from ${hop.fromDevice.name} to ${hop.toDevice.name}`,
-                        frameSnapshot: {
-                            id: `frame-${idx}-2`,
-                            timestamp: Date.now(),
-                            etherType: '0x0800',
-                            srcMac: hop.srcMac,
-                            dstMac: hop.dstMac,
-                            srcIp: hop.srcIp,
-                            dstIp: hop.dstIp,
-                            protocol: (hop.protocol || 'ICMP') as PacketProtocolType,
-                            length: 64,
-                            ttl: hop.ttl,
-                            ingressPortId: 'Fa0/1',
-                            vlanId: 1,
-                            info: `${hop.protocol} forwarding`,
+                        {
+                            hopIndex: idx,
+                            deviceId: hop.fromDevice.name,
+                            deviceName: hop.fromDevice.name,
+                            portId: 'Fa0/1',
+                            stage: isDroppedHop ? ('egress' as const) : (hop.fromDevice.type.includes('router') ? ('route-lookup' as const) : ('mac-lookup' as const)),
+                            action: isDroppedHop ? ('drop' as const) : ('forward' as const),
+                            reason: isDroppedHop
+                                ? (errorMessage || hop.dropReason || `Packet dropped at ${hop.fromDevice.name}: Delivery failed`)
+                                : (hop.actionDescription || `Forwarding frame from ${hop.fromDevice.name} to ${hop.toDevice.name}`),
+                            frameSnapshot: {
+                                id: `frame-${idx}-2`,
+                                timestamp: Date.now(),
+                                etherType: '0x0800',
+                                srcMac: hop.srcMac,
+                                dstMac: hop.dstMac,
+                                srcIp: hop.srcIp,
+                                dstIp: hop.dstIp,
+                                protocol: (hop.protocol || 'ICMP') as PacketProtocolType,
+                                length: 64,
+                                ttl: hop.ttl,
+                                ingressPortId: 'Fa0/1',
+                                vlanId: 1,
+                                info: isDroppedHop ? `[DROPPED] ${errorMessage || hop.dropReason || 'Packet delivery failed'}` : `${hop.protocol} forwarding`,
+                            },
                         },
-                    },
-                ],
-            })),
+                    ],
+                };
+            }),
         };
     }, [hopPacketInfos, success, errorMessage]);
 
@@ -616,13 +634,31 @@ export function PingPacketInfoPanel({
                                                 <span className={`${isMobile ? 'text-xs' : 'text-sm'} font-semibold truncate ${isDark ? 'text-secondary-200' : 'text-secondary-700'}`}>{currentInfo.toDevice.name}</span>
                                                 <div className={`w-2 h-2 rounded-full flex-shrink-0 ${currentInfo.toDevice.type === 'router' ? 'bg-purple-500' : currentInfo.toDevice.type.startsWith('switch') ? 'bg-accent-500' : 'bg-primary-500'}`} />
                                             </div>
-                                            {macChanged && (
+                                            {macChanged && !currentInfo.isDropped && (
                                                 <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold flex-shrink-0 ${isDark ? 'bg-warning-500/20 text-warning-300 border border-warning-500/30' : 'bg-warning-500/15 text-warning-700 border border-warning-500/30'}`}>⚡ {isMobile ? '' : t.macChanged}</span>
                                             )}
-                                            {ipSame && prevInfo && !isMobile && (
+                                            {ipSame && prevInfo && !isMobile && !currentInfo.isDropped && (
                                                 <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold flex-shrink-0 ${isDark ? 'bg-success-500/20 text-success-300 border border-success-500/30' : 'bg-success-500/15 text-success-700 border border-success-500/30'}`}>✓ {t.ipSame}</span>
                                             )}
+                                            {currentInfo.isDropped && (
+                                                <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold flex-shrink-0 ${isDark ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40' : 'bg-rose-100 text-rose-800 border border-rose-300'}`}>
+                                                    🚨 {language === 'tr' ? 'DÜŞÜRÜLDÜ' : 'DROPPED'}
+                                                </span>
+                                            )}
                                         </div>
+
+                                        {/* Drop Notice Banner */}
+                                        {currentInfo.isDropped && (
+                                            <div className={`p-2.5 rounded-xl border flex items-center gap-2 text-xs ${
+                                                isDark ? 'bg-rose-950/40 border-rose-500/40 text-rose-200' : 'bg-rose-50 border-rose-300 text-rose-900'
+                                            }`}>
+                                                <div className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse shrink-0" />
+                                                <div className="flex-1 font-medium">
+                                                    <span className="font-bold">{language === 'tr' ? '🚨 Paket Bu Düğümde Düşürüldü (Drop): ' : '🚨 Packet Dropped at this Node: '}</span>
+                                                    <span>{errorMessage || currentInfo.dropReason || (language === 'tr' ? 'Paket iletimi başarısız oldu' : 'Packet delivery failed')}</span>
+                                                </div>
+                                            </div>
+                                        )}
 
                                         {/* Packet tables — 3 col desktop, 1 col mobile (tabs) */}
                                         {showPacketTables && (isMobile ? (

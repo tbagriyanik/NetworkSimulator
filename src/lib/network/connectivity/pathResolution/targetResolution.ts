@@ -1,8 +1,9 @@
-﻿import { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
+import { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { SwitchState } from '@/lib/network/types';
 import { recalculateStp } from '@/lib/network/stp';
 import { isExternalDomain, resolveHostname } from '@/lib/network/dns';
 import { ConnectivityResult, CheckOptions } from './types';
+import { checkAddressConflicts } from '@/lib/network/connectivity.utils';
 
 export type ResolveTargetDeps = {
   sourceId: string;
@@ -79,6 +80,30 @@ export function resolveTarget(deps: ResolveTargetDeps): TargetResolutionResult {
           hopIds,
           targetId: 'external-domain',
           error: undefined,
+          portSecurityViolations: []
+        }
+      };
+    }
+  }
+
+  // Check for IP or MAC address conflicts
+  if (!isDhcpBroadcast) {
+    const conflictCheck = checkAddressConflicts({
+      sourceId,
+      targetIp: resolvedTargetIp,
+      devices,
+      safeDeviceStates,
+      language
+    });
+    if (conflictCheck.hasConflict) {
+      return {
+        type: 'error',
+        result: {
+          success: false,
+          hops: [],
+          hopIds: [],
+          targetId: conflictCheck.conflictingDeviceId,
+          error: conflictCheck.errorMessage,
           portSecurityViolations: []
         }
       };
@@ -293,6 +318,30 @@ export function resolveTarget(deps: ResolveTargetDeps): TargetResolutionResult {
       targetDevice = cloudDev;
     } else {
       return { type: 'error', result: { success: false, hops: [], hopIds: [], error: 'Request timed out.' } };
+    }
+  }
+
+  if (!isDhcpBroadcast && targetDevice && targetDevice.type !== 'cloud') {
+    const conflictCheck = checkAddressConflicts({
+      sourceId,
+      targetIp: resolvedTargetIp,
+      targetDeviceId: targetDevice.id,
+      devices,
+      safeDeviceStates,
+      language
+    });
+    if (conflictCheck.hasConflict) {
+      return {
+        type: 'error',
+        result: {
+          success: false,
+          hops: [],
+          hopIds: [],
+          targetId: conflictCheck.conflictingDeviceId || targetDevice.id,
+          error: conflictCheck.errorMessage,
+          portSecurityViolations: []
+        }
+      };
     }
   }
 

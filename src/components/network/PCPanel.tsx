@@ -339,7 +339,7 @@ export function PCPanel({
     t
   });
 
-  const { validateIpField, validateSubnetField } = usePCPanelValidation({
+  const { validateIpField, validateSubnetField, validateMacField, validateIpv6Field, validateIpv6PrefixField } = usePCPanelValidation({
     deviceId,
     topologyDevices,
     pcIP,
@@ -883,7 +883,7 @@ export function PCPanel({
     serviceMailInbox, setServiceMailInbox, serviceMailSent, setServiceMailSent,
     mailPop3Blocked, handleComposeSend, handleViewReplySend, handleDeleteInbox, handleDeleteSent,
     serviceSyslogEnabled, setServiceSyslogEnabled, serviceSyslogMessages, setServiceSyslogMessages,
-    validateIpField, validateSubnetField, isValidIpAddress, errors, setErrors, dispatchDeviceConfig,
+    validateIpField, validateSubnetField, validateMacField, validateIpv6Field, validateIpv6PrefixField, isValidIpAddress, errors, setErrors, dispatchDeviceConfig,
     iotDevices, selectedIotDeviceId, setSelectedIotDeviceId, selectedIotDevice,
     iotSensorType, setIotSensorType, iotKind, setIotKind,
     iotCollaborationEnabled, setIotCollaborationEnabled, iotDataStore, setIotDataStore,

@@ -291,51 +291,59 @@ export function decodePduLayers(
     });
   }
 
-  // OutLayers generation (when device forwards the packet)
-  outLayers.push({
-    layer: 1,
-    name: 'Fiziksel (Physical Egress)',
-    title: 'Katman 1 - Çıkış Arayüzü',
-    fields: [
-      { label: 'Egress Port', value: frame.egressPortId || 'GigabitEthernet0/1' },
-      { label: 'Hat Durumu', value: 'UP / FULL-DUPLEX 1000Mbps' },
-    ],
-    notes: ['Çerçeve çıkış kuyruğuna (TX Queue) aktarılıyor.'],
-  });
+  // OutLayers generation (only when device forwards the packet)
+  const isDropped = traces.some(t => t.action === 'drop') || (frame.info?.includes('[DROPPED]') ?? false);
 
-  outLayers.push({
-    layer: 2,
-    name: 'Veri Bağlantısı (Data Link Egress)',
-    title: 'Katman 2 - Frame Yeniden Kapsülleme',
-    fields: [
-      { label: 'Yeni Kaynak MAC', value: frame.egressDeviceId ? '00:1A:2B:3C:4D:5E' : (frame.srcMac || '00:00:00:00:00:00') },
-      { label: 'Yeni Hedef MAC', value: frame.dstMac || 'FF:FF:FF:FF:FF:FF' },
-      { label: 'VLAN Tag', value: frame.vlanId ? `Tag: ${frame.vlanId}` : 'Untagged' },
-    ],
-    notes: ['Sonraki atlama (Next-hop) ARP tablosundan çözülerek Hedef MAC güncellendi.'],
-  });
-
-  if (frame.srcIp && frame.dstIp) {
+  if (!isDropped) {
     outLayers.push({
-      layer: 3,
-      name: 'Ağ Katmanı (Network Egress)',
-      title: 'Katman 3 - TTL Azaltma ve NAT',
+      layer: 1,
+      name: 'Fiziksel (Physical Egress)',
+      title: 'Katman 1 - Çıkış Arayüzü',
       fields: [
-        { label: 'Kaynak IP', value: frame.srcIp },
-        { label: 'Hedef IP', value: frame.dstIp },
-        { label: 'Yeni TTL', value: Math.max(0, (frame.ttl ?? 64) - 1) },
+        { label: 'Egress Port', value: frame.egressPortId || 'GigabitEthernet0/1' },
+        { label: 'Hat Durumu', value: 'UP / FULL-DUPLEX 1000Mbps' },
       ],
-      notes: [
-        `TTL 1 azaltıldı: ${frame.ttl ?? 64} -> ${Math.max(0, (frame.ttl ?? 64) - 1)}.`,
-        'IPv4 Checksum yeniden hesaplandı.',
-      ],
+      notes: ['Çerçeve çıkış kuyruğuna (TX Queue) aktarılıyor.'],
     });
+
+    outLayers.push({
+      layer: 2,
+      name: 'Veri Bağlantısı (Data Link Egress)',
+      title: 'Katman 2 - Frame Yeniden Kapsülleme',
+      fields: [
+        { label: 'Yeni Kaynak MAC', value: frame.egressDeviceId ? '00:1A:2B:3C:4D:5E' : (frame.srcMac || '00:00:00:00:00:00') },
+        { label: 'Yeni Hedef MAC', value: frame.dstMac || 'FF:FF:FF:FF:FF:FF' },
+        { label: 'VLAN Tag', value: frame.vlanId ? `Tag: ${frame.vlanId}` : 'Untagged' },
+      ],
+      notes: ['Sonraki atlama (Next-hop) ARP tablosundan çözülerek Hedef MAC güncellendi.'],
+    });
+
+    if (frame.srcIp && frame.dstIp) {
+      outLayers.push({
+        layer: 3,
+        name: 'Ağ Katmanı (Network Egress)',
+        title: 'Katman 3 - TTL Azaltma ve NAT',
+        fields: [
+          { label: 'Kaynak IP', value: frame.srcIp },
+          { label: 'Hedef IP', value: frame.dstIp },
+          { label: 'Yeni TTL', value: Math.max(0, (frame.ttl ?? 64) - 1) },
+        ],
+        notes: [
+          `TTL 1 azaltıldı: ${frame.ttl ?? 64} -> ${Math.max(0, (frame.ttl ?? 64) - 1)}.`,
+          'IPv4 Checksum yeniden hesaplandı.',
+        ],
+      });
+    }
   }
 
   // Trace decisions
   if (traces.length > 0) {
     traces.forEach(t => {
-      decisions.push(`[${t.stage.toUpperCase()}] ${t.action.toUpperCase()}: ${t.reason}`);
+      if (t.action === 'drop') {
+        decisions.push(`[${t.stage.toUpperCase()}] DROP: ${t.reason} — Paket bu aşamada düşürüldü (Drop).`);
+      } else {
+        decisions.push(`[${t.stage.toUpperCase()}] ${t.action.toUpperCase()}: ${t.reason}`);
+      }
     });
   } else {
     decisions.push('1. Çerçeve fiziksel port üzerinden hatasız alındı.');

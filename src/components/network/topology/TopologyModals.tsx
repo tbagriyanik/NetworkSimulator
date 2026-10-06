@@ -143,6 +143,7 @@ export function TopologyModals({
         return d ? (
           <DeviceConfigModal
             device={d}
+            devices={devices}
             onClose={cancelDeviceConfig}
             onSave={saveDeviceConfig}
             isMobile={isMobile}

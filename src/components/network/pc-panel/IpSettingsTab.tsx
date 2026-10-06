@@ -45,6 +45,9 @@ interface IpSettingsTabProps {
   dispatchDeviceConfig: (config: Record<string, unknown>) => void;
   validateIpField: (ip: string) => void;
   validateSubnetField: (subnet: string) => void;
+  validateMacField?: (mac: string) => void;
+  validateIpv6Field?: (ipv6: string) => void;
+  validateIpv6PrefixField?: (prefix: string) => void;
   isValidIpAddress: (ip: string) => boolean;
   applyNtpServerTime: (serverAddress: string) => { date: string; time: string } | null;
   deviceId: string;
@@ -87,6 +90,9 @@ export function IpSettingsTab({
   dispatchDeviceConfig,
   validateIpField,
   validateSubnetField,
+  validateMacField,
+  validateIpv6Field,
+  validateIpv6PrefixField,
   isValidIpAddress,
   applyNtpServerTime,
   deviceId,
@@ -114,13 +120,32 @@ export function IpSettingsTab({
             <FormInput
               label={language === 'tr' ? 'MAC Adresi' : 'MAC Address'}
               value={pcMAC}
+              error={errors.mac}
               onChange={(e) => {
                 const newMac = e.target.value;
                 setPcMAC(newMac);
-                dispatchDeviceConfig({ macAddress: isValidMAC(newMac) ? normalizeMAC(newMac) : newMac });
+                setErrors(prev => { const { mac: _, ...rest } = prev; return rest; });
+              }}
+              onBlur={(e) => {
+                const val = e.currentTarget.value;
+                if (validateMacField) {
+                  validateMacField(val);
+                } else if (isValidMAC(val)) {
+                  dispatchDeviceConfig({ macAddress: normalizeMAC(val) });
+                }
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  const val = e.currentTarget.value;
+                  if (validateMacField) {
+                    validateMacField(val);
+                  } else if (isValidMAC(val)) {
+                    dispatchDeviceConfig({ macAddress: normalizeMAC(val) });
+                  }
+                }
               }}
               placeholder="00-1a-2b-3c-4d-5e"
-              className={`h-9 ${errors.mac ? 'border-error-500' : ''}`}
+              className="h-9"
             />
           </div>
         </div>
@@ -309,7 +334,25 @@ export function IpSettingsTab({
             value={pcIPv6}
             onChange={(newIPv6) => {
               setPcIPv6(newIPv6);
-              dispatchDeviceConfig({ ipv6: newIPv6 });
+              setErrors(prev => { const { ipv6: _, ...rest } = prev; return rest; });
+            }}
+            onBlur={(e) => {
+              const val = e.currentTarget.value;
+              if (validateIpv6Field) {
+                validateIpv6Field(val);
+              } else {
+                dispatchDeviceConfig({ ipv6: val });
+              }
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                const val = e.currentTarget.value;
+                if (validateIpv6Field) {
+                  validateIpv6Field(val);
+                } else {
+                  dispatchDeviceConfig({ ipv6: val });
+                }
+              }
             }}
             placeholder="2001:db8:acad:1::10"
             error={errors.ipv6}
@@ -320,9 +363,28 @@ export function IpSettingsTab({
             value={pcIPv6Prefix}
             onChange={(newPrefix) => {
               setPcIPv6Prefix(newPrefix);
-              dispatchDeviceConfig({ ipv6Prefix: newPrefix });
+              setErrors(prev => { const { ipv6Prefix: _, ...rest } = prev; return rest; });
+            }}
+            onBlur={(e) => {
+              const val = e.currentTarget.value;
+              if (validateIpv6PrefixField) {
+                validateIpv6PrefixField(val);
+              } else {
+                dispatchDeviceConfig({ ipv6Prefix: val });
+              }
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                const val = e.currentTarget.value;
+                if (validateIpv6PrefixField) {
+                  validateIpv6PrefixField(val);
+                } else {
+                  dispatchDeviceConfig({ ipv6Prefix: val });
+                }
+              }
             }}
             placeholder="64"
+            error={errors.ipv6Prefix}
           />
         </div>
       </div>

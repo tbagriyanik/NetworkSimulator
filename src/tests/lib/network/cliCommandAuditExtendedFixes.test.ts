@@ -6,8 +6,8 @@ import { SwitchState } from '../../../lib/network/types';
 import type { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 describe('Extended CLI Command Audit Fixes Tests', () => {
-  const createBaseState = (): SwitchState => {
-    const base = createInitialState('Router-Test', 'NS-L3-24PS');
+  const createBaseState = (mac?: string): SwitchState => {
+    const base = createInitialState(mac, 'NS-L3-24PS');
     return {
       ...base,
       deviceType: 'router',
@@ -192,13 +192,14 @@ describe('Extended CLI Command Audit Fixes Tests', () => {
 
   describe('5. traceroute extended options', () => {
     it('should parse and execute traceroute with source, numeric, timeout', () => {
-      const state = createBaseState();
+      const state = createBaseState('00:50:79:66:68:00');
+      const dev2Base = createBaseState('00:50:79:66:69:00');
       const dev2State: SwitchState = {
-        ...createBaseState(),
+        ...dev2Base,
         hostname: 'R2',
         ip: '192.168.1.2',
         ports: {
-          ...createBaseState().ports,
+          ...dev2Base.ports,
           'gi0/1': {
             id: 'gi0/1',
             name: 'GigabitEthernet0/1',
@@ -245,13 +246,14 @@ describe('Extended CLI Command Audit Fixes Tests', () => {
 
   describe('6. ping vrf and extended options', () => {
     it('should parse and execute ping with vrf, source, repeat, timeout, size', () => {
-      const state = createBaseState();
+      const state = createBaseState('00:50:79:66:68:00');
+      const dev2Base = createBaseState('00:50:79:66:69:00');
       const dev2State: SwitchState = {
-        ...createBaseState(),
+        ...dev2Base,
         hostname: 'R2',
         ip: '192.168.1.2',
         ports: {
-          ...createBaseState().ports,
+          ...dev2Base.ports,
           'gi0/1': {
             id: 'gi0/1',
             name: 'GigabitEthernet0/1',

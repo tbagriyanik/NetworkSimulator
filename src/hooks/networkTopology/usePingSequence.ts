@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 
 
@@ -247,6 +247,8 @@ export function usePingSequence(deps: PingSequenceDeps) {
         ? (isTR ? 'Kaynak cihazın IP adresi geçersiz' : 'Source device IP is invalid')
         : (isTR ? 'Hedef cihazın IP adresi geçersiz' : 'Target device IP is invalid');
 
+      setHopPacketInfos(buildHopPacketInfosFn([sourceId, targetId], devices, connections, targetIp, 64, { isFailure: true, errorMessage, failedAtHop: 0 }));
+
       setPingAnimation({
         sourceId,
         targetId,
@@ -311,9 +313,14 @@ export function usePingSequence(deps: PingSequenceDeps) {
     if (!connectivity.success) {
       const diagnostics = getPingDiagnostics(sourceId, targetIp, devices, connections, deviceStates, isTR ? 'tr' : 'en', { protocol: 'icmp' });
       const errorMessage = diagnostics.reasons?.length > 0 ? diagnostics.reasons[0] : (isTR ? 'Ping başarısız' : 'Ping failed');
-      const partialPath = connectivity.hopIds?.length >= 1 ? connectivity.hopIds : [sourceId];
+      const partialPath = connectivity.hopIds?.length >= 2 ? connectivity.hopIds : (connectivity.hopIds?.length === 1 ? [connectivity.hopIds[0], targetId] : [sourceId, targetId]);
       pingPathRef.current = partialPath;
-      setHopPacketInfos(buildHopPacketInfosFn(partialPath, devices, connections, targetIp));
+      const failedHopIndex = Math.max(0, partialPath.length - 2);
+      setHopPacketInfos(buildHopPacketInfosFn(partialPath, devices, connections, targetIp, 64, {
+        isFailure: true,
+        errorMessage,
+        failedAtHop: failedHopIndex
+      }));
       pingIsPausedRef.current = isSimulationMode;
       pingStepModeRef.current = isSimulationMode;
       setPingAnimation({
@@ -328,7 +335,7 @@ export function usePingSequence(deps: PingSequenceDeps) {
         hopCount: 0,
         isPaused: isSimulationMode,
         showPacketPanel: shouldOpenPanel,
-        failedAtHop: Math.max(0, partialPath.length - 2),
+        failedAtHop: failedHopIndex,
         broadcastTargets: [],
         broadcastAnim: [],
         broadcastProgress: 0,
@@ -462,8 +469,12 @@ export function usePingSequence(deps: PingSequenceDeps) {
 
     if (!path || path.length < 2) {
       const errorMessage = isTR ? 'Fiziksel bağlantı yok' : 'No physical connection';
-      setHopPacketInfos([]);
-      setPingAnimation({ sourceId, targetId, path: [sourceId], currentHopIndex: 0, progress: 0, success: false, frame: 0, error: errorMessage, hopCount: 0, isPaused: false, showPacketPanel: shouldOpenPanel, broadcastTargets: [], broadcastAnim: [], broadcastProgress: 0 });
+      setHopPacketInfos(buildHopPacketInfosFn([sourceId, targetId], devices, connections, targetIp, 64, {
+        isFailure: true,
+        errorMessage,
+        failedAtHop: 0
+      }));
+      setPingAnimation({ sourceId, targetId, path: [sourceId, targetId], currentHopIndex: 0, progress: 1, success: false, frame: 0, error: errorMessage, hopCount: 0, isPaused: false, showPacketPanel: shouldOpenPanel, broadcastTargets: [], broadcastAnim: [], broadcastProgress: 0 });
       setErrorToast({ message: isTR ? 'Ping başarısız!' : 'Ping failed!', details: errorMessage });
       pingCleanupTimeoutRef.current = setTimeout(() => { setPingAnimation(null); setPingMode(false); setErrorToast(null); }, 3000);
       return;

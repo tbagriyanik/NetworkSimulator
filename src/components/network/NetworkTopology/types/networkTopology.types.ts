@@ -34,6 +34,7 @@ export interface CanvasPort {
   ipAddress?: string;
   subnetMask?: string;
   macAddress?: string; // Per-port MAC address (for router ports)
+  ipv6Address?: string;
   wifi?: CanvasWifiConfig;
   spanningTree?: {
     role?: 'root' | 'designated' | 'alternate' | 'backup' | 'disabled';

@@ -1,4 +1,4 @@
-﻿import { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
+import { CanvasDevice, CanvasConnection } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { SwitchState } from '@/lib/network/types';
 import { ensureDeviceStatesMap } from '@/lib/network/networkUtils';
 import { resolveHostname } from '@/lib/network/dns';
@@ -8,6 +8,7 @@ import {
   getSubnetForDeviceIp,
   isIpInSubnet,
   isPortShutdown,
+  checkAddressConflicts,
 } from '@/lib/network/connectivity.utils';
 import { checkConnectivity } from './pathResolution/algorithm';
 
@@ -126,6 +127,20 @@ export function getPingDiagnostics(
 
   if (sourceDevice.status === 'offline') {
     reasons.push('Kaynak cihaz kapalı (offline)');
+    return { success: false, reasons };
+  }
+
+  // Check for IP or MAC address conflicts
+  const conflictCheck = checkAddressConflicts({
+    sourceId,
+    targetIp: resolvedTargetIp,
+    targetDeviceId: targetDeviceId || initialTargetDevice?.id,
+    devices,
+    safeDeviceStates,
+    language
+  });
+  if (conflictCheck.hasConflict && conflictCheck.errorMessage) {
+    reasons.push(conflictCheck.errorMessage);
     return { success: false, reasons };
   }
 

@@ -258,6 +258,9 @@ export interface PCPanelContextValue {
   // Validation
   validateIpField: (ip: string) => void;
   validateSubnetField: (subnet: string) => void;
+  validateMacField?: (mac: string) => void;
+  validateIpv6Field?: (ipv6: string) => void;
+  validateIpv6PrefixField?: (prefix: string) => void;
   isValidIpAddress: (ip: string) => boolean;
   errors: Record<string, string>;
   setErrors: Dispatch<SetStateAction<Record<string, string>>>;

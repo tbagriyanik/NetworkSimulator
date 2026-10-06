@@ -1,4 +1,4 @@
-﻿import type { CanvasDevice, CanvasConnection } from '../NetworkTopology/types/networkTopology.types';
+import type { CanvasDevice, CanvasConnection } from '../NetworkTopology/types/networkTopology.types';
 
 export interface HopPacketInfo {
     hopIndex: number;
@@ -19,6 +19,8 @@ export interface HopPacketInfo {
     layer3: string;
     layer4: string;
     actionDescription?: string;
+    isDropped?: boolean;
+    dropReason?: string;
 }
 
 export function generateActionDescription(fromDev: CanvasDevice | undefined, toDev: CanvasDevice | undefined, hopIndex: number, pathLength: number): string {
@@ -50,7 +52,8 @@ export function buildHopPacketInfos(
     devices: CanvasDevice[],
     connections: CanvasConnection[],
     targetIp?: string,
-    initialTTL = 64
+    initialTTL = 64,
+    failureInfo?: { isFailure?: boolean; errorMessage?: string; failedAtHop?: number }
 ): HopPacketInfo[] {
     if (path.length < 2) return [];
 
@@ -120,6 +123,14 @@ export function buildHopPacketInfos(
         const hopSrcIp = isIPv6 ? (fromDev?.ipv6 || fromDev?.ip || '::') : (fromDev?.ip || '0.0.0.0');
         const hopDstIp = isIPv6 ? (toDev?.ipv6 || toDev?.ip || '::') : (toDev?.ip || '0.0.0.0');
 
+        const isLastHop = i === path.length - 2;
+        const isHopDropped = Boolean(failureInfo?.isFailure && (failureInfo.failedAtHop !== undefined ? i === failureInfo.failedAtHop : isLastHop));
+
+        let actionDesc = generateActionDescription(fromDev, toDev, i, path.length);
+        if (isHopDropped) {
+            actionDesc = failureInfo?.errorMessage ? `[DROPPED] ${failureInfo.errorMessage}` : 'Packet dropped at this hop.';
+        }
+
         infos.push({
             hopIndex: i,
             fromDevice: {
@@ -150,7 +161,9 @@ export function buildHopPacketInfos(
             layer2: 'Ethernet II',
             layer3: isIPv6 ? 'IPv6' : 'IPv4',
             layer4: isIPv6 ? 'ICMPv6' : 'ICMP',
-            actionDescription: generateActionDescription(fromDev, toDev, i, path.length),
+            actionDescription: actionDesc,
+            isDropped: isHopDropped,
+            dropReason: isHopDropped ? failureInfo?.errorMessage : undefined,
         });
     }
 

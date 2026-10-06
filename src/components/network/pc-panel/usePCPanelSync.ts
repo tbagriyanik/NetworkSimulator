@@ -133,14 +133,54 @@ export function usePCPanelSync({
 
   const syncToGlobal = useCallback(() => {
     const newErrors: PCPanelErrorMap = {};
-    if (!validateIP(pcIP)) newErrors.ip = t.invalidIpAddress || 'Invalid IP';
-    if (!isValidMAC(pcMAC)) newErrors.mac = t.invalidMacAddress || 'Invalid MAC';
+    if (!validateIP(pcIP)) {
+      newErrors.ip = t.invalidIpAddress || 'Invalid IP';
+    } else {
+      const duplicateIpDevices = topologyDevices.filter(d => d.id !== deviceId && d.ip === pcIP);
+      if (duplicateIpDevices.length > 0) {
+        const names = duplicateIpDevices.map(d => d.name || d.id).join(', ');
+        newErrors.ip = t.ipAlreadyInUse?.replace('{names}', names) || (t.language === 'en' ? `This IP address is already used by ${names}` : `Bu IP adresi zaten ${names} tarafından kullanılıyor`);
+      }
+    }
+
+    if (pcMAC && !isValidMAC(pcMAC)) {
+      newErrors.mac = t.invalidMacAddress || (t.language === 'en' ? 'Invalid MAC address' : 'Geçersiz MAC adresi');
+    } else if (pcMAC && isValidMAC(pcMAC)) {
+      const normalizedMac = normalizeMAC(pcMAC);
+      const duplicateMacDevices = topologyDevices.filter(d => {
+        if (d.id === deviceId) return false;
+        if (d.macAddress && normalizeMAC(d.macAddress) === normalizedMac) return true;
+        if (d.ports?.some(p => p.macAddress && normalizeMAC(p.macAddress) === normalizedMac)) return true;
+        return false;
+      });
+      if (duplicateMacDevices.length > 0) {
+        const names = duplicateMacDevices.map(d => d.name || d.id).join(', ');
+        newErrors.mac = t.macAlreadyInUse?.replace('{names}', names) || (t.language === 'en' ? `This MAC address is already used by ${names}` : `Bu MAC adresi zaten ${names} tarafından kullanılıyor`);
+      }
+    }
+
     if (ipConfigMode === 'static') {
       if (pcSubnet && !validateIP(pcSubnet)) newErrors.subnet = t.invalidSubnetMask || 'Invalid Subnet';
       if (pcGateway && !validateIP(pcGateway)) newErrors.gateway = t.invalidGateway || 'Invalid Gateway';
       if (pcDNS && !validateIP(pcDNS)) newErrors.dns = t.invalidDns || 'Invalid DNS';
     }
-    if (pcIPv6 && !validateIPv6(pcIPv6)) newErrors.ipv6 = t.invalidIpv6Address || 'Invalid IPv6';
+    if (pcIPv6) {
+      if (!validateIPv6(pcIPv6)) {
+        newErrors.ipv6 = t.invalidIpv6Address || 'Invalid IPv6';
+      } else {
+        const normIpv6 = pcIPv6.trim().toLowerCase();
+        const duplicateIpv6Devices = topologyDevices.filter(d => {
+          if (d.id === deviceId) return false;
+          if (d.ipv6 && d.ipv6.trim().toLowerCase() === normIpv6) return true;
+          if (d.ports?.some(p => p.ipv6Address && p.ipv6Address.trim().toLowerCase() === normIpv6)) return true;
+          return false;
+        });
+        if (duplicateIpv6Devices.length > 0) {
+          const names = duplicateIpv6Devices.map(d => d.name || d.id).join(', ');
+          newErrors.ipv6 = t.ipv6AlreadyInUse?.replace('{names}', names) || (t.language === 'en' ? `This IPv6 address is already used by ${names}` : `Bu IPv6 adresi zaten ${names} tarafından kullanılıyor`);
+        }
+      }
+    }
 
     setErrors(newErrors);
 
