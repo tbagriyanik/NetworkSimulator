@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, Activity, Layers } from 'lucide-react';
+import { ChevronDown, ChevronUp, Activity, Layers, Zap, AlertOctagon } from 'lucide-react';
 import { type BroadcastAnimTarget } from '@/hooks/networkTopology/usePingSequence';
 import { cn } from '@/lib/utils';
 import { PacketTraceInspector } from './PacketTraceInspector';
@@ -635,14 +635,21 @@ export function PingPacketInfoPanel({
                                                 <div className={`w-2 h-2 rounded-full flex-shrink-0 ${currentInfo.toDevice.type === 'router' ? 'bg-purple-500' : currentInfo.toDevice.type.startsWith('switch') ? 'bg-accent-500' : 'bg-primary-500'}`} />
                                             </div>
                                             {macChanged && !currentInfo.isDropped && (
-                                                <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold flex-shrink-0 ${isDark ? 'bg-warning-500/20 text-warning-300 border border-warning-500/30' : 'bg-warning-500/15 text-warning-700 border border-warning-500/30'}`}>⚡ {isMobile ? '' : t.macChanged}</span>
+                                                <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold flex-shrink-0 flex items-center gap-1 ${isDark ? 'bg-warning-500/20 text-warning-300 border border-warning-500/30' : 'bg-warning-500/15 text-warning-700 border border-warning-500/30'}`}>
+                                                    <Zap className="w-3 h-3 shrink-0" />
+                                                    {!isMobile && <span>{t.macChanged}</span>}
+                                                </span>
                                             )}
                                             {ipSame && prevInfo && !isMobile && !currentInfo.isDropped && (
-                                                <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold flex-shrink-0 ${isDark ? 'bg-success-500/20 text-success-300 border border-success-500/30' : 'bg-success-500/15 text-success-700 border border-success-500/30'}`}>✓ {t.ipSame}</span>
+                                                <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold flex-shrink-0 flex items-center gap-1 ${isDark ? 'bg-success-500/20 text-success-300 border border-success-500/30' : 'bg-success-500/15 text-success-700 border border-success-500/30'}`}>
+                                                    <span className="font-bold">✓</span>
+                                                    <span>{t.ipSame}</span>
+                                                </span>
                                             )}
                                             {currentInfo.isDropped && (
-                                                <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold flex-shrink-0 ${isDark ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40' : 'bg-rose-100 text-rose-800 border border-rose-300'}`}>
-                                                    🚨 {language === 'tr' ? 'DÜŞÜRÜLDÜ' : 'DROPPED'}
+                                                <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold flex-shrink-0 flex items-center gap-1 ${isDark ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40' : 'bg-rose-100 text-rose-800 border border-rose-300'}`}>
+                                                    <AlertOctagon className="w-3 h-3 shrink-0 text-rose-500" />
+                                                    <span>{language === 'tr' ? 'DÜŞÜRÜLDÜ' : 'DROPPED'}</span>
                                                 </span>
                                             )}
                                         </div>
@@ -652,9 +659,9 @@ export function PingPacketInfoPanel({
                                             <div className={`p-2.5 rounded-xl border flex items-center gap-2 text-xs ${
                                                 isDark ? 'bg-rose-950/40 border-rose-500/40 text-rose-200' : 'bg-rose-50 border-rose-300 text-rose-900'
                                             }`}>
-                                                <div className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse shrink-0" />
+                                                <AlertOctagon className="w-4 h-4 text-rose-500 shrink-0" />
                                                 <div className="flex-1 font-medium">
-                                                    <span className="font-bold">{language === 'tr' ? '🚨 Paket Bu Düğümde Düşürüldü (Drop): ' : '🚨 Packet Dropped at this Node: '}</span>
+                                                    <span className="font-bold">{language === 'tr' ? 'Paket Bu Düğümde Düşürüldü (Drop): ' : 'Packet Dropped at this Node: '}</span>
                                                     <span>{errorMessage || currentInfo.dropReason || (language === 'tr' ? 'Paket iletimi başarısız oldu' : 'Packet delivery failed')}</span>
                                                 </div>
                                             </div>

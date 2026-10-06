@@ -29,7 +29,7 @@ export function TaskFormFields({
         )}>
             {task.checkType === 'command' && (
                 <div className="space-y-1">
-                    <label className="text-[9px] font-bold opacity-50 uppercase ml-1">{isTr ? 'Komut Deseni (Regex)' : 'Command Pattern (Regex)'}</label>
+                    <label className="text-[10px] font-bold opacity-50 uppercase ml-1">{isTr ? 'Komut Deseni (Regex)' : 'Command Pattern (Regex)'}</label>
                     <div className="flex gap-1">
                         <Input
                             value={task.checkParams?.commandPattern || ''}
@@ -66,7 +66,7 @@ export function TaskFormFields({
                 <div className="space-y-2">
                     <div className="grid grid-cols-2 gap-2">
                         <div className="space-y-1">
-                            <label className="text-[9px] font-bold opacity-50 uppercase ml-1">{isTr ? 'Anahtar' : 'Key'}</label>
+                            <label className="text-[10px] font-bold opacity-50 uppercase ml-1">{isTr ? 'Anahtar' : 'Key'}</label>
                             <div className="flex gap-1">
                                 <Input
                                     value={task.checkParams?.configKey || ''}
@@ -108,7 +108,7 @@ export function TaskFormFields({
                             </div>
                         </div>
                         <div className="space-y-1">
-                            <label className="text-[9px] font-bold opacity-50 uppercase ml-1">{isTr ? 'Değer' : 'Value'}</label>
+                            <label className="text-[10px] font-bold opacity-50 uppercase ml-1">{isTr ? 'Değer' : 'Value'}</label>
                             <div className="flex gap-1">
                                 <Input
                                     value={String(task.checkParams?.configValue ?? '')}
@@ -165,7 +165,7 @@ export function TaskFormFields({
                             <>
                                 <div className="grid grid-cols-2 gap-2">
                                     <div className="space-y-1">
-                                        <label className="text-[9px] font-bold opacity-50 uppercase ml-1">{isTr ? 'Kablo Tipi' : 'Cable Type'}</label>
+                                        <label className="text-[10px] font-bold opacity-50 uppercase ml-1">{isTr ? 'Kablo Tipi' : 'Cable Type'}</label>
                                         <Select
                                             value={task.checkParams?.cableType || ''}
                                             onValueChange={(val) => updateTask(task.id, {
@@ -185,7 +185,7 @@ export function TaskFormFields({
                                 </div>
                                 <div className="grid grid-cols-1 gap-2">
                                     <div className="space-y-1">
-                                        <label className="text-[9px] font-bold opacity-50 uppercase ml-1">{isTr ? 'Kaynak Cihaz ve Port' : 'Source Device & Port'}</label>
+                                        <label className="text-[10px] font-bold opacity-50 uppercase ml-1">{isTr ? 'Kaynak Cihaz ve Port' : 'Source Device & Port'}</label>
                                         <Select
                                             value={(isValidSourceDevice && isValidSourcePort) ? `${sourceDeviceId}::${selectedSourcePort}` : undefined}
                                             onValueChange={(val) => {
@@ -226,7 +226,7 @@ export function TaskFormFields({
                                 </div>
                                 <div className="grid grid-cols-1 gap-2">
                                     <div className="space-y-1">
-                                        <label className="text-[9px] font-bold opacity-50 uppercase ml-1">{isTr ? 'Hedef Cihaz ve Port' : 'Target Device & Port'}</label>
+                                        <label className="text-[10px] font-bold opacity-50 uppercase ml-1">{isTr ? 'Hedef Cihaz ve Port' : 'Target Device & Port'}</label>
                                         <Select
                                             value={(isValidTargetDevice && isValidTargetPort) ? `${targetDeviceId}::${selectedTargetPort}` : undefined}
                                             onValueChange={(val) => {
@@ -275,7 +275,7 @@ export function TaskFormFields({
                 <div className="space-y-2">
                     <div className="grid grid-cols-2 gap-2">
                         <div className="space-y-1">
-                            <label className="text-[9px] font-bold opacity-50 uppercase ml-1">{isTr ? 'Cihaz Tipi' : 'Device Type'}</label>
+                            <label className="text-[10px] font-bold opacity-50 uppercase ml-1">{isTr ? 'Cihaz Tipi' : 'Device Type'}</label>
                             <Select
                                 value={task.checkParams?.deviceType || ''}
                                 onValueChange={(val) => updateTask(task.id, {
@@ -293,7 +293,7 @@ export function TaskFormFields({
                             </Select>
                         </div>
                         <div className="space-y-1">
-                            <label className="text-[9px] font-bold opacity-50 uppercase ml-1">{isTr ? 'Topolojideki Cihaz' : 'Topology Device'}</label>
+                            <label className="text-[10px] font-bold opacity-50 uppercase ml-1">{isTr ? 'Topolojideki Cihaz' : 'Topology Device'}</label>
                             <Select
                                 value={task.checkParams?.targetDeviceId || '__any__'}
                                 onValueChange={(val) => updateTask(task.id, {
@@ -323,7 +323,7 @@ export function TaskFormFields({
             )}
             <div className="flex items-center gap-1.5 mt-1">
                 <Info className="w-3 h-3 text-primary-500 opacity-60" />
-                <p className="text-[9px] opacity-50 leading-tight">
+                <p className="text-[10px] opacity-50 leading-tight">
                     {isTr ? 'Bu değerler topolojideki cihaz ID\'leri ile eşleşmelidir.' : 'These values must match device IDs in the topology.'}
                 </p>
             </div>

@@ -301,7 +301,7 @@ export function MailServiceConfig({
                         <div className="min-w-0 flex-1">
                           <div className="font-bold truncate" title={msg.from}>{msg.from}</div>
                           <div className="truncate opacity-80" title={msg.subject}>{msg.subject}</div>
-                          {msg.timestamp && <div className="text-[8px] opacity-50 mt-1">{new Date(msg.timestamp).toLocaleString()}</div>}
+                          {msg.timestamp && <div className="text-[10px] opacity-50 mt-1">{new Date(msg.timestamp).toLocaleString()}</div>}
                         </div>
                         <div className="flex items-center gap-1 flex-shrink-0">
                           <button
@@ -350,7 +350,7 @@ export function MailServiceConfig({
                         <div className="min-w-0 flex-1">
                           <div className="font-bold truncate" title={msg.to}>{msg.to}</div>
                           <div className="truncate opacity-80" title={msg.subject}>{msg.subject}</div>
-                          {msg.timestamp && <div className="text-[8px] opacity-50 mt-1">{new Date(msg.timestamp).toLocaleString()}</div>}
+                          {msg.timestamp && <div className="text-[10px] opacity-50 mt-1">{new Date(msg.timestamp).toLocaleString()}</div>}
                         </div>
                         <button
                           title={language === 'tr' ? 'Sil' : 'Delete'}

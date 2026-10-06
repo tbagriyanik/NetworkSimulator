@@ -241,7 +241,7 @@ export const NoteNode = memo(function NoteNode({
                     e.stopPropagation();
                     cycleNoteFont(note.id);
                   }}
-                  className="px-1 rounded text-[9px] leading-4 bg-black/10 hover:bg-black/20"
+                  className="px-1 rounded text-[10px] leading-4 bg-black/10 hover:bg-black/20"
                 >
                   F
                 </button>
@@ -255,7 +255,7 @@ export const NoteNode = memo(function NoteNode({
                     e.stopPropagation();
                     cycleNoteFontSize(note.id);
                   }}
-                  className="px-1 rounded text-[9px] leading-4 bg-black/10 hover:bg-black/20"
+                  className="px-1 rounded text-[10px] leading-4 bg-black/10 hover:bg-black/20"
                 >
                   {note.fontSize}
                 </button>
@@ -269,7 +269,7 @@ export const NoteNode = memo(function NoteNode({
                     e.stopPropagation();
                     cycleNoteOpacity(note.id);
                   }}
-                  className="px-1 rounded text-[9px] leading-4 bg-black/10 hover:bg-black/20"
+                  className="px-1 rounded text-[10px] leading-4 bg-black/10 hover:bg-black/20"
                 >
                   {Math.round(note.opacity * 100)}
                 </button>
@@ -283,7 +283,7 @@ export const NoteNode = memo(function NoteNode({
                     e.stopPropagation();
                     duplicateNote(note.id);
                   }}
-                  className="px-1 rounded text-[9px] leading-4 bg-black/10 hover:bg-black/20"
+                  className="px-1 rounded text-[10px] leading-4 bg-black/10 hover:bg-black/20"
                 >
                   D
                 </button>
@@ -302,7 +302,7 @@ export const NoteNode = memo(function NoteNode({
                       setLastQuery('');
                     }
                   }}
-                  className="px-1 py-0.5 rounded text-[9px] leading-4 bg-black/10 hover:bg-black/20 flex items-center justify-center"
+                  className="px-1 py-0.5 rounded text-[10px] leading-4 bg-black/10 hover:bg-black/20 flex items-center justify-center"
                   aria-label={language === 'tr' ? 'Ara' : 'Search'}
                 >
                   <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -359,7 +359,7 @@ export const NoteNode = memo(function NoteNode({
             />
             <button
               onClick={(e) => { e.stopPropagation(); handleSearchNext(); }}
-              className="px-1.5 py-0.5 text-[9px] bg-black/15 hover:bg-black/25 text-black dark:text-white rounded"
+              className="px-1.5 py-0.5 text-[10px] bg-black/15 hover:bg-black/25 text-black dark:text-white rounded"
             >
               {language === 'tr' ? 'Sonraki' : 'Next'}
             </button>

@@ -197,7 +197,9 @@ export function usePCPanelBrowser({
       setHttpAppTitle('Access Denied');
       setHttpAppContent(`
         <main style="padding:32px;font-family:'Inria Sans',sans-serif;text-align:center;">
-          <div style="font-size:64px;margin-bottom:16px;">🛡️</div>
+          <div style="margin-bottom:16px;display:flex;align-items:center;justify-content:center;color:var(--color-error-500);">
+            <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          </div>
           <h1 style="margin:0 0 8px;font-size:24px;color:var(--color-error-500);">${language === 'tr' ? 'Erişim Engellendi' : 'Access Denied'}</h1>
           <p style="margin:0 0 12px;font-size:16px;color:var(--color-muted-foreground);">${connectivityResult.error}</p>
           <code style="display:inline-block;padding:6px 10px;border-radius:8px;background:var(--color-error-100);color:var(--color-error-800);font-size:13px;">${displayUrl}</code>
@@ -225,7 +227,9 @@ export function usePCPanelBrowser({
       setHttpAppTitle('Connection Error');
       setHttpAppContent(`
         <main style="padding:32px;font-family:'Inria Sans',sans-serif;text-align:center;">
-          <div style="font-size:48px;margin-bottom:12px;">🚫</div>
+          <div style="margin-bottom:12px;display:flex;align-items:center;justify-content:center;color:var(--color-error-500);">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+          </div>
           <h1 style="margin:0 0 8px;font-size:22px;color:var(--color-error-500);">${language === 'tr' ? 'Sunucuya Ulaşılamıyor' : 'Server Unreachable'}</h1>
           <p style="margin:0 0 12px;font-size:14px;color:var(--color-muted-foreground);">${connectivityResult.error || (language === 'tr' ? 'Ağ geçidi veya sunucu yanıt vermiyor.' : 'Gateway or server not responding.')}</p>
           <code style="display:inline-block;padding:6px 10px;border-radius:8px;background:var(--color-error-100);color:var(--color-error-800);font-size:12px;">${displayUrl}</code>

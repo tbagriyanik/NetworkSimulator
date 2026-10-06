@@ -96,7 +96,7 @@ export function HomeLauncher({
           {/* Dynamic Island / Speaker Pill */}
           <div className="h-4 w-20 rounded-full bg-black/60 border border-white/15 flex items-center justify-center gap-1.5 px-2">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-[9px] font-mono text-white/70 truncate max-w-[50px]">{internalPcHostname}</span>
+            <span className="text-[10px] font-mono text-white/70 truncate max-w-[50px]">{internalPcHostname}</span>
           </div>
           <div className="flex items-center gap-2">
             {/* Dynamic Wi-Fi Indicator */}
@@ -126,12 +126,12 @@ export function HomeLauncher({
               onClick={toggleCharging}
               title={
                 isTr
-                  ? `Pil: %${batteryPercent} (${isCharging ? 'Şarj Oluyor ⚡' : 'Pilde'}) • Tıklayarak şarj durumunu değiştirin`
-                  : `Battery: ${batteryPercent}% (${isCharging ? 'Charging ⚡' : 'On Battery'}) • Click to toggle charging`
+                  ? `Pil: %${batteryPercent} (${isCharging ? 'Şarj Oluyor' : 'Pilde'}) • Tıklayarak şarj durumunu değiştirin`
+                  : `Battery: ${batteryPercent}% (${isCharging ? 'Charging' : 'On Battery'}) • Click to toggle charging`
               }
               className="flex items-center gap-0.5 cursor-pointer hover:opacity-80 transition-opacity outline-none"
             >
-              <span className="text-[9px] font-mono leading-none">
+              <span className="text-[10px] font-mono leading-none">
                 {batteryPercent}%
               </span>
               {isCharging ? (

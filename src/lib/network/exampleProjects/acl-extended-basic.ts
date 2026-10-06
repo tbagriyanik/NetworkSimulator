@@ -26,8 +26,8 @@ const example = (isTr: boolean): ExampleProject => {
     {
       id: 'acl-extended-note',
       text: isTr
-        ? 'Amaç: Extended ACL kullanarak IP, Protokol ve Port bazlı detaylı trafik filtreleme yapmak.\n\n🔧 YAPILANDIRMA ADIMLARI:\n\n1) ACL TANIMLAMA (R3):\n   - ip access-list extended WEB-ONLY\n   - permit tcp 192.168.1.0 0.0.0.255 host 192.168.2.10 eq 80\n   - deny ip any any\n\n2) ACL UYGULAMA:\n   - interface gi0/0\n   - ip access-group WEB-ONLY in\n\n3) TEST:\n   - HTTP trafiği başarılı olmalı\n   - Ping veya ICMP engellenmeli'
-        : '🔧 BUILD STEPS:\n\n1) DEFINE ACL (R3):\n   - ip access-list extended WEB-ONLY\n   - permit tcp 192.168.1.0 0.0.0.255 host 192.168.2.10 eq 80\n   - deny ip any any\n\n2) APPLY ACL:\n   - interface gi0/0\n   - ip access-group WEB-ONLY in\n\n3) TEST:\n   - HTTP traffic should pass\n   - Ping or ICMP should be blocked',
+        ? 'Amaç: Extended ACL kullanarak IP, Protokol ve Port bazlı detaylı trafik filtreleme yapmak.\n\nYAPILANDIRMA ADIMLARI:\n\n1) ACL TANIMLAMA (R3):\n   - ip access-list extended WEB-ONLY\n   - permit tcp 192.168.1.0 0.0.0.255 host 192.168.2.10 eq 80\n   - deny ip any any\n\n2) ACL UYGULAMA:\n   - interface gi0/0\n   - ip access-group WEB-ONLY in\n\n3) TEST:\n   - HTTP trafiği başarılı olmalı\n   - Ping veya ICMP engellenmeli'
+        : 'BUILD STEPS:\n\n1) DEFINE ACL (R3):\n   - ip access-list extended WEB-ONLY\n   - permit tcp 192.168.1.0 0.0.0.255 host 192.168.2.10 eq 80\n   - deny ip any any\n\n2) APPLY ACL:\n   - interface gi0/0\n   - ip access-group WEB-ONLY in\n\n3) TEST:\n   - HTTP traffic should pass\n   - Ping or ICMP should be blocked',
       x: 450,
       y: 80,
       width: 520,

@@ -447,12 +447,17 @@ export function AppHeader({
                 <TooltipContent>
                   <div className="flex flex-col gap-1">
                     <span className="font-bold">{t.helpLevelLabel}</span>
-                    <span className="text-[10px] opacity-80">
-                      {helpLevel === 'beginner'
-                        ? `🟢 ${t.beginnerLevel}`
-                        : helpLevel === 'intermediate'
-                          ? `🟡 ${t.intermediateLevel}`
-                          : `🔴 ${t.advancedLevel}`}
+                    <span className="text-[10px] opacity-80 flex items-center gap-1.5">
+                      <span className={`w-2 h-2 rounded-full shrink-0 ${
+                        helpLevel === 'beginner' ? 'bg-success-500' : helpLevel === 'intermediate' ? 'bg-warning-500' : 'bg-error-500'
+                      }`} />
+                      <span>
+                        {helpLevel === 'beginner'
+                          ? t.beginnerLevel
+                          : helpLevel === 'intermediate'
+                            ? t.intermediateLevel
+                            : t.advancedLevel}
+                      </span>
                     </span>
                   </div>
                 </TooltipContent>

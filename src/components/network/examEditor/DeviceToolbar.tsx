@@ -16,7 +16,7 @@ export function DeviceToolbar({ isTr, isDark }: DeviceToolbarProps) {
                     <Monitor className="w-4 h-4 text-success-500" />
                     {isTr ? 'Cihaz Ekle' : 'Add Device'}
                 </h3>
-                <span className="text-[9px] opacity-40 font-medium">
+                <span className="text-[10px] opacity-40 font-medium">
                     {isTr ? 'Topolojiye eklemek için tıklayın' : 'Click to add to topology'}
                 </span>
             </div>

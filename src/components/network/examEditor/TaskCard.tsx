@@ -136,7 +136,7 @@ export function TaskCard({
                             {isTr ? task.title.tr : task.title.en}
                         </h4>
                         <div className="flex items-center gap-2 mt-0.5">
-                            <Badge variant="outline" className="text-[9px] h-4 py-0 px-1 border-purple-500/30 text-purple-500">
+                            <Badge variant="outline" className="text-[10px] h-4 py-0 px-1 border-purple-500/30 text-purple-500">
                                 {task.checkType}
                             </Badge>
                             <span className="text-[10px] font-bold opacity-40">
@@ -239,7 +239,7 @@ export function TaskCard({
                         <div className="space-y-3">
                             <div className="flex items-center justify-between">
                                 <label className="text-[10px] font-bold opacity-50 uppercase ml-1">{isTr ? 'Doğrulama Mantığı' : 'Check Logic'}</label>
-                                <Badge variant="secondary" className="text-[9px] h-4">ID: {task.id}</Badge>
+                                <Badge variant="secondary" className="text-[10px] h-4">ID: {task.id}</Badge>
                             </div>
 
                             <Select

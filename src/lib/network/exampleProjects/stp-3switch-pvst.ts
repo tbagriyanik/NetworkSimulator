@@ -39,8 +39,8 @@ const example = (isTr: boolean): ExampleProject => {
     {
       id: 'note-stp-vlan1',
       text: isTr
-        ? '🔧 VLAN 1 KONFİGÜRASYONU:\n\nSW1 (Root):\n- spanning-tree vlan 1 priority 24576\n\nSW2:\n- spanning-tree vlan 1 priority 32768\n\nSW3:\n- spanning-tree vlan 1 priority 32768\n\nPC\'ler:\n- PC1-VLAN1: 192.168.1.10 (SW1 Gi1/0/3)\n- PC2-VLAN1: 192.168.1.20 (SW2 Gi1/0/3)\n- PC3-VLAN1: 192.168.1.30 (SW3 Gi1/0/3)\n\n⚠️ Not: Ağı Yenile (F5)'
-        : '🔧 VLAN 1 CONFIGURATION:\n\nSW1 (Root):\n- spanning-tree vlan 1 priority 24576\n\nSW2:\n- spanning-tree vlan 1 priority 32768\n\nSW3:\n- spanning-tree vlan 1 priority 32768\n\nPCs:\n- PC1-VLAN1: 192.168.1.10 (SW1 Gi1/0/3)\n- PC2-VLAN1: 192.168.1.20 (SW2 Gi1/0/3)\n- PC3-VLAN1: 192.168.1.30 (SW3 Gi1/0/3)\n\n⚠️ Note: Refresh Network (F5)',
+        ? 'VLAN 1 KONFİGÜRASYONU:\n\nSW1 (Root):\n- spanning-tree vlan 1 priority 24576\n\nSW2:\n- spanning-tree vlan 1 priority 32768\n\nSW3:\n- spanning-tree vlan 1 priority 32768\n\nPC\'ler:\n- PC1-VLAN1: 192.168.1.10 (SW1 Gi1/0/3)\n- PC2-VLAN1: 192.168.1.20 (SW2 Gi1/0/3)\n- PC3-VLAN1: 192.168.1.30 (SW3 Gi1/0/3)\n\nNot: Ağı Yenile (F5)'
+        : 'VLAN 1 CONFIGURATION:\n\nSW1 (Root):\n- spanning-tree vlan 1 priority 24576\n\nSW2:\n- spanning-tree vlan 1 priority 32768\n\nSW3:\n- spanning-tree vlan 1 priority 32768\n\nPCs:\n- PC1-VLAN1: 192.168.1.10 (SW1 Gi1/0/3)\n- PC2-VLAN1: 192.168.1.20 (SW2 Gi1/0/3)\n- PC3-VLAN1: 192.168.1.30 (SW3 Gi1/0/3)\n\nNote: Refresh Network (F5)',
       x: 200,
       y: 50,
       width: 300,
@@ -53,8 +53,8 @@ const example = (isTr: boolean): ExampleProject => {
     {
       id: 'note-stp-vlan10',
       text: isTr
-        ? '🔧 VLAN 10 KONFİGÜRASYONU:\n\nSW1:\n- spanning-tree vlan 10 priority 32768\n\nSW2 (Root):\n- spanning-tree vlan 10 priority 24576\n\nSW3:\n- spanning-tree vlan 10 priority 32768\n\nPC\'ler:\n- PC1-VLAN10: 192.168.10.10 (SW1 Gi1/0/4)\n- PC2-VLAN10: 192.168.10.20 (SW2 Gi1/0/4)\n- PC3-VLAN10: 192.168.10.30 (SW3 Gi1/0/4)\n\n⚠️ Not: Ağı Yenile (F5)'
-        : '🔧 VLAN 10 CONFIGURATION:\n\nSW1:\n- spanning-tree vlan 10 priority 32768\n\nSW2 (Root):\n- spanning-tree vlan 10 priority 24576\n\nSW3:\n- spanning-tree vlan 10 priority 32768\n\nPCs:\n- PC1-VLAN10: 192.168.10.10 (SW1 Gi1/0/4)\n- PC2-VLAN10: 192.168.10.20 (SW2 Gi1/0/4)\n- PC3-VLAN10: 192.168.10.30 (SW3 Gi1/0/4)\n\n⚠️ Note: Refresh Network (F5)',
+        ? 'VLAN 10 KONFİGÜRASYONU:\n\nSW1:\n- spanning-tree vlan 10 priority 32768\n\nSW2 (Root):\n- spanning-tree vlan 10 priority 24576\n\nSW3:\n- spanning-tree vlan 10 priority 32768\n\nPC\'ler:\n- PC1-VLAN10: 192.168.10.10 (SW1 Gi1/0/4)\n- PC2-VLAN10: 192.168.10.20 (SW2 Gi1/0/4)\n- PC3-VLAN10: 192.168.10.30 (SW3 Gi1/0/4)\n\nNot: Ağı Yenile (F5)'
+        : 'VLAN 10 CONFIGURATION:\n\nSW1:\n- spanning-tree vlan 10 priority 32768\n\nSW2 (Root):\n- spanning-tree vlan 10 priority 24576\n\nSW3:\n- spanning-tree vlan 10 priority 32768\n\nPCs:\n- PC1-VLAN10: 192.168.10.10 (SW1 Gi1/0/4)\n- PC2-VLAN10: 192.168.10.20 (SW2 Gi1/0/4)\n- PC3-VLAN10: 192.168.10.30 (SW3 Gi1/0/4)\n\nNote: Refresh Network (F5)',
       x: 500,
       y: 30,
       width: 300,
@@ -67,8 +67,8 @@ const example = (isTr: boolean): ExampleProject => {
     {
       id: 'note-stp-vlan20',
       text: isTr
-        ? '🔧 VLAN 20 KONFİGÜRASYONU:\n\nSW1:\n- spanning-tree vlan 20 priority 32768\n\nSW2:\n- spanning-tree vlan 20 priority 32768\n\nSW3 (Root):\n- spanning-tree vlan 20 priority 24576\n\nPC\'ler:\n- PC1-VLAN20: 192.168.20.10 (SW1 Gi1/0/5)\n- PC2-VLAN20: 192.168.20.20 (SW2 Gi1/0/5)\n- PC3-VLAN20: 192.168.20.30 (SW3 Gi1/0/5)\n\n⚠️ Not: Ağı Yenile (F5)'
-        : '🔧 VLAN 20 CONFIGURATION:\n\nSW1:\n- spanning-tree vlan 20 priority 32768\n\nSW2:\n- spanning-tree vlan 20 priority 32768\n\nSW3 (Root):\n- spanning-tree vlan 20 priority 24576\n\nPCs:\n- PC1-VLAN20: 192.168.20.10 (SW1 Gi1/0/5)\n- PC2-VLAN20: 192.168.20.20 (SW2 Gi1/0/5)\n- PC3-VLAN20: 192.168.20.30 (SW3 Gi1/0/5)\n\n⚠️ Note: Refresh Network (F5)',
+        ? 'VLAN 20 KONFİGÜRASYONU:\n\nSW1:\n- spanning-tree vlan 20 priority 32768\n\nSW2:\n- spanning-tree vlan 20 priority 32768\n\nSW3 (Root):\n- spanning-tree vlan 20 priority 24576\n\nPC\'ler:\n- PC1-VLAN20: 192.168.20.10 (SW1 Gi1/0/5)\n- PC2-VLAN20: 192.168.20.20 (SW2 Gi1/0/5)\n- PC3-VLAN20: 192.168.20.30 (SW3 Gi1/0/5)\n\nNot: Ağı Yenile (F5)'
+        : 'VLAN 20 CONFIGURATION:\n\nSW1:\n- spanning-tree vlan 20 priority 32768\n\nSW2:\n- spanning-tree vlan 20 priority 32768\n\nSW3 (Root):\n- spanning-tree vlan 20 priority 24576\n\nPCs:\n- PC1-VLAN20: 192.168.20.10 (SW1 Gi1/0/5)\n- PC2-VLAN20: 192.168.20.20 (SW2 Gi1/0/5)\n- PC3-VLAN20: 192.168.20.30 (SW3 Gi1/0/5)\n\nNote: Refresh Network (F5)',
       x: 500,
       y: 380,
       width: 300,
@@ -81,8 +81,8 @@ const example = (isTr: boolean): ExampleProject => {
     {
       id: 'note-pvst',
       text: isTr
-        ? 'Amaç: PVST kullanarak her VLAN için ayrı STP instance\'ı oluşturarak load balancing sağlamak.\n\n🔧 PVST (Per-VLAN STP) ADIMLARI:\n\n1) VLAN\'LAR OLUŞTUR:\n   - Her switch\'te vlan 1, 10, 20 oluştur\n\n2) ROOT BRIDGE AYARLA:\n   - SW1: spanning-tree vlan 1 priority 24576\n   - SW2: spanning-tree vlan 10 priority 24576\n   - SW3: spanning-tree vlan 20 priority 24576\n\n3) TRUNK BAĞLANTILARI:\n   - Gi1/0/1 ve Gi1/0/2 için:\n     switchport trunk encapsulation dot1q\n     switchport mode trunk\n\n4) TEST:\n   - show spanning-tree vlan 1\n   - show spanning-tree vlan 10\n   - show spanning-tree vlan 20\n   - Her VLAN farklı root kullanır'
-        : '🔧 PVST (Per-VLAN STP) STEPS:\n\n1) CREATE VLANs:\n   - Create vlan 1, 10, 20 on each switch\n\n2) SET ROOT BRIDGE:\n   - SW1: spanning-tree vlan 1 priority 24576\n   - SW2: spanning-tree vlan 10 priority 24576\n   - SW3: spanning-tree vlan 20 priority 24576\n\n3) TRUNK CONNECTIONS:\n   - For Gi1/0/1 and Gi1/0/2:\n     switchport trunk encapsulation dot1q\n     switchport mode trunk\n\n4) TEST:\n   - show spanning-tree vlan 1\n   - show spanning-tree vlan 10\n   - show spanning-tree vlan 20\n   - Each VLAN uses different root',
+        ? 'Amaç: PVST kullanarak her VLAN için ayrı STP instance\'ı oluşturarak load balancing sağlamak.\n\nPVST (Per-VLAN STP) ADIMLARI:\n\n1) VLAN\'LAR OLUŞTUR:\n   - Her switch\'te vlan 1, 10, 20 oluştur\n\n2) ROOT BRIDGE AYARLA:\n   - SW1: spanning-tree vlan 1 priority 24576\n   - SW2: spanning-tree vlan 10 priority 24576\n   - SW3: spanning-tree vlan 20 priority 24576\n\n3) TRUNK BAĞLANTILARI:\n   - Gi1/0/1 ve Gi1/0/2 için:\n     switchport trunk encapsulation dot1q\n     switchport mode trunk\n\n4) TEST:\n   - show spanning-tree vlan 1\n   - show spanning-tree vlan 10\n   - show spanning-tree vlan 20\n   - Her VLAN farklı root kullanır'
+        : 'PVST (Per-VLAN STP) STEPS:\n\n1) CREATE VLANs:\n   - Create vlan 1, 10, 20 on each switch\n\n2) SET ROOT BRIDGE:\n   - SW1: spanning-tree vlan 1 priority 24576\n   - SW2: spanning-tree vlan 10 priority 24576\n   - SW3: spanning-tree vlan 20 priority 24576\n\n3) TRUNK CONNECTIONS:\n   - For Gi1/0/1 and Gi1/0/2:\n     switchport trunk encapsulation dot1q\n     switchport mode trunk\n\n4) TEST:\n   - show spanning-tree vlan 1\n   - show spanning-tree vlan 10\n   - show spanning-tree vlan 20\n   - Each VLAN uses different root',
       x: 150,
       y: 320,
       width: 280,

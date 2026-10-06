@@ -143,7 +143,7 @@ export function TutorialAnimationPlayer({ animationId }: TutorialAnimationPlayer
               <div className={cn("p-2 rounded-lg bg-primary-500 text-white shadow-md transition-all", frame % 60 > 20 && frame % 60 < 40 ? "ring-4 ring-primary-400/50" : "")}>
                 <Monitor className="w-6 h-6" />
               </div>
-              <span className="text-[8px] font-bold text-secondary-500">PC-1</span>
+              <span className="text-[10px] font-bold text-secondary-500">PC-1</span>
             </div>
 
             {/* Switch */}
@@ -151,7 +151,7 @@ export function TutorialAnimationPlayer({ animationId }: TutorialAnimationPlayer
               <div className={cn("p-2 rounded-lg bg-success-500 text-white shadow-md transition-all", frame % 60 >= 40 ? "ring-4 ring-success-400/50" : "")}>
                 <Server className="w-6 h-6" />
               </div>
-              <span className="text-[8px] font-bold text-secondary-500">SW-1</span>
+              <span className="text-[10px] font-bold text-secondary-500">SW-1</span>
             </div>
 
             {/* Cable Line */}
@@ -199,7 +199,7 @@ export function TutorialAnimationPlayer({ animationId }: TutorialAnimationPlayer
                 <div className="flex items-center justify-between border-b border-secondary-800 pb-1">
                   <div className="flex items-center gap-1">
                     <Terminal className="w-3 h-3 text-secondary-400" />
-                    <span className="text-[8px] text-secondary-400 font-mono">Command Prompt</span>
+                    <span className="text-[10px] text-secondary-400 font-mono">Command Prompt</span>
                   </div>
                   <div className="flex gap-1">
                     <div className="w-1.5 h-1.5 rounded-full bg-secondary-700" />
@@ -224,7 +224,7 @@ export function TutorialAnimationPlayer({ animationId }: TutorialAnimationPlayer
                </span>
              </div>
              {frame % 60 > 30 && (
-               <div className="text-[9px] text-success-500 space-y-0.5 animate-in fade-in slide-in-from-top-1 duration-500">
+               <div className="text-[10px] text-success-500 space-y-0.5 animate-in fade-in slide-in-from-top-1 duration-500">
                  <div>IPv4 Address. . . : 192.168.1.10</div>
                  <div>Subnet Mask . . . : 255.255.255.0</div>
                  <div>Default Gateway . : 192.168.1.1</div>
@@ -243,7 +243,7 @@ export function TutorialAnimationPlayer({ animationId }: TutorialAnimationPlayer
                </span>
              </div>
              {frame % 60 > 30 && (
-               <div className="text-[8px] text-secondary-300 space-y-0.5 animate-in fade-in duration-500 overflow-hidden">
+               <div className="text-[10px] text-secondary-300 space-y-0.5 animate-in fade-in duration-500 overflow-hidden">
                  <div>IPCONFIG - Shows IP config</div>
                  <div>PING - Test connectivity</div>
                  <div>TRACERT - Trace route</div>
@@ -267,7 +267,7 @@ export function TutorialAnimationPlayer({ animationId }: TutorialAnimationPlayer
               </div>
             ) : (
               <div className="w-4/5 h-4/5 bg-secondary-950 rounded-md border border-secondary-700 shadow-2xl p-2 flex flex-col gap-2 overflow-hidden animate-in zoom-in-95 duration-300">
-                <div className="flex items-center gap-2 text-white bg-secondary-900 px-2 py-1 rounded text-[8px] mb-1">
+                <div className="flex items-center gap-2 text-white bg-secondary-900 px-2 py-1 rounded text-[10px] mb-1">
                   <Terminal className="w-2.5 h-2.5" /> Console
                 </div>
                 <div className="text-[10px] text-secondary-300 font-mono">
@@ -358,7 +358,7 @@ export function TutorialAnimationPlayer({ animationId }: TutorialAnimationPlayer
                 <div className="p-2 bg-indigo-600 rounded-lg text-white border border-indigo-400/30 shadow-lg">
                   <Monitor className="w-5 h-5" />
                 </div>
-                <span className="text-[9px] font-mono text-secondary-300">PC-A</span>
+                <span className="text-[10px] font-mono text-secondary-300">PC-A</span>
               </div>
 
               {/* Switch */}
@@ -366,7 +366,7 @@ export function TutorialAnimationPlayer({ animationId }: TutorialAnimationPlayer
                 <div className={cn("p-2 rounded-lg text-white border shadow-lg transition-all", showSWGlow ? "bg-amber-500 border-amber-400 ring-4 ring-amber-500/30" : "bg-secondary-800 border-secondary-700")}>
                   <Server className="w-6 h-6" />
                 </div>
-                <span className="text-[9px] font-mono text-secondary-300">Switch</span>
+                <span className="text-[10px] font-mono text-secondary-300">Switch</span>
               </div>
 
               {/* PC-B (Target) */}
@@ -374,7 +374,7 @@ export function TutorialAnimationPlayer({ animationId }: TutorialAnimationPlayer
                 <div className={cn("p-2 rounded-lg text-white border transition-colors", showSuccess ? "bg-success-600 border-success-400 shadow-success-500/20" : "bg-secondary-850 border-secondary-700")}>
                   <Monitor className="w-5 h-5" />
                 </div>
-                <span className="text-[9px] font-mono text-secondary-300">PC-B</span>
+                <span className="text-[10px] font-mono text-secondary-300">PC-B</span>
               </div>
 
               {/* PC-C (Target) */}
@@ -382,7 +382,7 @@ export function TutorialAnimationPlayer({ animationId }: TutorialAnimationPlayer
                 <div className={cn("p-2 rounded-lg text-white border transition-colors", showSuccess ? "bg-success-600 border-success-400 shadow-success-500/20" : "bg-secondary-850 border-secondary-700")}>
                   <Monitor className="w-5 h-5" />
                 </div>
-                <span className="text-[9px] font-mono text-secondary-300">PC-C</span>
+                <span className="text-[10px] font-mono text-secondary-300">PC-C</span>
               </div>
 
               {/* PC-D (Target) */}
@@ -390,12 +390,12 @@ export function TutorialAnimationPlayer({ animationId }: TutorialAnimationPlayer
                 <div className={cn("p-2 rounded-lg text-white border transition-colors", showSuccess ? "bg-success-600 border-success-400 shadow-success-500/20" : "bg-secondary-850 border-secondary-700")}>
                   <Monitor className="w-5 h-5" />
                 </div>
-                <span className="text-[9px] font-mono text-secondary-300">PC-D</span>
+                <span className="text-[10px] font-mono text-secondary-300">PC-D</span>
               </div>
 
               {/* Packet 1 (A -> SW) */}
               {showP1 && (
-                <div className="absolute -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-amber-500 border border-amber-300 rounded-full flex items-center justify-center text-[7px] text-secondary-950 font-bold shadow-lg shadow-amber-500/40 animate-pulse" style={{ left: `${pktX}%`, top: `${pktY}%` }}>
+                <div className="absolute -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-amber-500 border border-amber-300 rounded-full flex items-center justify-center text-[10px] text-secondary-950 font-bold shadow-lg shadow-amber-500/40 animate-pulse" style={{ left: `${pktX}%`, top: `${pktY}%` }}>
                   BC
                 </div>
               )}
@@ -403,9 +403,9 @@ export function TutorialAnimationPlayer({ animationId }: TutorialAnimationPlayer
               {/* Replicas (SW -> B, C, D) */}
               {showP2 && (
                 <>
-                  <div className="absolute -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-amber-500 border border-amber-300 rounded-full flex items-center justify-center text-[7px] text-secondary-950 font-bold shadow-lg shadow-amber-500/40 animate-pulse" style={{ left: `${replicaB.x}%`, top: `${replicaB.y}%` }}>BC</div>
-                  <div className="absolute -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-amber-500 border border-amber-300 rounded-full flex items-center justify-center text-[7px] text-secondary-950 font-bold shadow-lg shadow-amber-500/40 animate-pulse" style={{ left: `${replicaC.x}%`, top: `${replicaC.y}%` }}>BC</div>
-                  <div className="absolute -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-amber-500 border border-amber-300 rounded-full flex items-center justify-center text-[7px] text-secondary-950 font-bold shadow-lg shadow-amber-500/40 animate-pulse" style={{ left: `${replicaD.x}%`, top: `${replicaD.y}%` }}>BC</div>
+                  <div className="absolute -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-amber-500 border border-amber-300 rounded-full flex items-center justify-center text-[10px] text-secondary-950 font-bold shadow-lg shadow-amber-500/40 animate-pulse" style={{ left: `${replicaB.x}%`, top: `${replicaB.y}%` }}>BC</div>
+                  <div className="absolute -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-amber-500 border border-amber-300 rounded-full flex items-center justify-center text-[10px] text-secondary-950 font-bold shadow-lg shadow-amber-500/40 animate-pulse" style={{ left: `${replicaC.x}%`, top: `${replicaC.y}%` }}>BC</div>
+                  <div className="absolute -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-amber-500 border border-amber-300 rounded-full flex items-center justify-center text-[10px] text-secondary-950 font-bold shadow-lg shadow-amber-500/40 animate-pulse" style={{ left: `${replicaD.x}%`, top: `${replicaD.y}%` }}>BC</div>
                 </>
               )}
 
@@ -494,8 +494,8 @@ export function TutorialAnimationPlayer({ animationId }: TutorialAnimationPlayer
                 <div className={cn("p-2 rounded-lg text-white border shadow-lg transition-all", cycle >= 90 ? "bg-success-600 border-success-400 ring-4 ring-success-500/20" : "bg-indigo-600 border-indigo-400/30")}>
                   <Monitor className="w-5 h-5" />
                 </div>
-                <span className="text-[8px] font-mono text-secondary-300">PC-A</span>
-                <span className="text-[7px] font-mono text-secondary-400">192.168.1.10</span>
+                <span className="text-[10px] font-mono text-secondary-300">PC-A</span>
+                <span className="text-[10px] font-mono text-secondary-400">192.168.1.10</span>
               </div>
 
               {/* Switch */}
@@ -503,7 +503,7 @@ export function TutorialAnimationPlayer({ animationId }: TutorialAnimationPlayer
                 <div className={cn("p-2 bg-secondary-800 border border-secondary-700 rounded-lg text-white shadow-lg transition-all", phase2 ? "bg-amber-500 border-amber-400 scale-105" : "")}>
                   <Server className="w-6 h-6" />
                 </div>
-                <span className="text-[8px] font-mono text-secondary-300">Switch</span>
+                <span className="text-[10px] font-mono text-secondary-300">Switch</span>
               </div>
 
               {/* PC-B (Target) */}
@@ -511,8 +511,8 @@ export function TutorialAnimationPlayer({ animationId }: TutorialAnimationPlayer
                 <div className={cn("p-2 rounded-lg text-white border transition-colors", phase4 || phase5 ? "bg-success-600 border-success-400 shadow-success-500/20" : "bg-secondary-850 border-secondary-700")}>
                   <Monitor className="w-5 h-5" />
                 </div>
-                <span className="text-[8px] font-mono text-secondary-300">PC-B</span>
-                <span className="text-[7px] font-mono text-secondary-400">192.168.1.20</span>
+                <span className="text-[10px] font-mono text-secondary-300">PC-B</span>
+                <span className="text-[10px] font-mono text-secondary-400">192.168.1.20</span>
               </div>
 
               {/* PC-C (Other) */}
@@ -520,13 +520,13 @@ export function TutorialAnimationPlayer({ animationId }: TutorialAnimationPlayer
                 <div className={cn("p-2 rounded-lg text-white border transition-colors", phase4 ? "bg-error-950 border-error-500/50" : "bg-secondary-850 border-secondary-700")}>
                   <Monitor className="w-5 h-5 opacity-60" />
                 </div>
-                <span className="text-[8px] font-mono text-secondary-400">PC-C</span>
-                <span className="text-[7px] font-mono text-secondary-500">192.168.1.30</span>
+                <span className="text-[10px] font-mono text-secondary-400">PC-C</span>
+                <span className="text-[10px] font-mono text-secondary-500">192.168.1.30</span>
               </div>
 
               {/* Phase 1 Packet: A -> SW */}
               {phase1 && (
-                <div className="absolute -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-amber-500 border border-amber-300 rounded-full flex items-center justify-center text-[7px] text-secondary-950 font-bold shadow-lg shadow-amber-500/40" style={{ left: `${pktX}%`, top: `${pktY}%` }}>
+                <div className="absolute -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-amber-500 border border-amber-300 rounded-full flex items-center justify-center text-[10px] text-secondary-950 font-bold shadow-lg shadow-amber-500/40" style={{ left: `${pktX}%`, top: `${pktY}%` }}>
                   ARP
                 </div>
               )}
@@ -534,8 +534,8 @@ export function TutorialAnimationPlayer({ animationId }: TutorialAnimationPlayer
               {/* Phase 3 Broadcast Replicas: SW -> B, C */}
               {phase3 && (
                 <>
-                  <div className="absolute -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-amber-500 border border-amber-300 rounded-full flex items-center justify-center text-[7px] text-secondary-950 font-bold shadow-lg shadow-amber-500/40" style={{ left: `${replicaBX}%`, top: `${replicaBY}%` }}>ARP</div>
-                  <div className="absolute -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-amber-500 border border-amber-300 rounded-full flex items-center justify-center text-[7px] text-secondary-950 font-bold shadow-lg shadow-amber-500/40" style={{ left: `${replicaCX}%`, top: `${replicaCY}%` }}>ARP</div>
+                  <div className="absolute -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-amber-500 border border-amber-300 rounded-full flex items-center justify-center text-[10px] text-secondary-950 font-bold shadow-lg shadow-amber-500/40" style={{ left: `${replicaBX}%`, top: `${replicaBY}%` }}>ARP</div>
+                  <div className="absolute -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-amber-500 border border-amber-300 rounded-full flex items-center justify-center text-[10px] text-secondary-950 font-bold shadow-lg shadow-amber-500/40" style={{ left: `${replicaCX}%`, top: `${replicaCY}%` }}>ARP</div>
                 </>
               )}
 
@@ -549,7 +549,7 @@ export function TutorialAnimationPlayer({ animationId }: TutorialAnimationPlayer
 
               {/* Phase 5 & 6 Unicast Reply: B -> SW -> A */}
               {(phase5 || phase6) && (
-                <div className="absolute -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-success-500 border border-success-300 rounded-full flex items-center justify-center text-[7px] text-white font-bold shadow-lg shadow-success-500/40" style={{ left: `${replyX}%`, top: `${replyY}%` }}>
+                <div className="absolute -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-success-500 border border-success-300 rounded-full flex items-center justify-center text-[10px] text-white font-bold shadow-lg shadow-success-500/40" style={{ left: `${replyX}%`, top: `${replyY}%` }}>
                   ARP
                 </div>
               )}
@@ -616,7 +616,7 @@ export function TutorialAnimationPlayer({ animationId }: TutorialAnimationPlayer
               </svg>
 
               {/* PC-A */}
-              <div className="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center font-mono text-[9px]" style={{ left: `${pca.x}%`, top: `${pca.y}%` }}>
+              <div className="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center font-mono text-[10px]" style={{ left: `${pca.x}%`, top: `${pca.y}%` }}>
                 <div className={cn("p-2 bg-indigo-600 rounded-lg text-white border border-indigo-400/30 shadow-lg", isDone ? "ring-4 ring-success-500/20 bg-success-600 border-success-400" : "")}>
                   <Monitor className="w-5 h-5" />
                 </div>
@@ -625,7 +625,7 @@ export function TutorialAnimationPlayer({ animationId }: TutorialAnimationPlayer
               </div>
 
               {/* Switch */}
-              <div className="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center font-mono text-[9px]" style={{ left: `${sw.x}%`, top: `${sw.y}%` }}>
+              <div className="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center font-mono text-[10px]" style={{ left: `${sw.x}%`, top: `${sw.y}%` }}>
                 <div className="p-2 bg-secondary-800 border border-secondary-700 rounded-lg text-white">
                   <Server className="w-5 h-5" />
                 </div>
@@ -633,7 +633,7 @@ export function TutorialAnimationPlayer({ animationId }: TutorialAnimationPlayer
               </div>
 
               {/* PC-B */}
-              <div className="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center font-mono text-[9px]" style={{ left: `${pcb.x}%`, top: `${pcb.y}%` }}>
+              <div className="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center font-mono text-[10px]" style={{ left: `${pcb.x}%`, top: `${pcb.y}%` }}>
                 <div className={cn("p-2 rounded-lg text-white border transition-colors", isProcessing ? "bg-success-600 border-success-400 scale-105" : "bg-secondary-850 border-secondary-700")}>
                   <Monitor className="w-5 h-5" />
                 </div>
@@ -643,7 +643,7 @@ export function TutorialAnimationPlayer({ animationId }: TutorialAnimationPlayer
 
               {/* Packet */}
               {(isRequest || isReply) && (
-                <div className={cn("absolute -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full flex items-center justify-center text-[7px] text-white font-bold shadow-lg animate-pulse", isRequest ? "bg-primary-500 border border-primary-300 shadow-primary-500/40" : "bg-purple-500 border border-purple-300 shadow-purple-500/40")} style={{ left: `${pktX}%`, top: `${pktY}%` }}>
+                <div className={cn("absolute -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full flex items-center justify-center text-[10px] text-white font-bold shadow-lg animate-pulse", isRequest ? "bg-primary-500 border border-primary-300 shadow-primary-500/40" : "bg-purple-500 border border-purple-300 shadow-purple-500/40")} style={{ left: `${pktX}%`, top: `${pktY}%` }}>
                   {isRequest ? "REQ" : "REP"}
                 </div>
               )}
@@ -655,7 +655,7 @@ export function TutorialAnimationPlayer({ animationId }: TutorialAnimationPlayer
 
               {/* Done / Terminal Log Output */}
               {isDone && (
-                <div className="absolute top-2 left-1/2 -translate-x-1/2 w-2/3 h-16 bg-black/80 rounded border border-secondary-750 font-mono text-[8px] text-success-400 p-1.5 overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+                <div className="absolute top-2 left-1/2 -translate-x-1/2 w-2/3 h-16 bg-black/80 rounded border border-secondary-750 font-mono text-[10px] text-success-400 p-1.5 overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
                   <div>C:\Users\Admin&gt; ping 192.168.1.20</div>
                   <div className="animate-pulse">Reply from 192.168.1.20: bytes=32 time=4ms TTL=64</div>
                   <div>Ping statistics: Packets: Sent = 1, Received = 1</div>
@@ -734,7 +734,7 @@ export function TutorialAnimationPlayer({ animationId }: TutorialAnimationPlayer
         return (
           <div className="relative w-full h-56 bg-secondary-900 border border-secondary-800 rounded-lg overflow-hidden flex flex-col justify-between p-3 select-none">
             {/* Step badges */}
-            <div className="flex justify-center gap-1.5 shrink-0 text-[8px] font-bold font-mono">
+            <div className="flex justify-center gap-1.5 shrink-0 text-[10px] font-bold font-mono">
               <span className={cn("px-1.5 py-0.5 rounded transition-all", isDiscover ? "bg-warning-500 text-secondary-950 scale-105" : "bg-secondary-800 text-secondary-500")}>D (Discover)</span>
               <span className={cn("px-1.5 py-0.5 rounded transition-all", isOffer ? "bg-sky-500 text-white scale-105" : "bg-secondary-800 text-secondary-500")}>O (Offer)</span>
               <span className={cn("px-1.5 py-0.5 rounded transition-all", isRequest ? "bg-fuchsia-500 text-white scale-105" : "bg-secondary-800 text-secondary-500")}>R (Request)</span>
@@ -747,18 +747,18 @@ export function TutorialAnimationPlayer({ animationId }: TutorialAnimationPlayer
               </svg>
 
               {/* Client PC */}
-              <div className="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center font-mono text-[9px]" style={{ left: `${pca.x}%`, top: `${pca.y}%` }}>
+              <div className="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center font-mono text-[10px]" style={{ left: `${pca.x}%`, top: `${pca.y}%` }}>
                 <div className={cn("p-2 rounded-lg text-white border shadow-lg transition-all duration-300", isDone ? "bg-success-600 border-success-400 ring-4 ring-success-500/20" : "bg-secondary-800 border-secondary-700")}>
                   <Monitor className="w-5 h-5" />
                 </div>
                 <span className="text-secondary-300">Client</span>
-                <span className={cn("text-[7px] px-1 rounded transition-colors", isDone ? "bg-success-500/20 text-success-400 font-bold" : "text-secondary-400")}>
+                <span className={cn("text-[10px] px-1 rounded transition-colors", isDone ? "bg-success-500/20 text-success-400 font-bold" : "text-secondary-400")}>
                   {isDone ? "192.168.1.15" : "0.0.0.0"}
                 </span>
               </div>
 
               {/* Switch */}
-              <div className="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center font-mono text-[9px]" style={{ left: `${sw.x}%`, top: `${sw.y}%` }}>
+              <div className="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center font-mono text-[10px]" style={{ left: `${sw.x}%`, top: `${sw.y}%` }}>
                 <div className="p-2 bg-secondary-850 border border-secondary-700 rounded-lg text-white">
                   <Server className="w-5 h-5" />
                 </div>
@@ -766,17 +766,17 @@ export function TutorialAnimationPlayer({ animationId }: TutorialAnimationPlayer
               </div>
 
               {/* DHCP Server */}
-              <div className="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center font-mono text-[9px]" style={{ left: `${srv.x}%`, top: `${srv.y}%` }}>
+              <div className="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center font-mono text-[10px]" style={{ left: `${srv.x}%`, top: `${srv.y}%` }}>
                 <div className="p-2 bg-primary-600 rounded-lg text-white border border-primary-400/30 shadow-lg">
                   <Globe className="w-5 h-5" />
                 </div>
                 <span className="text-secondary-300">DHCP Server</span>
-                <span className="text-[7px] text-secondary-400">192.168.1.1</span>
+                <span className="text-[10px] text-secondary-400">192.168.1.1</span>
               </div>
 
               {/* Packet traveling */}
               {!isDone && (
-                <div className={cn("absolute -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full flex items-center justify-center text-[7px] font-bold shadow-lg animate-pulse", pktColorClass)} style={{ left: `${pktX}%`, top: `${pktY}%` }}>
+                <div className={cn("absolute -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold shadow-lg animate-pulse", pktColorClass)} style={{ left: `${pktX}%`, top: `${pktY}%` }}>
                   {pktLabel}
                 </div>
               )}
@@ -794,7 +794,7 @@ export function TutorialAnimationPlayer({ animationId }: TutorialAnimationPlayer
         return (
           <div className="relative w-full h-56 bg-secondary-900 border border-secondary-800 rounded-lg overflow-hidden flex flex-col justify-between p-4 select-none">
             <div className="text-center text-sm font-bold text-white">{activeLang === 'tr' ? 'Subnetting Yardımcısı' : 'Subnetting Helper'}</div>
-            <div className="grid grid-cols-4 gap-1 items-center text-center font-mono text-[9px]">
+            <div className="grid grid-cols-4 gap-1 items-center text-center font-mono text-[10px]">
               <div className="p-2 rounded bg-primary-600 text-white">192.168.1.0/24</div>
               <div className="text-secondary-400">→</div>
               <div className="p-2 rounded bg-accent-600 text-white">/26</div>

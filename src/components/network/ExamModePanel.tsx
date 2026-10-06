@@ -126,14 +126,14 @@ export function ExamModePanel({
       if (remaining <= 300 && remaining > 290 && !warned5MinRef.current) {
         warned5MinRef.current = true;
         toast({
-          title: language === 'tr' ? '⚠️ Sınav Süresi Uyarısı' : '⚠️ Exam Time Warning',
+          title: language === 'tr' ? 'Sınav Süresi Uyarısı' : 'Exam Time Warning',
           description: language === 'tr' ? 'Sınavın bitmesine son 5 dakika kaldı!' : '5 minutes remaining in the exam!',
         });
       }
       if (remaining <= 60 && remaining > 50 && !warned1MinRef.current) {
         warned1MinRef.current = true;
         toast({
-          title: language === 'tr' ? '🚨 Kritik Süre Uyarısı' : '🚨 Critical Time Warning',
+          title: language === 'tr' ? 'Kritik Süre Uyarısı' : 'Critical Time Warning',
           description: language === 'tr' ? 'Sınavın bitmesine son 1 dakika kaldı! Lütfen işlemlerinizi tamamlayın.' : '1 minute remaining! Please complete your tasks.',
         });
       }

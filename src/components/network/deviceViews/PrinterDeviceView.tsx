@@ -484,7 +484,7 @@ export function PrinterDeviceView({
                   )}
                   title={isTr ? (isWifiEnabled ? 'Wi-Fi bağlantısını kapat' : 'Wi-Fi bağlantısını aç') : (isWifiEnabled ? 'Disconnect Wi-Fi' : 'Connect Wi-Fi')}
                 >
-                  <span>{isWifiEnabled ? '❌' : '✅'}</span>
+                  <Power className="w-3.5 h-3.5 shrink-0" />
                   <span>{isWifiEnabled ? (isTr ? 'Wi-Fi Kapat' : 'Disable Wi-Fi') : (isTr ? 'Wi-Fi Aç' : 'Enable Wi-Fi')}</span>
                 </button>
               </div>
@@ -629,16 +629,16 @@ export function PrinterDeviceView({
                     >
                       <div>
                         <div className={cn("font-semibold truncate max-w-[160px]", isDark ? "text-purple-300" : "text-purple-700")}>{job.documentTitle}</div>
-                        <div className="text-[9px] opacity-60 font-mono">{job.senderName} • {job.pages} {isTr ? 'sayfa' : 'pg'}</div>
+                        <div className="text-[10px] opacity-60 font-mono">{job.senderName} • {job.pages} {isTr ? 'sayfa' : 'pg'}</div>
                       </div>
                       <div className="text-right">
                         <span className={cn(
-                          "text-[9px] px-1.5 py-0.5 rounded font-mono",
+                          "text-[10px] px-1.5 py-0.5 rounded font-mono",
                           isDark ? "bg-emerald-500/20 text-emerald-400" : "bg-emerald-100 text-emerald-700"
                         )}>
                           {isTr ? 'TAMAMLANDI' : 'COMPLETED'}
                         </span>
-                        <div className="text-[9px] opacity-40 font-mono mt-0.5">{job.timestamp}</div>
+                        <div className="text-[10px] opacity-40 font-mono mt-0.5">{job.timestamp}</div>
                       </div>
                     </div>
                   ))}

@@ -411,7 +411,7 @@ export function RouterDhcpSection({
                             <td className="p-2">
                               <span
                                 className={cn(
-                                  'px-1.5 py-0.5 rounded text-[9px] font-bold uppercase border',
+                                  'px-1.5 py-0.5 rounded text-[10px] font-bold uppercase border',
                                   lease.type === 'Automatic'
                                     ? 'bg-success-500/10 text-success-500 border-success-500/20'
                                     : 'bg-warning-500/10 text-warning-500 border-warning-500/20'

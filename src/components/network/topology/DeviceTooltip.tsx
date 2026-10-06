@@ -112,30 +112,30 @@ export function DeviceTooltip({ tooltip, deviceMap, isDark, isTR, isDraggingInte
                   <div className="text-[10px] font-bold opacity-50 uppercase tracking-wider mb-1">{t.openServices}</div>
                   <div className="flex flex-wrap gap-1 mb-2">
                     {dev.services.http?.enabled && (
-                      <span className="px-1.5 py-0.5 rounded-md bg-amber-500/20 text-amber-300 text-[9px] font-black tracking-widest border border-amber-500/30">HTTP</span>
+                      <span className="px-1.5 py-0.5 rounded-md bg-amber-500/20 text-amber-300 text-[10px] font-black tracking-widest border border-amber-500/30">HTTP</span>
                     )}
                     {dev.services.dns?.enabled && (
-                      <span className="px-1.5 py-0.5 rounded-md bg-primary-500/20 text-primary-500 text-[9px] font-black tracking-widest border border-primary-500/20">DNS</span>
+                      <span className="px-1.5 py-0.5 rounded-md bg-primary-500/20 text-primary-500 text-[10px] font-black tracking-widest border border-primary-500/20">DNS</span>
                     )}
                     {dev.services.dhcp?.enabled && (
-                      <span className="px-1.5 py-0.5 rounded-md bg-purple-500/20 text-purple-500 text-[9px] font-black tracking-widest border border-purple-500/20">DHCP</span>
+                      <span className="px-1.5 py-0.5 rounded-md bg-purple-500/20 text-purple-500 text-[10px] font-black tracking-widest border border-purple-500/20">DHCP</span>
                     )}
                     {dev.services.ftp?.enabled && (
-                      <span className="px-1.5 py-0.5 rounded-md bg-accent-500/20 text-accent-500 text-[9px] font-black tracking-widest border border-accent-500/20">FTP</span>
+                      <span className="px-1.5 py-0.5 rounded-md bg-accent-500/20 text-accent-500 text-[10px] font-black tracking-widest border border-accent-500/20">FTP</span>
                     )}
                     {dev.services.mail?.enabled && (
-                      <span className="px-1.5 py-0.5 rounded-md bg-red-500/20 text-red-300 text-[9px] font-black tracking-widest border border-red-500/30">MAIL</span>
+                      <span className="px-1.5 py-0.5 rounded-md bg-red-500/20 text-red-300 text-[10px] font-black tracking-widest border border-red-500/30">MAIL</span>
                     )}
                     {(!dev.services.http?.enabled && !dev.services.dns?.enabled && !dev.services.dhcp?.enabled && !dev.services.ftp?.enabled && !dev.services.mail?.enabled) && (
-                      <span className="text-[9px] opacity-40 italic">{isTR ? 'Servis yok' : 'No services'}</span>
+                      <span className="text-[10px] opacity-40 italic">{isTR ? 'Servis yok' : 'No services'}</span>
                     )}
                   </div>
 
                   {dev.services?.dhcp?.pools && dev.services.dhcp.pools.length > 0 && (
                     <div className="space-y-1 mt-2 pt-2 border-t border-white/5">
-                      <div className="text-[9px] font-bold opacity-30 uppercase tracking-wider">DHCP Pool</div>
+                      <div className="text-[10px] font-bold opacity-30 uppercase tracking-wider">DHCP Pool</div>
                       {dev.services.dhcp.pools.map((pool, idx) => (
-                        <div key={pool.poolName || `dhcp-pool-${idx}`} className="text-[9px] space-y-0.5 bg-purple-500/10 rounded p-1.5">
+                        <div key={pool.poolName || `dhcp-pool-${idx}`} className="text-[10px] space-y-0.5 bg-purple-500/10 rounded p-1.5">
                           <div className="flex justify-between"><span className="opacity-50">Pool:</span><span className="font-mono">{pool.poolName}</span></div>
                           <div className="flex justify-between"><span className="opacity-50">IP:</span><span className="font-mono">{pool.startIp}</span></div>
                           <div className="flex justify-between"><span className="opacity-50">Mask:</span><span className="font-mono">{pool.subnetMask}</span></div>
@@ -148,9 +148,9 @@ export function DeviceTooltip({ tooltip, deviceMap, isDark, isTR, isDraggingInte
 
                   {dev.services?.dns?.records && dev.services.dns.records.length > 0 && (
                     <div className="space-y-1 mt-2 pt-2 border-t border-white/5">
-                      <div className="text-[9px] font-bold opacity-30 uppercase tracking-wider">{isTR ? 'DNS Kayıtları' : 'DNS Records'}</div>
+                      <div className="text-[10px] font-bold opacity-30 uppercase tracking-wider">{isTR ? 'DNS Kayıtları' : 'DNS Records'}</div>
                       {dev.services.dns.records.map((record, idx) => (
-                        <div key={`dns-rec-${record.domain}-${record.address}-${idx}`} className="text-[9px] flex justify-between items-center gap-2 bg-primary-500/10 rounded px-1.5 py-0.5">
+                        <div key={`dns-rec-${record.domain}-${record.address}-${idx}`} className="text-[10px] flex justify-between items-center gap-2 bg-primary-500/10 rounded px-1.5 py-0.5">
                           <span className="font-mono text-primary-400 truncate max-w-[80px]">{record.domain}</span>
                           <span className="opacity-50">→</span>
                           <span className="font-mono">{record.address}</span>
@@ -161,23 +161,23 @@ export function DeviceTooltip({ tooltip, deviceMap, isDark, isTR, isDraggingInte
 
                   {dev.services.http?.enabled && (
                     <div className="mt-2 pt-2 border-t border-white/5">
-                      <div className="text-[9px] flex justify-between items-center">
+                      <div className="text-[10px] flex justify-between items-center">
                         <span className="opacity-60 uppercase tracking-wider">{isTR ? 'HTTP Sunucu' : 'HTTP Server'}</span>
-                        <span className="text-success-500 text-[9px] font-bold">✓ {t.active}</span>
+                        <span className="text-success-500 text-[10px] font-bold">✓ {t.active}</span>
                       </div>
                       {dev.services.http.content && (
-                        <div className="text-[8px] opacity-50 mt-1 truncate">{dev.services.http.content.substring(0, 50)}...</div>
+                        <div className="text-[10px] opacity-50 mt-1 truncate">{dev.services.http.content.substring(0, 50)}...</div>
                       )}
                     </div>
                   )}
 
                   {dev.services.ftp?.enabled && (
                     <div className="mt-2 pt-2 border-t border-white/5">
-                      <div className="text-[9px] flex justify-between items-center">
+                      <div className="text-[10px] flex justify-between items-center">
                         <span className="opacity-60 uppercase tracking-wider">FTP Server</span>
-                        <span className="text-accent-500 text-[9px] font-bold">✓ {t.active}</span>
+                        <span className="text-accent-500 text-[10px] font-bold">✓ {t.active}</span>
                       </div>
-                      <div className="text-[8px] opacity-50 mt-1">
+                      <div className="text-[10px] opacity-50 mt-1">
                         {dev.services.ftp.anonymousAccess
                           ? (isTR ? 'Anonim erişim açık' : 'Anonymous access enabled')
                           : (isTR ? 'Kullanıcı girişi gerekli' : 'User login required')}
@@ -187,11 +187,11 @@ export function DeviceTooltip({ tooltip, deviceMap, isDark, isTR, isDraggingInte
 
                   {dev.services.mail?.enabled && (
                     <div className="mt-2 pt-2 border-t border-white/5">
-                      <div className="text-[9px] flex justify-between items-center">
+                      <div className="text-[10px] flex justify-between items-center">
                         <span className="opacity-60 uppercase tracking-wider">MAIL Server</span>
-                        <span className="text-error-500 text-[9px] font-bold">✓ {t.active}</span>
+                        <span className="text-error-500 text-[10px] font-bold">✓ {t.active}</span>
                       </div>
-                      <div className="text-[8px] opacity-50 mt-1 truncate">
+                      <div className="text-[10px] opacity-50 mt-1 truncate">
                         {dev.services.mail.domain || 'local.lan'}
                       </div>
                     </div>

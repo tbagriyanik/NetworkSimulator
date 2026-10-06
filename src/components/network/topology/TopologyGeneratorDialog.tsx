@@ -534,7 +534,7 @@ export function TopologyGeneratorDialog({
                               {isTr ? s.labelTr : s.labelEn}
                             </div>
                             {badge && (
-                              <span className={`text-[9px] px-1.5 py-0.2 rounded-full font-medium shrink-0 ml-1 ${isSelected
+                              <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-medium shrink-0 ml-1 ${isSelected
                                   ? 'bg-purple-500/30 text-purple-300 border border-purple-400/30'
                                   : isDark
                                     ? 'bg-secondary-700 text-secondary-400'
@@ -606,7 +606,7 @@ export function TopologyGeneratorDialog({
                               {p.tags.slice(0, 3).map(tag => (
                                 <span
                                   key={tag}
-                                  className={`text-[8px] px-1 py-0.2 rounded font-mono ${isDark ? 'bg-secondary-800 text-secondary-400' : 'bg-secondary-200 text-secondary-600'
+                                  className={`text-[10px] px-1 py-0.2 rounded font-mono ${isDark ? 'bg-secondary-800 text-secondary-400' : 'bg-secondary-200 text-secondary-600'
                                     }`}
                                 >
                                   #{tag}
@@ -665,7 +665,7 @@ export function TopologyGeneratorDialog({
                               }`}>
                               {p.title}
                             </div>
-                            <span className={`text-[8px] px-1.5 py-0.2 rounded-full font-semibold shrink-0 ml-1 ${levelColors[p.level]}`}>
+                            <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-semibold shrink-0 ml-1 ${levelColors[p.level]}`}>
                               {p.level}
                             </span>
                           </div>
@@ -674,12 +674,12 @@ export function TopologyGeneratorDialog({
                             {p.description}
                           </p>
                           <div className="flex items-center gap-1 mt-1.5">
-                            <span className={`text-[8px] px-1 py-0.2 rounded font-mono ${isDark ? 'bg-secondary-800 text-secondary-400' : 'bg-secondary-200 text-secondary-600'
+                            <span className={`text-[10px] px-1 py-0.2 rounded font-mono ${isDark ? 'bg-secondary-800 text-secondary-400' : 'bg-secondary-200 text-secondary-600'
                               }`}>
                               #{p.tag}
                             </span>
                             {p.injectedFaults && p.injectedFaults.length > 0 && (
-                              <span className={`text-[8px] px-1 py-0.2 rounded font-mono ${isDark ? 'bg-red-900/30 text-red-400' : 'bg-red-100 text-red-600'
+                              <span className={`text-[10px] px-1 py-0.2 rounded font-mono ${isDark ? 'bg-red-900/30 text-red-400' : 'bg-red-100 text-red-600'
                                 }`}>
                                 🔧 Fault
                               </span>

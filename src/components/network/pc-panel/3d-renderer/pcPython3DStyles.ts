@@ -164,7 +164,7 @@ export function get3DSceneStyles(isDark: boolean = true): string {
       padding: 1px 4px;
       color: ${textKbd};
       font-family: monospace;
-      font-size: 9px;
+      font-size: 10px;
     }
   `;
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { Monitor } from 'lucide-react';
+import { Monitor, CheckCircle2 } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,8 +38,9 @@ export function MultiTabWarningDialog({
           <AlertDialogDescription>
             You have {tabCount} tab{tabCount > 1 ? 's' : ''} of Network Simulator open. Each tab now saves its own data independently, so you can work in multiple tabs without conflicts.
             <div className="mt-3 p-3 bg-primary-50 dark:bg-primary-950/30 rounded-lg">
-              <p className="text-sm font-medium text-primary-800 dark:text-primary-200">
-                ✅ Each tab has isolated storage
+              <p className="text-sm font-medium text-primary-800 dark:text-primary-200 flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-success-500 shrink-0" />
+                <span>Each tab has isolated storage</span>
               </p>
               <p className="text-sm text-primary-700 dark:text-primary-300 mt-1">
                 Your work in each tab is saved separately

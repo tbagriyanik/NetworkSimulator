@@ -75,26 +75,26 @@ const example = (isTr: boolean): ExampleProject => {
         ? ' Modern Ofis: Ag Yazicisi, Akilli IoT Sensor & Mobil Cihaz Entegrasyonu\n\n' +
           ' Amac ve Senaryo Ozeti:\n' +
           'Modern ofis ortaminda kablolu is istasyonlari, ag yazicisi (JetDirect/LPD), HVAC cevre denetim IoT sensoru ve mobil tablet cihazlarinin ortak ag mimarisinde calismasini test etme.\n\n' +
-          '📋 Cihaz Yapilandirmasi:\n' +
+          'Cihaz Yapilandirmasi:\n' +
           '• Gateway-R1 (192.168.1.1) DHCP Havuzu: OfficePool (192.168.1.100 - .200)\n' +
           '• Floor1-Printer (192.168.1.20): Ag Yazici Arayuzu & HTTP Yonetim Konsolu\n' +
           '• HVAC-Temp-Sensor (192.168.1.30): Sicaklik & Iklim Sensoru\n' +
           '• Admin-Workstation (192.168.1.101): Ofis Yoneticisi PC\n' +
           '• Staff-Tablet (192.168.1.150): Kablosuz Mobil Tablet\n\n' +
-          '🧪 Dogrulama ve Test:\n' +
+          'Dogrulama ve Test:\n' +
           '1. Admin PC uzerinden "ping 192.168.1.20" ile yaziciya erisimi test edin.\n' +
           '2. Admin PC web tarayicisi veya "curl 192.168.1.20" ile yazici durum sayfasini goruntuleyin.\n' +
           '3. "curl 192.168.1.30" ile IoT sensorunun iklim telemetri verilerini okuyun.'
         : ' Modern Office: Network Printer, Smart IoT Sensor & Mobile Device Integration\n\n' +
           ' Objective & Scenario Overview:\n' +
           'Validate enterprise office convergence with dedicated network printers, environment IoT telemetry, wired workstations, and mobile devices over standard TCP/IP architecture.\n\n' +
-          '📋 Device Configurations:\n' +
+          'Device Configurations:\n' +
           '• Gateway-R1 (192.168.1.1) DHCP Pool: OfficePool (192.168.1.100 - .200)\n' +
           '• Floor1-Printer (192.168.1.20): Dedicated Network Printer & HTTP Web Console\n' +
           '• HVAC-Temp-Sensor (192.168.1.30): Climate Telemetry Sensor\n' +
           '• Admin-Workstation (192.168.1.101): Administrator PC\n' +
           '• Staff-Tablet (192.168.1.150): Mobile Endpoint Client\n\n' +
-          '🧪 Verification & Testing:\n' +
+          'Verification & Testing:\n' +
           '1. Ping the network printer: "ping 192.168.1.20" from Admin-Workstation.\n' +
           '2. Query printer status via HTTP: "curl 192.168.1.20".\n' +
           '3. Read telemetry from the HVAC sensor: "curl 192.168.1.30".',

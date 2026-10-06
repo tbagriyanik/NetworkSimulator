@@ -98,7 +98,7 @@ export function ProtocolTreeDetails({ packet, isDark, language }: ProtocolTreeDe
             ? 'bg-rose-950/40 border-rose-600/50 text-rose-200'
             : 'bg-rose-50 border-rose-300 text-rose-900'
           }`}>
-          <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-rose-600 text-white shrink-0">
+          <span className="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-rose-600 text-white shrink-0">
             {isTr ? 'ENGELLENDİ' : 'DROPPED'}
           </span>
           <div className="flex flex-col">

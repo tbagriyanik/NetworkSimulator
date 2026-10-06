@@ -105,8 +105,8 @@ const example = (isTr: boolean): ExampleProject => {
     {
       id: 'iot-wifi-note',
       text: isTr
-        ? 'Amaç: IoT cihazlarını kablosuz ağa bağlayarak sensör verilerini izlemek.\n\nIoT WiFi Laboratuvarı:\n1) R1 (Router) wlan0 üzerinde AP modunda SSID: IoT-Network (Open) yayınlar.\n2) R1 üzerinde DHCP havuzu yapılandırılmıştır (192.168.1.100-150).\n3) PC-1 ve 3 IoT cihazı kablosuz ağa (DHCP) bağlıdır.\n4) PC-1 üzerinde wget 192.168.1.1 ile WiFi panelinden IoT cihazlarını yönetin.\n5) PC-1 > ping 192.168.1.1 ile bağlantıyı test edin.\n6) PC-1 > wget http://iot-panel ile cihaz kontrol paneline ulaşınız.\n\n⚠️ Not: Ağı Yenile (F5)'
-        : 'IoT WiFi Lab:\n1) R1 (Router) broadcasts SSID: IoT-Network (Open) on wlan0 in AP mode.\n2) DHCP pool is configured on R1 (192.168.1.100-150).\n3) PC-1 and 3 IoT devices are connected via WiFi (DHCP).\n4) Manage IoT devices from PC-1 WiFi panel via wget 192.168.1.1.\n5) Test connectivity with PC-1 > ping 192.168.1.1.\n6) Access device control panel via PC-1 > wget http://iot-panel\n\n⚠️ Note: Refresh Network (F5)',
+        ? 'Amaç: IoT cihazlarını kablosuz ağa bağlayarak sensör verilerini izlemek.\n\nIoT WiFi Laboratuvarı:\n1) R1 (Router) wlan0 üzerinde AP modunda SSID: IoT-Network (Open) yayınlar.\n2) R1 üzerinde DHCP havuzu yapılandırılmıştır (192.168.1.100-150).\n3) PC-1 ve 3 IoT cihazı kablosuz ağa (DHCP) bağlıdır.\n4) PC-1 üzerinde wget 192.168.1.1 ile WiFi panelinden IoT cihazlarını yönetin.\n5) PC-1 > ping 192.168.1.1 ile bağlantıyı test edin.\n6) PC-1 > wget http://iot-panel ile cihaz kontrol paneline ulaşınız.\n\n Not: Ağı Yenile (F5)'
+        : 'IoT WiFi Lab:\n1) R1 (Router) broadcasts SSID: IoT-Network (Open) on wlan0 in AP mode.\n2) DHCP pool is configured on R1 (192.168.1.100-150).\n3) PC-1 and 3 IoT devices are connected via WiFi (DHCP).\n4) Manage IoT devices from PC-1 WiFi panel via wget 192.168.1.1.\n5) Test connectivity with PC-1 > ping 192.168.1.1.\n6) Access device control panel via PC-1 > wget http://iot-panel\n\n Note: Refresh Network (F5)',
       x: 500,
       y: 80,
       width: 450,

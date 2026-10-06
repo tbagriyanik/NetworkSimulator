@@ -35,13 +35,13 @@ const tr = {
   vlan: 'VLAN ID',
   ingressPort: 'Giriş Portu',
   noHop: 'Hop seçilmedi',
-  suggestion: '💡 Öneri:',
+  suggestion: 'Öneri:',
   modalTitle: 'Canlı Paket İzleme',
   delivered: 'Paket hedef düğüme başarıyla ulaştı',
   interrupted: (reason: string) => `Paket akışı kesintiye uğradı: ${reason}`,
   closeEsc: 'Kapat (ESC)',
-  tabPdu: '🔍 Görsel PDU İnceleme',
-  tabTrace: '🔍 İzleme Detayları',
+  tabPdu: 'Görsel PDU İnceleme',
+  tabTrace: 'İzleme Detayları',
 };
 
 const en = {
@@ -63,13 +63,13 @@ const en = {
   vlan: 'VLAN ID',
   ingressPort: 'Ingress Port',
   noHop: 'No hop selected',
-  suggestion: '💡 Suggestion:',
+  suggestion: 'Suggestion:',
   modalTitle: 'Live Packet Trace',
   delivered: 'Packet reached the destination node successfully',
   interrupted: (reason: string) => `Packet flow interrupted: ${reason}`,
   closeEsc: 'Close (ESC)',
-  tabPdu: '🔍 Visual PDU Inspector',
-  tabTrace: '🔍 Trace Details',
+  tabPdu: 'Visual PDU Inspector',
+  tabTrace: 'Trace Details',
 };
 
 export const PacketTraceView: React.FC<{
@@ -163,16 +163,16 @@ export const PacketTraceView: React.FC<{
           <div className="flex items-center gap-1 overflow-x-auto no-scrollbar pb-1">
             {[
               { label: language === 'tr' ? 'Tümü' : 'All', val: 'all' as const },
-              { label: language === 'tr' ? '🚨 Sadece Drop' : '🚨 Drops Only', val: 'drop' as const },
-              { label: language === 'tr' ? '🌐 Sadece OSPF' : '🌐 OSPF', val: 'ospf' as const },
-              { label: language === 'tr' ? '🔀 Sadece BGP' : '🔀 BGP', val: 'bgp' as const },
-              { label: language === 'tr' ? '📡 Sadece ICMP' : '📡 ICMP', val: 'icmp' as const },
+              { label: language === 'tr' ? 'Sadece Drop' : 'Drops Only', val: 'drop' as const },
+              { label: language === 'tr' ? 'Sadece OSPF' : 'OSPF Only', val: 'ospf' as const },
+              { label: language === 'tr' ? 'Sadece BGP' : 'BGP Only', val: 'bgp' as const },
+              { label: language === 'tr' ? 'Sadece ICMP' : 'ICMP Only', val: 'icmp' as const },
             ].map(p => (
               <button
                 key={p.val}
                 type="button"
                 onClick={() => setHopPresetFilter(p.val)}
-                className={`px-1.5 py-0.5 rounded text-[9.5px] font-mono font-semibold border transition-all shrink-0 ${
+                className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold border transition-all shrink-0 ${
                   hopPresetFilter === p.val
                     ? p.val === 'drop'
                       ? 'bg-rose-600 text-white border-rose-400 font-bold'
@@ -227,7 +227,7 @@ export const PacketTraceView: React.FC<{
                   </div>
                 </div>
                 <span
-                  className={`text-[9px] px-1.5 py-0.5 rounded border uppercase font-mono shrink-0 ${hasDrop
+                  className={`text-[10px] px-1.5 py-0.5 rounded border uppercase font-mono shrink-0 ${hasDrop
                       ? 'bg-rose-500/20 text-rose-400 border-rose-500/40'
                       : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
                     }`}
@@ -268,7 +268,7 @@ export const PacketTraceView: React.FC<{
                           <span className={`font-semibold ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
                             {trace.stage}
                           </span>
-                          <span className={`px-1 py-0.2 rounded border uppercase font-mono text-[9px] ${getActionBadgeClass(trace.action)}`}>
+                          <span className={`px-1 py-0.2 rounded border uppercase font-mono text-[10px] ${getActionBadgeClass(trace.action)}`}>
                             {trace.action}
                           </span>
                         </div>
@@ -305,49 +305,49 @@ export const PacketTraceView: React.FC<{
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
                       <div className={`p-2 rounded-lg border ${isDark ? 'bg-slate-900/80 border-slate-800' : 'bg-white border-slate-200'}`}>
-                        <span className="text-slate-500 block text-[9px] uppercase font-semibold">{t.srcMac}</span>
+                        <span className="text-slate-500 block text-[10px] uppercase font-semibold">{t.srcMac}</span>
                         <span className={`font-mono text-[11px] font-semibold ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
                           {activeTrace.frameSnapshot.srcMac || '—'}
                         </span>
                       </div>
                       <div className={`p-2 rounded-lg border ${isDark ? 'bg-slate-900/80 border-slate-800' : 'bg-white border-slate-200'}`}>
-                        <span className="text-slate-500 block text-[9px] uppercase font-semibold">{t.dstMac}</span>
+                        <span className="text-slate-500 block text-[10px] uppercase font-semibold">{t.dstMac}</span>
                         <span className={`font-mono text-[11px] font-semibold ${isDark ? 'text-slate-200' : 'text-slate-800'}`}>
                           {activeTrace.frameSnapshot.dstMac || '—'}
                         </span>
                       </div>
                       <div className={`p-2 rounded-lg border ${isDark ? 'bg-slate-900/80 border-slate-800' : 'bg-white border-slate-200'}`}>
-                        <span className="text-slate-500 block text-[9px] uppercase font-semibold">{t.srcIp}</span>
+                        <span className="text-slate-500 block text-[10px] uppercase font-semibold">{t.srcIp}</span>
                         <span className="font-mono text-[11px] text-sky-400 font-semibold">
                           {activeTrace.frameSnapshot.srcIp || '—'}
                         </span>
                       </div>
                       <div className={`p-2 rounded-lg border ${isDark ? 'bg-slate-900/80 border-slate-800' : 'bg-white border-slate-200'}`}>
-                        <span className="text-slate-500 block text-[9px] uppercase font-semibold">{t.dstIp}</span>
+                        <span className="text-slate-500 block text-[10px] uppercase font-semibold">{t.dstIp}</span>
                         <span className="font-mono text-[11px] text-sky-400 font-semibold">
                           {activeTrace.frameSnapshot.dstIp || '—'}
                         </span>
                       </div>
                       <div className={`p-2 rounded-lg border ${isDark ? 'bg-slate-900/80 border-slate-800' : 'bg-white border-slate-200'}`}>
-                        <span className="text-slate-500 block text-[9px] uppercase font-semibold">{t.protocol}</span>
+                        <span className="text-slate-500 block text-[10px] uppercase font-semibold">{t.protocol}</span>
                         <span className="font-mono text-[11px] text-amber-400 font-semibold">
                           {activeTrace.frameSnapshot.protocol}
                         </span>
                       </div>
                       <div className={`p-2 rounded-lg border ${isDark ? 'bg-slate-900/80 border-slate-800' : 'bg-white border-slate-200'}`}>
-                        <span className="text-slate-500 block text-[9px] uppercase font-semibold">{t.ttl}</span>
+                        <span className="text-slate-500 block text-[10px] uppercase font-semibold">{t.ttl}</span>
                         <span className="font-mono text-[11px] text-emerald-400 font-semibold">
                           {activeTrace.frameSnapshot.ttl ?? 64}
                         </span>
                       </div>
                       <div className={`p-2 rounded-lg border ${isDark ? 'bg-slate-900/80 border-slate-800' : 'bg-white border-slate-200'}`}>
-                        <span className="text-slate-500 block text-[9px] uppercase font-semibold">{t.vlan}</span>
+                        <span className="text-slate-500 block text-[10px] uppercase font-semibold">{t.vlan}</span>
                         <span className="font-mono text-[11px] text-purple-400 font-semibold">
                           {activeTrace.frameSnapshot.vlanId || 1}
                         </span>
                       </div>
                       <div className={`p-2 rounded-lg border ${isDark ? 'bg-slate-900/80 border-slate-800' : 'bg-white border-slate-200'}`}>
-                        <span className="text-slate-500 block text-[9px] uppercase font-semibold">{t.ingressPort}</span>
+                        <span className="text-slate-500 block text-[10px] uppercase font-semibold">{t.ingressPort}</span>
                         <span className={`font-mono text-[11px] font-semibold ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
                           {activeTrace.portId || 'Local'}
                         </span>

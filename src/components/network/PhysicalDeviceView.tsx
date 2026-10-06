@@ -186,7 +186,7 @@ export function PhysicalDeviceView({
                     </div>
                   ))}
               </div>
-              <div className={`text-[9px] ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Fixed onboard interfaces</div>
+              <div className={`text-[10px] ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Fixed onboard interfaces</div>
             </div>
 
             {/* Expansion Slots */}
@@ -211,12 +211,12 @@ export function PhysicalDeviceView({
                     {installedMod ? (
                       <span
                         style={{ color: installedMod.color }}
-                        className={`font-bold text-[9px] px-1.5 py-0.5 rounded border ${isDark ? 'bg-white/5 border-current' : 'bg-white border-slate-300 shadow-xs'}`}
+                        className={`font-bold text-[10px] px-1.5 py-0.5 rounded border ${isDark ? 'bg-white/5 border-current' : 'bg-white border-slate-300 shadow-xs'}`}
                       >
                         {installedMod.badge}
                       </span>
                     ) : (
-                      <span className={`italic text-[9px] ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{isTR ? 'BOŞ YUVA' : 'EMPTY BAY'}</span>
+                      <span className={`italic text-[10px] ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{isTR ? 'BOŞ YUVA' : 'EMPTY BAY'}</span>
                     )}
                   </div>
 
@@ -229,7 +229,7 @@ export function PhysicalDeviceView({
                           .map((p) => (
                             <span
                               key={p.id}
-                              className={`px-1.5 py-0.5 rounded text-[9px] font-mono border ${isDark ? 'bg-sky-500/20 text-sky-300 border-sky-500/30' : 'bg-sky-100 text-sky-800 border-sky-300'}`}
+                              className={`px-1.5 py-0.5 rounded text-[10px] font-mono border ${isDark ? 'bg-sky-500/20 text-sky-300 border-sky-500/30' : 'bg-sky-100 text-sky-800 border-sky-300'}`}
                             >
                               {p.label || p.id}
                             </span>

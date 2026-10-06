@@ -200,7 +200,7 @@ export function IotDashboardTab({
               <label className="text-xs font-bold text-secondary-500 shrink-0">
                 {language === 'tr' ? 'Cihaz Durumu' : 'Device Status'}
               </label>
-              <span className={`text-[9px] font-bold ${!iotCollaborationEnabled ? 'text-error-500' : 'text-secondary-200'}`}>
+              <span className={`text-[10px] font-bold ${!iotCollaborationEnabled ? 'text-error-500' : 'text-secondary-200'}`}>
                 {language === 'tr' ? 'PASİF' : 'PASSIVE'}
               </span>
               <button
@@ -232,7 +232,7 @@ export function IotDashboardTab({
               >
                 <span className={cn("inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform duration-300", iotCollaborationEnabled ? 'translate-x-8' : 'translate-x-1')} />
               </button>
-              <span className={`text-[9px] font-bold ${iotCollaborationEnabled ? 'text-accent-500' : 'text-secondary-200'}`}>
+              <span className={`text-[10px] font-bold ${iotCollaborationEnabled ? 'text-accent-500' : 'text-secondary-200'}`}>
                 {language === 'tr' ? 'AKTİF' : 'ACTIVE'}
               </span>
             </div>
@@ -241,7 +241,7 @@ export function IotDashboardTab({
               <label className="text-xs font-bold text-secondary-500 shrink-0">
                 {language === 'tr' ? 'Güç Durumu' : 'Power Status'}
               </label>
-              <span className={`text-[9px] font-bold ${selectedIotDevice?.status === 'offline' ? 'text-error-500' : 'text-secondary-200'}`}>
+              <span className={`text-[10px] font-bold ${selectedIotDevice?.status === 'offline' ? 'text-error-500' : 'text-secondary-200'}`}>
                 {language === 'tr' ? 'KAPALI' : 'OFF'}
               </span>
               <button
@@ -267,7 +267,7 @@ export function IotDashboardTab({
               >
                 <span className={cn("inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform duration-300", selectedIotDevice?.status !== 'offline' ? 'translate-x-8' : 'translate-x-1')} />
               </button>
-              <span className={`text-[9px] font-bold ${selectedIotDevice?.status !== 'offline' ? 'text-success-500' : 'text-secondary-200'}`}>
+              <span className={`text-[10px] font-bold ${selectedIotDevice?.status !== 'offline' ? 'text-success-500' : 'text-secondary-200'}`}>
                 {language === 'tr' ? 'AÇIK' : 'ON'}
               </span>
             </div>

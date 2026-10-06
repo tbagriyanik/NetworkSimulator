@@ -114,7 +114,9 @@ export function useMobileBrowser({
       setBrowserTitle(isTr ? 'Bağlantı Hatası' : 'Connection Error');
       setBrowserContent(`
         <main style="padding:32px;font-family:'Inria Sans',sans-serif;text-align:center;">
-          <div style="font-size:48px;margin-bottom:12px;">🚫</div>
+          <div style="margin-bottom:12px;display:flex;align-items:center;justify-content:center;color:var(--color-danger-500);">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+          </div>
           <h1 style="margin:0 0 8px;font-size:22px;color:var(--color-danger-500);">${isTr ? 'Sunucuya Ulaşılamıyor' : 'Server Unreachable'}</h1>
           <p style="margin:0 0 12px;font-size:14px;color:var(--color-secondary-500);">${connRes.error || (isTr ? 'Ağ geçidi veya sunucu yanıt vermiyor.' : 'Gateway or server not responding.')}</p>
           <code style="display:inline-block;padding:6px 12px;border-radius:8px;background:var(--color-danger-100);color:var(--color-danger-800);font-size:12px;">${displayUrl}</code>

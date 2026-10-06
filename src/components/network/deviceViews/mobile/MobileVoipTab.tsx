@@ -174,9 +174,9 @@ export function MobileVoipTab({
               >
                 <span className={cn("font-bold text-sm", isDark ? "text-slate-100 group-hover:text-emerald-400" : "text-slate-800 group-hover:text-emerald-600")}>{key}</span>
                 {sub ? (
-                  <span className={cn("text-[8px] tracking-widest font-mono -mt-1", isDark ? "text-slate-500" : "text-slate-400")}>{sub}</span>
+                  <span className={cn("text-[10px] tracking-widest font-mono -mt-1", isDark ? "text-slate-500" : "text-slate-400")}>{sub}</span>
                 ) : (
-                  <span className="text-[8px] text-transparent leading-none select-none">.</span>
+                  <span className="text-[10px] text-transparent leading-none select-none">.</span>
                 )}
               </button>
             ))}
@@ -247,14 +247,14 @@ export function MobileVoipTab({
                           <div className={cn("font-medium text-[11px] truncate flex items-center gap-1.5", isDark ? "text-slate-200" : "text-slate-800")}>
                             <span>{d.name}</span>
                             {!isReachOk && (
-                              <span className="text-[9px] px-1.5 py-0.2 rounded bg-rose-500/20 text-rose-300 font-normal">
+                              <span className="text-[10px] px-1.5 py-0.2 rounded bg-rose-500/20 text-rose-300 font-normal">
                                 {!isTargetPoweredOn
                                   ? (isTr ? 'Cihaz Kapalı' : 'Powered Off')
                                   : (check.error || (isTr ? 'Ağ Sorunu' : 'Network Issue'))}
                               </span>
                             )}
                           </div>
-                          <div className={cn("text-[9px] font-mono", isReachOk ? (isDark ? "text-emerald-400/80" : "text-emerald-700") : "text-rose-400/80")}>
+                          <div className={cn("text-[10px] font-mono", isReachOk ? (isDark ? "text-emerald-400/80" : "text-emerald-700") : "text-rose-400/80")}>
                             {d.ip}
                           </div>
                         </div>
@@ -284,7 +284,7 @@ export function MobileVoipTab({
               {device.voipHistory && device.voipHistory.length > 0 && (
                 <button
                   onClick={onClearVoipHistory}
-                  className="text-[9px] text-rose-400 hover:text-rose-300 flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-rose-950/40 border border-rose-800/40 transition-colors"
+                  className="text-[10px] text-rose-400 hover:text-rose-300 flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-rose-950/40 border border-rose-800/40 transition-colors"
                   title={isTr ? 'Arama geçmişini temizle' : 'Clear call history'}
                 >
                   <Trash2 className="w-2.5 h-2.5" />
@@ -307,13 +307,13 @@ export function MobileVoipTab({
                         </span>
                         {item.peerName}
                       </div>
-                      <div className={cn("text-[9px] font-mono", isDark ? "text-slate-400" : "text-slate-500")}>
+                      <div className={cn("text-[10px] font-mono", isDark ? "text-slate-400" : "text-slate-500")}>
                         {item.timestamp} {item.peerIp ? `• ${item.peerIp}` : ''}
                       </div>
                     </div>
                     <div className="text-right shrink-0 font-mono">
                       <div className={cn(
-                        "font-semibold text-[9px]",
+                        "font-semibold text-[10px]",
                         item.status === 'answered' ? (isDark ? "text-emerald-400" : "text-emerald-600") : "text-rose-400"
                       )}>
                         {item.status === 'answered' ? formatDuration(item.durationSeconds) : (isTr ? 'Cevapsız' : 'Missed')}

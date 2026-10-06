@@ -1,4 +1,4 @@
-﻿import { ExampleProject } from './exampleProjects';
+import { ExampleProject } from './exampleProjects';
 import { ExamProject } from './examTypes';
 import {
   basicConnectivityExamTasks,
@@ -103,8 +103,8 @@ export const getExamProjects = (language: 'tr' | 'en'): ExamProject[] => {
             {
               id: 'exam-intro',
               text: isTr
-                ? '📝 TEMEL AĞ BİLGİSİ SINAVI\n\nŞu anda bir sınavdasınız. \nGörevleri tamamladıkça puanınız güncellenecektir.\nBaşarılar!\nAd, Soyad ve Numaranızı buraya yazınız:'
-                : '📝 BASIC NETWORKING EXAM\n\nThis is an exam.\nYour score will be updated as you complete tasks.\nGood luck!\nWrite your name, surname, and student number here:',
+                ? 'TEMEL AĞ BİLGİSİ SINAVI\n\nŞu anda bir sınavdasınız. \nGörevleri tamamladıkça puanınız güncellenecektir.\nBaşarılar!\nAd, Soyad ve Numaranızı buraya yazınız:'
+                : 'BASIC NETWORKING EXAM\n\nThis is an exam.\nYour score will be updated as you complete tasks.\nGood luck!\nWrite your name, surname, and student number here:',
               x: 450,
               y: 80,
               width: 350,
@@ -211,8 +211,8 @@ export const getExamProjects = (language: 'tr' | 'en'): ExamProject[] => {
             {
               id: 'exam-intro',
               text: isTr
-                ? '📝 STATİK YÖNLENDİRME SINAVI\n\nKabloları ve IP yapılandırmalarını kendiniz yapmalısınız.\nGörevleri tamamladıkça puanınız güncellenir.\nBaşarılar!\nAd, Soyad ve Numaranızı buraya yazınız:'
-                : '📝 STATIC ROUTING EXAM\n\nYou must make the cable connections and IP configurations yourself.\nYour score will be updated as you complete tasks.\nGood luck!\nName, Surname and Student Number:',
+                ? 'STATİK YÖNLENDİRME SINAVI\n\nKabloları ve IP yapılandırmalarını kendiniz yapmalısınız.\nGörevleri tamamladıkça puanınız güncellenir.\nBaşarılar!\nAd, Soyad ve Numaranızı buraya yazınız:'
+                : 'STATIC ROUTING EXAM\n\nYou must make the cable connections and IP configurations yourself.\nYour score will be updated as you complete tasks.\nGood luck!\nName, Surname and Student Number:',
               x: 50,
               y: 50,
               width: 400,
@@ -501,8 +501,8 @@ export const getExamProjects = (language: 'tr' | 'en'): ExamProject[] => {
             {
               id: 'master-note',
               text: isTr
-                ? '🎓 KAPSAMLI FİNAL SINAVI\n\nBu sınavda tüm ağ becerilerinizi sergilemeniz beklenmektedir.\nKablolamadan ACL yapılandırmasına kadar tüm adımları tamamlayın.'
-                : '🎓 COMPREHENSIVE FINAL EXAM\n\nYou are expected to demonstrate all your networking skills in this exam.\nComplete all steps from cabling to ACL configuration.',
+                ? 'KAPSAMLI FİNAL SINAVI\n\nBu sınavda tüm ağ becerilerinizi sergilemeniz beklenmektedir.\nKablolamadan ACL yapılandırmasına kadar tüm adımları tamamlayın.'
+                : 'COMPREHENSIVE FINAL EXAM\n\nYou are expected to demonstrate all your networking skills in this exam.\nComplete all steps from cabling to ACL configuration.',
               x: 50, y: 50, width: 400, height: 120, color: 'var(--color-warning-500)', font: 'verdana', fontSize: 12, opacity: 0.75
             }
           ]

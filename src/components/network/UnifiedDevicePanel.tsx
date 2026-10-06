@@ -245,7 +245,7 @@ export function UnifiedDevicePanel({
                             <div className={cn("w-2 h-2 rounded-full shrink-0", isOffline ? "bg-error-500" : "bg-success-500")} />
                             <span className="truncate">{deviceName}</span>
                             {deviceType !== 'hub' && deviceType !== 'cloud' && (
-                                <span className="opacity-50 text-[9px] uppercase">({deviceType})</span>
+                                <span className="opacity-50 text-[10px] uppercase">({deviceType})</span>
                             )}
                         </div>
                     </div>

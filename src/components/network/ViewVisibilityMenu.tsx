@@ -135,14 +135,14 @@ export function ViewVisibilityMenu({ isDark = true }: ViewVisibilityMenuProps) {
             className="text-xs cursor-pointer"
           >
             {mode === 'none'
-              ? (isTr ? '🚫 Kapalı' : '🚫 Disabled')
+              ? (isTr ? 'Kapalı' : 'Disabled')
               : mode === 'ospf'
-                ? (isTr ? '🌐 OSPF Alanları (Areas)' : '🌐 OSPF Areas')
+                ? (isTr ? 'OSPF Alanları (Areas)' : 'OSPF Areas')
                 : mode === 'vlan'
-                  ? (isTr ? '🏷️ VLAN Bölgeleri' : '🏷️ VLAN Zones')
+                  ? (isTr ? 'VLAN Bölgeleri' : 'VLAN Zones')
                   : mode === 'bgp'
-                    ? (isTr ? '🏛️ BGP Otonom Sistemler (AS)' : '🏛️ BGP AS Zones')
-                    : (isTr ? '📡 IP Alt Ağları (Subnets)' : '📡 IP Subnets')}
+                    ? (isTr ? 'BGP Otonom Sistemler (AS)' : 'BGP AS Zones')
+                    : (isTr ? 'IP Alt Ağları (Subnets)' : 'IP Subnets')}
           </DropdownMenuCheckboxItem>
         ))}
 

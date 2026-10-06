@@ -83,26 +83,26 @@ const example = (isTr: boolean): ExampleProject => {
       id: 'netauto-python-note',
       text: isTr
         ? '🐍 Python & Ağ Otomasyonu Laboratuvarı (Netmiko / RESTCONF / SSH)\n\n' +
-          '🎯 Amaç ve Senaryo Özeti:\n' +
+          'Amaç ve Senaryo Özeti:\n' +
           'Python otomasyon istasyonundan OOBM (Out-of-Band Management) anahtarı üzerinden 3 adet yönlendiriciye (Edge-R1, Core-R2, Dist-R3) SSH/Telnet ile bağlanıp toplu konfigürasyon ve envanter toplama senaryosu.\n\n' +
-          '📋 Yönetim Ağ Parametreleri (VLAN 1):\n' +
+          'Yönetim Ağ Parametreleri (VLAN 1):\n' +
           '• Python İstasyonu: 192.168.100.10 /24\n' +
           '• Edge-R1: 192.168.100.11 (Kullanıcı: admin / Şifre: password)\n' +
           '• Core-R2: 192.168.100.12 (Kullanıcı: admin / Şifre: password)\n' +
           '• Dist-R3: 192.168.100.13 (Kullanıcı: admin / Şifre: password)\n\n' +
-          '🧪 Doğrulama ve Test:\n' +
+          'Doğrulama ve Test:\n' +
           '1. Python istasyonundan "ping 192.168.100.11" ile yönlendirici erişilebilirliğini test edin.\n' +
           '2. "ssh admin@192.168.100.11" ile SSH bağlantısı sağlayıp "show ip int brief" çıktısını alın.\n' +
           '3. Python betikleri ile tüm yönlendiricilere eşzamanlı VLAN ve rota dağıtımı simüle edin.'
         : '🐍 Python Network Automation Lab (Netmiko / RESTCONF / SSH)\n\n' +
-          '🎯 Objective & Scenario Overview:\n' +
+          'Objective & Scenario Overview:\n' +
           'Centralized fleet configuration and automated inventory collection from a Python automation node across 3 routers over Out-of-Band Management (OOBM) switch.\n\n' +
-          '📋 Out-of-Band Management Fleet:\n' +
+          'Out-of-Band Management Fleet:\n' +
           '• Python Station: 192.168.100.10 /24\n' +
           '• Edge-R1: 192.168.100.11 (User: admin / Pass: password)\n' +
           '• Core-R2: 192.168.100.12 (User: admin / Pass: password)\n' +
           '• Dist-R3: 192.168.100.13 (User: admin / Pass: password)\n\n' +
-          '🧪 Verification & Testing:\n' +
+          'Verification & Testing:\n' +
           '1. Check connectivity from Python station: "ping 192.168.100.11".\n' +
           '2. Test SSH connectivity: "ssh admin@192.168.100.11" and view running configuration.\n' +
           '3. Execute automation commands to push configuration changes across the fleet.',

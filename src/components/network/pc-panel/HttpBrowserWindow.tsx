@@ -562,7 +562,7 @@ export function HttpBrowserWindow({
               }`}
             >
               <span>{srv.name}</span>
-              <span className="opacity-60 text-[9px]">({srv.ip})</span>
+              <span className="opacity-60 text-[10px]">({srv.ip})</span>
             </button>
           ))}
         </div>

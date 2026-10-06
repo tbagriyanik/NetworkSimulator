@@ -26,8 +26,8 @@ const example = (isTr: boolean): ExampleProject => {
     {
       id: 'ospf-multi-area-note-1',
       text: isTr
-        ? 'Amaç: Çok alanlı (Multi-Area) OSPF yapılandırması.\n\n🔧 YAPILANDIRMA ADIMLARI:\n\n1) AREA 0 VE AREA 10 (R3/ABR):\n   - router ospf 1\n   - network 10.0.0.0 0.0.0.255 area 0\n   - network 20.0.0.0 0.0.0.255 area 10\n\n2) DOĞRULAMA:\n   - show ip ospf neighbor\n   - show ip route ospf'
-        : '🔧 BUILD STEPS:\n\n1) AREA 0 AND AREA 10 (R3/ABR):\n   - router ospf 1\n   - network 10.0.0.0 0.0.0.255 area 0\n   - network 20.0.0.0 0.0.0.255 area 10\n\n2) VERIFY:\n   - show ip ospf neighbor\n   - show ip route ospf',
+        ? 'Amaç: Çok alanlı (Multi-Area) OSPF yapılandırması.\n\nYAPILANDIRMA ADIMLARI:\n\n1) AREA 0 VE AREA 10 (R3/ABR):\n   - router ospf 1\n   - network 10.0.0.0 0.0.0.255 area 0\n   - network 20.0.0.0 0.0.0.255 area 10\n\n2) DOĞRULAMA:\n   - show ip ospf neighbor\n   - show ip route ospf'
+        : 'BUILD STEPS:\n\n1) AREA 0 AND AREA 10 (R3/ABR):\n   - router ospf 1\n   - network 10.0.0.0 0.0.0.255 area 0\n   - network 20.0.0.0 0.0.0.255 area 10\n\n2) VERIFY:\n   - show ip ospf neighbor\n   - show ip route ospf',
       x: 450,
       y: 80,
       width: 520,

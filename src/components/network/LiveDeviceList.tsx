@@ -599,7 +599,7 @@ function RefreshDeviceListToast({
                               <span className="font-mono font-bold text-[11px] text-primary-600 dark:text-primary-300 whitespace-pre-wrap">
                                 {activeCommand.mode ? `${activeCommand.mode} ` : ''}{activeCommand.cmd}
                               </span>
-                              <span className="text-[9px] text-secondary-500 dark:text-secondary-400 mt-0.5">
+                              <span className="text-[10px] text-secondary-500 dark:text-secondary-400 mt-0.5">
                                 {activeCommand.desc}
                               </span>
                             </div>
@@ -682,7 +682,7 @@ function RefreshDeviceListToast({
                           <span className="font-mono font-bold text-[11px] text-primary-600 dark:text-primary-300 truncate">
                             C:\&gt; {activeCommand.cmd}
                           </span>
-                          <span className="text-[9px] text-secondary-500 dark:text-secondary-400 truncate">
+                          <span className="text-[10px] text-secondary-500 dark:text-secondary-400 truncate">
                             {activeCommand.desc}
                           </span>
                         </div>

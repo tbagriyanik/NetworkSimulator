@@ -249,7 +249,7 @@ export function CanvasToolbar({
               >
                 <AlertCircle className="w-4 h-4" />
                 {logCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-primary-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full border-2 border-white dark:border-slate-900 shadow-sm min-w-[16px] flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 bg-primary-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border-2 border-white dark:border-slate-900 shadow-sm min-w-[16px] flex items-center justify-center">
                     {logCount > 99 ? '99+' : logCount}
                   </span>
                 )}

@@ -370,12 +370,12 @@ export function MobileDeviceView({
               onClick={toggleCharging}
               title={
                 isTr
-                  ? `Pil: %${batteryPercent} (${isCharging ? 'Şarj Oluyor ⚡' : 'Pilde'}) • Tıklayarak şarj durumunu değiştirin`
-                  : `Battery: ${batteryPercent}% (${isCharging ? 'Charging ⚡' : 'On Battery'}) • Click to toggle charging`
+                  ? `Pil: %${batteryPercent} (${isCharging ? 'Şarj Oluyor' : 'Pilde'}) • Tıklayarak şarj durumunu değiştirin`
+                  : `Battery: ${batteryPercent}% (${isCharging ? 'Charging' : 'On Battery'}) • Click to toggle charging`
               }
               className="flex items-center gap-0.5 cursor-pointer hover:opacity-80 transition-opacity outline-none"
             >
-              <span className="text-[9px] font-mono leading-none">
+              <span className="text-[10px] font-mono leading-none">
                 {batteryPercent}%
               </span>
               {isCharging ? (

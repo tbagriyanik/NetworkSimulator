@@ -105,7 +105,7 @@ export function FaultInjectionCard({ activeExam, topologyDevices, updateExamMeta
 
                                 <div className="grid grid-cols-2 gap-2 mt-3">
                                     <div className="space-y-1">
-                                        <label className="text-[9px] font-bold opacity-50 uppercase ml-1">
+                                        <label className="text-[10px] font-bold opacity-50 uppercase ml-1">
                                             {isTr ? 'Cihaz' : 'Device'}
                                         </label>
                                         <Select
@@ -128,7 +128,7 @@ export function FaultInjectionCard({ activeExam, topologyDevices, updateExamMeta
                                     </div>
 
                                     <div className="space-y-1">
-                                        <label className="text-[9px] font-bold opacity-50 uppercase ml-1">
+                                        <label className="text-[10px] font-bold opacity-50 uppercase ml-1">
                                             {isTr ? 'Arıza Tipi' : 'Fault Type'}
                                         </label>
                                         <Select
@@ -166,7 +166,7 @@ export function FaultInjectionCard({ activeExam, topologyDevices, updateExamMeta
 
                                 <div className="grid gap-2 mt-2">
                                     <div className="space-y-1">
-                                        <label className="text-[9px] font-bold opacity-50 uppercase ml-1">
+                                        <label className="text-[10px] font-bold opacity-50 uppercase ml-1">
                                             {isTr ? 'Açıklama' : 'Description'}
                                         </label>
                                         <Input
@@ -184,7 +184,7 @@ export function FaultInjectionCard({ activeExam, topologyDevices, updateExamMeta
                                     </div>
 
                                     <div className="space-y-1">
-                                        <label className="text-[9px] font-bold opacity-50 uppercase ml-1">
+                                        <label className="text-[10px] font-bold opacity-50 uppercase ml-1">
                                             {isTr ? 'Kontrol Anahtarı (Örn: ports.fa0/1.vlan)' : 'Check Key'}
                                         </label>
                                         <Input

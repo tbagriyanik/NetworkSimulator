@@ -442,7 +442,7 @@ export function ProjectPickerDialog({
                                   <span className={`${isDark ? 'text-secondary-500' : 'text-secondary-400'} mr-2`}>{getAvailableProjects(language).findIndex((project) => project.id === guidedProject.id) + 1}.</span>{guidedProject.title}
                                 </span>
                               </div>
-                              <span className={`text-[8px] md:text-[10px] font-black tracking-[0.2em] px-3 py-1.5 rounded-full whitespace-nowrap border shrink-0 flex-shrink-0 ${isDark ? 'bg-success-500/20 text-success-400 border-success-500/30' : 'bg-success-100 text-success-600 border-success-200'}`}>
+                              <span className={`text-[10px] md:text-[10px] font-black tracking-[0.2em] px-3 py-1.5 rounded-full whitespace-nowrap border shrink-0 flex-shrink-0 ${isDark ? 'bg-success-500/20 text-success-400 border-success-500/30' : 'bg-success-100 text-success-600 border-success-200'}`}>
                                 {guidedProject.tag}
                               </span>
                             </div>
@@ -478,7 +478,7 @@ export function ProjectPickerDialog({
                             {guidedProject.detail && (
                               <div className='pt-2 flex items-center gap-2 w-full'>
                                 <div className='w-1 md:w-1.5 h-1 md:h-1.5 rounded-full bg-warning-500 shrink-0 shadow-[0_0_8px_rgba(245,158,11,0.5)]' />
-                                <span className={`text-[8px] md:text-[11px] font-bold tracking-wide whitespace-normal break-words w-full ${isDark ? 'text-warning-400/80' : 'text-warning-700/80'}`}>
+                                <span className={`text-[10px] md:text-[11px] font-bold tracking-wide whitespace-normal break-words w-full ${isDark ? 'text-warning-400/80' : 'text-warning-700/80'}`}>
                                   {guidedProject.detail}
                                 </span>
                               </div>
@@ -568,7 +568,7 @@ export function ProjectPickerDialog({
                                 <span className={`font-black text-base md:text-2xl leading-none transition-colors duration-300 break-words flex-1 min-w-0 ${isDark ? 'group-hover:text-error-400 text-error-100' : 'group-hover:text-error-600 text-black'}`}>
                                   <span className={`${isDark ? 'text-secondary-500' : 'text-secondary-400'} mr-2`}>{getAvailableExams(language).filter((project) => project.id !== 'exam-template-blank').findIndex((project) => project.id === examProject.id) + 1}.</span>{titleStr}
                                 </span>
-                                <span className={`text-[8px] md:text-[10px] font-black tracking-[0.2em] px-3 py-1.5 rounded-full whitespace-nowrap border shrink-0 flex-shrink-0 ${isDark ? 'bg-error-500/20 text-error-400 border-error-500/30' : 'bg-error-100 text-error-600 border-error-200'}`}>
+                                <span className={`text-[10px] md:text-[10px] font-black tracking-[0.2em] px-3 py-1.5 rounded-full whitespace-nowrap border shrink-0 flex-shrink-0 ${isDark ? 'bg-error-500/20 text-error-400 border-error-500/30' : 'bg-error-100 text-error-600 border-error-200'}`}>
                                   {examProject.tag}
                                 </span>
                               </div>
@@ -600,7 +600,7 @@ export function ProjectPickerDialog({
                               {examProject.detail && (
                                 <div className='pt-2 flex items-center gap-2 w-full'>
                                   <div className='w-1 md:w-1.5 h-1 md:h-1.5 rounded-full bg-error-500 shrink-0 shadow-[0_0_3px_rgba(244,63,94,0.2)]' />
-                                  <span className={`text-[8px] md:text-[11px] font-bold tracking-wide whitespace-normal break-words w-full ${isDark ? 'text-error-400/80' : 'text-error-700/80'}`}>
+                                  <span className={`text-[10px] md:text-[11px] font-bold tracking-wide whitespace-normal break-words w-full ${isDark ? 'text-error-400/80' : 'text-error-700/80'}`}>
                                     {examProject.detail}
                                   </span>
                                 </div>
@@ -668,14 +668,14 @@ export function ProjectPickerDialog({
                                   >
                                     <div className='flex items-center justify-between w-full gap-4 overflow-hidden flex-nowrap'>
                                       <span className={`font-black text-base md:text-2xl leading-none transition-colors duration-300 break-words flex-1 min-w-0 ${isDark ? 'group-hover:text-accent-400' : 'group-hover:text-primary-600'}`}><span className={`${isDark ? 'text-secondary-500' : 'text-secondary-400'} mr-2`}>{num}.</span>{example.title}</span>
-                                      <span className={`text-[8px] md:text-[10px] font-black tracking-[0.2em] px-3 py-1.5 rounded-full whitespace-nowrap border shrink-0 flex-shrink-0 ${isDark ? 'bg-accent-500/10 text-accent-400 border-accent-500/20' : 'bg-primary-50 text-primary-600 border-primary-100'}`}>{example.tag}</span>
+                                      <span className={`text-[10px] md:text-[10px] font-black tracking-[0.2em] px-3 py-1.5 rounded-full whitespace-nowrap border shrink-0 flex-shrink-0 ${isDark ? 'bg-accent-500/10 text-accent-400 border-accent-500/20' : 'bg-primary-50 text-primary-600 border-primary-100'}`}>{example.tag}</span>
                                     </div>
                                     <p className={`text-[11px] md:text-sm leading-relaxed font-medium italic transition-colors whitespace-normal break-words break-all w-full ${isDark ? 'text-secondary-400/80 group-hover:text-secondary-200' : 'text-secondary-600 group-hover:text-secondary-800'}`}>{example.description}</p>
                                     <div className='flex items-center gap-2 w-full pt-2 md:pt-4 border-t border-secondary-800/10 dark:border-secondary-800/50'>
                                       {example.detail && (
                                         <div className='flex-1 min-w-0 flex items-center gap-2 md:gap-3'>
 <div className='w-1 md:w-1.5 h-1 md:h-1.5 rounded-full bg-warning-500 shrink-0 shadow-[0_0_3px_rgba(245,158,11,0.2)]' />
-                                          <span className={`text-[8px] md:text-[11px] font-bold tracking-wide whitespace-normal break-words break-all w-full ${isDark ? 'text-warning-400/80' : 'text-warning-700/80'}`}>{example.detail}</span>
+                                          <span className={`text-[10px] md:text-[11px] font-bold tracking-wide whitespace-normal break-words break-all w-full ${isDark ? 'text-warning-400/80' : 'text-warning-700/80'}`}>{example.detail}</span>
                                         </div>
                                       )}
                                       <span

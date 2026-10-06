@@ -59,27 +59,27 @@ const example = (isTr: boolean): ExampleProject => {
     {
       id: 'dmz-firewall-note',
       text: isTr
-        ? '🛡️ Kurumsal DMZ ve Çok Katmanlı Güvenlik Duvarı Laboratuvarı\n\n' +
-        ' Amaç ve Senaryo Özeti:\n' +
+        ? 'Kurumsal DMZ ve Çok Katmanlı Güvenlik Duvarı Laboratuvarı\n\n' +
+        '1) Amaç ve Senaryo Özeti:\n' +
         'İç ağ (LAN 192.168.1.0/24), arındırılmış bölge (DMZ 172.16.1.0/24) ve dış ağ (WAN 203.0.113.0/24) arasındaki güvenlik kurallarını NGFW üzerinde denetleme.\n\n' +
-        '📋 Güvenlik Duvarı Filtreleme Kuralları:\n' +
+        '2) Güvenlik Duvarı Filtreleme Kuralları:\n' +
         '1. [ALLOW] LAN (192.168.1.0/24) → DMZ Web (172.16.1.10:80 TCP)\n' +
         '2. [ALLOW] LAN (192.168.1.0/24) → DMZ DNS (172.16.1.20:53 UDP)\n' +
         '3. [DENY] WAN (203.0.113.0/24) → LAN (192.168.1.0/24 ANY)\n' +
         '4. [ALLOW] Tüm diğer izinli yönlendirmeler\n\n' +
-        '🧪 Doğrulama ve Test:\n' +
+        '3) Doğrulama ve Test:\n' +
         '1. LAN-Workstation-1 üzerinden "curl 172.16.1.10" ile Web Portala erişin (BAŞARILI).\n' +
         '2. LAN-Workstation-1 üzerinden "nslookup portal.company.local 172.16.1.20" sorgulayın (BAŞARILI).\n' +
         '3. WAN Test cihazından LAN IP adreslerine gelen paketlerin engellendiğini doğrulayın.'
-        : '🛡️  Enterprise DMZ & Multi-Tier Firewall Architecture Lab\n\n' +
-        ' Objective & Scenario Overview:\n' +
+        : 'Enterprise DMZ & Multi-Tier Firewall Architecture Lab\n\n' +
+        '1) Objective & Scenario Overview:\n' +
         'Segment and enforce traffic policies across Internal LAN (192.168.1.0/24), Demilitarized Zone (DMZ 172.16.1.0/24), and External WAN perimeter on NGFW.\n\n' +
-        '📋 Firewall Rule Hierarchy:\n' +
+        '2) Firewall Rule Hierarchy:\n' +
         '1. [ALLOW] LAN (192.168.1.0/24) → DMZ Web (172.16.1.10:80 TCP)\n' +
         '2. [ALLOW] LAN (192.168.1.0/24) → DMZ DNS (172.16.1.20:53 UDP)\n' +
         '3. [DENY] WAN (203.0.113.0/24) → LAN (192.168.1.0/24 ANY)\n' +
         '4. [ALLOW] Default transit traffic\n\n' +
-        '🧪 Verification & Testing:\n' +
+        '3) Verification & Testing:\n' +
         '1. From LAN-Workstation-1 test Web portal: "curl 172.16.1.10" (SUCCESS).\n' +
         '2. Query DMZ DNS: "nslookup portal.company.local 172.16.1.20" (SUCCESS).\n' +
         '3. Verify inbound WAN scans to LAN clients are filtered by default policy.',

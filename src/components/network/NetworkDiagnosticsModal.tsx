@@ -573,7 +573,7 @@ export function NetworkDiagnosticsModal({
                     {isTr ? res.messageTr : res.messageEn}
                   </span>
                 </div>
-                <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase shrink-0 ${res.passed
+                <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase shrink-0 ${res.passed
                     ? (isDark ? 'bg-emerald-500/20 text-emerald-300' : 'bg-emerald-100 text-emerald-800')
                     : (isDark ? 'bg-amber-500/20 text-amber-300' : 'bg-amber-100 text-amber-800')
                   }`}>

@@ -80,13 +80,13 @@ export const exampleProjects = (language: 'tr' | 'en'): ExampleProject[] => {
         const faultDesc = resolveFaultText(fault.description, isTr);
         const faultHint = fault.hint ? resolveFaultText(fault.hint, isTr) : '';
         return isTr
-          ? `🔍 ${project.title}\n\n🎯 Amaç:\n${project.description}\n\n⚠️ Arıza Belirtisi:\n${faultDesc}\n\n💡 İpucu & Çözüm Yolu:\n${faultHint || 'Cihaz yapılandırmalarını ve arayüz durumlarını CLI komutlarıyla denetleyin.'}`
-          : `🔍 ${project.title}\n\n🎯 Objective:\n${project.description}\n\n⚠️ Fault Symptom:\n${faultDesc}\n\n💡 Hint & Troubleshooting:\n${faultHint || 'Inspect running configuration and interface statuses via CLI.'}`;
+          ? `🔍 ${project.title}\n\nAmaç:\n${project.description}\n\nArıza Belirtisi:\n${faultDesc}\n\nİpucu & Çözüm Yolu:\n${faultHint || 'Cihaz yapılandırmalarını ve arayüz durumlarını CLI komutlarıyla denetleyin.'}`
+          : `🔍 ${project.title}\n\nObjective:\n${project.description}\n\nFault Symptom:\n${faultDesc}\n\nHint & Troubleshooting:\n${faultHint || 'Inspect running configuration and interface statuses via CLI.'}`;
       }
 
       return isTr
-        ? `📋 ${project.title}\n\n🎯 Amaç ve Senaryo:\n${project.description}\n\n⚙️ Yapılandırma Detayı:\n${project.detail || 'Topoloji üzerindeki cihazlar hazır konfigürasyonlarla yüklenmiştir.'}\n\n🧪 Test & Doğrulama:\n• Uç cihazlar arasında ping ve servis erişimlerini test edin.\n• Cihaz konsollarından "show ip interface brief" ve yönlendirme tablolarını inceleyin.`
-        : `📋 ${project.title}\n\n🎯 Objective & Scenario:\n${project.description}\n\n⚙️ Configuration Details:\n${project.detail || 'Topology devices are initialized with active baseline configurations.'}\n\n🧪 Verification & Testing:\n• Test connectivity via ping and application service queries across hosts.\n• Inspect interface states and routing tables via "show ip interface brief".`;
+        ? `${project.title}\n\nAmaç ve Senaryo:\n${project.description}\n\nYapılandırma Detayı:\n${project.detail || 'Topoloji üzerindeki cihazlar hazır konfigürasyonlarla yüklenmiştir.'}\n\nTest & Doğrulama:\n• Uç cihazlar arasında ping ve servis erişimlerini test edin.\n• Cihaz konsollarından "show ip interface brief" ve yönlendirme tablolarını inceleyin.`
+        : `${project.title}\n\nObjective & Scenario:\n${project.description}\n\nConfiguration Details:\n${project.detail || 'Topology devices are initialized with active baseline configurations.'}\n\nVerification & Testing:\n• Test connectivity via ping and application service queries across hosts.\n• Inspect interface states and routing tables via "show ip interface brief".`;
     };
 
     const overviewNote = {

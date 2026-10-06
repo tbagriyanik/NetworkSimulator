@@ -26,8 +26,8 @@ const example = (isTr: boolean): ExampleProject => {
     {
       id: 'acl-standard-note',
       text: isTr
-        ? 'Amaç: Standart ACL kullanarak kaynak IP bazlı trafik filtreleme yapmak.\n\n🔧 YAPILANDIRMA ADIMLARI:\n\n1) ACL TANIMLAMA (R3):\n   - enable\n   - configure terminal\n   - access-list 10 deny 192.168.1.0 0.0.0.255\n   - access-list 10 permit any\n\n2) ACL UYGULAMA:\n   - interface gi0/1\n   - ip access-group 10 out\n\n3) TEST:\n   - PC0 (192.168.1.10) -> ping 192.168.2.10 (başarısız olmalı)\n   - show access-lists'
-        : '🔧 BUILD STEPS:\n\n1) DEFINE ACL (R3):\n   - enable\n   - configure terminal\n   - access-list 10 deny 192.168.1.0 0.0.0.255\n   - access-list 10 permit any\n\n2) APPLY ACL:\n   - interface gi0/1\n   - ip access-group 10 out\n\n3) TEST:\n   - PC0 (192.168.1.10) -> ping 192.168.2.10 (should fail)\n   - show access-lists',
+        ? 'Amaç: Standart ACL kullanarak kaynak IP bazlı trafik filtreleme yapmak.\n\nYAPILANDIRMA ADIMLARI:\n\n1) ACL TANIMLAMA (R3):\n   - enable\n   - configure terminal\n   - access-list 10 deny 192.168.1.0 0.0.0.255\n   - access-list 10 permit any\n\n2) ACL UYGULAMA:\n   - interface gi0/1\n   - ip access-group 10 out\n\n3) TEST:\n   - PC0 (192.168.1.10) -> ping 192.168.2.10 (başarısız olmalı)\n   - show access-lists'
+        : 'BUILD STEPS:\n\n1) DEFINE ACL (R3):\n   - enable\n   - configure terminal\n   - access-list 10 deny 192.168.1.0 0.0.0.255\n   - access-list 10 permit any\n\n2) APPLY ACL:\n   - interface gi0/1\n   - ip access-group 10 out\n\n3) TEST:\n   - PC0 (192.168.1.10) -> ping 192.168.2.10 (should fail)\n   - show access-lists',
       x: 450,
       y: 80,
       width: 520,

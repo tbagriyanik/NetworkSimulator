@@ -23,8 +23,8 @@ const example = (isTr: boolean): ExampleProject => {
     {
       id: 'stp-triangle-note',
       text: isTr
-        ? 'Amaç: Üç switch arasında triangle topolojide STP kullanarak loop önlemek ve path sağlamak.\n\n🔄 STP Triangle Topology (3 Switch):\n\nSW1, SW2, SW3 üçgen topolojide bağlı.\n\nÜçgen bağlantı:\n- SW1 Fa0/1 ↔ SW3 Fa0/1: Altn BLK\n- SW1 Fa0/2 ↔ SW2 Fa0/1: Desg FWD\n- SW2 Fa0/2 ↔ SW3 Fa0/2: Desg FWD\n\nGörevler:\n1) show spanning-tree ile STP durumunu kontrol et\n2) Bloke port (SW1 Fa0/1)\n3) SW1 Fa0/1 kablo kesilirse otomatik aktif olur\n\n⚠️  Not: Ağı Yenile (F5)'
-        : '🔄 STP Triangle Topology (3 Switches):\n\nSW1, SW2, SW3 connected in triangle topology.\n\nTriangle connections:\n- SW1 Fa0/1 ↔ SW3 Fa0/1: Altn BLK\n- SW1 Fa0/2 ↔ SW2 Fa0/1: Desg FWD\n- SW2 Fa0/2 ↔ SW3 Fa0/2: Desg FWD\n\nTasks:\n1) Verify STP state with show spanning-tree\n2) Blocked port (SW1 Fa0/1) \n3) If SW1 Fa0/1 fails, it automatically becomes active\n\n⚠️  Note: Refresh Network (F5)',
+        ? 'Amaç: Üç switch arasında triangle topolojide STP kullanarak loop önlemek ve path sağlamak.\n\nSTP Triangle Topology (3 Switch):\n\nSW1, SW2, SW3 üçgen topolojide bağlı.\n\nÜçgen bağlantı:\n- SW1 Fa0/1 ↔ SW3 Fa0/1: Altn BLK\n- SW1 Fa0/2 ↔ SW2 Fa0/1: Desg FWD\n- SW2 Fa0/2 ↔ SW3 Fa0/2: Desg FWD\n\nGörevler:\n1) show spanning-tree ile STP durumunu kontrol et\n2) Bloke port (SW1 Fa0/1)\n3) SW1 Fa0/1 kablo kesilirse otomatik aktif olur\n\nNot: Ağı Yenile (F5)'
+        : 'STP Triangle Topology (3 Switches):\n\nSW1, SW2, SW3 connected in triangle topology.\n\nTriangle connections:\n- SW1 Fa0/1 ↔ SW3 Fa0/1: Altn BLK\n- SW1 Fa0/2 ↔ SW2 Fa0/1: Desg FWD\n- SW2 Fa0/2 ↔ SW3 Fa0/2: Desg FWD\n\nTasks:\n1) Verify STP state with show spanning-tree\n2) Blocked port (SW1 Fa0/1) \n3) If SW1 Fa0/1 fails, it automatically becomes active\n\nNote: Refresh Network (F5)',
       x: 600,
       y: 40,
       width: 500,

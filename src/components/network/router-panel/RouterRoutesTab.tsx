@@ -194,7 +194,7 @@ export function RouterRoutesTab({
                     >
                       <td className="p-3">
                         <span className={cn(
-                          "px-2 py-0.5 rounded-md text-[9px] font-bold uppercase border",
+                          "px-2 py-0.5 rounded-md text-[10px] font-bold uppercase border",
                           route.type === 'connected'
                             ? "bg-success-500/10 text-success-500 border-success-500/20"
                             : route.type === 'static'

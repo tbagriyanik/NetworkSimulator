@@ -249,7 +249,7 @@ export function RestApiExplorerWindow({
                 <h2 className="text-xs font-bold uppercase tracking-wider">
                   {isTr ? 'REST API Gezgini' : 'REST API Explorer'}
                 </h2>
-                <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded font-semibold border ${isDark ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}`}>
+                <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded font-semibold border ${isDark ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' : 'bg-emerald-50 text-emerald-700 border-emerald-200'}`}>
                   Intent API / RESTCONF
                 </span>
               </div>

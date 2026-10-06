@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
+import { AlertTriangle } from 'lucide-react';
 import { CanvasDevice } from './NetworkTopology/types/networkTopology.types';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { normalizeMAC } from '../../lib/utils';
@@ -461,7 +462,7 @@ export function DeviceConfigModal({
             <div className={`p-2 rounded-xl border flex items-start gap-2 text-[11px] ${
               isDark ? 'bg-amber-950/40 border-amber-500/40 text-amber-200' : 'bg-amber-50 border-amber-300 text-amber-900'
             }`}>
-              <span className="text-xs shrink-0">⚠️</span>
+              <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5 text-warning-500" />
               <div className="min-w-0 flex-1 leading-tight">
                 <span className="font-bold">
                   {language === 'tr' ? 'Çalışma Zamanı Uyumsuzluğu: ' : 'Runtime State Diff: '}
@@ -728,7 +729,7 @@ export function DeviceConfigModal({
               }`}>
                 {language === 'tr' ? 'Hızlı Konfigürasyon' : 'Quick Configuration'}
               </div>
-              <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded ${
+              <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${
                 isDark ? 'bg-secondary-800 text-secondary-300' : 'bg-secondary-200 text-secondary-700'
               }`}>
                 {isSwitchOrRouter ? 'Running-Config' : 'Host Config'}

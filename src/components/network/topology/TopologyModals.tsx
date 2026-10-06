@@ -308,7 +308,7 @@ export function TopologyModals({
                     {item.icon}
                     {isActive && <span className="absolute -bottom-1 -right-1 w-2 h-2 bg-primary-500 rounded-full" />}
                   </div>
-                  <span className={`text-[9px] font-bold text-center leading-tight ${isActive ? item.activeColor : item.color}`}>
+                  <span className={`text-[10px] font-bold text-center leading-tight ${isActive ? item.activeColor : item.color}`}>
                     {item.label}
                   </span>
                 </button>

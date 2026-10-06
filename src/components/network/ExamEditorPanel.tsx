@@ -331,7 +331,7 @@ export function ExamEditorPanel({
             </Button>
           </div>
         </div>
-        <p className="text-[9px] text-center opacity-50 italic">
+        <p className="text-[10px] text-center opacity-50 italic">
           {isTr
             ? 'JSON dosyası daha sonra düzenlenebilir, .exam dosyası öğrenciler içindir.'
             : 'JSON files can be edited later, .exam files are for students.'}

@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Trash2, Eraser, Search, ChevronLeft, ChevronRight, ChevronDown, X } from 'lucide-react';
+import { Trash2, Eraser, Search, ChevronLeft, ChevronRight, ChevronDown, X, AlertTriangle } from 'lucide-react';
 import { useAppStore } from '@/lib/store/appStore';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { CABLE_COLORS } from './NetworkTopology/utils/networkTopology.constants';
@@ -215,8 +215,8 @@ export const PacketCapturePanel = ({
             <span className="text-[10px] opacity-50 font-mono">({connectionLabel})</span>
           </div>
           {hasError && (
-            <span className="text-[9px] text-error-500 dark:text-error-400 font-medium pl-[18px]">
-              ⚠️ {statusMessage}
+            <span className="text-[10px] text-error-500 dark:text-error-400 font-medium pl-[18px]">
+              <AlertTriangle className="w-3 h-3 shrink-0 inline mr-1" />{statusMessage}
             </span>
           )}
         </div>
@@ -290,12 +290,12 @@ export const PacketCapturePanel = ({
           <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5">
             {[
               { label: language === 'tr' ? 'Tümü' : 'All', val: '' },
-              { label: language === 'tr' ? '🚨 Drop' : '🚨 Drops', val: 'drop' },
-              { label: language === 'tr' ? '🌐 OSPF' : '🌐 OSPF', val: 'ospf' },
-              { label: language === 'tr' ? '🏷️ VLAN' : '🏷️ VLAN', val: 'vlan' },
-              { label: language === 'tr' ? '🔀 BGP' : '🔀 BGP', val: 'bgp' },
-              { label: language === 'tr' ? '📡 ICMP' : '📡 ICMP', val: 'icmp' },
-              { label: language === 'tr' ? '🌳 STP' : '🌳 STP', val: 'stp' },
+              { label: language === 'tr' ? 'Drop' : 'Drops', val: 'drop' },
+              { label: 'OSPF', val: 'ospf' },
+              { label: 'VLAN', val: 'vlan' },
+              { label: 'BGP', val: 'bgp' },
+              { label: 'ICMP', val: 'icmp' },
+              { label: 'STP', val: 'stp' },
               { label: 'ARP', val: 'arp' },
               { label: 'TCP', val: 'tcp' },
               { label: 'UDP', val: 'udp' },
@@ -308,7 +308,7 @@ export const PacketCapturePanel = ({
                 key={p.label}
                 type="button"
                 onClick={() => setSearchQuery(p.val)}
-                className={`px-1.5 py-0.5 rounded text-[9.5px] font-mono font-semibold border transition-all shrink-0 ${searchQuery.toLowerCase() === p.val
+                className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold border transition-all shrink-0 ${searchQuery.toLowerCase() === p.val
                     ? p.val === 'drop'
                       ? 'bg-rose-600 text-white border-rose-400 font-bold'
                       : 'bg-emerald-500 text-slate-950 border-emerald-400 font-bold'
@@ -426,10 +426,10 @@ export const PacketCapturePanel = ({
                               }
                               case 'info':
                                 return (
-                                  <td className="px-2 py-1 font-mono text-[9.5px]" key="info">
+                                  <td className="px-2 py-1 font-mono text-[10px]" key="info">
                                     {isDrop ? (
                                       <div className="flex items-center gap-1.5 flex-wrap">
-                                        <span className="px-1.5 py-0.5 rounded text-[8.5px] font-bold uppercase tracking-wider bg-rose-500/20 text-rose-500 dark:text-rose-400 border border-rose-500/40 shrink-0">
+                                        <span className="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-rose-500/20 text-rose-500 dark:text-rose-400 border border-rose-500/40 shrink-0">
                                           DROP
                                         </span>
                                         <span className="font-semibold text-rose-600 dark:text-rose-300">
