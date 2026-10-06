@@ -33,8 +33,11 @@ export const Python3DWindow: React.FC<Python3DWindowProps> = ({
 
   if (!scene) return null;
 
-  const defaultSceneTitle = isEn ? '3D Scene' : '3D Sahne';
-  const defaultTitle = isEn ? 'Scene' : 'Sahne';
+  const defaultSceneTitle = isEn ? 'Interactive 3D Scene' : 'Etkileşimli 3D Sahne';
+  const defaultTitle = isEn ? 'Interactive Scene' : 'Etkileşimli Sahne';
+  const displaySceneTitle = (!scene.title || scene.title === '3D Sahne' || scene.title === '3D Scene' || scene.title === 'Etkileşimli 3D Sahne' || scene.title === 'Interactive 3D Scene')
+    ? defaultSceneTitle
+    : scene.title;
 
   const headerActions = (
     <div className="flex items-center gap-1.5 shrink-0">
@@ -43,7 +46,7 @@ export const Python3DWindow: React.FC<Python3DWindowProps> = ({
         variant="ghost"
         onClick={() => {
           if (onOpenInBrowser) {
-            onOpenInBrowser(htmlContent, scene.title || defaultSceneTitle);
+            onOpenInBrowser(htmlContent, displaySceneTitle);
           }
         }}
         className={`h-7 px-2 text-xs font-semibold border ${
@@ -65,7 +68,7 @@ export const Python3DWindow: React.FC<Python3DWindowProps> = ({
     <ResizablePortalWindow
       isOpen={!!scene}
       onClose={onClose}
-      title={`Python 3D - ${scene.title || defaultTitle}`}
+      title={`Python 3D - ${displaySceneTitle || defaultTitle}`}
       icon={<Box className={`w-4 h-4 shrink-0 animate-pulse ${isDark ? 'text-cyan-400' : 'text-cyan-600'}`} />}
       isDark={isDark}
       isMobile={isMobile}

@@ -279,6 +279,10 @@ export function AppFooter({
                       )}
                       <button type="button" onClick={() => onShortcut('save')} className={`px-1.5 py-0.5 rounded text-[10px] font-mono cursor-pointer hover:ring-1 ${isDark ? 'bg-secondary-700 text-secondary-300 hover:ring-secondary-400' : 'bg-secondary-200 text-secondary-700 hover:ring-secondary-400'}`}>Ctrl+S</button>
                       <span className="mx-1">{t.saveLabel}</span>
+                      <button type="button" onClick={() => { if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('trigger-open-device-search')); }} className={`px-1.5 py-0.5 rounded text-[10px] font-mono cursor-pointer hover:ring-1 ${isDark ? 'bg-secondary-700 text-secondary-300 hover:ring-secondary-400' : 'bg-secondary-200 text-secondary-700 hover:ring-secondary-400'}`}>F3</button>
+                      <span className="mx-1">{language === 'tr' ? 'Cihaz Ara' : 'Search Device'}</span>
+                      <button type="button" onClick={() => { if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('trigger-topology-center-selected', { detail: { targetZoom: 1.0 } })); }} className={`px-1.5 py-0.5 rounded text-[10px] font-mono cursor-pointer hover:ring-1 ${isDark ? 'bg-secondary-700 text-secondary-300 hover:ring-secondary-400' : 'bg-secondary-200 text-secondary-700 hover:ring-secondary-400'}`}>Num ,</button>
+                      <span className="mx-1">{language === 'tr' ? 'Ortala %100' : 'Center 100%'}</span>
                       {(topologyDevices?.length || 0) > 0 && (
                         <>
                           <span className={`mx-2 ${isDark ? 'text-secondary-500' : 'text-secondary-400'}`}>|</span>

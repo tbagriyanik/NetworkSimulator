@@ -429,6 +429,22 @@ export function useKeyboardShortcuts({
         }
       }
 
+      if (e.key === 'F3' && !isModalOrWindowActive && !isEditable) {
+        if (activeTab === 'topology') {
+          e.preventDefault();
+          window.dispatchEvent(new CustomEvent('trigger-open-device-search'));
+          return;
+        }
+      }
+
+      if (!isModalOrWindowActive && !isEditable && (e.code === 'NumpadDecimal' || e.code === 'NumpadComma' || (e.key === ',' && e.code.startsWith('Numpad')))) {
+        if (activeTab === 'topology' && activeDeviceId && !activeDeviceId.startsWith('note-')) {
+          e.preventDefault();
+          window.dispatchEvent(new CustomEvent('trigger-topology-center-selected', { detail: { targetZoom: 1.0 } }));
+          return;
+        }
+      }
+
       // Shift + ? / Shift + / is handled by the topology keyboard hook
       // (useCanvasKeyboard -> onOpenShortcutsModal). It used to be handled here
       // too, but the dispatched `trigger-topology-toggle-shortcuts` event had no

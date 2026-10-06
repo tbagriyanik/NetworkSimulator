@@ -7,7 +7,7 @@ Bu indeks, Network Simulator projesinin tüm dokümantasyon dosyalarını ve iç
 ## 📖 Dokümantasyon Dosyaları
 
 ### 🚀 [training/ProjeOzellikleri.md](training/ProjeOzellikleri.md)
-**Amaç**: Sürüm Özellikleri, WebKit/Tuval Uyumlaştırması, Yüksek/Düşük Grafik Modu, Ağ Dokümantasyonu, STP Korumaları & Conntrack Motoru (v7.3.1)  
+**Amaç**: Sürüm Özellikleri, WebKit/Tuval Uyumlaştırması, Yüksek/Düşük Grafik Modu, Ağ Dokümantasyonu, STP Korumaları & Conntrack Motoru (v7.4.1)  
 **Okuma Süresi**: 15 dakika  
 **İçerik**:
 - Otomatik Ağ Dokümantasyon Raporu Motoru (`networkReportGenerator.ts`)

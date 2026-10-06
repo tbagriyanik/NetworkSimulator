@@ -8,8 +8,10 @@ export function get3DSceneScript(sceneDataJson: string, isDark: boolean = true):
     (function() {
       const canvas = document.getElementById('render-canvas');
       const gl = canvas.getContext('webgl', {
-        antialias: false,
-        powerPreference: 'default',
+        // Keep MSAA available for the maximum-quality preset. The quality
+        // selector still controls the render resolution for lower presets.
+        antialias: true,
+        powerPreference: 'high-performance',
         preserveDrawingBuffer: false
       }) || canvas.getContext('experimental-webgl', {
         powerPreference: 'high-performance'
@@ -50,7 +52,15 @@ export function get3DSceneScript(sceneDataJson: string, isDark: boolean = true):
         if (!canvas.parentElement) return;
         width = Math.max(1, canvas.parentElement.clientWidth);
         height = Math.max(1, canvas.parentElement.clientHeight);
-        const maxDpr = qualityMode === 'low' ? 0.5 : (lowEnd ? 1.0 : Math.min(window.devicePixelRatio || 1, 2.0));
+        // Keep the 3D canvas resolution bounded so high-DPI displays do not
+        // multiply the fragment workload unnecessarily. Medium is the safe
+        // default between the battery-friendly and visual-quality presets.
+        const deviceDpr = window.devicePixelRatio || 1;
+        const maxDpr = qualityMode === 'low'
+          ? 0.5
+          : qualityMode === 'medium'
+            ? Math.min(deviceDpr, lowEnd ? 0.85 : 1.25)
+            : (lowEnd ? 1.0 : Math.min(deviceDpr, 2.0));
         canvas.width = Math.max(1, Math.round(width * maxDpr));
         canvas.height = Math.max(1, Math.round(height * maxDpr));
         if (gl) {
@@ -431,6 +441,8 @@ export function get3DSceneScript(sceneDataJson: string, isDark: boolean = true):
         uniform vec3 uAmbientColor;
         uniform float uRoughness;
         uniform float uMetalness;
+        uniform vec3 uReflectionColor;
+        uniform float uReflectionStrength;
         uniform bool uIsWireframe;
 
         void main() {
@@ -457,7 +469,14 @@ export function get3DSceneScript(sceneDataJson: string, isDark: boolean = true):
           float spec = pow(max(dot(viewDir, reflectDir), 0.0), mix(4.0, 64.0, 1.0 - uRoughness));
           vec3 specular = mix(vec3(0.04), uColor.rgb, uMetalness) * spec;
 
-          gl_FragColor = vec4(diffuse + specular, uColor.a);
+          // Lightweight environment reflection: this gives metallic/smooth
+          // surfaces a visible highlight without requiring a cubemap texture.
+          vec3 reflectionDir = reflect(-viewDir, N);
+          float horizon = pow(1.0 - max(dot(N, viewDir), 0.0), 2.0);
+          vec3 reflection = uReflectionColor * (0.35 + 0.65 * max(reflectionDir.y, 0.0));
+          reflection *= uReflectionStrength * mix(0.15, 1.0, uMetalness) * (1.0 - uRoughness * 0.75);
+
+          gl_FragColor = vec4(diffuse + specular + reflection * (0.35 + horizon), uColor.a);
         }
       \`;
 
@@ -512,6 +531,8 @@ export function get3DSceneScript(sceneDataJson: string, isDark: boolean = true):
         uAmbientColor: gl.getUniformLocation(prog, 'uAmbientColor'),
         uRoughness: gl.getUniformLocation(prog, 'uRoughness'),
         uMetalness: gl.getUniformLocation(prog, 'uMetalness'),
+        uReflectionColor: gl.getUniformLocation(prog, 'uReflectionColor'),
+        uReflectionStrength: gl.getUniformLocation(prog, 'uReflectionStrength'),
         uIsWireframe: gl.getUniformLocation(prog, 'uIsWireframe'),
         aPosition: gl.getAttribLocation(prog, 'aPosition'),
         aNormal: gl.getAttribLocation(prog, 'aNormal'),
@@ -701,6 +722,9 @@ export function get3DSceneScript(sceneDataJson: string, isDark: boolean = true):
         gl.uniform3f(progLoc.uLampPos, 0.0, 5.0, 0.0);
         gl.uniform3f(progLoc.uLampColor, 1.0, 0.85, 0.6);
         gl.uniform3f(progLoc.uAmbientColor, activeTheme.ambient[0], activeTheme.ambient[1], activeTheme.ambient[2]);
+        const reflectionStrength = qualityMode === 'high' ? 1.0 : qualityMode === 'medium' ? 0.45 : 0.0;
+        gl.uniform3f(progLoc.uReflectionColor, currentSky[0], currentSky[1], currentSky[2]);
+        gl.uniform1f(progLoc.uReflectionStrength, reflectionStrength);
 
         gl.enableVertexAttribArray(progLoc.aPosition);
         gl.enableVertexAttribArray(progLoc.aNormal);

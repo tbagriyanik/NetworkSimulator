@@ -243,6 +243,22 @@ export function useCanvasKeyboard({
         }
       }
 
+      // F3: Open device selection menu and focus search box
+      if (!isEditable && e.key === 'F3') {
+        e.preventDefault();
+        window.dispatchEvent(new CustomEvent('trigger-open-device-search'));
+        return;
+      }
+
+      // Numpad decimal / comma (',') on numeric keypad: Center selected device at 100% zoom
+      if (!isEditable && !e.ctrlKey && !e.metaKey && !e.altKey && (e.code === 'NumpadDecimal' || e.code === 'NumpadComma' || (e.key === ',' && e.code.startsWith('Numpad')))) {
+        if (selectedDeviceIds.length > 0) {
+          e.preventDefault();
+          window.dispatchEvent(new CustomEvent('trigger-topology-center-selected', { detail: { targetZoom: 1.0 } }));
+          return;
+        }
+      }
+
       // Home key or Alt+R to reset zoom/pan view
       if (!isEditable && (e.key === 'Home' || (e.altKey && !e.ctrlKey && !e.metaKey && key === 'r'))) {
         e.preventDefault();

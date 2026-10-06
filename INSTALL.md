@@ -44,8 +44,8 @@ Depoda `.github/workflows/release.yml` iş akışı bulunmaktadır. Yeni bir sü
 
 ```bash
 git add .
-git commit -m "chore: release v7.4.0"
-git tag v7.4.0
+git commit -m "chore: release v7.4.1"
+git tag v7.4.1
 git push origin main --tags
 ```
 

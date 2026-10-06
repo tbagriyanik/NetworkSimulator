@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -58,6 +58,20 @@ export function TopologyDeviceDropdown({
 }: TopologyDeviceDropdownProps) {
   const [deviceTypeFilter, setDeviceTypeFilter] = useState<'all' | 'pc' | 'sw' | 'router'>('all');
   const [isDeviceDropdownOpen, setIsDeviceDropdownOpen] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const handleOpenSearch = () => {
+      setIsDeviceDropdownOpen(true);
+      setTimeout(() => {
+        searchInputRef.current?.focus();
+        searchInputRef.current?.select();
+      }, 50);
+    };
+
+    window.addEventListener('trigger-open-device-search', handleOpenSearch);
+    return () => window.removeEventListener('trigger-open-device-search', handleOpenSearch);
+  }, []);
 
   const availableCategoryCounts = useMemo(() => {
     const counts = { all: topologyDevices.length, pc: 0, sw: 0, router: 0 };
@@ -149,6 +163,7 @@ export function TopologyDeviceDropdown({
               <div className="relative">
                 <Search className={`absolute left-2 top-1/2 -translate-y-1/2 w-3 h-3 text-secondary-400 pointer-events-none ${toolbarGlowClass}`} />
                 <Input
+                  ref={searchInputRef}
                   value={deviceSearchQuery}
                   onChange={e => setDeviceSearchQuery(e.target.value)}
                   placeholder={t.searchShort}

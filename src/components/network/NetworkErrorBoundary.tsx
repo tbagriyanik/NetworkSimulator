@@ -39,27 +39,36 @@ export class NetworkErrorBoundary extends Component<Props, State> {
   public render() {
     if (this.state.hasError) {
       return (
-        <div className="flex flex-col items-center justify-center p-6 bg-background/95 border border-destructive/30 rounded-lg text-center space-y-4 shadow-lg my-2">
-          <div className="p-3 bg-destructive/10 rounded-full text-destructive">
-            <AlertTriangle className="h-6 w-6" />
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="network-error-title"
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/45 p-4 backdrop-blur-[2px]"
+        >
+          <div className="w-full max-w-md rounded-xl border border-destructive/30 bg-background p-6 text-center shadow-2xl">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10 text-destructive">
+              <AlertTriangle className="h-6 w-6" />
+            </div>
+            <div className="space-y-2">
+              <h3 id="network-error-title" className="font-semibold text-base text-foreground">
+                {this.props.fallbackTitle || 'Bileşen Yüklenirken Bir Hata Oluştu'}
+              </h3>
+              <p className="break-words text-xs text-muted-foreground">
+                {this.state.error?.message || 'Beklenmeyen bir görselleştirme hatası meydana geldi.'}
+              </p>
+            </div>
+            <div className="mt-5 flex justify-center">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={this.handleReset}
+                className="flex items-center gap-2 text-xs"
+              >
+                <RefreshCw className="h-3.5 w-3.5" />
+                Yeniden Dene
+              </Button>
+            </div>
           </div>
-          <div className="space-y-1">
-            <h3 className="font-semibold text-base text-foreground">
-              {this.props.fallbackTitle || 'Bileşen Yüklenirken Bir Hata Oluştu'}
-            </h3>
-            <p className="text-xs text-muted-foreground max-w-md break-words">
-              {this.state.error?.message || 'Beklenmeyen bir görselleştirme hatası meydana geldi.'}
-            </p>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={this.handleReset}
-            className="flex items-center gap-2 text-xs"
-          >
-            <RefreshCw className="h-3.5 w-3.5" />
-            Yeniden Dene
-          </Button>
         </div>
       );
     }

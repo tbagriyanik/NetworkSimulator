@@ -25,6 +25,7 @@ interface UseTopologyWindowEventsProps {
   onPanChange?: (pan: { x: number; y: number }) => void;
   onTopologyChange?: (devices: CanvasDevice[], connections: CanvasConnection[], notes: CanvasNote[]) => void;
   devices: CanvasDevice[];
+  selectedDeviceIds: string[];
   topologyConnections: CanvasConnection[];
   notes: CanvasNote[];
   portTooltipTimerRef: RefObject<ReturnType<typeof setTimeout> | null>;
@@ -53,6 +54,7 @@ export function useTopologyWindowEvents({
   onPanChange,
   onTopologyChange,
   devices,
+  selectedDeviceIds,
   topologyConnections,
   notes,
   portTooltipTimerRef,
@@ -191,6 +193,31 @@ export function useTopologyWindowEvents({
     const handleScrollUpEvent = () => scrollCanvasVertically(-1);
     const handleScrollDownEvent = () => scrollCanvasVertically(1);
 
+    const handleCenterSelectedEvent = (e: Event) => {
+      const customEvt = e as CustomEvent<{ targetZoom?: number }>;
+      const targetZoom = typeof customEvt.detail?.targetZoom === 'number' ? customEvt.detail.targetZoom : 1.0;
+      setZoom(targetZoom);
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const rect = canvas.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) return;
+
+      // Find the active/selected device
+      const targetDeviceId = selectedDeviceIds[0] || focusDeviceId;
+      if (!targetDeviceId) return;
+      const targetDevice = deviceMap.get(targetDeviceId);
+      if (!targetDevice) return;
+
+      const deviceCenter = getDeviceCenter(targetDevice);
+      const targetPanX = rect.width / 2 - deviceCenter.x * targetZoom;
+      const targetPanY = rect.height / 2 - deviceCenter.y * targetZoom;
+
+      setPan({ x: targetPanX, y: targetPanY });
+      if (onPanChange) {
+        onPanChange({ x: targetPanX, y: targetPanY });
+      }
+    };
+
     window.addEventListener('trigger-topology-zoom-to-fit', handleZoomToFitEvent);
     window.addEventListener('trigger-topology-toggle-minimap', handleToggleMinimapEvent);
     window.addEventListener('trigger-topology-toggle-network-log', handleToggleLogEvent);
@@ -199,6 +226,7 @@ export function useTopologyWindowEvents({
     window.addEventListener('trigger-topology-zoom-reset', handleZoomResetEvent);
     window.addEventListener('trigger-topology-scroll-up', handleScrollUpEvent);
     window.addEventListener('trigger-topology-scroll-down', handleScrollDownEvent);
+    window.addEventListener('trigger-topology-center-selected', handleCenterSelectedEvent);
 
     return () => {
       window.removeEventListener('trigger-topology-zoom-to-fit', handleZoomToFitEvent);
@@ -209,8 +237,9 @@ export function useTopologyWindowEvents({
       window.removeEventListener('trigger-topology-zoom-reset', handleZoomResetEvent);
       window.removeEventListener('trigger-topology-scroll-up', handleScrollUpEvent);
       window.removeEventListener('trigger-topology-scroll-down', handleScrollDownEvent);
+      window.removeEventListener('trigger-topology-center-selected', handleCenterSelectedEvent);
     };
-  }, [canvasRef, zoomToFit, setIsMinimapOpen, setShowLogPanel, setZoom, setPan, resetView]);
+  }, [canvasRef, zoomToFit, setIsMinimapOpen, setShowLogPanel, setZoom, setPan, resetView, selectedDeviceIds, focusDeviceId, deviceMap, onPanChange]);
 
   // Mobile back event listener
   useEffect(() => {

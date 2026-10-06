@@ -246,12 +246,6 @@ export function DeviceConfigModal({
     return () => document.removeEventListener('keydown', handleTab);
   }, []);
 
-  useEffect(() => {
-    const handleMobileBack = () => onClose();
-    window.addEventListener('mobile-back-pressed', handleMobileBack);
-    return () => window.removeEventListener('mobile-back-pressed', handleMobileBack);
-  }, [onClose]);
-
   const handleIpChange = (newIp: string) => {
     setIpValue(newIp);
     if (errors.ip) {

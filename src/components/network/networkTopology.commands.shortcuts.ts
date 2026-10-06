@@ -17,6 +17,9 @@ export function getKeyboardShortcuts(isTR: boolean): CommandDefinition {
     cmds: [
       ['F1', isTR ? 'Yardım / Kısayollar panelini aç' : 'Open Help / Shortcuts panel'],
       ['Shift + ? / Shift + /', isTR ? 'Klavye & Tuval Kısayol Kılavuzu modalını aç' : 'Open Keyboard & Canvas Shortcuts guide modal'],
+      ['F2', isTR ? 'Seçili cihazı yeniden adlandır / yapılandır' : 'Rename / configure selected device'],
+      ['F3', isTR ? 'Cihaz seçim menüsünü aç ve arama kutusuna odaklan' : 'Open device selection menu and focus search box'],
+      ['Num , (Nümerik Virgül/Nokta)', isTR ? 'Seçili cihazı ekranın ortasına getir ve zoom %100 yap' : 'Center selected device on screen at 100% zoom'],
       ['F5', isTR ? 'Ağı yenile' : 'Refresh network'],
       ['Escape', isTR ? 'Önce aktif üst pencereyi, tekrar basınca alttaki pencereyi kapat' : 'Close the active top window first, then the window below'],
       ['Tab', isTR ? 'Cihazlar arasında gezin' : 'Navigate between devices'],
@@ -61,6 +64,7 @@ export function getKeyboardShortcuts(isTR: boolean): CommandDefinition {
       ['Grafik Kalitesi (High/Low)', isTR ? 'Yüksekte modern ambiyans & cam dolgusu, düşükte sıfır efekt ve tam akıcılık' : 'High quality with modern ambient glass fills, low quality with zero-effects max performance'],
       ['MQTT Paket Yakalama', isTR ? 'MQTT CONNECT, PUBLISH, SUBSCRIBE, Topic, QoS ve Payload bilgilerini incele' : 'Inspect MQTT CONNECT, PUBLISH, SUBSCRIBE, Topic, QoS and Payload details'],
       ['REST / RESTCONF', isTR ? 'İstek ve yanıt panellerini ayraçtan sürükleyerek yeniden boyutlandır' : 'Resize request and response panes using the draggable divider'],
+      ['Modal Kapat / Mobil Geri', isTR ? 'Tüm modalları ESC veya mobil cihaz geri tuşu/hareketi ile kapat' : 'Close all modals and floating windows via ESC or mobile back button/gesture'],
     ]
   };
 }

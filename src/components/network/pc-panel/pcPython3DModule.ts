@@ -471,7 +471,7 @@ export class PyScene {
   constructor(deviceId: string, ...args: unknown[]) {
     this.deviceId = deviceId;
     const params = parseNamedOrPosArgs(args, ['title', 'sky', 'grid'], {
-      title: '3D Sahne',
+      title: 'Etkileşimli 3D Sahne',
       sky: 'day',
       grid: true,
     });

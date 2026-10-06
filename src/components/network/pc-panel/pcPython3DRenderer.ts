@@ -18,6 +18,18 @@ function escapeHtml(str: string): string {
     .replace(/'/g, '&#039;');
 }
 
+function toolbarIcon(name: 'theme' | 'quality' | 'wireframe' | 'grid' | 'rotate' | 'reset'): string {
+  const paths = {
+    theme: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.65 6.35l1.42-1.42"/>',
+    quality: '<path d="m12 3 2.6 5.3L20.5 9l-4.25 4.15 1 5.85L12 16.25 6.75 19l1-5.85L3.5 9l5.9-.7L12 3Z"/>',
+    wireframe: '<path d="m4 6 8-3 8 3-8 3-8-3Z M4 6v12l8 3 8-3V6 M12 9v12"/>',
+    grid: '<path d="M4 4h16v16H4zM4 10h16M4 16h16M10 4v16M16 4v16"/>',
+    rotate: '<path d="M20 11a8 8 0 0 0-14.8-4L3 10m0 0V5m0 5h5M4 13a8 8 0 0 0 14.8 4L21 14m0 0v5m0-5h-5"/>',
+    reset: '<path d="M3 12a9 9 0 1 0 3-6.7L3 8m0-5v5h5"/>'
+  };
+  return `<svg class="toolbar-icon" viewBox="0 0 24 24" aria-hidden="true">${paths[name]}</svg>`;
+}
+
 /**
  * Generates an interactive, standalone HTML5 3D WebGL application
  * that can run inside an iframe (PCBrowser) or saved as a .html file.
@@ -39,13 +51,16 @@ export function generate3DSceneHtml(scene: Python3DSceneState, isDark: boolean =
         <option value="blueprint">📐 Blueprint</option>`;
 
   const objLabel = isEn ? (scene.objects.length === 1 ? 'Object' : 'Objects') : 'Nesne';
+  const displayTitle = (!scene.title || scene.title === '3D Sahne' || scene.title === '3D Scene' || scene.title === 'Etkileşimli 3D Sahne' || scene.title === 'Interactive 3D Scene')
+    ? (isEn ? 'Interactive 3D Scene' : 'Etkileşimli 3D Sahne')
+    : scene.title;
 
   return `<!DOCTYPE html>
 <html lang="${isEn ? 'en' : 'tr'}">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>${escapeHtml(scene.title || (isEn ? '3D WebGL Scene' : '3D WebGL Sahne'))}</title>
+  <title>${escapeHtml(displayTitle)}</title>
   <style>${styles}</style>
 </head>
 <body>
@@ -55,7 +70,7 @@ export function generate3DSceneHtml(scene: Python3DSceneState, isDark: boolean =
 
   <header class="toolbar">
     <div class="toolbar-group">
-      <span style="font-weight: 700; font-size: 12px; color: ${isDark ? colors.theme.accent : colors.theme.primary}; margin-right: 4px;">🧊 ${escapeHtml(scene.title || (isEn ? '3D Scene' : '3D Sahne'))}</span>
+      <span style="font-weight: 700; font-size: 12px; color: ${isDark ? colors.theme.accent : colors.theme.primary}; margin-right: 4px;">🧊 ${escapeHtml(displayTitle)}</span>
       <span class="badge" id="obj-count-badge">${scene.objects.length} ${objLabel}</span>
     </div>
     <div class="toolbar-group">
@@ -63,13 +78,14 @@ export function generate3DSceneHtml(scene: Python3DSceneState, isDark: boolean =
         ${initialThemeOption}
       </select>
       <select class="theme-select" id="select-quality" title="${isEn ? 'Rendering Quality' : 'Görüntü Kalitesi'}">
-        <option value="high" selected>${isEn ? '⚡ Full Quality' : '⚡ Tam Kalite'}</option>
-        <option value="low">${isEn ? '🔋 Low Quality' : '🔋 Düşük Kalite'}</option>
+        <option value="low">${isEn ? '🔋 Minimum Quality' : '🔋 Minimum Kalite'}</option>
+        <option value="medium">${isEn ? '⚖️ Medium Quality' : '⚖️ Orta Kalite'}</option>
+        <option value="high" selected>${isEn ? '⚡ Maximum Quality (Full Quality)' : '⚡ Maksimum Kalite (Tam Kalite)'}</option>
       </select>
-      <button class="btn" id="btn-wireframe" title="${isEn ? 'Wireframe Mode' : 'Tel Çerçeve Modu'}">${isEn ? '🌐 Wireframe' : '🌐 Tel Kafes'}</button>
-      <button class="btn" id="btn-grid" title="${isEn ? 'Toggle Floor Grid' : 'Zemin Izgarasını Göster/Gizle'}">${isEn ? '▦ Grid' : '▦ Izgara'}</button>
-      <button class="btn" id="btn-rotate" title="${isEn ? 'Toggle Auto Rotation' : 'Otomatik Dönüşü Aç/Kapat'}">${isEn ? '🔄 Rotate' : '🔄 Döndür'}</button>
-      <button class="btn" id="btn-reset" title="${isEn ? 'Reset Camera' : 'Kamerayı Sıfırla'}">${isEn ? '🎯 Reset' : '🎯 Sıfırla'}</button>
+      <button class="btn" id="btn-wireframe" title="${isEn ? 'Wireframe Mode' : 'Tel Çerçeve Modu'}">${toolbarIcon('wireframe')}${isEn ? 'Wireframe' : 'Tel Kafes'}</button>
+      <button class="btn" id="btn-grid" title="${isEn ? 'Toggle Floor Grid' : 'Zemin Izgarasını Göster/Gizle'}">${toolbarIcon('grid')}${isEn ? 'Grid' : 'Izgara'}</button>
+      <button class="btn" id="btn-rotate" title="${isEn ? 'Toggle Auto Rotation' : 'Otomatik Dönüşü Aç/Kapat'}">${toolbarIcon('rotate')}${isEn ? 'Rotate' : 'Döndür'}</button>
+      <button class="btn" id="btn-reset" title="${isEn ? 'Reset Camera' : 'Kamerayı Sıfırla'}">${toolbarIcon('reset')}${isEn ? 'Reset' : 'Sıfırla'}</button>
     </div>
   </header>
 

@@ -90,6 +90,8 @@ Simülatör, tek bir standart komut modelini korurken yaygın alternatif CLI bi�
 | `Ctrl + S` | Save project | Projeyi kaydet |
 | `Tabbed View (Sekme)` | Switch windows to tabbed layout mode | Açık pencereleri sekme modunda birleştir |
 | `F2` | Rename / configure selected device | Seçili cihazı yeniden adlandır / yapılandır |
+| `F3` | Open device selection menu & focus search | Cihaz seçim menüsünü aç ve aramaya odaklan |
+| `Num ,` | Center selected device & reset to 100% zoom | Seçili cihazı ekranın ortasına getir ve zoom %100 yap |
 | `Ctrl + C` | Copy selected device | Seçili cihazı kopyala |
 | `Ctrl + X` | Cut selected device | Seçili cihazı kes |
 | `Arrow Keys` | Move selected device(s) | Seçili cihaz(lar)ı taşı |

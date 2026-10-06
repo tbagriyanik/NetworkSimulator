@@ -91,6 +91,16 @@ export function get3DSceneStyles(isDark: boolean = true): string {
       gap: 5px;
       transition: all 0.15s ease;
     }
+    .toolbar-icon {
+      width: 14px;
+      height: 14px;
+      flex: 0 0 auto;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
     .btn:hover {
       background: ${bgBtnHover};
       border-color: ${isDark ? withAlpha(colors.common.white, 0.25) : colors.cables.default};

@@ -100,7 +100,18 @@ export const SnapshotManagerModal: React.FC<SnapshotManagerModalProps> = ({
   useEffect(() => {
     if (!isOpen || isExamActive) return;
 
+    let localHistoryPushed = false;
+    if (typeof window !== 'undefined') {
+      try {
+        window.history.pushState({ snapshotModal: true }, '');
+        localHistoryPushed = true;
+      } catch {
+        // Ignore
+      }
+    }
+
     const handleMobileBack = () => {
+      localHistoryPushed = false;
       if (showConfirmRollback) {
         setShowConfirmRollback(false);
       } else if (isCreating) {
@@ -117,10 +128,15 @@ export const SnapshotManagerModal: React.FC<SnapshotManagerModalProps> = ({
     };
 
     window.addEventListener('mobile-back-pressed', handleMobileBack);
+    window.addEventListener('popstate', handleMobileBack);
     window.addEventListener('keydown', handleKeyDown);
     return () => {
       window.removeEventListener('mobile-back-pressed', handleMobileBack);
+      window.removeEventListener('popstate', handleMobileBack);
       window.removeEventListener('keydown', handleKeyDown);
+      if (localHistoryPushed && window.history.state?.snapshotModal) {
+        window.history.back();
+      }
     };
   }, [isOpen, showConfirmRollback, isCreating, onClose, isExamActive]);
 

@@ -693,6 +693,7 @@ export function useTopologyCanvasInteractions(
     setDevices,
     deleteConnection: deviceActions.deleteConnection,
     focusDeviceId,
+    selectedDeviceIds,
     deviceMap,
     zoom,
     onPanChange: props.onPanChange,
