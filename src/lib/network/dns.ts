@@ -1,4 +1,4 @@
-﻿import { CanvasDevice } from '@/components/network/NetworkTopology/types/networkTopology.types';
+import { CanvasDevice } from '@/components/network/NetworkTopology/types/networkTopology.types';
 import { SwitchState } from './types';
 import { ensureDeviceStatesMap } from './networkUtils';
 
@@ -131,6 +131,32 @@ export function resolveHostname(
   } else {
     for (const device of devices) {
       if (device.name?.toLowerCase().includes(cleanHostname) && device.ip) return device.ip;
+    }
+  }
+
+  // Check active DNS servers in topology
+  for (const device of devices) {
+    if (device.services?.dns?.enabled && device.services.dns.records) {
+      const rec = device.services.dns.records.find(
+        (r) => r.domain?.toLowerCase() === hostname.toLowerCase() ||
+               r.domain?.toLowerCase() === cleanHostname ||
+               r.domain?.toLowerCase() === `www.${cleanHostname}`
+      );
+      if (rec?.address) return rec.address;
+    }
+  }
+
+  if (deviceStates) {
+    const safeDeviceStates = ensureDeviceStatesMap(deviceStates);
+    for (const [, state] of safeDeviceStates.entries()) {
+      if (state.services?.dns?.enabled && state.services.dns.records) {
+        const rec = state.services.dns.records.find(
+          (r) => r.domain?.toLowerCase() === hostname.toLowerCase() ||
+                 r.domain?.toLowerCase() === cleanHostname ||
+                 r.domain?.toLowerCase() === `www.${cleanHostname}`
+        );
+        if (rec?.address) return rec.address;
+      }
     }
   }
 

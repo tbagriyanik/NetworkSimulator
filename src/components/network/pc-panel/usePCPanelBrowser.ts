@@ -45,6 +45,7 @@ interface UsePCPanelBrowserOptions {
   addLocalOutput: (type: OutputLine['type'], content: string) => void;
   normalizeLookupTargetCallback: (target: string) => string;
   resolveDeviceNameTargetCallback: (target: string) => { ip: string; name?: string } | null;
+  resolveDomainWithDnsServicesCallback?: (domain: string) => { address: string; server?: unknown } | null;
   hasGatewayForTargetCallback: (targetIp: string) => boolean;
   isLoopbackTarget: (target: string) => boolean;
   isValidIpv4: (value: string) => boolean;
@@ -75,6 +76,7 @@ export function usePCPanelBrowser({
   addLocalOutput,
   normalizeLookupTargetCallback,
   resolveDeviceNameTargetCallback,
+  resolveDomainWithDnsServicesCallback,
   hasGatewayForTargetCallback,
   isLoopbackTarget,
   isValidIpv4,
@@ -148,7 +150,7 @@ export function usePCPanelBrowser({
 
     const target = lookupTarget.trim() || '192.168.1.10';
     const namedTarget = resolveDeviceNameTargetCallback(target);
-    const resolvedTargetIp = namedTarget?.ip || target;
+    let resolvedTargetIp = namedTarget?.ip || target;
 
     const isIpV6 = isValidIpv6(resolvedTargetIp);
     if (!isIpV6 && !isValidIpv4(resolvedTargetIp)) {
@@ -160,6 +162,12 @@ export function usePCPanelBrowser({
       if (isValidIpv4(pcDNS) && !hasGatewayForTargetCallback(pcDNS)) {
         addLocalOutput('error', t.dnsGatewayRequired);
         return;
+      }
+      if (resolveDomainWithDnsServicesCallback) {
+        const dnsResult = resolveDomainWithDnsServicesCallback(target);
+        if (dnsResult?.address) {
+          resolvedTargetIp = dnsResult.address;
+        }
       }
     } else if (isValidIpv4(resolvedTargetIp)) {
       if (!isLoopbackTarget(resolvedTargetIp) && !hasGatewayForTargetCallback(resolvedTargetIp)) {
@@ -341,7 +349,7 @@ export function usePCPanelBrowser({
       setHttpAppTitle(`${httpServer.name || httpServer.id} Web Page`);
       addLocalOutput('html', pageContent);
     }
-  }, [addLocalOutput, deviceStates, findHttpServerByTargetCallback, getAvailableIotDevices, getConnectedIotDevices, hasGatewayForTargetCallback, isLoopbackTarget, isValidIpv4, isValidIpv6, language, normalizeLookupTargetCallback, pcDNS, pcHostname, deviceId, resolveDeviceNameTargetCallback, t, iotDevices, topologyDevices, generateIotWebPanelContent, generateIotDevicePageContent, httpAppDeviceId, topologyConnections, pcIPv6, addPcArpEntry]);
+  }, [addLocalOutput, deviceStates, findHttpServerByTargetCallback, getAvailableIotDevices, getConnectedIotDevices, hasGatewayForTargetCallback, isLoopbackTarget, isValidIpv4, isValidIpv6, language, normalizeLookupTargetCallback, pcDNS, pcHostname, deviceId, resolveDeviceNameTargetCallback, resolveDomainWithDnsServicesCallback, t, iotDevices, topologyDevices, generateIotWebPanelContent, generateIotDevicePageContent, httpAppDeviceId, topologyConnections, pcIPv6, addPcArpEntry]);
 
   return { openWebPage };
 }

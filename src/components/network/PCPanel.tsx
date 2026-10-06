@@ -609,6 +609,7 @@ export function PCPanel({
     addLocalOutput,
     normalizeLookupTargetCallback,
     resolveDeviceNameTargetCallback,
+    resolveDomainWithDnsServicesCallback,
     hasGatewayForTargetCallback,
     isLoopbackTarget,
     isValidIpv4,
