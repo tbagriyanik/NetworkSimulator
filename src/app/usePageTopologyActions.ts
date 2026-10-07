@@ -290,8 +290,24 @@ export function usePageTopologyActions({
             const screenY = Math.min(window.innerHeight - 150, Math.max(150, dev.y + 120));
             moveCursor(screenX, screenY, isTr ? `${dev.name} Eklendi` : `${dev.name} Placed`, true);
 
-            // Device is added to canvas on click
-            setDevices(currentDevices);
+            // Device is added to canvas on click in clean initial state (unconfigured IP / WiFi)
+            const sanitizedDevices = currentDevices.map((d, idx) => {
+              if (idx === currentDevices.length - 1) {
+                // If it's a PC or WiFi client being placed, start with static 169.254.x.x APIPA IP & disabled/unconfigured WiFi
+                if (d.type === 'pc') {
+                  const pcIndex = currentDevices.filter(item => item.type === 'pc').length;
+                  const initialApipaIp = `169.254.1.${10 + pcIndex}`;
+                  return { ...d, ip: initialApipaIp, subnet: '255.255.0.0', gateway: '', dns: '', ipConfigMode: 'static' as const };
+                }
+                if (d.type === 'mobile') {
+                  const mobileIndex = currentDevices.filter(item => item.type === 'mobile').length;
+                  const initialApipaIp = `169.254.1.${20 + mobileIndex}`;
+                  return { ...d, ip: initialApipaIp, subnet: '255.255.0.0', wifi: d.wifi ? { ...d.wifi, enabled: false, ssid: '', password: '' } : undefined };
+                }
+              }
+              return d;
+            });
+            setDevices(sanitizedDevices);
 
             const currentStates = new Map<string, SwitchState>();
             currentDevices.forEach(d => {
@@ -639,10 +655,7 @@ export function usePageTopologyActions({
                 devCmds.push('show ip interface brief', 'show ip route');
               }
             } else {
-              // Switch configuration (L2 / L3)
-              const switchVlans = devState?.vlans
-                ? Object.values(devState.vlans).filter(v => typeof v.id === 'number' && v.id > 1)
-                : [];
+              // Switch configuration (L2 / L3) - skip generic VLAN creation step, focus on port configs / verification
               const trunkPorts = devState?.ports
                 ? Object.values(devState.ports).filter(p => p.mode === 'trunk')
                 : [];
@@ -651,15 +664,6 @@ export function usePageTopologyActions({
                 : [];
 
               const switchConfigCmds: string[] = [];
-
-              if (switchVlans.length > 0) {
-                const targetVlan = switchVlans[0];
-                switchConfigCmds.push(`vlan ${targetVlan.id}`);
-                if (targetVlan.name) {
-                  switchConfigCmds.push(`name ${targetVlan.name}`);
-                }
-                switchConfigCmds.push('exit');
-              }
 
               if (trunkPorts.length > 0) {
                 const tp = trunkPorts[0];

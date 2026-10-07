@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTheme } from '@/contexts/ThemeContext';
 
 export interface VirtualCursorState {
   visible: boolean;
@@ -12,6 +13,9 @@ export interface VirtualCursorState {
 }
 
 export function VirtualCursorOverlay() {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+
   const [cursor, setCursor] = useState<VirtualCursorState>({
     visible: false,
     x: 100,
@@ -123,19 +127,27 @@ export function VirtualCursorOverlay() {
               )}
             </div>
 
-            {/* Action Badge */}
+            {/* Action Badge (Light / Dark theme adaptive) */}
             {cursor.actionLabel && (
-              <div className="mt-1 ml-4 px-2 py-0.5 rounded-md text-[11px] font-semibold bg-secondary-900/90 text-white border border-secondary-700/80 shadow-lg backdrop-blur-sm whitespace-nowrap animate-fade-in">
+              <div className={`mt-1 ml-4 px-2 py-0.5 rounded-md text-[11px] font-semibold shadow-lg backdrop-blur-sm whitespace-nowrap animate-fade-in border ${
+                isDark
+                  ? 'bg-secondary-900/95 text-white border-secondary-700/80 shadow-black/40'
+                  : 'bg-white/95 text-secondary-900 border-secondary-300 shadow-secondary-400/30'
+              }`}>
                 {cursor.actionLabel}
               </div>
             )}
 
-            {/* Simulated Typing Indicator */}
+            {/* Simulated Typing Indicator (Light / Dark theme adaptive) */}
             {cursor.typingText && (
-              <div className="mt-1 ml-4 px-2.5 py-1 rounded-md text-[11px] font-mono bg-secondary-950 text-emerald-400 border border-emerald-500/40 shadow-xl flex items-center gap-1.5 animate-pulse">
+              <div className={`mt-1 ml-4 px-2.5 py-1 rounded-md text-[11px] font-mono shadow-xl flex items-center gap-1.5 animate-pulse border ${
+                isDark
+                  ? 'bg-secondary-950 text-emerald-400 border-emerald-500/40 shadow-black/50'
+                  : 'bg-white text-emerald-700 border-emerald-500/50 shadow-emerald-500/10'
+              }`}>
                 <span className="opacity-70">&gt;</span>
-                <span>{cursor.typingText}</span>
-                <span className="w-1.5 h-3 bg-emerald-400 animate-bounce inline-block" />
+                <span className="font-semibold">{cursor.typingText}</span>
+                <span className={`w-1.5 h-3 animate-bounce inline-block ${isDark ? 'bg-emerald-400' : 'bg-emerald-600'}`} />
               </div>
             )}
           </div>
