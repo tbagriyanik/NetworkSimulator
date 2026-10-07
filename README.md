@@ -6,7 +6,7 @@
 ![TypeScript](https://img.shields.io/badge/TypeScript-7.0.2-3178C6?logo=typescript&logoColor=white)
 ![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-4.3.3-06B6D4?logo=tailwindcss&logoColor=white)
 ![FOSS](https://img.shields.io/badge/FOSS-Free%20Open%20Source-brightgreen)
-![Total Lines](https://img.shields.io/badge/total--lines-~249k-lightgrey)
+![Total Lines](https://img.shields.io/badge/total--lines-~250k-lightgrey)
 
 A comprehensive, client-side, browser-based network simulator for learning switching, routing, wireless, security, IoT, CLI terminal workflows.
 
@@ -80,7 +80,7 @@ Simülatör, standart komut formatının yanı sıra yaygın olarak kullanılan 
 | Metrik / Metric | Değer / Value |
 | --- | --- |
 | Version / Sürüm | 7.5.0 |
-| Total Lines / Toplam Satır (`src/`) | ~249,183 |
+| Total Lines / Toplam Satır (`src/`) | ~249,532 |
 | Source Files / Kaynak Dosya | 1179 |
 | Test Files / Test Dosyaları | 249 |
 | Tests / Testler | 2250 |
