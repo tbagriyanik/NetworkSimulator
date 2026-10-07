@@ -446,13 +446,19 @@ export function usePageTopologyActions({
           }, delay);
           delay += 1350;
 
-          // PC-1: Close window after configuration
+          // PC-1: Close window after configuration (move to close button then click)
           registerTimeout(() => {
-            const closeBtn = getElementCoords(`[data-window-close="${pc1.id}"]`, window.innerWidth / 2 + 200, window.innerHeight / 2 - 200);
-            moveCursor(closeBtn.x, closeBtn.y, isTr ? `${pc1.name} Penceresini Kapat` : `Close ${pc1.name} Window`, true);
+            const closeBtn = getElementCoords(`[data-window-close="${pc1.id}"]`, window.innerWidth / 2 + 220, window.innerHeight / 2 - 180);
+            moveCursor(closeBtn.x, closeBtn.y, isTr ? `${pc1.name} Kapat Butonuna Gidiliyor` : `Moving to ${pc1.name} Close Button`, false);
+          }, delay);
+          delay += 400;
+
+          registerTimeout(() => {
+            const closeBtn = getElementCoords(`[data-window-close="${pc1.id}"]`, window.innerWidth / 2 + 220, window.innerHeight / 2 - 180);
+            moveCursor(closeBtn.x, closeBtn.y, isTr ? `${pc1.name} Kapat ✕` : `Close ${pc1.name} ✕`, true);
             useMultiWindowStore.getState().closeDeviceWindow(pc1.id);
           }, delay);
-          delay += 850;
+          delay += 600;
 
           // PC-2: Double click to open configuration window
           registerTimeout(() => {
@@ -505,13 +511,19 @@ export function usePageTopologyActions({
           }, delay);
           delay += 1350;
 
-          // PC-2: Close window after configuration
+          // PC-2: Close window after configuration (move to close button then click)
           registerTimeout(() => {
-            const closeBtn = getElementCoords(`[data-window-close="${pc2.id}"]`, window.innerWidth / 2 + 200, window.innerHeight / 2 - 200);
-            moveCursor(closeBtn.x, closeBtn.y, isTr ? `${pc2.name} Penceresini Kapat` : `Close ${pc2.name} Window`, true);
+            const closeBtn = getElementCoords(`[data-window-close="${pc2.id}"]`, window.innerWidth / 2 + 220, window.innerHeight / 2 - 180);
+            moveCursor(closeBtn.x, closeBtn.y, isTr ? `${pc2.name} Kapat Butonuna Gidiliyor` : `Moving to ${pc2.name} Close Button`, false);
+          }, delay);
+          delay += 400;
+
+          registerTimeout(() => {
+            const closeBtn = getElementCoords(`[data-window-close="${pc2.id}"]`, window.innerWidth / 2 + 220, window.innerHeight / 2 - 180);
+            moveCursor(closeBtn.x, closeBtn.y, isTr ? `${pc2.name} Kapat ✕` : `Close ${pc2.name} ✕`, true);
             useMultiWindowStore.getState().closeDeviceWindow(pc2.id);
           }, delay);
-          delay += 850;
+          delay += 600;
 
           // 4. Test Ping via CMD on PC-1 (Perfect synchronization with pc-auto-type)
           const targetIp = targetPc2Ip;
@@ -556,13 +568,19 @@ export function usePageTopologyActions({
           }, delay);
           delay += 3000;
 
-          // Close PC-1 CMD window after showing results
+          // Close PC-1 CMD window after showing results (move to close button then click)
           registerTimeout(() => {
             const closeBtn = getElementCoords(`[data-window-close="${pc1.id}"]`, window.innerWidth / 2 + 220, window.innerHeight / 2 - 200);
-            moveCursor(closeBtn.x, closeBtn.y, isTr ? `${pc1.name} Penceresini Kapat` : `Close ${pc1.name} Window`, true);
+            moveCursor(closeBtn.x, closeBtn.y, isTr ? `${pc1.name} Kapat Butonuna Gidiliyor` : `Moving to ${pc1.name} Close Button`, false);
+          }, delay);
+          delay += 400;
+
+          registerTimeout(() => {
+            const closeBtn = getElementCoords(`[data-window-close="${pc1.id}"]`, window.innerWidth / 2 + 220, window.innerHeight / 2 - 200);
+            moveCursor(closeBtn.x, closeBtn.y, isTr ? `${pc1.name} CMD Kapat ✕` : `Close ${pc1.name} CMD ✕`, true);
             useMultiWindowStore.getState().closeDeviceWindow(pc1.id);
           }, delay);
-          delay += 850;
+          delay += 600;
         }
 
         // 5. Router / Switch CLI Configuration Step (Synchronized character-by-character typing with terminal-auto-type)
@@ -713,13 +731,19 @@ export function usePageTopologyActions({
             }, delay);
             delay += 2500;
 
-            // Close Router/Switch CLI window
+            // Close Router/Switch CLI window (move to close button then click)
             registerTimeout(() => {
               const closeBtn = getElementCoords(`[data-window-close="${routerDev.id}"]`, window.innerWidth / 2 + 220, window.innerHeight / 2 - 200);
-              moveCursor(closeBtn.x, closeBtn.y, isTr ? `${routerDev.name} Konsol Kapat` : `Close ${routerDev.name} Console`, true);
+              moveCursor(closeBtn.x, closeBtn.y, isTr ? `${routerDev.name} Kapat Butonuna Gidiliyor` : `Moving to ${routerDev.name} Close Button`, false);
+            }, delay);
+            delay += 400;
+
+            registerTimeout(() => {
+              const closeBtn = getElementCoords(`[data-window-close="${routerDev.id}"]`, window.innerWidth / 2 + 220, window.innerHeight / 2 - 200);
+              moveCursor(closeBtn.x, closeBtn.y, isTr ? `${routerDev.name} Konsol Kapat ✕` : `Close ${routerDev.name} Console ✕`, true);
               useMultiWindowStore.getState().closeDeviceWindow(routerDev.id);
             }, delay);
-            delay += 850;
+            delay += 600;
           });
         }
 
@@ -756,13 +780,19 @@ export function usePageTopologyActions({
             }, delay);
             delay += 1350;
 
-            // Close Wireless Window
+            // Close Wireless Window (move to close button then click)
             registerTimeout(() => {
               const closeBtn = getElementCoords(`[data-window-close="${wifiDev.id}"]`, window.innerWidth / 2 + 200, window.innerHeight / 2 - 200);
-              moveCursor(closeBtn.x, closeBtn.y, isTr ? `${wifiDev.name} Penceresini Kapat` : `Close ${wifiDev.name} Window`, true);
+              moveCursor(closeBtn.x, closeBtn.y, isTr ? `${wifiDev.name} Kapat Butonuna Gidiliyor` : `Moving to ${wifiDev.name} Close Button`, false);
+            }, delay);
+            delay += 400;
+
+            registerTimeout(() => {
+              const closeBtn = getElementCoords(`[data-window-close="${wifiDev.id}"]`, window.innerWidth / 2 + 200, window.innerHeight / 2 - 200);
+              moveCursor(closeBtn.x, closeBtn.y, isTr ? `${wifiDev.name} Kapat ✕` : `Close ${wifiDev.name} ✕`, true);
               useMultiWindowStore.getState().closeDeviceWindow(wifiDev.id);
             }, delay);
-            delay += 850;
+            delay += 600;
           });
         }
 
@@ -792,13 +822,19 @@ export function usePageTopologyActions({
             }, delay);
             delay += 1200;
 
-            // Close Printer Window
+            // Close Printer Window (move to close button then click)
             registerTimeout(() => {
               const closeBtn = getElementCoords(`[data-window-close="${printerDev.id}"]`, window.innerWidth / 2 + 200, window.innerHeight / 2 - 200);
-              moveCursor(closeBtn.x, closeBtn.y, isTr ? `${printerDev.name} Penceresini Kapat` : `Close ${printerDev.name} Window`, true);
+              moveCursor(closeBtn.x, closeBtn.y, isTr ? `${printerDev.name} Kapat Butonuna Gidiliyor` : `Moving to ${printerDev.name} Close Button`, false);
+            }, delay);
+            delay += 400;
+
+            registerTimeout(() => {
+              const closeBtn = getElementCoords(`[data-window-close="${printerDev.id}"]`, window.innerWidth / 2 + 200, window.innerHeight / 2 - 200);
+              moveCursor(closeBtn.x, closeBtn.y, isTr ? `${printerDev.name} Kapat ✕` : `Close ${printerDev.name} ✕`, true);
               useMultiWindowStore.getState().closeDeviceWindow(printerDev.id);
             }, delay);
-            delay += 850;
+            delay += 600;
           });
         }
 
@@ -831,13 +867,19 @@ export function usePageTopologyActions({
             }, delay);
             delay += 1200;
 
-            // Close IoT Window
+            // Close IoT Window (move to close button then click)
             registerTimeout(() => {
               const closeBtn = getElementCoords(`[data-window-close="${iotDev.id}"]`, window.innerWidth / 2 + 200, window.innerHeight / 2 - 200);
-              moveCursor(closeBtn.x, closeBtn.y, isTr ? `${iotDev.name} Penceresini Kapat` : `Close ${iotDev.name} Window`, true);
+              moveCursor(closeBtn.x, closeBtn.y, isTr ? `${iotDev.name} Kapat Butonuna Gidiliyor` : `Moving to ${iotDev.name} Close Button`, false);
+            }, delay);
+            delay += 400;
+
+            registerTimeout(() => {
+              const closeBtn = getElementCoords(`[data-window-close="${iotDev.id}"]`, window.innerWidth / 2 + 200, window.innerHeight / 2 - 200);
+              moveCursor(closeBtn.x, closeBtn.y, isTr ? `${iotDev.name} Kapat ✕` : `Close ${iotDev.name} ✕`, true);
               useMultiWindowStore.getState().closeDeviceWindow(iotDev.id);
             }, delay);
-            delay += 850;
+            delay += 600;
           });
         }
 
@@ -868,13 +910,19 @@ export function usePageTopologyActions({
             }, delay);
             delay += 1200;
 
-            // Close WLC Window
+            // Close WLC Window (move to close button then click)
             registerTimeout(() => {
               const closeBtn = getElementCoords(`[data-window-close="${wlcDev.id}"]`, window.innerWidth / 2 + 200, window.innerHeight / 2 - 200);
-              moveCursor(closeBtn.x, closeBtn.y, isTr ? `${wlcDev.name} Penceresini Kapat` : `Close ${wlcDev.name} Window`, true);
+              moveCursor(closeBtn.x, closeBtn.y, isTr ? `${wlcDev.name} Kapat Butonuna Gidiliyor` : `Moving to ${wlcDev.name} Close Button`, false);
+            }, delay);
+            delay += 400;
+
+            registerTimeout(() => {
+              const closeBtn = getElementCoords(`[data-window-close="${wlcDev.id}"]`, window.innerWidth / 2 + 200, window.innerHeight / 2 - 200);
+              moveCursor(closeBtn.x, closeBtn.y, isTr ? `${wlcDev.name} Kapat ✕` : `Close ${wlcDev.name} ✕`, true);
               useMultiWindowStore.getState().closeDeviceWindow(wlcDev.id);
             }, delay);
-            delay += 850;
+            delay += 600;
           });
         }
 
