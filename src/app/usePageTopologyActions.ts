@@ -183,6 +183,8 @@ export function usePageTopologyActions({
         const connections = [...data.connections];
         const deviceStates = data.deviceStates;
         const pcDevices = devices.filter(d => d.type === 'pc');
+        let simulatedDevices: CanvasDevice[] = [];
+        let simulatedStates = new Map<string, SwitchState>();
         let delay = 300;
 
         const moveCursor = (x: number, y: number, actionLabel?: string, clicking = false, typingText?: string) => {
@@ -221,14 +223,116 @@ export function usePageTopologyActions({
         const wifiDevices = devices.filter(d => d.type === 'mobile' || !!d.wifi);
         const iotDevices = devices.filter(d => d.type === 'iot');
         const printerDevices = devices.filter(d => d.type === 'printer');
-        const routerCliCmds = ['enable', 'configure terminal', 'interface FastEthernet0/0', 'ip address 192.168.1.1 255.255.255.0', 'no shutdown'];
+
+        // Helper function to extract exact required CLI commands based on topology scenario
+        const getDeviceCliCommands = (routerDev: CanvasDevice): string[] => {
+          const devState = deviceStates?.get(routerDev.id);
+          const devCmds: string[] = ['enable'];
+
+          if (routerDev.type === 'router') {
+            const configuredPorts = devState?.ports
+              ? Object.values(devState.ports).filter(p => p.ipAddress && p.subnetMask)
+              : [];
+
+            const dynamicRoutes = (devState as unknown as { dynamicRoutes?: Array<{ destination: string; subnetMask: string; area?: number }> })?.dynamicRoutes || [];
+            const staticRoutes = (devState as unknown as { staticRoutes?: Array<{ destination: string; subnetMask: string; nextHop: string }> })?.staticRoutes || [];
+            const bgpCfg = (devState as unknown as { bgpConfig?: { localAs: number; neighbors: string[] } })?.bgpConfig;
+            const ripCfg = (devState as unknown as { ripConfig?: { version?: number; networks: string[] } })?.ripConfig;
+            const ospfId = (devState as unknown as { ospfProcessId?: string })?.ospfProcessId;
+            const dhcpPool = (devState as unknown as { dhcpPools?: Array<{ name: string; network: string; mask: string; defaultRouter?: string }> })?.dhcpPools || [];
+
+            const configCommands: string[] = [];
+
+            // Configure all assigned ports
+            configuredPorts.forEach(p => {
+              configCommands.push(`interface ${p.id}`);
+              configCommands.push(`ip address ${p.ipAddress} ${p.subnetMask}`);
+              configCommands.push('no shutdown');
+              configCommands.push('exit');
+            });
+
+            // Configure DHCP Pools if present
+            dhcpPool.forEach(pool => {
+              configCommands.push(`ip dhcp pool ${pool.name}`);
+              configCommands.push(`network ${pool.network} ${pool.mask}`);
+              if (pool.defaultRouter) {
+                configCommands.push(`default-router ${pool.defaultRouter}`);
+              }
+              configCommands.push('exit');
+            });
+
+            // Configure Routing Protocols
+            if (ospfId || dynamicRoutes.length > 0) {
+              configCommands.push(`router ospf ${ospfId || '1'}`);
+              dynamicRoutes.forEach(r => {
+                configCommands.push(`network ${r.destination} ${r.subnetMask} area ${r.area ?? 0}`);
+              });
+              configCommands.push('exit');
+            } else if (ripCfg && ripCfg.networks?.length > 0) {
+              configCommands.push('router rip');
+              configCommands.push(`version ${ripCfg.version || 2}`);
+              ripCfg.networks.forEach(net => {
+                configCommands.push(`network ${net}`);
+              });
+              configCommands.push('exit');
+            } else if (bgpCfg && bgpCfg.localAs) {
+              configCommands.push(`router bgp ${bgpCfg.localAs}`);
+              (bgpCfg.neighbors || []).forEach(nbr => {
+                configCommands.push(`neighbor ${nbr} remote-as ${bgpCfg.localAs}`);
+              });
+              configCommands.push('exit');
+            } else if (staticRoutes.length > 0) {
+              staticRoutes.forEach(sr => {
+                configCommands.push(`ip route ${sr.destination} ${sr.subnetMask} ${sr.nextHop}`);
+              });
+            }
+
+            if (configCommands.length > 0) {
+              devCmds.push('configure terminal', ...configCommands);
+            } else {
+              devCmds.push('show ip interface brief', 'show ip route');
+            }
+          } else {
+            // Switch configuration (L2 / L3)
+            const trunkPorts = devState?.ports
+              ? Object.values(devState.ports).filter(p => p.mode === 'trunk')
+              : [];
+            const accessPorts = devState?.ports
+              ? Object.values(devState.ports).filter(p => p.mode === 'access' && typeof p.accessVlan === 'number' && p.accessVlan > 1)
+              : [];
+
+            const switchConfigCmds: string[] = [];
+
+            trunkPorts.forEach(tp => {
+              switchConfigCmds.push(`interface ${tp.id}`);
+              switchConfigCmds.push('switchport mode trunk');
+              switchConfigCmds.push('exit');
+            });
+
+            accessPorts.forEach(ap => {
+              switchConfigCmds.push(`interface ${ap.id}`);
+              switchConfigCmds.push(`switchport access vlan ${ap.accessVlan}`);
+              switchConfigCmds.push('exit');
+            });
+
+            if (switchConfigCmds.length > 0) {
+              devCmds.push('configure terminal', ...switchConfigCmds);
+            } else {
+              devCmds.push('show vlan brief', 'show mac address-table');
+            }
+          }
+
+          return devCmds;
+        };
+
+        const totalCliSteps = routerDevices.reduce((sum, d) => sum + (3 + getDeviceCliCommands(d).length), 0);
         const totalSteps = devices.length + connections.length +
           (pcDevices.length >= 2 ? 7 : 0) +
           (wlcDevices.length * 3) +
           (wifiDevices.length * 3) +
           (iotDevices.length * 3) +
           (printerDevices.length * 3) +
-          (routerDevices.length * (3 + routerCliCmds.length));
+          totalCliSteps;
         let currentStep = 0;
 
         const updateProgress = (step: number, msg: string) => {
@@ -290,7 +394,7 @@ export function usePageTopologyActions({
             const screenY = Math.min(window.innerHeight - 150, Math.max(150, dev.y + 120));
             moveCursor(screenX, screenY, isTr ? `${dev.name} Eklendi` : `${dev.name} Placed`, true);
 
-            // Device is added to canvas on click in clean initial state (unconfigured IP / WiFi)
+            // Device is added to canvas on click in clean initial state (unconfigured IP / WiFi / Port IPs)
             const sanitizedDevices = currentDevices.map((d, idx) => {
               if (idx === currentDevices.length - 1) {
                 // If it's a PC or WiFi client being placed, start with static 169.254.x.x APIPA IP & disabled/unconfigured WiFi
@@ -304,16 +408,44 @@ export function usePageTopologyActions({
                   const initialApipaIp = `169.254.1.${20 + mobileIndex}`;
                   return { ...d, ip: initialApipaIp, subnet: '255.255.0.0', wifi: d.wifi ? { ...d.wifi, enabled: false, ssid: '', password: '' } : undefined };
                 }
+                if (d.type === 'printer') {
+                  return { ...d, ip: '', subnet: '255.255.255.0', gateway: '', dns: '' };
+                }
+                if (d.type === 'iot') {
+                  return { ...d, ip: '', subnet: '255.255.255.0', gateway: '', dns: '' };
+                }
+                if (d.type === 'wlc') {
+                  return { ...d, ip: '', subnet: '255.255.255.0', gateway: '', wifi: d.wifi ? { ...d.wifi, enabled: false, ssid: '', password: '' } : undefined };
+                }
               }
               return d;
             });
+            simulatedDevices = sanitizedDevices;
             setDevices(sanitizedDevices);
 
+            // Do not initialize states with final configured routing/interfaces immediately; will be configured step-by-step
             const currentStates = new Map<string, SwitchState>();
             currentDevices.forEach(d => {
               const state = deviceStates.get(d.id);
-              if (state) currentStates.set(d.id, state);
+              if (state) {
+                // Clean unconfigured ports initially (no IP, default VLAN 1)
+                const cleanPorts: Record<string, typeof state.ports[string]> = {};
+                Object.entries(state.ports || {}).forEach(([pId, p]) => {
+                  cleanPorts[pId] = {
+                    ...p,
+                    ipAddress: undefined,
+                    subnetMask: undefined,
+                    mode: 'access',
+                    accessVlan: 1,
+                  };
+                });
+                currentStates.set(d.id, {
+                  ...state,
+                  ports: cleanPorts,
+                });
+              }
             });
+            simulatedStates = currentStates;
             setDeviceStates(currentStates);
 
             window.dispatchEvent(new CustomEvent('commit-action-event', {
@@ -603,86 +735,7 @@ export function usePageTopologyActions({
         if (routerDevices.length > 0) {
           routerDevices.forEach((routerDev) => {
             const devState = deviceStates?.get(routerDev.id);
-            let devCmds: string[] = ['enable'];
-
-            if (routerDev.type === 'router') {
-              const configuredPorts = devState?.ports
-                ? Object.values(devState.ports).filter(p => p.ipAddress && p.subnetMask)
-                : [];
-
-              const dynamicRoutes = (devState as unknown as { dynamicRoutes?: Array<{ destination: string; subnetMask: string; area?: number }> })?.dynamicRoutes || [];
-              const staticRoutes = (devState as unknown as { staticRoutes?: Array<{ destination: string; subnetMask: string; nextHop: string }> })?.staticRoutes || [];
-              const bgpCfg = (devState as unknown as { bgpConfig?: { localAs: number; neighbors: string[] } })?.bgpConfig;
-              const ripCfg = (devState as unknown as { ripConfig?: { version?: number; networks: string[] } })?.ripConfig;
-              const ospfId = (devState as unknown as { ospfProcessId?: string })?.ospfProcessId;
-
-              const configCommands: string[] = [];
-
-              if (configuredPorts.length > 0) {
-                const p = configuredPorts[0];
-                configCommands.push(`interface ${p.id}`);
-                configCommands.push(`ip address ${p.ipAddress} ${p.subnetMask}`);
-                configCommands.push('no shutdown');
-                configCommands.push('exit');
-              }
-
-              if (ospfId || dynamicRoutes.length > 0) {
-                configCommands.push(`router ospf ${ospfId || '1'}`);
-                if (dynamicRoutes.length > 0) {
-                  const r = dynamicRoutes[0];
-                  configCommands.push(`network ${r.destination} ${r.subnetMask} area ${r.area ?? 0}`);
-                }
-                configCommands.push('exit');
-              } else if (ripCfg && ripCfg.networks?.length > 0) {
-                configCommands.push('router rip');
-                configCommands.push(`version ${ripCfg.version || 2}`);
-                configCommands.push(`network ${ripCfg.networks[0]}`);
-                configCommands.push('exit');
-              } else if (bgpCfg && bgpCfg.localAs) {
-                configCommands.push(`router bgp ${bgpCfg.localAs}`);
-                if (bgpCfg.neighbors?.length > 0) {
-                  configCommands.push(`neighbor ${bgpCfg.neighbors[0]} remote-as ${bgpCfg.localAs}`);
-                }
-                configCommands.push('exit');
-              } else if (staticRoutes.length > 0) {
-                const sr = staticRoutes[0];
-                configCommands.push(`ip route ${sr.destination} ${sr.subnetMask} ${sr.nextHop}`);
-              }
-
-              if (configCommands.length > 0) {
-                devCmds.push('configure terminal', ...configCommands);
-              } else {
-                devCmds.push('show ip interface brief', 'show ip route');
-              }
-            } else {
-              // Switch configuration (L2 / L3) - skip generic VLAN creation step, focus on port configs / verification
-              const trunkPorts = devState?.ports
-                ? Object.values(devState.ports).filter(p => p.mode === 'trunk')
-                : [];
-              const accessPorts = devState?.ports
-                ? Object.values(devState.ports).filter(p => p.mode === 'access' && typeof p.accessVlan === 'number' && p.accessVlan > 1)
-                : [];
-
-              const switchConfigCmds: string[] = [];
-
-              if (trunkPorts.length > 0) {
-                const tp = trunkPorts[0];
-                switchConfigCmds.push(`interface ${tp.id}`);
-                switchConfigCmds.push('switchport mode trunk');
-                switchConfigCmds.push('exit');
-              } else if (accessPorts.length > 0) {
-                const ap = accessPorts[0];
-                switchConfigCmds.push(`interface ${ap.id}`);
-                switchConfigCmds.push(`switchport access vlan ${ap.accessVlan}`);
-                switchConfigCmds.push('exit');
-              }
-
-              if (switchConfigCmds.length > 0) {
-                devCmds.push('configure terminal', ...switchConfigCmds);
-              } else {
-                devCmds.push('show vlan brief', 'show mac address-table');
-              }
-            }
+            const devCmds = getDeviceCliCommands(routerDev);
 
             registerTimeout(() => {
               currentStep++;
@@ -729,6 +782,15 @@ export function usePageTopologyActions({
                     : (isTr ? `${routerDev.name} Switch Durumu Kontrol Edildi` : `${routerDev.name} Switch Status Verified`));
               updateProgress(currentStep, resultMsg);
               moveCursor(window.innerWidth / 2, window.innerHeight / 2 + 50, isTr ? `CLI İşlemi Başarılı!` : `CLI Operation Succeeded!`, false);
+
+              // Apply this router/switch's configured state to active device states
+              if (devState) {
+                const updated = new Map(simulatedStates);
+                updated.set(routerDev.id, devState);
+                simulatedStates = updated;
+                setDeviceStates(updated);
+              }
+
               window.dispatchEvent(new CustomEvent('commit-action-event', {
                 detail: { action: resultMsg }
               }));
@@ -773,10 +835,12 @@ export function usePageTopologyActions({
               const ssidCoords = getElementCoords('input[placeholder*="SSID"], input[name="ssid"], [data-modal-content="true"] input', window.innerWidth / 2, window.innerHeight / 2 - 20);
               moveCursor(ssidCoords.x, ssidCoords.y, isTr ? `SSID: ${ssid}` : `SSID: ${ssid}`, false, ssid);
 
-              setDevices(devices.map(d => d.id === wifiDev.id ? {
+              const updated = simulatedDevices.map(d => d.id === wifiDev.id ? {
                 ...d,
-                wifi: d.wifi ? { ...d.wifi, enabled: true, ssid, password: pass } : { enabled: true, ssid, password: pass, mode: 'client' }
-              } : d));
+                wifi: d.wifi ? { ...d.wifi, enabled: true, ssid, password: pass } : { enabled: true, ssid, password: pass, mode: 'client' as const }
+              } : d);
+              simulatedDevices = updated;
+              setDevices(updated);
 
               window.dispatchEvent(new CustomEvent('commit-action-event', {
                 detail: { action: isTr ? `${wifiDev.name} Wi-Fi Ayarlandı: SSID '${ssid}'` : `Configured ${wifiDev.name} Wi-Fi: SSID '${ssid}'` }
@@ -810,7 +874,7 @@ export function usePageTopologyActions({
               currentStep++;
               updateProgress(currentStep, isTr ? `${printerDev.name} Yazıcı Ayarları Açılıyor` : `Opening ${printerDev.name} Printer Settings`);
               moveCursor(printerDev.x + 80, printerDev.y + 120, isTr ? `${printerDev.name} Aç` : `Open ${printerDev.name}`, true);
-              useMultiWindowStore.getState().openDeviceWindow(printerDev.id, 'printer', 'settings');
+              useMultiWindowStore.getState().openDeviceWindow(printerDev.id, 'printer', 'console');
             }, delay);
             delay += 1100;
 
@@ -819,6 +883,10 @@ export function usePageTopologyActions({
               currentStep++;
               updateProgress(currentStep, isTr ? `${printerDev.name} Ağ Yazıcısı Aktif (IP: ${printerIp})` : `${printerDev.name} Network Printer Ready (IP: ${printerIp})`);
               moveCursor(window.innerWidth / 2, window.innerHeight / 2 - 10, isTr ? `Yazıcı IP: ${printerIp}` : `Printer IP: ${printerIp}`, false);
+
+              const updated = simulatedDevices.map(d => d.id === printerDev.id ? { ...d, ip: printerIp } : d);
+              simulatedDevices = updated;
+              setDevices(updated);
 
               window.dispatchEvent(new CustomEvent('commit-action-event', {
                 detail: { action: isTr ? `${printerDev.name} Ağ Yazıcısı Yapılandırıldı (IP: ${printerIp})` : `Configured ${printerDev.name} Network Printer (IP: ${printerIp})` }
@@ -855,7 +923,7 @@ export function usePageTopologyActions({
               currentStep++;
               updateProgress(currentStep, isTr ? `${iotDev.name} (${iotLabel}) Ayarları Açılıyor` : `Opening ${iotDev.name} (${iotLabel}) Settings`);
               moveCursor(iotDev.x + 80, iotDev.y + 120, isTr ? `${iotDev.name} Aç` : `Open ${iotDev.name}`, true);
-              useMultiWindowStore.getState().openDeviceWindow(iotDev.id, 'iot', 'settings');
+              useMultiWindowStore.getState().openDeviceWindow(iotDev.id, 'iot', 'console');
             }, delay);
             delay += 1100;
 
@@ -864,6 +932,10 @@ export function usePageTopologyActions({
               currentStep++;
               updateProgress(currentStep, isTr ? `${iotDev.name} (${iotLabel}) Servisi Aktif (IP: ${iotIp})` : `${iotDev.name} (${iotLabel}) Service Active (IP: ${iotIp})`);
               moveCursor(window.innerWidth / 2, window.innerHeight / 2 - 10, isTr ? `${iotLabel} IP: ${iotIp}` : `${iotLabel} IP: ${iotIp}`, false);
+
+              const updated = simulatedDevices.map(d => d.id === iotDev.id ? { ...d, ip: iotIp } : d);
+              simulatedDevices = updated;
+              setDevices(updated);
 
               window.dispatchEvent(new CustomEvent('commit-action-event', {
                 detail: { action: isTr ? `${iotDev.name} [${iotLabel}] Yapılandırıldı (IP: ${iotIp})` : `Configured ${iotDev.name} [${iotLabel}] (IP: ${iotIp})` }
@@ -907,6 +979,14 @@ export function usePageTopologyActions({
               currentStep++;
               updateProgress(currentStep, isTr ? `${wlcDev.name} WLAN Profili Oluşturuluyor: '${wlanSsid}'` : `${wlcDev.name} Creating WLAN Profile: '${wlanSsid}'`);
               moveCursor(window.innerWidth / 2, window.innerHeight / 2 - 10, isTr ? `WLAN: ${wlanSsid} (WPA2-Enterprise)` : `WLAN: ${wlanSsid} (WPA2-Enterprise)`, false);
+
+              const updated = simulatedDevices.map(d => d.id === wlcDev.id ? {
+                ...d,
+                ip: wlcIp,
+                wifi: d.wifi ? { ...d.wifi, enabled: true, ssid: wlanSsid } : { enabled: true, ssid: wlanSsid, mode: 'ap' as const }
+              } : d);
+              simulatedDevices = updated;
+              setDevices(updated);
 
               window.dispatchEvent(new CustomEvent('commit-action-event', {
                 detail: { action: isTr ? `${wlcDev.name} WLC: WLAN '${wlanSsid}' & CAPWAP Tüneli Aktif (IP: ${wlcIp})` : `${wlcDev.name} WLC: WLAN '${wlanSsid}' & CAPWAP Tunnel Active (IP: ${wlcIp})` }
