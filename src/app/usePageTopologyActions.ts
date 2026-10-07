@@ -217,12 +217,14 @@ export function usePageTopologyActions({
         window.addEventListener('simulation-stop', onStopReq);
 
         const routerDevices = devices.filter(d => d.type === 'router' || d.type === 'switchL2' || d.type === 'switchL3');
+        const wlcDevices = devices.filter(d => d.type === 'wlc');
         const wifiDevices = devices.filter(d => d.type === 'mobile' || !!d.wifi);
         const iotDevices = devices.filter(d => d.type === 'iot');
         const printerDevices = devices.filter(d => d.type === 'printer');
         const routerCliCmds = ['enable', 'configure terminal', 'interface FastEthernet0/0', 'ip address 192.168.1.1 255.255.255.0', 'no shutdown'];
         const totalSteps = devices.length + connections.length +
           (pcDevices.length >= 2 ? 7 : 0) +
+          (wlcDevices.length * 3) +
           (wifiDevices.length * 3) +
           (iotDevices.length * 3) +
           (printerDevices.length * 3) +
@@ -566,14 +568,98 @@ export function usePageTopologyActions({
         // 5. Router / Switch CLI Configuration Step (Synchronized character-by-character typing with terminal-auto-type)
         if (routerDevices.length > 0) {
           routerDevices.forEach((routerDev) => {
-            // Determine meaningful commands based on device state/type
-            let devCmds: string[] = [];
+            const devState = deviceStates?.get(routerDev.id);
+            let devCmds: string[] = ['enable'];
+
             if (routerDev.type === 'router') {
-              devCmds = ['enable', 'configure terminal', 'interface FastEthernet0/0', 'ip address 192.168.1.1 255.255.255.0', 'no shutdown'];
-            } else if (routerDev.vlan && routerDev.vlan > 1) {
-              devCmds = ['enable', 'configure terminal', `vlan ${routerDev.vlan}`, `name VLAN_${routerDev.vlan}`, 'exit'];
+              const configuredPorts = devState?.ports
+                ? Object.values(devState.ports).filter(p => p.ipAddress && p.subnetMask)
+                : [];
+
+              const dynamicRoutes = (devState as unknown as { dynamicRoutes?: Array<{ destination: string; subnetMask: string; area?: number }> })?.dynamicRoutes || [];
+              const staticRoutes = (devState as unknown as { staticRoutes?: Array<{ destination: string; subnetMask: string; nextHop: string }> })?.staticRoutes || [];
+              const bgpCfg = (devState as unknown as { bgpConfig?: { localAs: number; neighbors: string[] } })?.bgpConfig;
+              const ripCfg = (devState as unknown as { ripConfig?: { version?: number; networks: string[] } })?.ripConfig;
+              const ospfId = (devState as unknown as { ospfProcessId?: string })?.ospfProcessId;
+
+              const configCommands: string[] = [];
+
+              if (configuredPorts.length > 0) {
+                const p = configuredPorts[0];
+                configCommands.push(`interface ${p.id}`);
+                configCommands.push(`ip address ${p.ipAddress} ${p.subnetMask}`);
+                configCommands.push('no shutdown');
+                configCommands.push('exit');
+              }
+
+              if (ospfId || dynamicRoutes.length > 0) {
+                configCommands.push(`router ospf ${ospfId || '1'}`);
+                if (dynamicRoutes.length > 0) {
+                  const r = dynamicRoutes[0];
+                  configCommands.push(`network ${r.destination} ${r.subnetMask} area ${r.area ?? 0}`);
+                }
+                configCommands.push('exit');
+              } else if (ripCfg && ripCfg.networks?.length > 0) {
+                configCommands.push('router rip');
+                configCommands.push(`version ${ripCfg.version || 2}`);
+                configCommands.push(`network ${ripCfg.networks[0]}`);
+                configCommands.push('exit');
+              } else if (bgpCfg && bgpCfg.localAs) {
+                configCommands.push(`router bgp ${bgpCfg.localAs}`);
+                if (bgpCfg.neighbors?.length > 0) {
+                  configCommands.push(`neighbor ${bgpCfg.neighbors[0]} remote-as ${bgpCfg.localAs}`);
+                }
+                configCommands.push('exit');
+              } else if (staticRoutes.length > 0) {
+                const sr = staticRoutes[0];
+                configCommands.push(`ip route ${sr.destination} ${sr.subnetMask} ${sr.nextHop}`);
+              }
+
+              if (configCommands.length > 0) {
+                devCmds.push('configure terminal', ...configCommands);
+              } else {
+                devCmds.push('show ip interface brief', 'show ip route');
+              }
             } else {
-              devCmds = ['enable', 'show vlan brief', 'show mac address-table'];
+              // Switch configuration (L2 / L3)
+              const switchVlans = devState?.vlans
+                ? Object.values(devState.vlans).filter(v => typeof v.id === 'number' && v.id > 1)
+                : [];
+              const trunkPorts = devState?.ports
+                ? Object.values(devState.ports).filter(p => p.mode === 'trunk')
+                : [];
+              const accessPorts = devState?.ports
+                ? Object.values(devState.ports).filter(p => p.mode === 'access' && typeof p.accessVlan === 'number' && p.accessVlan > 1)
+                : [];
+
+              const switchConfigCmds: string[] = [];
+
+              if (switchVlans.length > 0) {
+                const targetVlan = switchVlans[0];
+                switchConfigCmds.push(`vlan ${targetVlan.id}`);
+                if (targetVlan.name) {
+                  switchConfigCmds.push(`name ${targetVlan.name}`);
+                }
+                switchConfigCmds.push('exit');
+              }
+
+              if (trunkPorts.length > 0) {
+                const tp = trunkPorts[0];
+                switchConfigCmds.push(`interface ${tp.id}`);
+                switchConfigCmds.push('switchport mode trunk');
+                switchConfigCmds.push('exit');
+              } else if (accessPorts.length > 0) {
+                const ap = accessPorts[0];
+                switchConfigCmds.push(`interface ${ap.id}`);
+                switchConfigCmds.push(`switchport access vlan ${ap.accessVlan}`);
+                switchConfigCmds.push('exit');
+              }
+
+              if (switchConfigCmds.length > 0) {
+                devCmds.push('configure terminal', ...switchConfigCmds);
+              } else {
+                devCmds.push('show vlan brief', 'show mac address-table');
+              }
             }
 
             registerTimeout(() => {
@@ -716,15 +802,18 @@ export function usePageTopologyActions({
           });
         }
 
-        // 8. IoT Device Configuration Step
+        // 8. IoT Device Configuration Step (Sensor reading & Actuator setup)
         if (iotDevices.length > 0) {
           iotDevices.forEach((iotDev) => {
             const iotIp = iotDev.ip || '192.168.1.30';
+            const kind = iotDev.iot?.kind || 'sensor';
+            const sensorType = iotDev.iot?.sensorType || 'temperature';
+            const iotLabel = kind === 'sensor' ? `${sensorType.toUpperCase()} Sensörü` : `${kind.toUpperCase()} Aktüatörü`;
 
             // Open IoT Window
             registerTimeout(() => {
               currentStep++;
-              updateProgress(currentStep, isTr ? `${iotDev.name} IoT Ayarları Açılıyor` : `Opening ${iotDev.name} IoT Settings`);
+              updateProgress(currentStep, isTr ? `${iotDev.name} (${iotLabel}) Ayarları Açılıyor` : `Opening ${iotDev.name} (${iotLabel}) Settings`);
               moveCursor(iotDev.x + 80, iotDev.y + 120, isTr ? `${iotDev.name} Aç` : `Open ${iotDev.name}`, true);
               useMultiWindowStore.getState().openDeviceWindow(iotDev.id, 'iot', 'settings');
             }, delay);
@@ -733,11 +822,11 @@ export function usePageTopologyActions({
             // Record IoT Panel state
             registerTimeout(() => {
               currentStep++;
-              updateProgress(currentStep, isTr ? `${iotDev.name} Akıllı Cihaz Servisi Aktif (IP: ${iotIp})` : `${iotDev.name} Smart Device Service Active (IP: ${iotIp})`);
-              moveCursor(window.innerWidth / 2, window.innerHeight / 2 - 10, isTr ? `IoT IP: ${iotIp}` : `IoT IP: ${iotIp}`, false);
+              updateProgress(currentStep, isTr ? `${iotDev.name} (${iotLabel}) Servisi Aktif (IP: ${iotIp})` : `${iotDev.name} (${iotLabel}) Service Active (IP: ${iotIp})`);
+              moveCursor(window.innerWidth / 2, window.innerHeight / 2 - 10, isTr ? `${iotLabel} IP: ${iotIp}` : `${iotLabel} IP: ${iotIp}`, false);
 
               window.dispatchEvent(new CustomEvent('commit-action-event', {
-                detail: { action: isTr ? `${iotDev.name} Akıllı Cihaz Yapılandırıldı (IP: ${iotIp})` : `Configured ${iotDev.name} Smart Device (IP: ${iotIp})` }
+                detail: { action: isTr ? `${iotDev.name} [${iotLabel}] Yapılandırıldı (IP: ${iotIp})` : `Configured ${iotDev.name} [${iotLabel}] (IP: ${iotIp})` }
               }));
             }, delay);
             delay += 1200;
@@ -747,6 +836,43 @@ export function usePageTopologyActions({
               const closeBtn = getElementCoords(`[data-window-close="${iotDev.id}"]`, window.innerWidth / 2 + 200, window.innerHeight / 2 - 200);
               moveCursor(closeBtn.x, closeBtn.y, isTr ? `${iotDev.name} Penceresini Kapat` : `Close ${iotDev.name} Window`, true);
               useMultiWindowStore.getState().closeDeviceWindow(iotDev.id);
+            }, delay);
+            delay += 850;
+          });
+        }
+
+        // 9. WLC / Lightweight AP Configuration Step
+        if (wlcDevices.length > 0) {
+          wlcDevices.forEach((wlcDev) => {
+            const wlcIp = wlcDev.ip || '192.168.1.250';
+            const wlanSsid = wlcDev.wifi?.ssid || 'Enterprise-Corp';
+
+            // Open WLC Config Window
+            registerTimeout(() => {
+              currentStep++;
+              updateProgress(currentStep, isTr ? `${wlcDev.name} WLC Yönetim Paneli Açılıyor` : `Opening ${wlcDev.name} WLC Management Panel`);
+              moveCursor(wlcDev.x + 80, wlcDev.y + 120, isTr ? `${wlcDev.name} Yönetim Aç` : `Open ${wlcDev.name} Management`, true);
+              useMultiWindowStore.getState().openDeviceWindow(wlcDev.id, wlcDev.type, 'wireless');
+            }, delay);
+            delay += 1100;
+
+            // Configure WLAN Profile on WLC
+            registerTimeout(() => {
+              currentStep++;
+              updateProgress(currentStep, isTr ? `${wlcDev.name} WLAN Profili Oluşturuluyor: '${wlanSsid}'` : `${wlcDev.name} Creating WLAN Profile: '${wlanSsid}'`);
+              moveCursor(window.innerWidth / 2, window.innerHeight / 2 - 10, isTr ? `WLAN: ${wlanSsid} (WPA2-Enterprise)` : `WLAN: ${wlanSsid} (WPA2-Enterprise)`, false);
+
+              window.dispatchEvent(new CustomEvent('commit-action-event', {
+                detail: { action: isTr ? `${wlcDev.name} WLC: WLAN '${wlanSsid}' & CAPWAP Tüneli Aktif (IP: ${wlcIp})` : `${wlcDev.name} WLC: WLAN '${wlanSsid}' & CAPWAP Tunnel Active (IP: ${wlcIp})` }
+              }));
+            }, delay);
+            delay += 1200;
+
+            // Close WLC Window
+            registerTimeout(() => {
+              const closeBtn = getElementCoords(`[data-window-close="${wlcDev.id}"]`, window.innerWidth / 2 + 200, window.innerHeight / 2 - 200);
+              moveCursor(closeBtn.x, closeBtn.y, isTr ? `${wlcDev.name} Penceresini Kapat` : `Close ${wlcDev.name} Window`, true);
+              useMultiWindowStore.getState().closeDeviceWindow(wlcDev.id);
             }, delay);
             delay += 850;
           });
