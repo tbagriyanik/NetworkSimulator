@@ -88,7 +88,7 @@ export function VirtualCursorOverlay() {
           aria-hidden="true"
         >
           <div
-            className="absolute transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] flex flex-col items-start will-change-[left,top]"
+            className="absolute transition-all duration-[450ms] ease-[cubic-bezier(0.22,1,0.36,1)] flex flex-col items-start will-change-[left,top]"
             style={{
               left: `${cursor.x}px`,
               top: `${cursor.y}px`,

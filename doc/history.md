@@ -2,6 +2,13 @@
 
 ## v7.5.0 — 2026-10-07
 
+- **🎬 Otomatik Topoloji Üretimi & Canlı Sanal İmleç Simülasyonu (`usePageTopologyActions.ts`, `VirtualCursorOverlay.tsx`, `AppFooter.tsx`)**:
+  - **Sanal İmleç & İnsan Hızında Görsel Anlatım**: Hazır ve oluşturulan topolojiler yüklenirken cihazların yerleşimi, üst araç çubuğundan cihaz türü seçimi, kablo türü (`straight`, `crossover`, `console`, `serial`, `fiber`) seçimi ve port bağlantıları insansı yumuşak kayma eğrileriyle (`cubic-bezier`, 700ms) animasyonlu olarak gösterildi.
+  - **Canlı CLI & CMD Terminal Entegrasyonu (`terminal-auto-type`, `pc-auto-type`)**: Bilgisayar Komut İstemi'nde `ping` paket testinin, Switch ve Router konsol terminallerinde ise yapılandırma komutlarının (`enable`, `configure terminal`, `interface`, `ip address`, `no shutdown`, `vlan` vb.) kelime kelime yazılarak gerçek zamanlı çalıştırılması ve hat durum çıktılarının (`%LINK-5-CHANGED`) konsola yansıtılması sağlandı.
+  - **Zaman Çizelgesi Canlı Kaydı (Timeline History)**: Simülasyon başlatıldığında Timeline History paneli otomatik olarak açılır (`isTimelineMinimized = false`) ve yapılan her bir eylem (cihaz ekleme, kablo bağlama, IP tanımlama, CLI komutları) tekil satırlar halinde anlık olarak geçmişe işlenir.
+  - **Simülasyon Kilit Kalkanı (Lock Shield) & Güvenli Durdurma**: Simülasyon esnasında kullanıcı etkileşimlerinden kaynaklanabilecek tuval kayması, zoom, cihaz sürükleme ve tıklamaları önleyen tam ekran kilit kalkanı (`z-[9990] cursor-wait`) devreye alındı. Alt bilgi çubuğu (`z-[9995]`) kalkanın üzerine çıkarılarak `Durdur` (Stop) butonuna veya klavyeden `ESC` tuşuna basıldığında simülasyonun anında güvenle iptal edilebilmesi sağlandı.
+  - **Dinamik Tamamlandı Rozeti**: Simülasyon tamamlandığında `{ProjeAdı} Tamamlandı! 🎉` bildirimi gösterildi; kapatma butonu (`X`) ve yeni proje açıldığında otomatik temizlenme mekanizması eklendi.
+  - **Tam Çift Dilli (TR / EN) Destek**: Simülasyondaki tüm adım başlıkları, imleç etiketleri ve bildirimler Türkçe ve İngilizce dil seçenekleriyle tam senkronize edildi.
 - **🎨 Öğrenci Dostu Terminal Temaları & Sözdizimi Vurgulama (`terminalThemes.ts`, `TerminalSettingsBar.tsx`, `TerminalOutputLines.tsx`, `Terminal.tsx`)**:
   - **Renk Temaları Koleksiyonu**: Öğrencilerin terminal ortamını kişiselleştirebilmesi için 5 farklı tema (`Modern Dark`, `Matrix Green`, `Retro Amber`, `Dracula Violet`, `Cyberpunk Cyan`) eklendi ve `localStorage` üzerinde kalıcı hale getirildi.
   - **Canlı Sözdizimi & Parametre Vurgulama**: Girilen komutların eylem fiilleri (`show`/`ping` mavi, `configure`/`interface`/`vlan` sarı/kehribar), IP ve alt ağ maskeleri yeşil, arayüz port adları mor renkle semantik olarak ayrılarak görsel okunabilirlik ve eğitimsel kavrayış artırıldı.

@@ -1,8 +1,9 @@
 
-## Terminal Renk Temaları, Pedagojik CLI Asistanı, Güvenlik Sertleştirmesi & Çoklu Pencere Deneyimi (2026-10-07 - v7.5.0)
+## Otomatik Topoloji Simülasyonu, Terminal Renk Temaları, Pedagojik CLI Asistanı, Güvenlik Sertleştirmesi & Çoklu Pencere Deneyimi (2026-10-07 - v7.5.0)
 
 | Özellik | Güncel kapsam ve sınır |
 |---|---|
+| **Otomatik Topoloji Üretimi & Canlı Sanal İmleç Simülasyonu (`usePageTopologyActions.ts`, `VirtualCursorOverlay.tsx`, `AppFooter.tsx`)** | Hazır ve kullanıcı tanımlı ağ senaryolarının tuval üzerinde adım adım, insansı hızda sanal imleç hareketiyle kurulması; üst araç çubuğundan cihaz ve kablo türü (`straight`, `crossover`, `console`, `serial`, `fiber`) seçimi; cihaz pencereleri açılarak IP konfigürasyonu, PC Komut İstemi (`ping`) ve Switch/Router konsollarında (`enable`, `configure terminal`, `interface`, `ip address`, `no shutdown`, `vlan`) kelime kelime yazılan CLI komutlarının gerçek zamanlı yürütülmesi, kilit kalkanı (`z-[9990]`), Durdur butonu ve canlı Timeline History kaydı. |
 | **Kişiselleştirilebilir Terminal Renk Temaları (`terminalThemes.ts`, `Terminal.tsx`, `CommandLineTab.tsx`)** | Ağ cihazı CLI'ı ve PC CMD/Linux terminalleri için 5 canlı renk teması (`Modern Dark`, `Matrix Green`, `Retro Amber`, `Dracula Violet`, `Cyberpunk Cyan`). Tema tercihleri `localStorage` ile kalıcı hale getirilmiştir. |
 | **Canlı Sözdizimi & Parametre Vurgulama (`TerminalOutputLines.tsx`)** | CLI çıktılarında eylem fiilleri (`show`/`ping` mavi, `configure`/`interface`/`vlan` sarı/kehribar), IP adresleri ve alt ağ maskeleri yeşil, arayüz port adları mor renkle semantik olarak ayrılarak görsel okunabilirlik artırılmıştır. |
 | **Canlı Port LED Göstergeleri (`DevicePcPorts.tsx`, `DeviceGridPortPin.tsx`)** | PC ve ağ portlarında fiziksel donanım benzeri canlı LED göstergeleri: aktif bağlantıda yeşil yanıp sönen (pulse), kesintide kırmızı, STP blokajında kehribar ışıklı görsel durum takibi. |

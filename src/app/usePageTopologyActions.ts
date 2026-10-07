@@ -238,20 +238,28 @@ export function usePageTopologyActions({
           return { x: fallbackX, y: fallbackY };
         };
 
-        // 1. Click device icon in toolbar -> Device is automatically placed at its target canvas coordinates
+        // 1. First click device in toolbar, then move to canvas and add device
         devices.forEach((dev) => {
           const currentDevices = devices.slice(0, devices.indexOf(dev) + 1);
 
-          // Step 1a: Move cursor to toolbar icon, click it & immediately spawn device on canvas
+          // Step 1a: Move cursor to toolbar icon and click toolbar button (device is not added yet)
           registerTimeout(() => {
             currentStep++;
-            updateProgress(currentStep, isTr ? `${dev.name} ekleniyor` : `Adding ${dev.name}`);
+            updateProgress(currentStep, isTr ? `${dev.name} seçiliyor` : `Selecting ${dev.name}`);
             const targetBtnEl = document.querySelector(`[data-toolbar-device="${dev.type}"]`) as HTMLButtonElement | null;
             if (targetBtnEl) targetBtnEl.click();
             const targetBtn = getElementCoords(`[data-toolbar-device="${dev.type}"]`, 220, 75);
             moveCursor(targetBtn.x, targetBtn.y, isTr ? `${dev.type.toUpperCase()} Seç` : `Select ${dev.type.toUpperCase()}`, true);
+          }, delay);
+          delay += 600;
 
-            // Automatically place device at its canvas coordinates
+          // Step 1b: Move cursor to target canvas position, click, and ADD device to canvas
+          registerTimeout(() => {
+            const screenX = Math.min(window.innerWidth - 100, Math.max(120, dev.x + 80));
+            const screenY = Math.min(window.innerHeight - 150, Math.max(150, dev.y + 120));
+            moveCursor(screenX, screenY, isTr ? `${dev.name} Eklendi` : `${dev.name} Placed`, true);
+
+            // Device is added to canvas now
             setDevices(currentDevices);
 
             const currentStates = new Map<string, SwitchState>();
@@ -265,34 +273,27 @@ export function usePageTopologyActions({
               detail: { action: isTr ? `${dev.name} topolojiye eklendi` : `Added ${dev.name} to topology` }
             }));
           }, delay);
-          delay += 1100;
-
-          // Step 1b: Cursor highlights the placed device at its target position
-          registerTimeout(() => {
-            const screenX = Math.min(window.innerWidth - 100, Math.max(120, dev.x + 80));
-            const screenY = Math.min(window.innerHeight - 150, Math.max(150, dev.y + 120));
-            moveCursor(screenX, screenY, isTr ? `${dev.name} Konumlandırıldı` : `${dev.name} Placed`, false);
-          }, delay);
-          delay += 950;
+          delay += 700;
         });
 
-        // 2. Mouse moves to Cable Tool, clicks exact cable type button in toolbar, then connects ports
+        // 2. Mouse moves to Cable Tool, clicks exact cable type button (straight, crossover, console, etc.) in toolbar, then connects ports
         connections.forEach((conn) => {
           const currentConnections = connections.slice(0, connections.indexOf(conn) + 1);
           const srcDev = devices.find(d => d.id === conn.sourceDeviceId);
           const tgtDev = devices.find(d => d.id === conn.targetDeviceId);
-          const cType = conn.cableType || 'straight';
+          const cableTypeVal = (conn.cableType === 'crossover' || (conn.cableType as string) === 'cross') ? 'crossover' : (conn.cableType || 'straight');
+          const cableLabel = cableTypeVal === 'crossover' ? 'CROSSOVER' : cableTypeVal.toUpperCase();
 
           // Click exact cable button in toolbar
           registerTimeout(() => {
             currentStep++;
-            updateProgress(currentStep, isTr ? `Kablo (${cType}): ${srcDev?.name || ''} ➔ ${tgtDev?.name || ''}` : `Cable (${cType}): ${srcDev?.name || ''} ➔ ${tgtDev?.name || ''}`);
-            const cableBtnEl = document.querySelector(`[data-toolbar-cable="${cType}"], [data-toolbar-cable="straight"]`) as HTMLButtonElement | null;
+            updateProgress(currentStep, isTr ? `Kablo (${cableLabel}): ${srcDev?.name || ''} ➔ ${tgtDev?.name || ''}` : `Cable (${cableLabel}): ${srcDev?.name || ''} ➔ ${tgtDev?.name || ''}`);
+            const cableBtnEl = document.querySelector(`[data-toolbar-cable="${cableTypeVal}"], [data-toolbar-cable="straight"]`) as HTMLButtonElement | null;
             if (cableBtnEl) cableBtnEl.click();
-            const cableBtn = getElementCoords(`[data-toolbar-cable="${cType}"], [data-toolbar-cable="straight"]`, 330, 75);
-            moveCursor(cableBtn.x, cableBtn.y, isTr ? `${cType.toUpperCase()} Kablo Seç` : `Select ${cType.toUpperCase()} Cable`, true);
+            const cableBtn = getElementCoords(`[data-toolbar-cable="${cableTypeVal}"], [data-toolbar-cable="straight"]`, 330, 75);
+            moveCursor(cableBtn.x, cableBtn.y, isTr ? `${cableLabel} Kablo Seç` : `Select ${cableLabel} Cable`, true);
           }, delay);
-          delay += 1100;
+          delay += 600;
 
           // Click source device port
           registerTimeout(() => {
@@ -300,7 +301,7 @@ export function usePageTopologyActions({
             const startY = srcDev ? srcDev.y + 120 : 200;
             moveCursor(startX, startY, isTr ? `${srcDev?.name || ''} Portuna Tıkla` : `Click ${srcDev?.name || ''} Port`, true);
           }, delay);
-          delay += 1100;
+          delay += 650;
 
           // Click target device to complete connection & record in timeline history
           registerTimeout(() => {
@@ -310,10 +311,10 @@ export function usePageTopologyActions({
             setConnections(currentConnections);
 
             window.dispatchEvent(new CustomEvent('commit-action-event', {
-              detail: { action: isTr ? `${srcDev?.name || ''} ➔ ${tgtDev?.name || ''} kablosu bağlandı` : `Connected cable ${srcDev?.name || ''} ➔ ${tgtDev?.name || ''}` }
+              detail: { action: isTr ? `${srcDev?.name || ''} ➔ ${tgtDev?.name || ''} (${cableLabel}) bağlandı` : `Connected ${srcDev?.name || ''} ➔ ${tgtDev?.name || ''} (${cableLabel})` }
             }));
           }, delay);
-          delay += 1100;
+          delay += 700;
         });
 
         // 3. PC Device Configuration (Double Click to open window, enter IP visually, close window)
@@ -328,7 +329,7 @@ export function usePageTopologyActions({
             moveCursor(pc1.x + 80, pc1.y + 120, isTr ? `${pc1.name} Çift Tıkla (Aç)` : `Double Click ${pc1.name} (Open)`, true);
             useMultiWindowStore.getState().openDeviceWindow(pc1.id, 'pc', 'settings');
           }, delay);
-          delay += 1300;
+          delay += 800;
 
           // PC-1: IP Address input typing & visual populating & record in timeline history
           registerTimeout(() => {
@@ -349,7 +350,7 @@ export function usePageTopologyActions({
               detail: { action: isTr ? `${pc1.name} IP: 192.168.1.10 ayarlandı` : `Set ${pc1.name} IP: 192.168.1.10` }
             }));
           }, delay);
-          delay += 1600;
+          delay += 950;
 
           // PC-1: Close window after configuration
           registerTimeout(() => {
@@ -357,7 +358,7 @@ export function usePageTopologyActions({
             moveCursor(closeBtn.x, closeBtn.y, isTr ? `${pc1.name} Penceresini Kapat` : `Close ${pc1.name} Window`, true);
             useMultiWindowStore.getState().closeDeviceWindow(pc1.id);
           }, delay);
-          delay += 1100;
+          delay += 650;
 
           // PC-2: Double click to open configuration window
           registerTimeout(() => {
@@ -366,7 +367,7 @@ export function usePageTopologyActions({
             moveCursor(pc2.x + 80, pc2.y + 120, isTr ? `${pc2.name} Çift Tıkla (Aç)` : `Double Click ${pc2.name} (Open)`, true);
             useMultiWindowStore.getState().openDeviceWindow(pc2.id, 'pc', 'settings');
           }, delay);
-          delay += 1300;
+          delay += 800;
 
           // PC-2: IP Address input typing & visual populating & record in timeline history
           registerTimeout(() => {
@@ -387,7 +388,7 @@ export function usePageTopologyActions({
               detail: { action: isTr ? `${pc2.name} IP: 192.168.1.20 ayarlandı` : `Set ${pc2.name} IP: 192.168.1.20` }
             }));
           }, delay);
-          delay += 1600;
+          delay += 950;
 
           // PC-2: Close window after configuration
           registerTimeout(() => {
@@ -395,47 +396,42 @@ export function usePageTopologyActions({
             moveCursor(closeBtn.x, closeBtn.y, isTr ? `${pc2.name} Penceresini Kapat` : `Close ${pc2.name} Window`, true);
             useMultiWindowStore.getState().closeDeviceWindow(pc2.id);
           }, delay);
-          delay += 1100;
+          delay += 650;
 
-          // 4. Test Ping via CMD on PC-1
+          // 4. Test Ping via CMD on PC-1 (Perfect synchronization with pc-auto-type)
           const targetIp = pc2.ip || '192.168.1.20';
           const fullCmd = `ping ${targetIp}`;
           registerTimeout(() => {
             currentStep++;
             updateProgress(currentStep, isTr ? `CMD Terminali Açılıyor (${pc1.name})` : `Opening CMD Terminal (${pc1.name})`);
-            moveCursor(pc1.x + 80, pc1.y + 120, isTr ? `${pc1.name} CMD Terminali Aç` : `Open ${pc1.name} CMD Terminal`, true);
+            moveCursor(pc1.x + 80, pc1.y + 120, isTr ? `${pc1.name} CMD Aç` : `Open ${pc1.name} CMD`, true);
             useMultiWindowStore.getState().openDeviceWindow(pc1.id, 'pc', 'desktop');
           }, delay);
-          delay += 1400;
+          delay += 800;
 
-          // Word-by-word typing animation for ping command
-          const words = fullCmd.split(' ');
-          let currentTyped = '';
-          words.forEach((w, wIdx) => {
-            registerTimeout(() => {
-              currentTyped += (wIdx > 0 ? ' ' : '') + w;
-              const termCoords = getElementCoords('input[placeholder*="ping"], .custom-scrollbar input, [data-modal-content="true"] input', window.innerWidth / 2, window.innerHeight / 2 + 100);
-              moveCursor(termCoords.x, termCoords.y, isTr ? `Kelime Kelime Yazılıyor: "${currentTyped}"` : `Typing Word-by-Word: "${currentTyped}"`, false, currentTyped);
-            }, delay);
-            delay += 750;
-          });
-
-          // Execute command and wait for ping response outputs
+          // Move cursor to input and trigger synchronized character typing
           registerTimeout(() => {
             currentStep++;
-            updateProgress(currentStep, isTr ? `Komut Çalıştırılıyor: ${fullCmd}` : `Executing Command: ${fullCmd}`);
+            updateProgress(currentStep, isTr ? `Komut Yazılıyor: ${fullCmd}` : `Typing Command: ${fullCmd}`);
             const termCoords = getElementCoords('input[placeholder*="ping"], .custom-scrollbar input, [data-modal-content="true"] input', window.innerWidth / 2, window.innerHeight / 2 + 100);
-            moveCursor(termCoords.x + 40, termCoords.y, isTr ? `Enter ↵ (Çalıştır)` : `Enter ↵ (Execute)`, true, fullCmd);
+            moveCursor(termCoords.x, termCoords.y, isTr ? `Komut: ${fullCmd}` : `Command: ${fullCmd}`, false);
             window.dispatchEvent(
               new CustomEvent('pc-auto-type', {
                 detail: { deviceId: pc1.id, command: fullCmd },
               })
             );
+          }, delay);
+          delay += Math.max(900, fullCmd.length * 65 + 250);
+
+          // Enter key press & timeline logging as command finishes typing
+          registerTimeout(() => {
+            const termCoords = getElementCoords('input[placeholder*="ping"], .custom-scrollbar input, [data-modal-content="true"] input', window.innerWidth / 2, window.innerHeight / 2 + 100);
+            moveCursor(termCoords.x + 35, termCoords.y, isTr ? `Enter ↵ (${fullCmd})` : `Enter ↵ (${fullCmd})`, true, fullCmd);
             window.dispatchEvent(new CustomEvent('commit-action-event', {
               detail: { action: isTr ? `${pc1.name} CMD: ${fullCmd}` : `${pc1.name} CMD: ${fullCmd}` }
             }));
           }, delay);
-          delay += 1800;
+          delay += 650;
 
           // Show Ping results badge & let video record the ping reply lines
           registerTimeout(() => {
@@ -443,7 +439,7 @@ export function usePageTopologyActions({
             updateProgress(currentStep, isTr ? `Komut Başarıyla Sonuçlandı! Paketler İletildi (Reply from ${targetIp})` : `Command Succeeded! Packets Delivered (Reply from ${targetIp})`);
             moveCursor(window.innerWidth / 2, window.innerHeight / 2 + 30, isTr ? `Komut Başarıyla Sonuçlandı! (Reply from ${targetIp}: bytes=32 time=1ms TTL=128)` : `Command Succeeded! (Reply from ${targetIp}: bytes=32 time=1ms TTL=128)`, false);
           }, delay);
-          delay += 4000;
+          delay += 2200;
 
           // Close PC-1 CMD window after showing results
           registerTimeout(() => {
@@ -451,10 +447,10 @@ export function usePageTopologyActions({
             moveCursor(closeBtn.x, closeBtn.y, isTr ? `${pc1.name} Penceresini Kapat` : `Close ${pc1.name} Window`, true);
             useMultiWindowStore.getState().closeDeviceWindow(pc1.id);
           }, delay);
-          delay += 1100;
+          delay += 650;
         }
 
-        // 5. Router / Switch CLI Configuration Step (Double click Router/Switch, open Console CLI, execute CLI commands line-by-line)
+        // 5. Router / Switch CLI Configuration Step (Synchronized character-by-character typing with terminal-auto-type)
         if (routerDevices.length > 0) {
           routerDevices.forEach((routerDev) => {
             const devCmds = routerDev.type === 'router'
@@ -467,37 +463,33 @@ export function usePageTopologyActions({
               moveCursor(routerDev.x + 80, routerDev.y + 120, isTr ? `${routerDev.name} Konsol Aç` : `Open ${routerDev.name} Console`, true);
               useMultiWindowStore.getState().openDeviceWindow(routerDev.id, routerDev.type, 'console');
             }, delay);
-            delay += 1400;
+            delay += 800;
 
-            // Word-by-word Router/Switch CLI configuration typing animation per command line
+            // Synchronized CLI command typing per command line
             devCmds.forEach((cliCmd) => {
-              const words = cliCmd.split(' ');
-              let typed = '';
-              words.forEach((w, wIdx) => {
-                registerTimeout(() => {
-                  typed += (wIdx > 0 ? ' ' : '') + w;
-                  const cliCoords = getElementCoords('input[placeholder*="enable"], input[type="text"], [data-modal-content="true"] input', window.innerWidth / 2, window.innerHeight / 2 + 120);
-                  moveCursor(cliCoords.x, cliCoords.y, isTr ? `${routerDev.name} CLI: "${typed}"` : `${routerDev.name} CLI: "${typed}"`, false, typed);
-                }, delay);
-                delay += 650;
-              });
-
-              // Execute this command line, commit as a separate line in timeline history, trigger terminal-auto-type & update step progress
+              // Move cursor to input and trigger character typing in Terminal
               registerTimeout(() => {
                 currentStep++;
-                updateProgress(currentStep, isTr ? `${routerDev.name} CLI Komutu: ${cliCmd}` : `${routerDev.name} CLI Command: ${cliCmd}`);
+                updateProgress(currentStep, isTr ? `${routerDev.name} CLI: ${cliCmd}` : `${routerDev.name} CLI: ${cliCmd}`);
                 const cliCoords = getElementCoords('input[placeholder*="enable"], input[type="text"], [data-modal-content="true"] input', window.innerWidth / 2, window.innerHeight / 2 + 120);
-                moveCursor(cliCoords.x + 40, cliCoords.y, isTr ? `Enter ↵ (${cliCmd})` : `Enter ↵ (${cliCmd})`, true, cliCmd);
+                moveCursor(cliCoords.x, cliCoords.y, isTr ? `${routerDev.name} CLI: ${cliCmd}` : `${routerDev.name} CLI: ${cliCmd}`, false);
                 window.dispatchEvent(
                   new CustomEvent('terminal-auto-type', {
                     detail: { deviceId: routerDev.id, command: cliCmd },
                   })
                 );
+              }, delay);
+              delay += Math.max(650, cliCmd.length * 60 + 200);
+
+              // Enter key press & timeline logging as command finishes typing
+              registerTimeout(() => {
+                const cliCoords = getElementCoords('input[placeholder*="enable"], input[type="text"], [data-modal-content="true"] input', window.innerWidth / 2, window.innerHeight / 2 + 120);
+                moveCursor(cliCoords.x + 35, cliCoords.y, isTr ? `Enter ↵ (${cliCmd})` : `Enter ↵ (${cliCmd})`, true, cliCmd);
                 window.dispatchEvent(new CustomEvent('commit-action-event', {
                   detail: { action: isTr ? `${routerDev.name} CLI: ${cliCmd}` : `${routerDev.name} CLI: ${cliCmd}` }
                 }));
               }, delay);
-              delay += 1400;
+              delay += 550;
             });
 
             // Show CLI configuration output result & record in timeline history
@@ -512,7 +504,7 @@ export function usePageTopologyActions({
                 detail: { action: resultMsg }
               }));
             }, delay);
-            delay += 3200;
+            delay += 1800;
 
             // Close Router/Switch CLI window
             registerTimeout(() => {
@@ -520,7 +512,7 @@ export function usePageTopologyActions({
               moveCursor(closeBtn.x, closeBtn.y, isTr ? `${routerDev.name} Konsol Kapat` : `Close ${routerDev.name} Console`, true);
               useMultiWindowStore.getState().closeDeviceWindow(routerDev.id);
             }, delay);
-            delay += 1100;
+            delay += 650;
           });
         }
 

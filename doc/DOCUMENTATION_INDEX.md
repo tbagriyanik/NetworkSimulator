@@ -7,9 +7,10 @@ Bu indeks, Network Simulator projesinin tüm dokümantasyon dosyalarını ve iç
 ## 📖 Dokümantasyon Dosyaları
 
 ### 🚀 [training/ProjeOzellikleri.md](training/ProjeOzellikleri.md)
-**Amaç**: Sürüm Özellikleri, Terminal Renk Temaları, Pedagojik CLI Asistanı, Canlı Port LED'leri, Çoklu Pencere Deneyimi & Güvenlik Sertleştirmesi (v7.5.0)  
+**Amaç**: Sürüm Özellikleri, Otomatik Topoloji Simülasyonu, Terminal Renk Temaları, Pedagojik CLI Asistanı, Canlı Port LED'leri, Çoklu Pencere Deneyimi & Güvenlik Sertleştirmesi (v7.5.0)  
 **Okuma Süresi**: 15 dakika  
 **İçerik**:
+- Otomatik Topoloji Üretimi & Canlı Sanal İmleç Simülasyon Motoru (`usePageTopologyActions.ts`, `VirtualCursorOverlay.tsx`)
 - Kişiselleştirilebilir Terminal Renk Temaları (Modern Dark, Matrix, Retro Amber, Dracula, Cyberpunk - `terminalThemes.ts`)
 - Canlı Sözdizimi & Parametre Vurgulama (`TerminalOutputLines.tsx`)
 - Canlı Port LED Göstergeleri (`DevicePcPorts.tsx`, `DeviceGridPortPin.tsx`)
