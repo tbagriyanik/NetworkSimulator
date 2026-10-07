@@ -51,6 +51,12 @@ export function getStudentCliHint(input: string, currentMode?: string): { tr: st
         en: 'Enter Privileged EXEC mode first: "enable"'
       };
     }
+    if (trimmed.startsWith('ping') || trimmed.startsWith('traceroute') || trimmed.startsWith('trace')) {
+      return {
+        tr: 'Bu komut User EXEC modunda da çalışır. Ayrıntılı ping için "enable" ile Privileged moda geçin.',
+        en: 'This command works in User EXEC mode. For extended ping, enter Privileged mode with "enable".'
+      };
+    }
   }
 
   // 2. Privileged EXEC modunda config komutu girilmeye çalışıldığında
@@ -62,7 +68,10 @@ export function getStudentCliHint(input: string, currentMode?: string): { tr: st
       trimmed.startsWith('vlan ') ||
       trimmed.startsWith('ip route ') ||
       trimmed.startsWith('hostname ') ||
-      trimmed.startsWith('ip dhcp pool ')
+      trimmed.startsWith('ip dhcp pool ') ||
+      trimmed.startsWith('spanning-tree') ||
+      trimmed.startsWith('access-list') ||
+      trimmed.startsWith('no ')
     ) {
       return {
         tr: 'Yapılandırma komutları için Global Config moduna geçmelisiniz: "configure terminal" (veya "conf t")',
@@ -77,16 +86,37 @@ export function getStudentCliHint(input: string, currentMode?: string): { tr: st
       trimmed === 'no shut' ||
       trimmed === 'no shutdown' ||
       trimmed.startsWith('ip add') ||
-      trimmed.startsWith('switchport')
+      trimmed.startsWith('switchport') ||
+      trimmed.startsWith('duplex') ||
+      trimmed.startsWith('speed') ||
+      trimmed.startsWith('shutdown')
     ) {
       return {
         tr: 'Arayüz ayarları için önce ilgili arayüzün içine girmelisiniz: örn. "interface GigabitEthernet0/1" veya "int fa0/1"',
         en: 'Enter interface mode first: e.g. "interface GigabitEthernet0/1" or "int fa0/1"'
       };
     }
+    if (trimmed.startsWith('network ') && !trimmed.includes('ospf') && !trimmed.includes('rip') && !trimmed.includes('eigrp')) {
+      return {
+        tr: '"network" komutu routing protokolü modu veya DHCP pool modunda kullanılır. "router ospf 1" veya "ip dhcp pool <isim>" ile doğru moda girin.',
+        en: '"network" command is used in routing protocol or DHCP pool mode. Enter the correct mode first with "router ospf 1" or "ip dhcp pool <name>".'
+      };
+    }
   }
 
-  // 4. Yazım hataları için düzeltme önerileri
+  // 4. Alt config modlarda exit/end karışıklığı
+  if (
+    (currentMode === 'interface' || currentMode === 'config-if-range' ||
+     currentMode === 'router-config' || currentMode === 'dhcp-config') &&
+    (trimmed === 'quit' || trimmed === 'logout')
+  ) {
+    return {
+      tr: 'Bir üst moda dönmek için "exit" kullanın. Doğrudan Privileged moda dönmek için "end" veya Ctrl+Z kullanın.',
+      en: 'Use "exit" to go back one level. Use "end" or Ctrl+Z to return directly to Privileged EXEC mode.'
+    };
+  }
+
+  // 5. Yazım hataları için düzeltme önerileri
   if (trimmed === 'conft' || trimmed === 'conf  t' || trimmed === 'conft t') {
     return {
       tr: 'Bunu mu demek istediniz: "conf t" veya "configure terminal"',
@@ -96,12 +126,45 @@ export function getStudentCliHint(input: string, currentMode?: string): { tr: st
 
   if (trimmed === 'shw' || trimmed === 'sho' || trimmed.startsWith('shw ') || trimmed.startsWith('sho ')) {
     return {
-      tr: 'Bunu mu demek istediniz: "show ..."',
-      en: 'Did you mean: "show ..."'
+      tr: 'Bunu mu demek istediniz: "show ..."\nÖneri: show ip int brief | show run | show ip route',
+      en: 'Did you mean: "show ..."\nSuggestion: show ip int brief | show run | show ip route'
+    };
+  }
+
+  if (trimmed === 'en' || trimmed === 'enab' || trimmed === 'enabl') {
+    return {
+      tr: 'Bunu mu demek istediniz: "enable"',
+      en: 'Did you mean: "enable"'
+    };
+  }
+
+  if (trimmed === 'wr mem' || trimmed === 'wri mem' || trimmed === 'writ mem') {
+    return {
+      tr: 'Bunu mu demek istediniz: "write memory" veya kısaca "wr"',
+      en: 'Did you mean: "write memory" or shortly "wr"'
+    };
+  }
+
+  if (trimmed === 'copy run start' || trimmed === 'copy r s' || trimmed === 'copy runn start') {
+    return {
+      tr: 'Bunu mu demek istediniz: "copy running-config startup-config"',
+      en: 'Did you mean: "copy running-config startup-config"'
+    };
+  }
+
+  if (trimmed.startsWith('sh ip') && !trimmed.startsWith('show')) {
+    return {
+      tr: 'Bunu mu demek istediniz: "show ip ..."?\nÖrnekler: show ip int brief | show ip route | show ip ospf neighbor',
+      en: 'Did you mean: "show ip ..."?\nExamples: show ip int brief | show ip route | show ip ospf neighbor'
+    };
+  }
+
+  if (trimmed === 'no sh' || trimmed === 'no shu' || trimmed === 'noshutdown' || trimmed === 'noshut') {
+    return {
+      tr: 'Bunu mu demek istediniz: "no shutdown"\nNot: Bu komut interface modunda kullanılır. Önce "interface <isim>" ile arayüze girin.',
+      en: 'Did you mean: "no shutdown"\nNote: This command is used in interface mode. Enter interface mode first.'
     };
   }
 
   return undefined;
 }
-
-

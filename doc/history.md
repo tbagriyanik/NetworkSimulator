@@ -2,6 +2,12 @@
 
 ## v7.5.0 — 2026-10-07
 
+- **🪟 Pencere Sınır Kontrolü (`useDrag.ts`)**:
+  - Sürükleme sırasında (`handleMove`) ekran sınırları canlı (live) olarak uygulandı. Pencereler artık sürüklenirken ekranın dışına taşınamıyor; başlık çubuğunun her zaman görünür kalması için `DRAG_MARGIN = 48px` boşluk korunuyor.
+  - `TOP_SAFE_OFFSET` (128px) ile birlikte sağ, sol ve alt kenarlarda da clamp uygulanıyor.
+- **🎓 CLI Pedagojik İpuçları Genişletildi (`cliErrors.ts`)**:
+  - `getStudentCliHint`: 10'dan fazla yeni yazım hatası ve mode uyumsuzluğu örüntüsü eklendi.
+  - Yeni ipuçları: `ping/traceroute` (User modunda), `spanning-tree/access-list/no` (Privileged modunda config yapılandırmaları), `duplex/speed/shutdown` (Config modunda interface komutları), `quit/logout` (exit/end karışıklığı), `en/enab/enabl`, `wr mem`, `copy run start`, `sh ip`, `noshutdown/noshut`.
 - **🪟 Akıllı Sekmeli Pencere Deneyimi (Multi-Window Tab Toolbar UX)**:
   - `MultiDeviceWindowManager`: Sekmeli yerleşim modunda (`tabs`) sadece 1 cihaz penceresi kaldığında üstteki sekme çubuğu ve yerleşim denetimleri otomatik gizlenerek ekranda sade ve dikkat dağıtmayan bir tekli pencere görünümü sağlandı; 2 veya daha fazla cihaz açıldığında sekme çubuğu kendiliğinden geri geliyor.
   - Sekme kapatma butonuna klavye erişilebilirliği (`Enter` ve `Space` tuşlarıyla kapatma) ile ekran okuyucu `aria-label` etiketleri kazandırıldı.

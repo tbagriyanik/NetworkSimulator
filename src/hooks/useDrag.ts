@@ -13,6 +13,7 @@ type OriginCorner = 'top-left' | 'bottom-right' | 'bottom-left';
 
 const SNAP_THRESHOLD = 30;
 const TOP_SAFE_OFFSET = 128; // Keep floating panels below fixed header + toolbar
+const DRAG_MARGIN = 48; // Minimum visible strip on each edge while dragging
 
 function snapToEdge(x: number, y: number, elW: number, elH: number, disableSnap?: boolean): { x: number; y: number } {
   if (disableSnap) return { x, y };
@@ -257,21 +258,27 @@ export function useDrag(options: UseDragOptions = {}): UseDragReturn {
         const dy = clientY - ds2.startY;
 
         if (ds2.type === 'drag') {
+          const vw = window.innerWidth;
+          const vh = window.innerHeight;
           if (ds2.mode === 'drag-only' && ds2.origin === 'bottom-right') {
-            const newX = ds2.startPosX - dx;
-            const newY = ds2.startPosY - dy;
+            const newX = Math.max(0, Math.min(ds2.startPosX - dx, vw - DRAG_MARGIN));
+            const newY = Math.max(0, Math.min(ds2.startPosY - dy, vh - DRAG_MARGIN));
             liveDragPosRef.current = { x: newX, y: newY };
             el.style.right = `${newX}px`;
             el.style.bottom = `${newY}px`;
           } else if (ds2.mode === 'drag-only' && ds2.origin === 'bottom-left') {
-            const newX = ds2.startPosX + dx;
-            const newY = ds2.startPosY - dy;
+            const newX = Math.max(0, Math.min(ds2.startPosX + dx, vw - DRAG_MARGIN));
+            const newY = Math.max(0, Math.min(ds2.startPosY - dy, vh - DRAG_MARGIN));
             liveDragPosRef.current = { x: newX, y: newY };
             el.style.left = `${newX}px`;
             el.style.bottom = `${newY}px`;
           } else {
-            const newX = ds2.startPosX + dx;
-            const newY = Math.max(TOP_SAFE_OFFSET, ds2.startPosY + dy);
+            const rawX = ds2.startPosX + dx;
+            const rawY = ds2.startPosY + dy;
+            const elRect = el.getBoundingClientRect();
+            const elW = elRect.width || 300;
+            const newX = Math.max(DRAG_MARGIN - elW, Math.min(rawX, vw - DRAG_MARGIN));
+            const newY = Math.max(TOP_SAFE_OFFSET, Math.min(rawY, vh - DRAG_MARGIN));
             liveDragPosRef.current = { x: newX, y: newY };
             el.style.left = `${newX}px`;
             el.style.top = `${newY}px`;

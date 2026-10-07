@@ -464,11 +464,11 @@ export function PingPacketInfoPanel({
                     'overflow-hidden',
                     isGlass
                         ? (isDark
-                            ? 'liquid-glass-light !bg-secondary-950/90 border-emerald-950/80 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)]'
-                            : 'liquid-glass-light !bg-white/90 border-emerald-950/80 shadow-[0_8px_28px_rgba(15,23,42,0.12)]')
+                            ? 'liquid-glass-light !bg-secondary-950/90 border-secondary-800 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)]'
+                            : 'liquid-glass-light !bg-white/90 border-secondary-200 shadow-[0_8px_28px_rgba(15,23,42,0.12)]')
                         : (isDark
-                            ? '!bg-secondary-950/40 border-emerald-950/80 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)]'
-                            : '!bg-white/95 border-emerald-950/80 shadow-[0_8px_28px_rgba(15,23,42,0.10)]'))
+                            ? '!bg-secondary-950/40 border-secondary-800 shadow-[0_8px_32px_0_rgba(0,0,0,0.5)]'
+                            : '!bg-white/95 border-secondary-200 shadow-[0_8px_28px_rgba(15,23,42,0.10)]'))
                 }
                 contentClassName="min-h-0"
                 mobileFullScreen={false}

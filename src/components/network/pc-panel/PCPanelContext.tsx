@@ -69,7 +69,7 @@ export interface PCPanelContextValue {
   isPcPoweredOff: boolean;
   deviceFromTopology: CanvasDevice | undefined;
   topologyDevices: CanvasDevice[];
-  topologyConnections: Array<{ sourceDeviceId: string; sourcePort: string; targetDeviceId: string; targetPort: string; cableType?: string; active?: boolean }> | CanvasConnection[];
+  topologyConnections: CanvasConnection[];
   deviceStates: Map<string, SwitchState> | undefined;
   deviceOutputs: Map<string, TerminalOutput[]> | undefined;
   handleResizeStart?: (e: PointerEvent, direction: string, id: string) => void;

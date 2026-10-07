@@ -16,7 +16,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { handleRestApiRequest, type RestApiResponse } from '@/lib/network/restApiMock';
 import { usePCPanel } from './PCPanelContext';
-import type { CanvasDevice, CanvasConnection } from '../NetworkTopology/types/networkTopology.types';
+import type { CanvasDevice } from '../NetworkTopology/types/networkTopology.types';
 
 interface RestApiExplorerWindowProps {
   isDark: boolean;
@@ -271,7 +271,7 @@ export function RestApiExplorerWindow({
       body,
       devices,
       deviceStates,
-      connections as CanvasConnection[]
+      connections
     );
     setResponse(res);
 
@@ -320,7 +320,7 @@ export function RestApiExplorerWindow({
           item.body,
           devices,
           deviceStates,
-          connections as CanvasConnection[]
+          connections
         );
         setResponse(res);
       }, 50);
