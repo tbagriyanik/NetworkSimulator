@@ -47,19 +47,23 @@ export function DeviceLabels({ device, deviceWidth, isSelected, isDark, isTR, t,
       )}
 
       {/* Device VLAN */}
-      {device.type === 'pc' && (
-        <text
-          x={deviceWidth / 2}
-          y={81}
-          fill={isDark ? 'var(--color-accent-400)' : 'var(--color-accent-700)'}
-          fontSize="9"
-          textAnchor="middle"
-          fontFamily="var(--font-geist-mono)"
-          className="select-none pointer-events-none"
-        >
-          VLAN {String(getLiveDeviceVlan(device))}
-        </text>
-      )}
+      {device.type === 'pc' && (() => {
+        const liveVlan = getLiveDeviceVlan(device);
+        if (!liveVlan) return null;
+        return (
+          <text
+            x={deviceWidth / 2}
+            y={81}
+            fill={isDark ? 'var(--color-accent-400)' : 'var(--color-accent-700)'}
+            fontSize="9"
+            textAnchor="middle"
+            fontFamily="var(--font-geist-mono)"
+            className="select-none pointer-events-none"
+          >
+            VLAN {String(liveVlan)}
+          </text>
+        );
+      })()}
 
       {/* Printer Job Count */}
       {device.type === 'printer' && (

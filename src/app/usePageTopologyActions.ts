@@ -217,8 +217,16 @@ export function usePageTopologyActions({
         window.addEventListener('simulation-stop', onStopReq);
 
         const routerDevices = devices.filter(d => d.type === 'router' || d.type === 'switchL2' || d.type === 'switchL3');
+        const wifiDevices = devices.filter(d => d.type === 'mobile' || !!d.wifi);
+        const iotDevices = devices.filter(d => d.type === 'iot');
+        const printerDevices = devices.filter(d => d.type === 'printer');
         const routerCliCmds = ['enable', 'configure terminal', 'interface FastEthernet0/0', 'ip address 192.168.1.1 255.255.255.0', 'no shutdown'];
-        const totalSteps = devices.length + connections.length + (pcDevices.length >= 2 ? 5 : 0) + (routerDevices.length * (3 + routerCliCmds.length));
+        const totalSteps = devices.length + connections.length +
+          (pcDevices.length >= 2 ? 7 : 0) +
+          (wifiDevices.length * 3) +
+          (iotDevices.length * 3) +
+          (printerDevices.length * 3) +
+          (routerDevices.length * (3 + routerCliCmds.length));
         let currentStep = 0;
 
         const updateProgress = (step: number, msg: string) => {
@@ -229,37 +237,58 @@ export function usePageTopologyActions({
 
         const getElementCoords = (selector: string, fallbackX: number, fallbackY: number) => {
           if (typeof document !== 'undefined') {
-            const el = document.querySelector(selector);
-            if (el) {
-              const rect = el.getBoundingClientRect();
-              return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+            const parts = selector.split(',').map(s => s.trim());
+            for (const part of parts) {
+              const el = document.querySelector(part);
+              if (el) {
+                const rect = el.getBoundingClientRect();
+                if (rect.width > 0 && rect.height > 0) {
+                  return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+                }
+              }
             }
           }
           return { x: fallbackX, y: fallbackY };
         };
 
-        // 1. First click device in toolbar, then move to canvas and add device
+
+        // 1. First click device in toolbar, then move cursor to canvas target and click to place device
         devices.forEach((dev) => {
           const currentDevices = devices.slice(0, devices.indexOf(dev) + 1);
+          const devTypeKey = dev.type === ('switch' as unknown as string) ? 'switchL2' : dev.type;
+          const devSelector = `[data-toolbar-device="${devTypeKey}"], [data-toolbar-device="pc"]`;
 
-          // Step 1a: Move cursor to toolbar icon and click toolbar button (device is not added yet)
+          // Step 1a: Move cursor to toolbar icon FIRST (glide without click)
           registerTimeout(() => {
             currentStep++;
             updateProgress(currentStep, isTr ? `${dev.name} seçiliyor` : `Selecting ${dev.name}`);
-            const targetBtnEl = document.querySelector(`[data-toolbar-device="${dev.type}"]`) as HTMLButtonElement | null;
-            if (targetBtnEl) targetBtnEl.click();
-            const targetBtn = getElementCoords(`[data-toolbar-device="${dev.type}"]`, 220, 75);
-            moveCursor(targetBtn.x, targetBtn.y, isTr ? `${dev.type.toUpperCase()} Seç` : `Select ${dev.type.toUpperCase()}`, true);
+            const targetBtn = getElementCoords(devSelector, 220, 75);
+            moveCursor(targetBtn.x, targetBtn.y, isTr ? `${dev.type.toUpperCase()} Seçiliyor` : `Selecting ${dev.type.toUpperCase()}`, false);
           }, delay);
-          delay += 900;
+          delay += 450;
 
-          // Step 1b: Move cursor to target canvas position, click, and ADD device to canvas
+          // Step 1b: Click toolbar button when cursor arrives at button (visual selection only, device placed directly at target coordinates)
+          registerTimeout(() => {
+            const targetBtn = getElementCoords(devSelector, 220, 75);
+            moveCursor(targetBtn.x, targetBtn.y, isTr ? `${dev.type.toUpperCase()} Seçildi` : `Selected ${dev.type.toUpperCase()}`, true);
+          }, delay);
+          delay += 400;
+
+          // Step 1c: Move cursor across canvas to target position (glide without click)
+          registerTimeout(() => {
+            const screenX = Math.min(window.innerWidth - 100, Math.max(120, dev.x + 80));
+            const screenY = Math.min(window.innerHeight - 150, Math.max(150, dev.y + 120));
+            moveCursor(screenX, screenY, isTr ? `${dev.name} Yerleştiriliyor` : `Placing ${dev.name}`, false);
+          }, delay);
+          delay += 450;
+
+          // Step 1d: Click canvas position and PLACE device right as click happens
           registerTimeout(() => {
             const screenX = Math.min(window.innerWidth - 100, Math.max(120, dev.x + 80));
             const screenY = Math.min(window.innerHeight - 150, Math.max(150, dev.y + 120));
             moveCursor(screenX, screenY, isTr ? `${dev.name} Eklendi` : `${dev.name} Placed`, true);
 
-            // Device is added to canvas now
+            // Device is added to canvas on click
             setDevices(currentDevices);
 
             const currentStates = new Map<string, SwitchState>();
@@ -273,54 +302,96 @@ export function usePageTopologyActions({
               detail: { action: isTr ? `${dev.name} topolojiye eklendi` : `Added ${dev.name} to topology` }
             }));
           }, delay);
-          delay += 1000;
+          delay += 850;
         });
 
-        // 2. Mouse moves to Cable Tool, clicks exact cable type button (straight, crossover, console, etc.) in toolbar, then connects ports
+        // 2. Connect cables: Only click toolbar if cable type changes (or for the first cable), otherwise connect ports directly
+        let lastSelectedCableType: string | null = null;
+
         connections.forEach((conn) => {
           const currentConnections = connections.slice(0, connections.indexOf(conn) + 1);
           const srcDev = devices.find(d => d.id === conn.sourceDeviceId);
           const tgtDev = devices.find(d => d.id === conn.targetDeviceId);
           const cableTypeVal = (conn.cableType === 'crossover' || (conn.cableType as string) === 'cross') ? 'crossover' : (conn.cableType || 'straight');
           const cableLabel = cableTypeVal === 'crossover' ? 'CROSSOVER' : cableTypeVal.toUpperCase();
+          const cableSelector = `[data-toolbar-cable="${cableTypeVal}"], [data-toolbar-cable="straight"]`;
+          const isSameCableType = lastSelectedCableType === cableTypeVal;
 
-          // Click exact cable button in toolbar
+          if (!isSameCableType) {
+            lastSelectedCableType = cableTypeVal;
+
+            // Step 2a: Move cursor to toolbar cable button FIRST (glide without click)
+            registerTimeout(() => {
+              currentStep++;
+              updateProgress(currentStep, isTr ? `Kablo (${cableLabel}): ${srcDev?.name || ''} ➔ ${tgtDev?.name || ''}` : `Cable (${cableLabel}): ${srcDev?.name || ''} ➔ ${tgtDev?.name || ''}`);
+              const cableBtnCoords = getElementCoords(cableSelector, 330, 75);
+              moveCursor(cableBtnCoords.x, cableBtnCoords.y, isTr ? `${cableLabel} Kablo Seçiliyor` : `Selecting ${cableLabel} Cable`, false);
+            }, delay);
+            delay += 450;
+
+            // Step 2b: Click cable button when cursor arrives at button
+            registerTimeout(() => {
+              const cableBtnCoords = getElementCoords(cableSelector, 330, 75);
+              moveCursor(cableBtnCoords.x, cableBtnCoords.y, isTr ? `${cableLabel} Kablo Seçildi` : `Selected ${cableLabel} Cable`, true);
+            }, delay);
+            delay += 400;
+          } else {
+            // Update progress without going back to toolbar
+            registerTimeout(() => {
+              currentStep++;
+              updateProgress(currentStep, isTr ? `Kablo (${cableLabel}): ${srcDev?.name || ''} ➔ ${tgtDev?.name || ''}` : `Cable (${cableLabel}): ${srcDev?.name || ''} ➔ ${tgtDev?.name || ''}`);
+            }, delay);
+          }
+
+          // Step 2c: Move cursor to source device port
           registerTimeout(() => {
-            currentStep++;
-            updateProgress(currentStep, isTr ? `Kablo (${cableLabel}): ${srcDev?.name || ''} ➔ ${tgtDev?.name || ''}` : `Cable (${cableLabel}): ${srcDev?.name || ''} ➔ ${tgtDev?.name || ''}`);
-            const cableBtnEl = document.querySelector(`[data-toolbar-cable="${cableTypeVal}"], [data-toolbar-cable="straight"]`) as HTMLButtonElement | null;
-            if (cableBtnEl) cableBtnEl.click();
-            const cableBtn = getElementCoords(`[data-toolbar-cable="${cableTypeVal}"], [data-toolbar-cable="straight"]`, 330, 75);
-            moveCursor(cableBtn.x, cableBtn.y, isTr ? `${cableLabel} Kablo Seç` : `Select ${cableLabel} Cable`, true);
+            const srcSelector = `[data-device-id="${srcDev?.id}"]`;
+            const srcCoords = getElementCoords(srcSelector, srcDev ? srcDev.x + 80 : 200, srcDev ? srcDev.y + 120 : 200);
+            const portName = conn.sourcePort || 'Port';
+            moveCursor(srcCoords.x, srcCoords.y, isTr ? `${srcDev?.name || ''} [${portName}] Bağlanıyor` : `Connecting to ${srcDev?.name || ''} [${portName}]`, false);
           }, delay);
-          delay += 900;
+          delay += 450;
 
-          // Click source device port
+          // Step 2d: Click source device port (clear click ripple & label)
           registerTimeout(() => {
-            const startX = srcDev ? srcDev.x + 80 : 200;
-            const startY = srcDev ? srcDev.y + 120 : 200;
-            moveCursor(startX, startY, isTr ? `${srcDev?.name || ''} Portuna Tıkla` : `Click ${srcDev?.name || ''} Port`, true);
+            const srcSelector = `[data-device-id="${srcDev?.id}"]`;
+            const srcCoords = getElementCoords(srcSelector, srcDev ? srcDev.x + 80 : 200, srcDev ? srcDev.y + 120 : 200);
+            const portName = conn.sourcePort || 'Port';
+            moveCursor(srcCoords.x, srcCoords.y, isTr ? `${srcDev?.name || ''} [${portName}] Tıklandı ✓` : `${srcDev?.name || ''} [${portName}] Clicked ✓`, true);
           }, delay);
-          delay += 950;
+          delay += 500;
 
-          // Click target device to complete connection & record in timeline history
+          // Step 2e: Move cursor to target device port
           registerTimeout(() => {
-            const endX = tgtDev ? tgtDev.x + 80 : 350;
-            const endY = tgtDev ? tgtDev.y + 120 : 250;
-            moveCursor(endX, endY, isTr ? `${tgtDev?.name || ''} Portuna Bağla` : `Connect to ${tgtDev?.name || ''} Port`, true);
+            const tgtSelector = `[data-device-id="${tgtDev?.id}"]`;
+            const tgtCoords = getElementCoords(tgtSelector, tgtDev ? tgtDev.x + 80 : 350, tgtDev ? tgtDev.y + 120 : 250);
+            const portName = conn.targetPort || 'Port';
+            moveCursor(tgtCoords.x, tgtCoords.y, isTr ? `${tgtDev?.name || ''} [${portName}] Bağlanıyor` : `Connecting to ${tgtDev?.name || ''} [${portName}]`, false);
+          }, delay);
+          delay += 450;
+
+          // Step 2f: Click target device port to complete connection & record in timeline history
+          registerTimeout(() => {
+            const tgtSelector = `[data-device-id="${tgtDev?.id}"]`;
+            const tgtCoords = getElementCoords(tgtSelector, tgtDev ? tgtDev.x + 80 : 350, tgtDev ? tgtDev.y + 120 : 250);
+            const portName = conn.targetPort || 'Port';
+            moveCursor(tgtCoords.x, tgtCoords.y, isTr ? `${tgtDev?.name || ''} [${portName}] Bağlandı ✓` : `${tgtDev?.name || ''} [${portName}] Connected ✓`, true);
             setConnections(currentConnections);
 
             window.dispatchEvent(new CustomEvent('commit-action-event', {
-              detail: { action: isTr ? `${srcDev?.name || ''} ➔ ${tgtDev?.name || ''} (${cableLabel}) bağlandı` : `Connected ${srcDev?.name || ''} ➔ ${tgtDev?.name || ''} (${cableLabel})` }
+              detail: { action: isTr ? `${srcDev?.name || ''} (${conn.sourcePort}) ➔ ${tgtDev?.name || ''} (${conn.targetPort}) [${cableLabel}] bağlandı` : `Connected ${srcDev?.name || ''} (${conn.sourcePort}) ➔ ${tgtDev?.name || ''} (${conn.targetPort}) [${cableLabel}]` }
             }));
           }, delay);
-          delay += 1000;
+          delay += 950;
         });
 
-        // 3. PC Device Configuration (Double Click to open window, enter IP visually, close window)
+        // 3. PC Device Configuration (Double Click to open window, enter IP & Subnet Mask visually as two distinct steps, close window)
         if (pcDevices.length >= 2) {
           const pc1 = pcDevices[0];
           const pc2 = pcDevices[1];
+          const targetPc1Ip = pc1.ip || '192.168.1.10';
+          const targetPc2Ip = pc2.ip || '192.168.1.11';
+          const defaultSubnet = '255.255.255.0';
 
           // PC-1: Double click to open configuration window
           registerTimeout(() => {
@@ -334,20 +405,41 @@ export function usePageTopologyActions({
           // PC-1: IP Address input typing & visual populating & record in timeline history
           registerTimeout(() => {
             currentStep++;
-            updateProgress(currentStep, `${pc1.name} IP: 192.168.1.10 / 255.255.255.0`);
-            const inputCoords = getElementCoords('input[placeholder*="192."], input[name="ip"], [data-modal-content="true"] input', window.innerWidth / 2, window.innerHeight / 2 - 20);
-            moveCursor(inputCoords.x, inputCoords.y, isTr ? `${pc1.name} IP Girişi: 192.168.1.10` : `${pc1.name} IP Entry: 192.168.1.10`, false, `192.168.1.10`);
-            pc1.ip = '192.168.1.10';
-            pc1.subnet = '255.255.255.0';
-            setDevices(devices.map(d => d.id === pc1.id ? { ...d, ip: '192.168.1.10', subnet: '255.255.255.0' } : d));
-            const ipEl = document.querySelector('input[placeholder*="192."], input[name="ip"], [data-modal-content="true"] input') as HTMLInputElement | null;
+            updateProgress(currentStep, `${pc1.name} IP Adresi: ${targetPc1Ip}`);
+            const ipCoords = getElementCoords('input[placeholder*="192.168.1.100"], input[placeholder*="192."], input[name="ip"]', window.innerWidth / 2 - 100, window.innerHeight / 2 - 40);
+            moveCursor(ipCoords.x, ipCoords.y, isTr ? `${pc1.name} IP: ${targetPc1Ip}` : `${pc1.name} IP: ${targetPc1Ip}`, false, targetPc1Ip);
+            pc1.ip = targetPc1Ip;
+            setDevices(devices.map(d => d.id === pc1.id ? { ...d, ip: targetPc1Ip } : d));
+            const ipEl = (document.querySelector('input[placeholder*="192.168.1.100"]') || document.querySelector('input[placeholder*="192."]') || document.querySelector('input[name="ip"]')) as HTMLInputElement | null;
             if (ipEl) {
               ipEl.focus();
-              ipEl.value = '192.168.1.10';
+              ipEl.value = targetPc1Ip;
               ipEl.dispatchEvent(new Event('input', { bubbles: true }));
+              ipEl.dispatchEvent(new Event('change', { bubbles: true }));
             }
             window.dispatchEvent(new CustomEvent('commit-action-event', {
-              detail: { action: isTr ? `${pc1.name} IP: 192.168.1.10 ayarlandı` : `Set ${pc1.name} IP: 192.168.1.10` }
+              detail: { action: isTr ? `${pc1.name} IP: ${targetPc1Ip} ayarlandı` : `Set ${pc1.name} IP: ${targetPc1Ip}` }
+            }));
+          }, delay);
+          delay += 1350;
+
+          // PC-1: Subnet Mask input typing & visual populating & record in timeline history
+          registerTimeout(() => {
+            currentStep++;
+            updateProgress(currentStep, `${pc1.name} Alt Ağ Maskesi: ${defaultSubnet}`);
+            const subnetCoords = getElementCoords('input[placeholder*="255.255.255.0"], input[placeholder*="255."], input[name="subnet"]', window.innerWidth / 2 + 100, window.innerHeight / 2 - 40);
+            moveCursor(subnetCoords.x, subnetCoords.y, isTr ? `${pc1.name} Maske: ${defaultSubnet}` : `${pc1.name} Mask: ${defaultSubnet}`, false, defaultSubnet);
+            pc1.subnet = defaultSubnet;
+            setDevices(devices.map(d => d.id === pc1.id ? { ...d, subnet: defaultSubnet } : d));
+            const subnetEl = (document.querySelector('input[placeholder*="255.255.255.0"]') || document.querySelector('input[placeholder*="255."]') || document.querySelector('input[name="subnet"]')) as HTMLInputElement | null;
+            if (subnetEl) {
+              subnetEl.focus();
+              subnetEl.value = defaultSubnet;
+              subnetEl.dispatchEvent(new Event('input', { bubbles: true }));
+              subnetEl.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+            window.dispatchEvent(new CustomEvent('commit-action-event', {
+              detail: { action: isTr ? `${pc1.name} Alt Ağ Maskesi: ${defaultSubnet} ayarlandı` : `Set ${pc1.name} Subnet Mask: ${defaultSubnet}` }
             }));
           }, delay);
           delay += 1350;
@@ -372,20 +464,41 @@ export function usePageTopologyActions({
           // PC-2: IP Address input typing & visual populating & record in timeline history
           registerTimeout(() => {
             currentStep++;
-            updateProgress(currentStep, `${pc2.name} IP: 192.168.1.20 / 255.255.255.0`);
-            const inputCoords = getElementCoords('input[placeholder*="192."], input[name="ip"], [data-modal-content="true"] input', window.innerWidth / 2, window.innerHeight / 2 - 20);
-            moveCursor(inputCoords.x, inputCoords.y, isTr ? `${pc2.name} IP Girişi: 192.168.1.20` : `${pc2.name} IP Entry: 192.168.1.20`, false, `192.168.1.20`);
-            pc2.ip = '192.168.1.20';
-            pc2.subnet = '255.255.255.0';
-            setDevices(devices.map(d => d.id === pc2.id ? { ...d, ip: '192.168.1.20', subnet: '255.255.255.0' } : d));
-            const ipEl = document.querySelector('input[placeholder*="192."], input[name="ip"], [data-modal-content="true"] input') as HTMLInputElement | null;
+            updateProgress(currentStep, `${pc2.name} IP Adresi: ${targetPc2Ip}`);
+            const ipCoords = getElementCoords('input[placeholder*="192.168.1.100"], input[placeholder*="192."], input[name="ip"]', window.innerWidth / 2 - 100, window.innerHeight / 2 - 40);
+            moveCursor(ipCoords.x, ipCoords.y, isTr ? `${pc2.name} IP: ${targetPc2Ip}` : `${pc2.name} IP: ${targetPc2Ip}`, false, targetPc2Ip);
+            pc2.ip = targetPc2Ip;
+            setDevices(devices.map(d => d.id === pc2.id ? { ...d, ip: targetPc2Ip } : d));
+            const ipEl = (document.querySelector('input[placeholder*="192.168.1.100"]') || document.querySelector('input[placeholder*="192."]') || document.querySelector('input[name="ip"]')) as HTMLInputElement | null;
             if (ipEl) {
               ipEl.focus();
-              ipEl.value = '192.168.1.20';
+              ipEl.value = targetPc2Ip;
               ipEl.dispatchEvent(new Event('input', { bubbles: true }));
+              ipEl.dispatchEvent(new Event('change', { bubbles: true }));
             }
             window.dispatchEvent(new CustomEvent('commit-action-event', {
-              detail: { action: isTr ? `${pc2.name} IP: 192.168.1.20 ayarlandı` : `Set ${pc2.name} IP: 192.168.1.20` }
+              detail: { action: isTr ? `${pc2.name} IP: ${targetPc2Ip} ayarlandı` : `Set ${pc2.name} IP: ${targetPc2Ip}` }
+            }));
+          }, delay);
+          delay += 1350;
+
+          // PC-2: Subnet Mask input typing & visual populating & record in timeline history
+          registerTimeout(() => {
+            currentStep++;
+            updateProgress(currentStep, `${pc2.name} Alt Ağ Maskesi: ${defaultSubnet}`);
+            const subnetCoords = getElementCoords('input[placeholder*="255.255.255.0"], input[placeholder*="255."], input[name="subnet"]', window.innerWidth / 2 + 100, window.innerHeight / 2 - 40);
+            moveCursor(subnetCoords.x, subnetCoords.y, isTr ? `${pc2.name} Maske: ${defaultSubnet}` : `${pc2.name} Mask: ${defaultSubnet}`, false, defaultSubnet);
+            pc2.subnet = defaultSubnet;
+            setDevices(devices.map(d => d.id === pc2.id ? { ...d, subnet: defaultSubnet } : d));
+            const subnetEl = (document.querySelector('input[placeholder*="255.255.255.0"]') || document.querySelector('input[placeholder*="255."]') || document.querySelector('input[name="subnet"]')) as HTMLInputElement | null;
+            if (subnetEl) {
+              subnetEl.focus();
+              subnetEl.value = defaultSubnet;
+              subnetEl.dispatchEvent(new Event('input', { bubbles: true }));
+              subnetEl.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+            window.dispatchEvent(new CustomEvent('commit-action-event', {
+              detail: { action: isTr ? `${pc2.name} Alt Ağ Maskesi: ${defaultSubnet} ayarlandı` : `Set ${pc2.name} Subnet Mask: ${defaultSubnet}` }
             }));
           }, delay);
           delay += 1350;
@@ -399,7 +512,7 @@ export function usePageTopologyActions({
           delay += 850;
 
           // 4. Test Ping via CMD on PC-1 (Perfect synchronization with pc-auto-type)
-          const targetIp = pc2.ip || '192.168.1.20';
+          const targetIp = targetPc2Ip;
           const fullCmd = `ping ${targetIp}`;
           registerTimeout(() => {
             currentStep++;
@@ -453,9 +566,15 @@ export function usePageTopologyActions({
         // 5. Router / Switch CLI Configuration Step (Synchronized character-by-character typing with terminal-auto-type)
         if (routerDevices.length > 0) {
           routerDevices.forEach((routerDev) => {
-            const devCmds = routerDev.type === 'router'
-              ? ['enable', 'configure terminal', 'interface FastEthernet0/0', 'ip address 192.168.1.1 255.255.255.0', 'no shutdown']
-              : ['enable', 'configure terminal', 'vlan 10', 'name USERS', 'exit'];
+            // Determine meaningful commands based on device state/type
+            let devCmds: string[] = [];
+            if (routerDev.type === 'router') {
+              devCmds = ['enable', 'configure terminal', 'interface FastEthernet0/0', 'ip address 192.168.1.1 255.255.255.0', 'no shutdown'];
+            } else if (routerDev.vlan && routerDev.vlan > 1) {
+              devCmds = ['enable', 'configure terminal', `vlan ${routerDev.vlan}`, `name VLAN_${routerDev.vlan}`, 'exit'];
+            } else {
+              devCmds = ['enable', 'show vlan brief', 'show mac address-table'];
+            }
 
             registerTimeout(() => {
               currentStep++;
@@ -497,9 +616,11 @@ export function usePageTopologyActions({
               currentStep++;
               const resultMsg = routerDev.type === 'router'
                 ? (isTr ? `${routerDev.name} CLI Konfigüre Edildi (%LINK-5-CHANGED: FastEthernet0/0 state to up)` : `${routerDev.name} CLI Configured (%LINK-5-CHANGED: FastEthernet0/0 state to up)`)
-                : (isTr ? `${routerDev.name} VLAN 10 (USERS) Konfigüre Edildi` : `${routerDev.name} VLAN 10 (USERS) Configured`);
+                : (routerDev.vlan && routerDev.vlan > 1
+                    ? (isTr ? `${routerDev.name} VLAN ${routerDev.vlan} Konfigüre Edildi` : `${routerDev.name} VLAN ${routerDev.vlan} Configured`)
+                    : (isTr ? `${routerDev.name} Switch Durumu Kontrol Edildi` : `${routerDev.name} Switch Status Verified`));
               updateProgress(currentStep, resultMsg);
-              moveCursor(window.innerWidth / 2, window.innerHeight / 2 + 50, isTr ? `CLI Konfigürasyonu Başarılı!` : `CLI Configuration Succeeded!`, false);
+              moveCursor(window.innerWidth / 2, window.innerHeight / 2 + 50, isTr ? `CLI İşlemi Başarılı!` : `CLI Operation Succeeded!`, false);
               window.dispatchEvent(new CustomEvent('commit-action-event', {
                 detail: { action: resultMsg }
               }));
@@ -511,6 +632,121 @@ export function usePageTopologyActions({
               const closeBtn = getElementCoords(`[data-window-close="${routerDev.id}"]`, window.innerWidth / 2 + 220, window.innerHeight / 2 - 200);
               moveCursor(closeBtn.x, closeBtn.y, isTr ? `${routerDev.name} Konsol Kapat` : `Close ${routerDev.name} Console`, true);
               useMultiWindowStore.getState().closeDeviceWindow(routerDev.id);
+            }, delay);
+            delay += 850;
+          });
+        }
+
+        // 6. Wi-Fi / Mobile Device Configuration Step
+        if (wifiDevices.length > 0) {
+          wifiDevices.forEach((wifiDev) => {
+            const ssid = wifiDev.wifi?.ssid || 'NetSim-WiFi';
+            const pass = wifiDev.wifi?.password || 'password123';
+
+            // Open Wireless Config Window
+            registerTimeout(() => {
+              currentStep++;
+              updateProgress(currentStep, isTr ? `${wifiDev.name} Wi-Fi Ayarları Açılıyor` : `Opening ${wifiDev.name} Wi-Fi Settings`);
+              moveCursor(wifiDev.x + 80, wifiDev.y + 120, isTr ? `${wifiDev.name} Wi-Fi Aç` : `Open ${wifiDev.name} Wi-Fi`, true);
+              useMultiWindowStore.getState().openDeviceWindow(wifiDev.id, wifiDev.type, 'wireless');
+            }, delay);
+            delay += 1100;
+
+            // Type SSID & Password & update state
+            registerTimeout(() => {
+              currentStep++;
+              updateProgress(currentStep, isTr ? `${wifiDev.name} Wi-Fi: SSID '${ssid}' Ayarlanıyor` : `${wifiDev.name} Wi-Fi: Setting SSID '${ssid}'`);
+              const ssidCoords = getElementCoords('input[placeholder*="SSID"], input[name="ssid"], [data-modal-content="true"] input', window.innerWidth / 2, window.innerHeight / 2 - 20);
+              moveCursor(ssidCoords.x, ssidCoords.y, isTr ? `SSID: ${ssid}` : `SSID: ${ssid}`, false, ssid);
+
+              setDevices(devices.map(d => d.id === wifiDev.id ? {
+                ...d,
+                wifi: d.wifi ? { ...d.wifi, enabled: true, ssid, password: pass } : { enabled: true, ssid, password: pass, mode: 'client' }
+              } : d));
+
+              window.dispatchEvent(new CustomEvent('commit-action-event', {
+                detail: { action: isTr ? `${wifiDev.name} Wi-Fi Ayarlandı: SSID '${ssid}'` : `Configured ${wifiDev.name} Wi-Fi: SSID '${ssid}'` }
+              }));
+            }, delay);
+            delay += 1350;
+
+            // Close Wireless Window
+            registerTimeout(() => {
+              const closeBtn = getElementCoords(`[data-window-close="${wifiDev.id}"]`, window.innerWidth / 2 + 200, window.innerHeight / 2 - 200);
+              moveCursor(closeBtn.x, closeBtn.y, isTr ? `${wifiDev.name} Penceresini Kapat` : `Close ${wifiDev.name} Window`, true);
+              useMultiWindowStore.getState().closeDeviceWindow(wifiDev.id);
+            }, delay);
+            delay += 850;
+          });
+        }
+
+        // 7. Printer Device Configuration Step
+        if (printerDevices.length > 0) {
+          printerDevices.forEach((printerDev) => {
+            const printerIp = printerDev.ip || '192.168.1.20';
+
+            // Open Printer Window
+            registerTimeout(() => {
+              currentStep++;
+              updateProgress(currentStep, isTr ? `${printerDev.name} Yazıcı Ayarları Açılıyor` : `Opening ${printerDev.name} Printer Settings`);
+              moveCursor(printerDev.x + 80, printerDev.y + 120, isTr ? `${printerDev.name} Aç` : `Open ${printerDev.name}`, true);
+              useMultiWindowStore.getState().openDeviceWindow(printerDev.id, 'printer', 'settings');
+            }, delay);
+            delay += 1100;
+
+            // Record Printer IP & Service state
+            registerTimeout(() => {
+              currentStep++;
+              updateProgress(currentStep, isTr ? `${printerDev.name} Ağ Yazıcısı Aktif (IP: ${printerIp})` : `${printerDev.name} Network Printer Ready (IP: ${printerIp})`);
+              moveCursor(window.innerWidth / 2, window.innerHeight / 2 - 10, isTr ? `Yazıcı IP: ${printerIp}` : `Printer IP: ${printerIp}`, false);
+
+              window.dispatchEvent(new CustomEvent('commit-action-event', {
+                detail: { action: isTr ? `${printerDev.name} Ağ Yazıcısı Yapılandırıldı (IP: ${printerIp})` : `Configured ${printerDev.name} Network Printer (IP: ${printerIp})` }
+              }));
+            }, delay);
+            delay += 1200;
+
+            // Close Printer Window
+            registerTimeout(() => {
+              const closeBtn = getElementCoords(`[data-window-close="${printerDev.id}"]`, window.innerWidth / 2 + 200, window.innerHeight / 2 - 200);
+              moveCursor(closeBtn.x, closeBtn.y, isTr ? `${printerDev.name} Penceresini Kapat` : `Close ${printerDev.name} Window`, true);
+              useMultiWindowStore.getState().closeDeviceWindow(printerDev.id);
+            }, delay);
+            delay += 850;
+          });
+        }
+
+        // 8. IoT Device Configuration Step
+        if (iotDevices.length > 0) {
+          iotDevices.forEach((iotDev) => {
+            const iotIp = iotDev.ip || '192.168.1.30';
+
+            // Open IoT Window
+            registerTimeout(() => {
+              currentStep++;
+              updateProgress(currentStep, isTr ? `${iotDev.name} IoT Ayarları Açılıyor` : `Opening ${iotDev.name} IoT Settings`);
+              moveCursor(iotDev.x + 80, iotDev.y + 120, isTr ? `${iotDev.name} Aç` : `Open ${iotDev.name}`, true);
+              useMultiWindowStore.getState().openDeviceWindow(iotDev.id, 'iot', 'settings');
+            }, delay);
+            delay += 1100;
+
+            // Record IoT Panel state
+            registerTimeout(() => {
+              currentStep++;
+              updateProgress(currentStep, isTr ? `${iotDev.name} Akıllı Cihaz Servisi Aktif (IP: ${iotIp})` : `${iotDev.name} Smart Device Service Active (IP: ${iotIp})`);
+              moveCursor(window.innerWidth / 2, window.innerHeight / 2 - 10, isTr ? `IoT IP: ${iotIp}` : `IoT IP: ${iotIp}`, false);
+
+              window.dispatchEvent(new CustomEvent('commit-action-event', {
+                detail: { action: isTr ? `${iotDev.name} Akıllı Cihaz Yapılandırıldı (IP: ${iotIp})` : `Configured ${iotDev.name} Smart Device (IP: ${iotIp})` }
+              }));
+            }, delay);
+            delay += 1200;
+
+            // Close IoT Window
+            registerTimeout(() => {
+              const closeBtn = getElementCoords(`[data-window-close="${iotDev.id}"]`, window.innerWidth / 2 + 200, window.innerHeight / 2 - 200);
+              moveCursor(closeBtn.x, closeBtn.y, isTr ? `${iotDev.name} Penceresini Kapat` : `Close ${iotDev.name} Window`, true);
+              useMultiWindowStore.getState().closeDeviceWindow(iotDev.id);
             }, delay);
             delay += 850;
           });

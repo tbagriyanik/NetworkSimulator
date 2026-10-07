@@ -44,16 +44,17 @@ export function useTopologyIot({
     }
 
     const connectedPort = connections.find(conn => conn.sourceDeviceId === device.id || conn.targetDeviceId === device.id);
-    if (!connectedPort) return 1;
+    if (!connectedPort) return null;
 
     const otherDeviceId = connectedPort.sourceDeviceId === device.id ? connectedPort.targetDeviceId : connectedPort.sourceDeviceId;
     const otherPortId = connectedPort.sourceDeviceId === device.id ? connectedPort.targetPort : connectedPort.sourcePort;
     const otherPort = getLivePort(otherDeviceId, otherPortId);
 
-    if (!otherPort) return 1;
+    if (!otherPort) return null;
     if (hasPortMode(otherPort) && otherPort.mode === 'trunk') return 'Trunk';
     const portData = otherPort as Record<string, unknown>;
-    return Number(portData.accessVlan || portData.vlan || 1);
+    const assignedVlan = portData.accessVlan || portData.vlan;
+    return assignedVlan ? Number(assignedVlan) : null;
   }, [connections, getLivePort, hasPortMode]);
 
   const getIotDeviceStatus = useCallback((device: CanvasDevice) => {
