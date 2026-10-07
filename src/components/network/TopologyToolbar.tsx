@@ -271,6 +271,7 @@ export function TopologyToolbar({
             <Tooltip key={item.type}>
               <TooltipTrigger asChild>
                 <Button
+                  data-toolbar-device={item.type}
                   aria-label={t[item.labelKey] as string}
                   variant="ghost"
                   size="icon"
@@ -319,6 +320,7 @@ export function TopologyToolbar({
             <Tooltip key={type}>
               <TooltipTrigger asChild>
                 <Button
+                  data-toolbar-cable={type}
                   aria-label={cableLabelMap[type]}
                   variant="ghost"
                   size="icon"

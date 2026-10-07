@@ -540,7 +540,7 @@ export function usePageController({ initialProjectId }: { initialProjectId?: str
   usePageGlobalEvents({
     topologyDevices, topologyConnections, deviceStates, state, isGuidedModeActive, setLastCommand, setLastOutput, commitAction,
     checkStepCompletionWithContext, setShowPCDeviceId, setPcPanelInitialTab, setShowPCPanel, setActiveDeviceId, setActiveDeviceType,
-    setUnifiedDeviceActiveTab, setShowUnifiedDeviceModal, setActiveTab,
+    setUnifiedDeviceActiveTab, setShowUnifiedDeviceModal, setActiveTab, setIsTimelineMinimized,
   });
 
   const handleClearTerminal = () => {

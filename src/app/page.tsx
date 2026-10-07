@@ -19,6 +19,7 @@ const { TabletSplitView, RefreshReportPanel } = {
 
 import { exampleLevelOrder } from './page.types';
 import { handlePageShortcut } from './pageKeyboardShortcuts';
+import { VirtualCursorOverlay } from '@/components/network/VirtualCursorOverlay';
 
 // Modular Sub-components
 import { PageOverlayPanels } from './PageOverlayPanels';
@@ -444,6 +445,7 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
             setSaveDialog={page.setSaveDialog}
             focusActiveTerminalInput={page.focusActiveTerminalInput}
           />
+          <VirtualCursorOverlay />
         </div>
       </div>
     </AppErrorBoundary>

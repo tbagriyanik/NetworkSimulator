@@ -36,6 +36,7 @@ export interface UsePageGlobalEventsParams {
   setUnifiedDeviceActiveTab: (tab: UnifiedDeviceTab) => void;
   setShowUnifiedDeviceModal: (show: boolean) => void;
   setActiveTab: (tab: TabType) => void;
+  setIsTimelineMinimized?: (minimized: boolean) => void;
 }
 
 export function usePageGlobalEvents({
@@ -55,8 +56,33 @@ export function usePageGlobalEvents({
   setActiveDeviceType,
   setUnifiedDeviceActiveTab,
   setShowUnifiedDeviceModal,
-  setActiveTab
+  setActiveTab,
+  setIsTimelineMinimized
 }: UsePageGlobalEventsParams) {
+
+  useEffect(() => {
+    const handleCommitActionEvent = (e: Event) => {
+      const customEv = e as CustomEvent<{ action: string }>;
+      if (customEv.detail?.action) {
+        commitAction(customEv.detail.action);
+      }
+    };
+
+    const handleSetTimelineMinimized = (e: Event) => {
+      const customEv = e as CustomEvent<{ minimized: boolean }>;
+      if (typeof customEv.detail?.minimized === 'boolean' && setIsTimelineMinimized) {
+        setIsTimelineMinimized(customEv.detail.minimized);
+      }
+    };
+
+    window.addEventListener('commit-action-event', handleCommitActionEvent);
+    window.addEventListener('set-timeline-minimized', handleSetTimelineMinimized);
+
+    return () => {
+      window.removeEventListener('commit-action-event', handleCommitActionEvent);
+      window.removeEventListener('set-timeline-minimized', handleSetTimelineMinimized);
+    };
+  }, [commitAction, setIsTimelineMinimized]);
 
   useEffect(() => {
     const handlePcCommandExecuted = (e: Event) => {

@@ -31,7 +31,14 @@ export function FeatureFlagProvider({ children }: { children: React.ReactNode })
     try {
       const saved = secureStorage.getItem(STORAGE_KEY);
       if (saved) {
-        setTimeout(() => setFlags({ ...defaultFlags, ...JSON.parse(saved) }), 0);
+        try {
+          const parsed = JSON.parse(saved);
+          if (parsed && typeof parsed === 'object') {
+            setTimeout(() => setFlags({ ...defaultFlags, ...parsed }), 0);
+          }
+        } catch {
+          // ignore malformed stored JSON
+        }
       }
     } catch {
       // ignore malformed flag payloads

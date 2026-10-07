@@ -22,6 +22,7 @@ import {
   Info,
   FlaskConical,
   Layers,
+  Play,
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { CanvasDevice, CanvasConnection } from '../NetworkTopology/types/networkTopology.types';
@@ -41,6 +42,7 @@ interface TopologyGeneratorDialogProps {
     deviceStates: Map<string, SwitchState>;
     projectName?: string;
     projectDescription?: string;
+    stepByStep?: boolean;
   }) => void;
 }
 
@@ -185,7 +187,7 @@ export function TopologyGeneratorDialog({
     'security'
   ];
 
-  const handleGenerate = useCallback(() => {
+  const handleGenerate = useCallback((stepByStep: boolean = false) => {
     setIsLoading(true);
     setTimeout(() => {
       try {
@@ -205,14 +207,17 @@ export function TopologyGeneratorDialog({
             ...result,
             projectName: name,
             projectDescription: formattedDescription,
+            stepByStep,
           });
           addTopologyRecord(name, selectedDef.category);
-          toast({
-            title: isTr ? 'Topoloji Üretildi! 🚀' : 'Topology Generated! 🚀',
-            description: isTr
-              ? `${name} başarıyla oluşturuldu ve tuvale aktarıldı.`
-              : `${name} successfully generated and added to canvas.`,
-          });
+          if (!stepByStep) {
+            toast({
+              title: isTr ? 'Topoloji Üretildi! 🚀' : 'Topology Generated! 🚀',
+              description: isTr
+                ? `${name} başarıyla oluşturuldu ve tuvale aktarıldı.`
+                : `${name} successfully generated and added to canvas.`,
+            });
+          }
         } else if (activeTab === 'testLabs') {
           // Generate Test scenario
           if (!selectedTest) return;
@@ -235,15 +240,18 @@ export function TopologyGeneratorDialog({
             deviceStates: built.deviceStates,
             projectName: title,
             projectDescription: formattedDescription,
+            stepByStep,
           });
           addTopologyRecord(title, selectedTest.category);
 
-          toast({
-            title: isTr ? 'Test Topolojisi Yüklendi! 🧪' : 'Test Topology Loaded! 🧪',
-            description: isTr
-              ? `"${title}" başarıyla tuvale aktarıldı.`
-              : `"${title}" successfully loaded.`,
-          });
+          if (!stepByStep) {
+            toast({
+              title: isTr ? 'Test Topolojisi Yüklendi! 🧪' : 'Test Topology Loaded! 🧪',
+              description: isTr
+                ? `"${title}" başarıyla tuvale aktarıldı.`
+                : `"${title}" successfully loaded.`,
+            });
+          }
         } else {
           // Generate Demo project
           if (!selectedDemo) return;
@@ -257,15 +265,18 @@ export function TopologyGeneratorDialog({
             deviceStates: deviceStates,
             projectName: selectedDemo.title,
             projectDescription: formattedDescription,
+            stepByStep,
           });
           addTopologyRecord(selectedDemo.title, 'basic');
 
-          toast({
-            title: isTr ? 'Demo Projesi Yüklendi! 📦' : 'Demo Project Loaded! 📦',
-            description: isTr
-              ? `"${selectedDemo.title}" başarıyla tuvale aktarıldı.`
-              : `"${selectedDemo.title}" successfully loaded.`,
-          });
+          if (!stepByStep) {
+            toast({
+              title: isTr ? 'Demo Projesi Yüklendi! 📦' : 'Demo Project Loaded! 📦',
+              description: isTr
+                ? `"${selectedDemo.title}" başarıyla tuvale aktarıldı.`
+                : `"${selectedDemo.title}" successfully loaded.`,
+            });
+          }
         }
         onOpenChange(false);
       } catch {
@@ -303,8 +314,8 @@ export function TopologyGeneratorDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className={`${isDark
-            ? 'bg-secondary-900 border-secondary-700/80 text-white'
-            : 'bg-white border-secondary-200 text-secondary-900'
+          ? 'bg-secondary-900 border-secondary-700/80 text-white'
+          : 'bg-white border-secondary-200 text-secondary-900'
           } sm:max-w-3xl w-[95vw] rounded-2xl md:rounded-3xl shadow-2xl h-[88vh] max-h-[88vh] !flex !flex-col p-3 sm:p-5 !overflow-hidden !gap-0`}
         onEscapeKeyDown={isLoading ? undefined : () => handleClose()}
         onPointerDownOutside={isLoading ? undefined : () => handleClose()}
@@ -321,8 +332,8 @@ export function TopologyGeneratorDialog({
             <div className="flex items-center gap-1.5 shrink-0">
               <span className="text-[10px] sm:text-[11px] font-semibold px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20">
                 {activeTab === 'architectures' ? `${SCENARIOS.length} ${isTr ? 'Mimari' : 'Architectures'}` :
-                 activeTab === 'testLabs' ? `${testScenarios.length} ${isTr ? 'Test Topolojisi' : 'Test Topologies'}` :
-                 `${demoProjects.length} ${isTr ? 'Demo Projesi' : 'Demo Projects'}`}
+                  activeTab === 'testLabs' ? `${testScenarios.length} ${isTr ? 'Test Topolojisi' : 'Test Topologies'}` :
+                    `${demoProjects.length} ${isTr ? 'Demo Projesi' : 'Demo Projects'}`}
               </span>
             </div>
           </div>
@@ -339,10 +350,10 @@ export function TopologyGeneratorDialog({
             <button
               onClick={() => setActiveTab('architectures')}
               className={`flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${activeTab === 'architectures'
-                  ? 'bg-purple-600 text-white shadow-md shadow-purple-900/30'
-                  : isDark
-                    ? 'text-secondary-400 hover:text-secondary-200 hover:bg-secondary-800/60'
-                    : 'text-secondary-600 hover:text-secondary-900 hover:bg-white/60'
+                ? 'bg-purple-600 text-white shadow-md shadow-purple-900/30'
+                : isDark
+                  ? 'text-secondary-400 hover:text-secondary-200 hover:bg-secondary-800/60'
+                  : 'text-secondary-600 hover:text-secondary-900 hover:bg-white/60'
                 }`}
             >
               <Layers className="w-3.5 h-3.5" />
@@ -355,10 +366,10 @@ export function TopologyGeneratorDialog({
             <button
               onClick={() => setActiveTab('testLabs')}
               className={`flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${activeTab === 'testLabs'
-                  ? 'bg-purple-600 text-white shadow-md shadow-purple-900/30'
-                  : isDark
-                    ? 'text-secondary-400 hover:text-secondary-200 hover:bg-secondary-800/60'
-                    : 'text-secondary-600 hover:text-secondary-900 hover:bg-white/60'
+                ? 'bg-purple-600 text-white shadow-md shadow-purple-900/30'
+                : isDark
+                  ? 'text-secondary-400 hover:text-secondary-200 hover:bg-secondary-800/60'
+                  : 'text-secondary-600 hover:text-secondary-900 hover:bg-white/60'
                 }`}
             >
               <FlaskConical className="w-3.5 h-3.5" />
@@ -371,10 +382,10 @@ export function TopologyGeneratorDialog({
             <button
               onClick={() => setActiveTab('demoProjects')}
               className={`flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${activeTab === 'demoProjects'
-                  ? 'bg-purple-600 text-white shadow-md shadow-purple-900/30'
-                  : isDark
-                    ? 'text-secondary-400 hover:text-secondary-200 hover:bg-secondary-800/60'
-                    : 'text-secondary-600 hover:text-secondary-900 hover:bg-white/60'
+                ? 'bg-purple-600 text-white shadow-md shadow-purple-900/30'
+                : isDark
+                  ? 'text-secondary-400 hover:text-secondary-200 hover:bg-secondary-800/60'
+                  : 'text-secondary-600 hover:text-secondary-900 hover:bg-white/60'
                 }`}
             >
               <Monitor className="w-3.5 h-3.5" />
@@ -402,8 +413,8 @@ export function TopologyGeneratorDialog({
                     : (isTr ? 'Demo projesi ara (VLAN, OSPF, NAT, Firewall)...' : 'Search demo project (VLAN, OSPF, NAT, Firewall)...')
               }
               className={`pl-8 pr-7 h-8 text-[11px] sm:text-xs rounded-lg ${isDark
-                  ? 'bg-secondary-800/80 border-secondary-700 text-white placeholder:text-secondary-500 focus-visible:ring-purple-500/40'
-                  : 'bg-secondary-50 border-secondary-200 text-secondary-900 placeholder:text-secondary-400 focus-visible:ring-purple-500/40'
+                ? 'bg-secondary-800/80 border-secondary-700 text-white placeholder:text-secondary-500 focus-visible:ring-purple-500/40'
+                : 'bg-secondary-50 border-secondary-200 text-secondary-900 placeholder:text-secondary-400 focus-visible:ring-purple-500/40'
                 }`}
             />
             {searchQuery && (
@@ -425,10 +436,10 @@ export function TopologyGeneratorDialog({
                 <button
                   onClick={() => setSelectedCategory('all')}
                   className={`px-2 py-0.5 rounded-md text-[11px] font-medium whitespace-nowrap transition-all ${selectedCategory === 'all'
-                      ? 'bg-purple-600 text-white shadow-sm'
-                      : isDark
-                        ? 'bg-secondary-800 text-secondary-400 hover:text-secondary-200 hover:bg-secondary-700/60'
-                        : 'bg-secondary-100 text-secondary-600 hover:text-secondary-900 hover:bg-secondary-200'
+                    ? 'bg-purple-600 text-white shadow-sm'
+                    : isDark
+                      ? 'bg-secondary-800 text-secondary-400 hover:text-secondary-200 hover:bg-secondary-700/60'
+                      : 'bg-secondary-100 text-secondary-600 hover:text-secondary-900 hover:bg-secondary-200'
                     }`}
                 >
                   {isTr ? 'Tümü' : 'All'} ({SCENARIOS.length})
@@ -441,10 +452,10 @@ export function TopologyGeneratorDialog({
                       key={cat}
                       onClick={() => setSelectedCategory(cat)}
                       className={`px-2 py-0.5 rounded-md text-[11px] font-medium whitespace-nowrap transition-all ${isSelected
-                          ? 'bg-purple-600 text-white shadow-sm'
-                          : isDark
-                            ? 'bg-secondary-800 text-secondary-400 hover:text-secondary-200 hover:bg-secondary-700/60'
-                            : 'bg-secondary-100 text-secondary-600 hover:text-secondary-900 hover:bg-secondary-200'
+                        ? 'bg-purple-600 text-white shadow-sm'
+                        : isDark
+                          ? 'bg-secondary-800 text-secondary-400 hover:text-secondary-200 hover:bg-secondary-700/60'
+                          : 'bg-secondary-100 text-secondary-600 hover:text-secondary-900 hover:bg-secondary-200'
                         }`}
                     >
                       {isTr ? CATEGORY_LABELS[cat].tr : CATEGORY_LABELS[cat].en} ({count})
@@ -461,10 +472,10 @@ export function TopologyGeneratorDialog({
                     key={cat}
                     onClick={() => setSelectedTestCategory(cat)}
                     className={`px-2 py-0.5 rounded-md text-[11px] font-medium whitespace-nowrap transition-all ${isSelected
-                        ? 'bg-purple-600 text-white shadow-sm'
-                        : isDark
-                          ? 'bg-secondary-800 text-secondary-400 hover:text-secondary-200 hover:bg-secondary-700/60'
-                          : 'bg-secondary-100 text-secondary-600 hover:text-secondary-900 hover:bg-secondary-200'
+                      ? 'bg-purple-600 text-white shadow-sm'
+                      : isDark
+                        ? 'bg-secondary-800 text-secondary-400 hover:text-secondary-200 hover:bg-secondary-700/60'
+                        : 'bg-secondary-100 text-secondary-600 hover:text-secondary-900 hover:bg-secondary-200'
                       }`}
                   >
                     {isTr ? testCategoryLabels[cat].tr : testCategoryLabels[cat].en} ({count})
@@ -480,10 +491,10 @@ export function TopologyGeneratorDialog({
                     key={level}
                     onClick={() => setSelectedDemoLevel(level)}
                     className={`px-2 py-0.5 rounded-md text-[11px] font-medium whitespace-nowrap transition-all ${isSelected
-                        ? 'bg-purple-600 text-white shadow-sm'
-                        : isDark
-                          ? 'bg-secondary-800 text-secondary-400 hover:text-secondary-200 hover:bg-secondary-700/60'
-                          : 'bg-secondary-100 text-secondary-600 hover:text-secondary-900 hover:bg-secondary-200'
+                      ? 'bg-purple-600 text-white shadow-sm'
+                      : isDark
+                        ? 'bg-secondary-800 text-secondary-400 hover:text-secondary-200 hover:bg-secondary-700/60'
+                        : 'bg-secondary-100 text-secondary-600 hover:text-secondary-900 hover:bg-secondary-200'
                       }`}
                   >
                     {isTr ? demoLevelLabels[level].tr : demoLevelLabels[level].en} ({count})
@@ -508,37 +519,37 @@ export function TopologyGeneratorDialog({
                       key={s.id}
                       onClick={() => setScenario(s.id)}
                       className={`flex flex-col justify-between p-2.5 rounded-xl text-left transition-all duration-150 border relative group w-full min-w-0 box-border ${isSelected
-                          ? isDark
-                            ? 'border-purple-500 bg-purple-500/15 ring-1 ring-purple-500/50 shadow-md shadow-purple-950/20'
-                            : 'border-purple-500 bg-purple-50/90 ring-1 ring-purple-400/50 shadow-sm'
-                          : isDark
-                            ? 'border-secondary-800 hover:border-secondary-700 bg-secondary-800/40 hover:bg-secondary-800/80'
-                            : 'border-secondary-200/90 hover:border-secondary-300 bg-secondary-50/60 hover:bg-secondary-100/80'
+                        ? isDark
+                          ? 'border-purple-500 bg-purple-500/15 ring-1 ring-purple-500/50 shadow-md shadow-purple-950/20'
+                          : 'border-purple-500 bg-purple-50/90 ring-1 ring-purple-400/50 shadow-sm'
+                        : isDark
+                          ? 'border-secondary-800 hover:border-secondary-700 bg-secondary-800/40 hover:bg-secondary-800/80'
+                          : 'border-secondary-200/90 hover:border-secondary-300 bg-secondary-50/60 hover:bg-secondary-100/80'
                         }`}
                     >
                       <div className="flex items-start gap-2.5 w-full min-w-0">
                         <div className={`p-2 rounded-lg shrink-0 transition-colors ${isSelected
-                            ? 'bg-purple-500 text-white'
-                            : isDark
-                              ? 'bg-secondary-700/70 text-secondary-300 group-hover:text-purple-400'
-                              : 'bg-secondary-200/80 text-secondary-700 group-hover:text-purple-600'
+                          ? 'bg-purple-500 text-white'
+                          : isDark
+                            ? 'bg-secondary-700/70 text-secondary-300 group-hover:text-purple-400'
+                            : 'bg-secondary-200/80 text-secondary-700 group-hover:text-purple-600'
                           }`}>
                           <Icon className="w-4 h-4" />
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-1 justify-between min-w-0">
                             <div className={`text-xs font-bold truncate min-w-0 flex-1 ${isSelected
-                                ? isDark ? 'text-purple-200' : 'text-purple-900'
-                                : isDark ? 'text-white' : 'text-secondary-900'
+                              ? isDark ? 'text-purple-200' : 'text-purple-900'
+                              : isDark ? 'text-white' : 'text-secondary-900'
                               }`}>
                               {isTr ? s.labelTr : s.labelEn}
                             </div>
                             {badge && (
                               <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-medium shrink-0 ml-1 ${isSelected
-                                  ? 'bg-purple-500/30 text-purple-300 border border-purple-400/30'
-                                  : isDark
-                                    ? 'bg-secondary-700 text-secondary-400'
-                                    : 'bg-secondary-200 text-secondary-600'
+                                ? 'bg-purple-500/30 text-purple-300 border border-purple-400/30'
+                                : isDark
+                                  ? 'bg-secondary-700 text-secondary-400'
+                                  : 'bg-secondary-200 text-secondary-600'
                                 }`}>
                                 {badge}
                               </span>
@@ -573,26 +584,26 @@ export function TopologyGeneratorDialog({
                       key={p.id}
                       onClick={() => setSelectedTestId(p.id)}
                       className={`flex flex-col justify-between p-2.5 rounded-xl text-left transition-all duration-150 border relative group w-full min-w-0 box-border ${isSelected
-                          ? isDark
-                            ? 'border-purple-500 bg-purple-500/15 ring-1 ring-purple-500/50 shadow-md shadow-purple-950/20'
-                            : 'border-purple-500 bg-purple-50/90 ring-1 ring-purple-400/50 shadow-sm'
-                          : isDark
-                            ? 'border-secondary-800 hover:border-secondary-700 bg-secondary-800/40 hover:bg-secondary-800/80'
-                            : 'border-secondary-200/90 hover:border-secondary-300 bg-secondary-50/60 hover:bg-secondary-100/80'
+                        ? isDark
+                          ? 'border-purple-500 bg-purple-500/15 ring-1 ring-purple-500/50 shadow-md shadow-purple-950/20'
+                          : 'border-purple-500 bg-purple-50/90 ring-1 ring-purple-400/50 shadow-sm'
+                        : isDark
+                          ? 'border-secondary-800 hover:border-secondary-700 bg-secondary-800/40 hover:bg-secondary-800/80'
+                          : 'border-secondary-200/90 hover:border-secondary-300 bg-secondary-50/60 hover:bg-secondary-100/80'
                         }`}
                     >
                       <div className="flex items-start gap-2.5 w-full min-w-0">
                         <div className={`p-2 rounded-lg shrink-0 transition-colors ${isSelected
-                            ? 'bg-purple-500 text-white'
-                            : 'bg-indigo-500/20 text-indigo-400'
+                          ? 'bg-purple-500 text-white'
+                          : 'bg-indigo-500/20 text-indigo-400'
                           }`}>
                           <FlaskConical className="w-4 h-4" />
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-1 justify-between min-w-0">
                             <div className={`text-xs font-bold truncate min-w-0 flex-1 ${isSelected
-                                ? isDark ? 'text-purple-200' : 'text-purple-900'
-                                : isDark ? 'text-white' : 'text-secondary-900'
+                              ? isDark ? 'text-purple-200' : 'text-purple-900'
+                              : isDark ? 'text-white' : 'text-secondary-900'
                               }`}>
                               {title}
                             </div>
@@ -642,26 +653,26 @@ export function TopologyGeneratorDialog({
                       key={p.id}
                       onClick={() => setSelectedDemoId(p.id)}
                       className={`flex flex-col justify-between p-2.5 rounded-xl text-left transition-all duration-150 border relative group w-full min-w-0 box-border ${isSelected
-                          ? isDark
-                            ? 'border-purple-500 bg-purple-500/15 ring-1 ring-purple-500/50 shadow-md shadow-purple-950/20'
-                            : 'border-purple-500 bg-purple-50/90 ring-1 ring-purple-400/50 shadow-sm'
-                          : isDark
-                            ? 'border-secondary-800 hover:border-secondary-700 bg-secondary-800/40 hover:bg-secondary-800/80'
-                            : 'border-secondary-200/90 hover:border-secondary-300 bg-secondary-50/60 hover:bg-secondary-100/80'
+                        ? isDark
+                          ? 'border-purple-500 bg-purple-500/15 ring-1 ring-purple-500/50 shadow-md shadow-purple-950/20'
+                          : 'border-purple-500 bg-purple-50/90 ring-1 ring-purple-400/50 shadow-sm'
+                        : isDark
+                          ? 'border-secondary-800 hover:border-secondary-700 bg-secondary-800/40 hover:bg-secondary-800/80'
+                          : 'border-secondary-200/90 hover:border-secondary-300 bg-secondary-50/60 hover:bg-secondary-100/80'
                         }`}
                     >
                       <div className="flex items-start gap-2.5 w-full min-w-0">
                         <div className={`p-2 rounded-lg shrink-0 transition-colors ${isSelected
-                            ? 'bg-purple-500 text-white'
-                            : 'bg-success-500/20 text-success-500 dark:text-success-400'
+                          ? 'bg-purple-500 text-white'
+                          : 'bg-success-500/20 text-success-500 dark:text-success-400'
                           }`}>
                           <Monitor className="w-4 h-4" />
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-1 justify-between min-w-0">
                             <div className={`text-xs font-bold truncate min-w-0 flex-1 ${isSelected
-                                ? isDark ? 'text-purple-200' : 'text-purple-900'
-                                : isDark ? 'text-white' : 'text-secondary-900'
+                              ? isDark ? 'text-purple-200' : 'text-purple-900'
+                              : isDark ? 'text-white' : 'text-secondary-900'
                               }`}>
                               {p.title}
                             </div>
@@ -749,10 +760,10 @@ export function TopologyGeneratorDialog({
                       size="sm"
                       variant={pcCount === num ? 'default' : 'outline'}
                       className={`h-6 px-1.5 text-[10px] rounded-md ${pcCount === num
-                          ? 'bg-purple-600 hover:bg-purple-700 text-white'
-                          : isDark
-                            ? 'border-secondary-700 hover:bg-secondary-800'
-                            : 'border-secondary-300 hover:bg-secondary-100'
+                        ? 'bg-purple-600 hover:bg-purple-700 text-white'
+                        : isDark
+                          ? 'border-secondary-700 hover:bg-secondary-800'
+                          : 'border-secondary-300 hover:bg-secondary-100'
                         }`}
                       onClick={() => setPcCount(num)}
                     >
@@ -777,7 +788,21 @@ export function TopologyGeneratorDialog({
               {t.cancel}
             </Button>
             <Button
-              onClick={handleGenerate}
+              type="button"
+              variant="outline"
+              onClick={() => handleGenerate(true)}
+              disabled={isLoading}
+              className={`text-xs h-8.5 px-3.5 rounded-lg border gap-1.5 transition-all font-semibold ${isDark
+                  ? 'border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/20 hover:text-emerald-200'
+                  : 'border-emerald-600/40 text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800'
+                }`}
+              title={isTr ? 'Boş ekrandan başlayarak her cihazı ve kabloyu 500ms aralıklarla adım adım ekler' : 'Builds topology step by step with 500ms delays from an empty canvas'}
+            >
+              <Play className="w-3.5 h-3.5 fill-current" />
+              {isTr ? 'Adım Adım Yap' : 'Step by Step'}
+            </Button>
+            <Button
+              onClick={() => handleGenerate(false)}
               disabled={isLoading}
               className="bg-gradient-to-r from-purple-600 via-indigo-600 to-primary-600 hover:from-purple-700 hover:via-indigo-700 hover:to-primary-700 text-white font-bold text-xs h-8.5 px-5 rounded-lg shadow-md shadow-purple-600/30 transition-all active:scale-[0.98] border border-purple-400/30 gap-1.5"
             >

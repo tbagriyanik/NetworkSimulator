@@ -297,6 +297,7 @@ export function DraggableWindowWrapper({
 
         {!hideCloseButton && (
           <button
+            data-window-close={id}
             onClick={(e) => {
               e.stopPropagation();
               onClose();

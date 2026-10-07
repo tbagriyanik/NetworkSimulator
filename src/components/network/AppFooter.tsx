@@ -9,7 +9,7 @@ import { useMultiWindowStore } from '@/hooks/useMultiWindowStore';
 import { useUiPreferences } from '@/hooks/useUiPreferences';
 import { useAppStore } from '@/lib/store/appStore';
 import { cn } from '@/lib/utils';
-import { Activity, Cpu, HardDrive, Gauge } from 'lucide-react';
+import { Activity, Cpu, HardDrive, Gauge, Square, CheckCircle2, X } from 'lucide-react';
 
 interface AppFooterProps {
   t: Translations;
@@ -101,6 +101,45 @@ export function AppFooter({
     };
   }, [preferences.showFooter]);
 
+  // Simulation Step-by-Step Progress & Cancel Status
+  const [simulationStatus, setSimulationStatus] = useState<{
+    active: boolean;
+    current: number;
+    total: number;
+    message: string;
+  }>({
+    active: false,
+    current: 0,
+    total: 0,
+    message: '',
+  });
+
+  useEffect(() => {
+    const handleProgress = (e: Event) => {
+      const detail = (e as CustomEvent<{ active: boolean; current: number; total: number; message: string }>).detail;
+      setSimulationStatus(detail);
+    };
+
+    const handleClearStatus = () => {
+      setSimulationStatus({ active: false, current: 0, total: 0, message: '' });
+    };
+
+    window.addEventListener('simulation-progress', handleProgress);
+    window.addEventListener('clear-simulation-status', handleClearStatus);
+    window.addEventListener('reset-workspace-ui', handleClearStatus);
+    window.addEventListener('new-project-opened', handleClearStatus);
+    return () => {
+      window.removeEventListener('simulation-progress', handleProgress);
+      window.removeEventListener('clear-simulation-status', handleClearStatus);
+      window.removeEventListener('reset-workspace-ui', handleClearStatus);
+      window.removeEventListener('new-project-opened', handleClearStatus);
+    };
+  }, []);
+
+  const handleStopSimulation = () => {
+    window.dispatchEvent(new CustomEvent('simulation-stop'));
+  };
+
   if (!preferences.showFooter) {
     return null;
   }
@@ -162,10 +201,10 @@ export function AppFooter({
   return (
     <>
       {/* Desktop Footer */}
-      {/* Desktop Footer */}
       <footer
         className={cn(
-          "hidden md:block fixed bottom-0 inset-x-0 z-40 border-t min-h-[48px] pb-3 pb-safe transition-colors duration-300",
+          "hidden md:block fixed bottom-0 inset-x-0 border-t min-h-[48px] pb-3 pb-safe transition-colors duration-300",
+          simulationStatus.active ? "z-[9995]" : "z-40",
           isHighQuality
             ? cn(
               "backdrop-blur-xl shadow-lg",
@@ -308,6 +347,41 @@ export function AppFooter({
                 </span>
               </div>
 
+              {/* Simulation Step-by-Step Progress & Cancel Widget */}
+              {simulationStatus.active ? (
+                <div className="flex items-center gap-2 px-2.5 py-1 rounded-lg bg-purple-500/15 border border-purple-500/40 shadow-sm animate-pulse z-[10000] relative pointer-events-auto">
+                  <span className="w-2 h-2 rounded-full bg-purple-400 animate-ping" />
+                  <span className="text-[11px] font-bold text-purple-300">
+                    {language === 'tr' ? `Adım ${simulationStatus.current}/${simulationStatus.total}` : `Step ${simulationStatus.current}/${simulationStatus.total}`}
+                  </span>
+                  <span className="text-[10px] text-purple-200/80 truncate max-w-[140px]" title={simulationStatus.message}>
+                    ({simulationStatus.message})
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleStopSimulation}
+                    className="flex items-center gap-1 px-1.5 py-0.5 ml-1 rounded text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40 hover:bg-rose-500/30 hover:text-rose-100 transition-colors cursor-pointer"
+                    title={language === 'tr' ? 'Adım adım simülasyonu durdur' : 'Stop step by step simulation'}
+                  >
+                    <Square className="w-2.5 h-2.5 fill-current" />
+                    {language === 'tr' ? 'Durdur' : 'Stop'}
+                  </button>
+                </div>
+              ) : simulationStatus.message ? (
+                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[11px] font-medium">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span>{simulationStatus.message}</span>
+                  <button
+                    type="button"
+                    onClick={() => setSimulationStatus(prev => ({ ...prev, message: '' }))}
+                    className="ml-1 text-emerald-400/70 hover:text-emerald-200 transition-colors cursor-pointer p-0.5"
+                    title={language === 'tr' ? 'Bildirimi Kapat' : 'Dismiss Notification'}
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ) : null}
+
             </div>
 
           </div>
@@ -317,7 +391,8 @@ export function AppFooter({
       {/* Mobile Footer — status bar / informational messages */}
       <footer
         className={cn(
-          "md:hidden fixed bottom-0 inset-x-0 z-2 border-t min-h-[44px] pb-3 flex items-center px-3 text-[11px] select-none pb-safe transition-colors duration-300",
+          "md:hidden fixed bottom-0 inset-x-0 border-t min-h-[44px] pb-3 flex items-center px-3 text-[11px] select-none pb-safe transition-colors duration-300",
+          simulationStatus.active ? "z-[9995]" : "z-2",
           isHighQuality
             ? cn(
               "backdrop-blur-xl shadow-lg",
@@ -385,5 +460,4 @@ export function AppFooter({
     </>
   );
 }
-
 
