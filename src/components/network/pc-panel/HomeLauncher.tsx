@@ -103,15 +103,11 @@ export function HomeLauncher({
   }, [apps, isPoweredOff, onNavigate]);
 
   const renderAppTooltip = (app: LauncherApp, index: number) => (
-    <div className="flex flex-col gap-1 p-0.5 min-w-[140px]">
-      <div className="flex items-center justify-between gap-3 font-semibold text-xs">
-        <span>{app.label}</span>
-        <ShortcutBadge shortcut={`${index + 1}`} variant="primary" />
-      </div>
-      <div className="text-[11px] opacity-80">{app.subtitle}</div>
-      <div className="text-[10px] text-accent-400 font-mono">
-        {isTr ? `${index + 1} tuşuna basarak açın` : `Press ${index + 1} to open`}
-      </div>
+    <div className="flex items-center gap-2 py-0.5 px-1 font-geist-mono">
+      <span className="font-semibold text-xs tracking-tight">{app.label}</span>
+      <span className="text-[10px] opacity-60">·</span>
+      <span className="text-[10px] opacity-75">{app.subtitle}</span>
+      <ShortcutBadge shortcut={`${index + 1}`} variant="primary" className="scale-75 origin-right ml-1" />
     </div>
   );
 

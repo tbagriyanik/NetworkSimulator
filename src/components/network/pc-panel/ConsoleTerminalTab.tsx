@@ -292,22 +292,22 @@ export function ConsoleTerminalTab({
             {shouldShowAutocomplete && (
               <div
                 ref={autocompleteRef}
-                className="absolute bottom-20 left-4 z-20 w-[min(420px,calc(100%-2rem))]"
+                className="absolute bottom-16 left-3 z-20 w-[min(320px,calc(100%-1.5rem))]"
               >
                 <div className={cn(
-                  "rounded-lg border shadow-xl overflow-hidden",
+                  "rounded-lg border shadow-lg overflow-hidden",
                   isDark ? "bg-secondary-800 border-secondary-700" : "bg-white border-secondary-200"
                 )}>
                   <div className={cn(
-                    "flex items-center justify-between px-3 py-2 text-[11px] font-geist-mono font-semibold",
+                    "flex items-center justify-between px-2.5 py-1 text-[10px] font-geist-mono font-semibold",
                     isDark ? 'text-secondary-200 bg-secondary-900/60' : 'text-secondary-700 bg-secondary-50'
                   )}>
                     <span>{t.cmdSuggestions}</span>
-                    <span className={cn("text-[10px] font-bold", isDark ? 'text-accent-300' : 'text-accent-700')}>
+                    <span className={cn("text-[9px] font-bold opacity-80", isDark ? 'text-accent-300' : 'text-accent-700')}>
                       Tab ⇥ {t.completeWithTab}
                     </span>
                   </div>
-                  <div className="max-h-40 overflow-y-auto overflow-x-hidden mobile-scroll custom-scrollbar font-geist-mono flex flex-col">
+                  <div className="max-h-32 overflow-y-auto overflow-x-hidden mobile-scroll custom-scrollbar font-geist-mono flex flex-col">
                     {renderAutocompleteSuggestions?.map((cmd, idx) => (
                       <button
                         key={`${cmd}-${idx}`}

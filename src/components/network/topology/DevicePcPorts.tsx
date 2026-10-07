@@ -103,6 +103,20 @@ export function DevicePcPorts({
             <text y={1} fill="var(--color-background)" fontSize="9" fontWeight="700" textAnchor="middle" dominantBaseline="middle" className="select-none pointer-events-none">
               {portLabel}
             </text>
+
+            {/* Hardware Link / Activity LED indicator */}
+            {isConnected && !isShutdown && !isDeviceOffline && (
+              <circle
+                cx={5}
+                cy={-5}
+                r={1.8}
+                fill={isPortConnectionHealthy(device, deviceConnections, port.id) ? 'var(--color-emerald-400)' : 'var(--color-rose-500)'}
+                stroke={isDark ? 'var(--color-secondary-950)' : 'var(--color-secondary-50)'}
+                strokeWidth={0.5}
+                className={isPortConnectionHealthy(device, deviceConnections, port.id) ? 'animate-pulse' : undefined}
+                style={{ pointerEvents: 'none', filter: 'drop-shadow(0 0 1px currentColor)' }}
+              />
+            )}
           </g>
         );
       })}

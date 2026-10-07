@@ -24,13 +24,13 @@ export function TerminalAutocompleteDropdown({
   return (
     <div
       ref={containerRef}
-      className="absolute bottom-16 sm:bottom-20 left-2 sm:left-4 z-20 w-[min(420px,calc(100%-1rem))]"
+      className="absolute bottom-14 sm:bottom-16 left-2 sm:left-3 z-20 w-[min(320px,calc(100%-1rem))]"
     >
       <div className={cn(
-        "rounded-lg border shadow-xl overflow-hidden",
+        "rounded-lg border shadow-lg overflow-hidden",
         isDark ? "bg-secondary-800 border-secondary-700" : "bg-white border-secondary-200"
       )}>
-        <div ref={listRef} className="max-h-40 overflow-y-auto overflow-x-hidden font-geist-mono flex flex-col">
+        <div ref={listRef} className="max-h-32 overflow-y-auto overflow-x-hidden font-geist-mono flex flex-col">
           {suggestions.map((cmd, idx) => (
             <button
               key={`ac-${cmd}-${idx}`}

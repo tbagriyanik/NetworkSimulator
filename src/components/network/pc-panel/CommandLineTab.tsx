@@ -10,6 +10,7 @@ import type { OutputLine, FtpSession, PythonSession } from './PCPanel.types';
 import { executeLinuxCommand, formatLinuxPath, getLinuxSuggestions } from './pcLinuxExecutor';
 import { CommandLineSettingsBar } from './CommandLineSettingsBar';
 import { CommandLineAutocompleteBox } from './CommandLineAutocompleteBox';
+import { TERMINAL_COLOR_THEMES, type TerminalColorTheme } from '../terminal/terminalThemes';
 
 
 interface CommandLineTabProps {
@@ -139,6 +140,12 @@ export function CommandLineTab({
   const [linuxAutocompleteNavigated, setLinuxAutocompleteNavigated] = useState(false);
   const [isLinuxAutocompleteDismissed, setIsLinuxAutocompleteDismissed] = useState(false);
   const [linuxTabCycleIndex, setLinuxTabCycleIndex] = useState(-1);
+
+  const [colorTheme, setColorTheme] = useState<TerminalColorTheme>(() => {
+    const raw = safeGetItem('pc-terminal-color-theme') as TerminalColorTheme;
+    return (raw && TERMINAL_COLOR_THEMES[raw]) ? raw : 'default';
+  });
+  const activeThemeConfig = TERMINAL_COLOR_THEMES[colorTheme] || TERMINAL_COLOR_THEMES.default;
 
   // Separate Linux output state & history (persisted per device in safeStorage)
   const [linuxOutput, setLinuxOutput] = useState<OutputLine[]>(() => {
@@ -406,8 +413,13 @@ export function CommandLineTab({
       setInput('');
       setLinuxAutocompleteIndex(-1);
       setIsLinuxAutocompleteDismissed(false);
-      // Save ALL commands (valid or invalid) to Linux history for recall with Arrow keys
-      setLinuxHistory(prev => [cmdToRun, ...prev.filter(c => c !== cmdToRun)].slice(0, 50));
+      const isSensitiveLinux = (cmd: string): boolean => {
+        const lower = cmd.trim().toLowerCase();
+        return lower.startsWith('passwd ') || lower.startsWith('password ') || lower.startsWith('export password') || lower.startsWith('sshpass ');
+      };
+      if (!isSensitiveLinux(cmdToRun)) {
+        setLinuxHistory(prev => [cmdToRun, ...prev.filter(c => c !== cmdToRun)].slice(0, 50));
+      }
       setLinuxHistoryIndex(-1);
 
       await executeLinuxCommand(cmdToRun, {
@@ -531,6 +543,9 @@ export function CommandLineTab({
         fontSize={fontSize}
         handleFontSizeChange={handleFontSizeChange}
         activeTerminalTab={activeTerminalTab}
+        colorTheme={colorTheme}
+        setColorTheme={setColorTheme}
+        language={language}
         setPcOutput={setPcOutput}
         setLinuxOutput={setLinuxOutput}
         t={t}
@@ -556,7 +571,7 @@ export function CommandLineTab({
         className={cn(
           "flex-1 overflow-y-auto overflow-x-hidden overscroll-contain touch-pan-y scroll-smooth font-geist-mono leading-relaxed custom-scrollbar min-h-0 cursor-text",
           isMobile ? "mobile-scroll p-3" : "p-6",
-          isPcPoweredOff ? "bg-black" : terminalBg
+          isPcPoweredOff ? "bg-black" : (colorTheme !== 'default' ? (isDark ? activeThemeConfig.bgDark : activeThemeConfig.bgLight) : terminalBg)
         )}
         style={{ ...mobileVerticalScrollStyle, fontSize: `${fontSize}px`, contain: 'layout style paint' }}
       >
@@ -590,11 +605,11 @@ export function CommandLineTab({
                       </span>
                     </>
                   )}
-                  <span style={{ fontSize: `${fontSize}px` }} className={isDark ? "text-secondary-100" : "text-secondary-900"}>{highlightText(line.content)}</span>
+                  <span style={{ fontSize: `${fontSize}px` }} className={isDark ? activeThemeConfig.commandDark : activeThemeConfig.commandLight}>{highlightText(line.content)}</span>
                 </div>
               )}
               {line.type === 'output' && (
-                <div style={{ fontSize: `${fontSize}px` }} className={cn(textColor, "whitespace-pre-wrap")}>
+                <div style={{ fontSize: `${fontSize}px` }} className={cn(colorTheme !== 'default' ? (isDark ? activeThemeConfig.textDark : activeThemeConfig.textLight) : textColor, "whitespace-pre-wrap")}>
                   <span>{highlightText(line.content)}</span>
                 </div>
               )}

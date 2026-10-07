@@ -31,6 +31,7 @@ import { QuickCommandsBar } from './terminal/QuickCommandsBar';
 import { safeGetItem } from '@/lib/storage/safeStorage';
 import { TerminalAutocompleteDropdown } from './terminal/TerminalAutocompleteDropdown';
 import { TerminalSettingsBar } from './terminal/TerminalSettingsBar';
+import { TERMINAL_COLOR_THEMES, type TerminalColorTheme } from './terminal/terminalThemes';
 
 export interface TerminalOutput {
   id: string;
@@ -116,6 +117,11 @@ export function Terminal({
     const parsed = parseInt(raw || '13', 10);
     return isNaN(parsed) ? 13 : parsed;
   });
+  const [colorTheme, setColorTheme] = useState<TerminalColorTheme>(() => {
+    const raw = safeGetItem('terminal-color-theme') as TerminalColorTheme;
+    return (raw && TERMINAL_COLOR_THEMES[raw]) ? raw : 'default';
+  });
+  const activeThemeConfig = TERMINAL_COLOR_THEMES[colorTheme] || TERMINAL_COLOR_THEMES.default;
   const currentPrompt = state
     ? getModePrompt(state.currentMode, state.hostname || 'Switch')
     : prompt;
@@ -626,9 +632,17 @@ export function Terminal({
       className={cn("flex flex-col h-full max-h-[85vh] sm:max-h-none", className)}
       style={{ height: '100%' }}
     >
-      <div className={cn("flex flex-col flex-1 min-h-0 h-full overflow-hidden relative", isDark ? "bg-black" : "bg-secondary-50")}>
+      <div className={cn("flex flex-col flex-1 min-h-0 h-full overflow-hidden relative", isDark ? activeThemeConfig.bgDark : activeThemeConfig.bgLight)}>
         {showSettings && (
-          <TerminalSettingsBar t={t} fontSize={fontSize} setFontSize={setFontSize} onClear={clearTerminalView} />
+          <TerminalSettingsBar
+            t={t}
+            fontSize={fontSize}
+            setFontSize={setFontSize}
+            colorTheme={colorTheme}
+            setColorTheme={setColorTheme}
+            language={language}
+            onClear={clearTerminalView}
+          />
         )}
 
         <div
@@ -670,7 +684,7 @@ export function Terminal({
           className={cn(
             "flex-1 overflow-y-auto overflow-x-hidden overscroll-contain touch-pan-y scroll-smooth font-geist-mono leading-relaxed custom-scrollbar min-h-0 cursor-text",
             isMobile ? "mobile-scroll p-3" : "p-6",
-            isPoweredOff ? "bg-black" : (isDark ? "bg-black" : "bg-secondary-50")
+            isPoweredOff ? "bg-black" : (isDark ? activeThemeConfig.bgDark : activeThemeConfig.bgLight)
           )}
           style={{
             fontSize: `${fontSize}px`,
@@ -683,6 +697,7 @@ export function Terminal({
             isPoweredOff={isPoweredOff}
             isLoading={isLoading}
             isDark={isDark}
+            colorTheme={colorTheme}
             deviceIconInfo={deviceIconInfo}
             currentPrompt={currentPrompt}
             helpLevel={helpLevel}
@@ -700,6 +715,7 @@ export function Terminal({
                 deviceType={device?.type}
                 mode={state.currentMode}
                 isDark={isDark}
+                language={language}
                 onRun={handleQuickCommand}
               />
             )}
@@ -754,8 +770,10 @@ export function Terminal({
                   </span>
                 )}
                 <span className={cn(
-                  "font-geist-mono font-bold text-xs sm:text-sm select-none shrink-0 text-primary whitespace-nowrap",
-                  (state?.awaitingPassword || localPasswordPrompt || confirmDialog?.show || isReloadConfirmationPending) && "text-warning-400"
+                  "font-geist-mono font-bold text-xs sm:text-sm select-none shrink-0 whitespace-nowrap",
+                  (state?.awaitingPassword || localPasswordPrompt || confirmDialog?.show || isReloadConfirmationPending)
+                    ? "text-warning-400"
+                    : isDark ? activeThemeConfig.promptDark : activeThemeConfig.promptLight
                 )}>
                   {state?.awaitingPassword || localPasswordPrompt
                     ? t.passwordLabel

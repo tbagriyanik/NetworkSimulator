@@ -6,6 +6,7 @@ import type { Translations } from '@/contexts/LanguageContext';
 import { RouterIcon, SwitchIcon } from '../PCPanelWidgets';
 import { BootProgressBar, completedBootIds } from './BootProgressBar';
 import type { TerminalLine } from './useTerminalOutputSync';
+import { TERMINAL_COLOR_THEMES, type TerminalColorTheme } from './terminalThemes';
 
 export interface DeviceIconInfo {
   icon: React.ComponentType<{ className?: string; isL3?: boolean }>;
@@ -18,6 +19,7 @@ interface TerminalOutputLinesProps {
   isPoweredOff: boolean;
   isLoading: boolean;
   isDark: boolean;
+  colorTheme?: TerminalColorTheme;
   deviceIconInfo: DeviceIconInfo | null;
   currentPrompt: string;
   helpLevel: 'beginner' | 'intermediate' | 'exam';
@@ -47,6 +49,7 @@ export function TerminalOutputLines({
   isPoweredOff,
   isLoading,
   isDark,
+  colorTheme = 'default',
   deviceIconInfo,
   currentPrompt,
   helpLevel,
@@ -55,16 +58,53 @@ export function TerminalOutputLines({
   searchQuery,
   onBootDone,
 }: TerminalOutputLinesProps) {
+  const themeConfig = TERMINAL_COLOR_THEMES[colorTheme] || TERMINAL_COLOR_THEMES.default;
+
   const highlightCommand = (text: string) => {
     if (!text) return text;
     const parts = text.split(/\s+/);
     if (parts.length === 0) return text;
 
+    const firstWord = parts[0];
+    const rest = parts.slice(1);
+
+    const isShowOrPing = ['show', 'ping', 'traceroute', 'do'].includes(firstWord.toLowerCase());
+    const isConfigOrAction = ['conf', 'configure', 'interface', 'vlan', 'router', 'ip', 'switchport', 'no', 'enable'].includes(firstWord.toLowerCase());
+
+    const verbColor = isShowOrPing
+      ? (isDark ? 'text-cyan-400' : 'text-cyan-700')
+      : isConfigOrAction
+        ? (isDark ? 'text-amber-400' : 'text-amber-700')
+        : (isDark ? themeConfig.accentDark : themeConfig.accentLight);
+
     return (
       <>
-        <span className="text-accent-400 font-bold">{parts[0]}</span>
-        {parts.length > 1 && (
-          <span className="text-secondary-300"> {parts.slice(1).join(' ')}</span>
+        <span className={cn("font-bold", verbColor)}>{firstWord}</span>
+        {rest.length > 0 && (
+          <span className={isDark ? themeConfig.textDark : themeConfig.textLight}>
+            {' '}
+            {rest.map((part, idx) => {
+              const isIp = /^(\d{1,3}\.){3}\d{1,3}$/.test(part);
+              const isSubnet = part.startsWith('255.');
+              const isPort = /^(fa|gi|te|se|eth|vlan|loopback)\d+/i.test(part);
+
+              if (isIp || isSubnet) {
+                return (
+                  <span key={idx} className={isDark ? "text-emerald-400 font-semibold" : "text-emerald-700 font-semibold"}>
+                    {part}{idx < rest.length - 1 ? ' ' : ''}
+                  </span>
+                );
+              }
+              if (isPort) {
+                return (
+                  <span key={idx} className={isDark ? "text-violet-400 font-semibold" : "text-violet-700 font-semibold"}>
+                    {part}{idx < rest.length - 1 ? ' ' : ''}
+                  </span>
+                );
+              }
+              return part + (idx < rest.length - 1 ? ' ' : '');
+            })}
+          </span>
         )}
       </>
     );
@@ -109,19 +149,21 @@ export function TerminalOutputLines({
       {lines.filter(line => line != null).map((line) => (
         <div key={line.id} className="break-all animate-in fade-in slide-in-from-left-1 duration-200">
           {line.type === 'command' ? (
-            <div className="flex items-start gap-2 text-accent-500 font-bold">
+            <div className="flex items-start gap-2 font-bold">
               {deviceIconInfo && (
                 <span className={`shrink-0 ${deviceIconInfo.color}`}>
                   {renderIcon(deviceIconInfo)}
                 </span>
               )}
-              <span className="shrink-0 opacity-40 select-none font-geist-mono">{line.prompt || currentPrompt}</span>
-              <span className={isDark ? "text-secondary-100" : "text-secondary-900"}>{highlightCommand(line.content)}</span>
+              <span className={cn("shrink-0 select-none font-geist-mono", isDark ? themeConfig.promptDark : themeConfig.promptLight)}>
+                {line.prompt || currentPrompt}
+              </span>
+              <span>{highlightCommand(line.content)}</span>
             </div>
           ) : (
             <>
               {line.type === 'output' && (
-                <div className={cn(isDark ? 'text-secondary-300' : 'text-secondary-700', "whitespace-pre-wrap")}>
+                <div className={cn(isDark ? themeConfig.textDark : themeConfig.textLight, "whitespace-pre-wrap")}>
                   <span>
                     {line.content === '\x00BOOT_PROGRESS\x00'
                       ? (completedBootIds.has(line.id)

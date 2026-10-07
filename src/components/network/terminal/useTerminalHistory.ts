@@ -46,9 +46,23 @@ export function useTerminalHistory(
     setHistoryIndex(-1);
   }, []);
 
+  const isSensitiveCommand = (cmd: string): boolean => {
+    const lower = cmd.trim().toLowerCase();
+    return (
+      lower.startsWith('enable secret') ||
+      lower.startsWith('enable password') ||
+      lower.startsWith('password ') ||
+      lower.startsWith('login password')
+    );
+  };
+
   const addHistoryCommand = useCallback((command: string): string[] => {
     if (!command || !command.trim()) return history;
-    const trimmed = command;
+    const trimmed = command.trim();
+    if (isSensitiveCommand(trimmed)) {
+      setHistoryIndex(-1);
+      return history;
+    }
     let nextHistory = history;
     if (history[0] !== trimmed) {
       nextHistory = [trimmed, ...history].slice(0, cap);

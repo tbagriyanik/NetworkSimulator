@@ -39,22 +39,22 @@ export const CommandLineAutocompleteBox: React.FC<CommandLineAutocompleteBoxProp
   return (
     <div
       ref={autocompleteRef}
-      className="absolute bottom-20 left-4 z-20 w-[min(420px,calc(100%-2rem))]"
+      className="absolute bottom-16 left-3 z-20 w-[min(320px,calc(100%-1.5rem))]"
     >
       <div className={cn(
-        "rounded-lg border shadow-xl overflow-hidden",
+        "rounded-lg border shadow-lg overflow-hidden",
         isDark ? "bg-secondary-800 border-secondary-700" : "bg-white border-secondary-200"
       )}>
         <div className={cn(
-          "flex items-center justify-between px-3 py-2 text-[11px] font-geist-mono font-semibold",
+          "flex items-center justify-between px-2.5 py-1 text-[10px] font-geist-mono font-semibold",
           isDark ? 'text-secondary-200 bg-secondary-900/60' : 'text-secondary-700 bg-secondary-50'
         )}>
-          <span>{activeTerminalTab === 'cmd' ? t.cmdSuggestions : (language === 'tr' ? 'Linux Komut ve Dosya Önerileri' : 'Linux Suggestions')}</span>
-          <span className={cn("text-[10px] font-bold", isDark ? 'text-accent-300' : 'text-accent-700')}>
-            ↑↓ {language === 'tr' ? 'Seç' : 'Navigate'} | Tab ↹ {t.completeWithTab}
+          <span>{activeTerminalTab === 'cmd' ? t.cmdSuggestions : (language === 'tr' ? 'Linux Önerileri' : 'Linux Suggestions')}</span>
+          <span className={cn("text-[9px] font-bold opacity-80", isDark ? 'text-accent-300' : 'text-accent-700')}>
+            Tab ↹ {t.completeWithTab}
           </span>
         </div>
-        <div className="max-h-40 overflow-y-auto overflow-x-hidden mobile-scroll custom-scrollbar font-geist-mono flex flex-col">
+        <div className="max-h-32 overflow-y-auto overflow-x-hidden mobile-scroll custom-scrollbar font-geist-mono flex flex-col">
           {activeTerminalTab === 'cmd' ? (
             Array.isArray(renderAutocompleteSuggestions) ? (
               (renderAutocompleteSuggestions as string[]).map((cmd, idx) => (
@@ -67,7 +67,7 @@ export const CommandLineAutocompleteBox: React.FC<CommandLineAutocompleteBoxProp
                     inputRef.current?.focus();
                   }}
                   className={cn(
-                    "w-full text-left px-3 py-1.5 text-xs transition-colors flex items-center justify-between font-geist-mono",
+                    "w-full text-left px-2.5 py-1 text-[11px] transition-colors flex items-center justify-between font-geist-mono",
                     idx === autocompleteIndex
                       ? (isDark ? "bg-accent-500/20 text-accent-300 font-semibold" : "bg-accent-50 text-accent-700 font-semibold")
                       : (isDark ? "text-secondary-300 hover:bg-secondary-700/50" : "text-secondary-700 hover:bg-secondary-100")
@@ -75,7 +75,7 @@ export const CommandLineAutocompleteBox: React.FC<CommandLineAutocompleteBoxProp
                 >
                   <span>{cmd}</span>
                   {idx === autocompleteIndex && (
-                    <span className="text-[10px] opacity-75">{language === 'tr' ? 'Seçildi' : 'Selected'}</span>
+                    <span className="text-[9px] opacity-75">{language === 'tr' ? 'Seçildi' : 'Selected'}</span>
                   )}
                 </button>
               ))
@@ -101,7 +101,7 @@ export const CommandLineAutocompleteBox: React.FC<CommandLineAutocompleteBoxProp
                   setLinuxAutocompleteIndex(-1);
                 }}
                 className={cn(
-                  "w-full text-left px-3 py-1.5 text-xs transition-colors flex items-center justify-between font-geist-mono",
+                  "w-full text-left px-2.5 py-1 text-[11px] transition-colors flex items-center justify-between font-geist-mono",
                   idx === linuxAutocompleteIndex
                     ? (isDark ? "bg-accent-500/20 text-accent-300 font-semibold" : "bg-accent-50 text-accent-700 font-semibold")
                     : (isDark ? "text-secondary-300 hover:bg-secondary-700/50" : "text-secondary-700 hover:bg-secondary-100")
@@ -109,7 +109,7 @@ export const CommandLineAutocompleteBox: React.FC<CommandLineAutocompleteBoxProp
               >
                 <span>{cmd}</span>
                 {idx === linuxAutocompleteIndex && (
-                  <span className="text-[10px] opacity-75">{language === 'tr' ? 'Seçildi' : 'Selected'}</span>
+                  <span className="text-[9px] opacity-75">{language === 'tr' ? 'Seçildi' : 'Selected'}</span>
                 )}
               </button>
             ))
