@@ -58,6 +58,19 @@ export function OnboardingDialog({
     }
   };
 
+  React.useEffect(() => {
+    if (!open) return;
+    const handleMobileBack = () => {
+      if (onboardingStep > 0) {
+        prevOnboarding();
+      } else {
+        closeOnboardingForever();
+      }
+    };
+    window.addEventListener('mobile-back-pressed', handleMobileBack);
+    return () => window.removeEventListener('mobile-back-pressed', handleMobileBack);
+  }, [open, onboardingStep, prevOnboarding, closeOnboardingForever]);
+
   if (!open || !onboardingSteps || onboardingSteps.length === 0) return null;
 
   return (

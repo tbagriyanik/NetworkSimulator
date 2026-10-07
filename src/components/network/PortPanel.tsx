@@ -380,8 +380,17 @@ export function PortPanel({ ports, t, theme, deviceName, deviceModel, activeDevi
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <div
+                      role="button"
+                      tabIndex={0}
+                      aria-label={t.close}
                       className={`w-3 h-3 rounded-full cursor-pointer transition-all duration-200 hover:scale-125 group flex items-center justify-center ${isDevicePoweredOff ? 'bg-secondary-500 hover:bg-secondary-600' : 'bg-success-500 animate-pulse hover:bg-success-600'}`}
                       onClick={onClose}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          onClose?.();
+                        }
+                      }}
                     >
                       <X className="w-3 h-3 opacity-0 group-hover:opacity-100 text-white" />
                     </div>

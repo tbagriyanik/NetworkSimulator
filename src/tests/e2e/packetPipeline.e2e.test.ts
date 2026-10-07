@@ -1,4 +1,4 @@
-﻿/**
+/**
  * packetPipeline.e2e.test.ts — End-to-End Packet Pipeline Integration Tests
  *
  * Scenarios:
@@ -193,13 +193,8 @@ describe('Scenario 1: PC → Switch → Router → WAN Cloud unicast pipeline', 
       frame, 'sw1', devices, deviceStates, connections, 30, NOW
     );
 
-    // Must not drop the packet
-    if (!result.success) {
-      console.log('Pipeline failed:', result.dropReason);
-      console.log('Traces:', result.allTraces.map(t => `${t.deviceName}:${t.stage}:${t.action}:${t.reason}`).join('\n'));
-    }
-
     // Verify all traces contain device info
+    expect(result.success).toBe(true);
     expect(result.allTraces.length).toBeGreaterThan(0);
     result.allTraces.forEach(trace => {
       expect(trace.deviceId).toBeTruthy();

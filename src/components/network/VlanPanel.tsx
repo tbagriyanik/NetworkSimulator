@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { Vlan, Port } from '@/lib/network/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -230,6 +230,7 @@ export function VlanPanel({ vlans, ports, deviceName, deviceModel, onExecuteComm
                         disabled={isDevicePoweredOff}
                         className="h-5 w-5 sm:h-6 sm:w-6 p-0 text-error-400 hover:text-error-300 hover:bg-secondary-700"
                         title={`${t.delete} VLAN ${vlan.id}`}
+                        aria-label={`${t.delete} VLAN ${vlan.id}`}
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>

@@ -146,7 +146,7 @@ export function SdnControllerModal({
     <DraggableWindowWrapper
       id="sdn-controller-modal"
       alwaysOnTop={true}
-      title={isTr ? 'SDN & Niyet Tabanlı Ağ Denetleyicisi (APIC-EM / DNA-C)' : 'SDN & Intent-Based Network Controller (APIC-EM / DNA-C)'}
+      title={isTr ? 'SDN & Niyet Tabanlı Ağ Denetleyicisi' : 'SDN & Intent-Based Network Controller'}
       icon={<Cpu className={`w-4 h-4 shrink-0 ${isDark ? 'text-sky-400' : 'text-sky-700'}`} />}
       isOpen={open}
       onClose={() => onOpenChange(false)}

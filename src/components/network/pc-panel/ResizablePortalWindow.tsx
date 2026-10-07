@@ -400,14 +400,46 @@ export function ResizablePortalWindow({
           {/* Resize Handles */}
           {!isMobile && (
             <>
-              <div className="absolute left-0 top-0 bottom-0 w-1 cursor-ew-resize select-none touch-none z-10" onPointerDown={(e) => startResize('left', e)} />
-              <div className="absolute right-0 top-0 bottom-0 w-1 cursor-ew-resize select-none touch-none z-10" onPointerDown={(e) => startResize('right', e)} />
-              <div className="absolute left-0 right-0 top-0 h-1 cursor-ns-resize select-none touch-none z-10" onPointerDown={(e) => startResize('top', e)} />
-              <div className="absolute left-0 right-0 bottom-0 h-1 cursor-ns-resize select-none touch-none z-10" onPointerDown={(e) => startResize('bottom', e)} />
-              <div className="absolute left-0 top-0 w-3 h-3 cursor-nw-resize select-none touch-none z-10" onPointerDown={(e) => startResize('nw', e)} />
-              <div className="absolute right-0 top-0 w-3 h-3 cursor-ne-resize select-none touch-none z-10" onPointerDown={(e) => startResize('ne', e)} />
-              <div className="absolute left-0 bottom-0 w-3 h-3 cursor-sw-resize select-none touch-none z-10" onPointerDown={(e) => startResize('sw', e)} />
-              <div className="absolute right-0 bottom-0 w-3 h-3 cursor-se-resize select-none touch-none z-10" onPointerDown={(e) => startResize('se', e)} />
+              <div
+                className="absolute left-0 top-0 bottom-0 w-1 cursor-ew-resize select-none touch-none z-10"
+                onPointerDown={(e) => startResize('left', e)}
+                aria-label="Resize left edge"
+              />
+              <div
+                className="absolute right-0 top-0 bottom-0 w-1 cursor-ew-resize select-none touch-none z-10"
+                onPointerDown={(e) => startResize('right', e)}
+                aria-label="Resize right edge"
+              />
+              <div
+                className="absolute left-0 right-0 top-0 h-1 cursor-ns-resize select-none touch-none z-10"
+                onPointerDown={(e) => startResize('top', e)}
+                aria-label="Resize top edge"
+              />
+              <div
+                className="absolute left-0 right-0 bottom-0 h-1 cursor-ns-resize select-none touch-none z-10"
+                onPointerDown={(e) => startResize('bottom', e)}
+                aria-label="Resize bottom edge"
+              />
+              <div
+                className="absolute left-0 top-0 w-3 h-3 cursor-nw-resize select-none touch-none z-10"
+                onPointerDown={(e) => startResize('nw', e)}
+                aria-label="Resize northwest corner"
+              />
+              <div
+                className="absolute right-0 top-0 w-3 h-3 cursor-ne-resize select-none touch-none z-10"
+                onPointerDown={(e) => startResize('ne', e)}
+                aria-label="Resize northeast corner"
+              />
+              <div
+                className="absolute left-0 bottom-0 w-3 h-3 cursor-sw-resize select-none touch-none z-10"
+                onPointerDown={(e) => startResize('sw', e)}
+                aria-label="Resize southwest corner"
+              />
+              <div
+                className="absolute right-0 bottom-0 w-3 h-3 cursor-se-resize select-none touch-none z-10"
+                onPointerDown={(e) => startResize('se', e)}
+                aria-label="Resize southeast corner"
+              />
             </>
           )}
         </div>

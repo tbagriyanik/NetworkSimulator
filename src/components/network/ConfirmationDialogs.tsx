@@ -12,6 +12,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 
+import { useEffect } from 'react';
+
 interface ConfirmationDialogsProps {
   t: Record<string, string>;
   isDark: boolean;
@@ -31,6 +33,20 @@ export function ConfirmationDialogs({
   setSaveDialog,
   focusActiveTerminalInput,
 }: ConfirmationDialogsProps) {
+  useEffect(() => {
+    const handleMobileBack = () => {
+      if (confirmDialog?.show) {
+        setConfirmDialog(null);
+        focusActiveTerminalInput();
+      } else if (saveDialog?.show) {
+        setSaveDialog(null);
+        focusActiveTerminalInput();
+      }
+    };
+    window.addEventListener('mobile-back-pressed', handleMobileBack);
+    return () => window.removeEventListener('mobile-back-pressed', handleMobileBack);
+  }, [confirmDialog?.show, saveDialog?.show, setConfirmDialog, setSaveDialog, focusActiveTerminalInput]);
+
   return (
     <>
       {/* Global Dialogs (AlertDialog for better z-index and standard behavior) */}

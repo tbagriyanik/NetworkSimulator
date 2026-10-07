@@ -451,7 +451,8 @@ export function DeviceConfigModal({
             type="button"
             onClick={onClose}
             className={WINDOW_CLOSE_BUTTON_CLASS}
-            aria-label="Close"
+            aria-label={t.close || (language === 'tr' ? 'Kapat' : 'Close')}
+            title={t.close || (language === 'tr' ? 'Kapat' : 'Close')}
           >
             <X className="w-4 h-4" />
           </button>

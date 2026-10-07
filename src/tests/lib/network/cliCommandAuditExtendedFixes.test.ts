@@ -234,10 +234,6 @@ describe('Extended CLI Command Audit Fixes Tests', () => {
       }
 
       const res = executeCommand(state, 'traceroute 192.168.1.2 source GigabitEthernet0/1 numeric timeout 2 probe 3', 'tr', devices, connections, deviceStates, 'dev-1');
-      if (!res.success) {
-        console.log('TRACEROUTE ERROR:', res.error);
-        console.log('TRACEROUTE OUTPUT:', res.output);
-      }
       expect(res.success).toBe(true);
       expect(res.output).toContain('Tracing the route to 192.168.1.2 (192.168.1.2)');
       expect(res.output).toContain('Source interface: GigabitEthernet0/1');

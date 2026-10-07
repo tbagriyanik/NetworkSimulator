@@ -51,7 +51,7 @@ export function SearchOutputDialog({
   });
   const dragRef = useRef({ startX: 0, startY: 0, origX: 0, origY: 0, dragging: false });
 
-  // Escape only closes the search popup, never bubbles to close the CLI/CMD window
+  // Escape and mobile back button only close the search popup, never bubble to close the CLI/CMD window
   useEffect(() => {
     if (!open) return;
     const handler = (e: KeyboardEvent) => {
@@ -61,8 +61,16 @@ export function SearchOutputDialog({
         onOpenChange(false);
       }
     };
+    const handleMobileBack = () => {
+      onOpenChange(false);
+    };
+
     window.addEventListener('keydown', handler, { capture: true });
-    return () => window.removeEventListener('keydown', handler, { capture: true });
+    window.addEventListener('mobile-back-pressed', handleMobileBack);
+    return () => {
+      window.removeEventListener('keydown', handler, { capture: true });
+      window.removeEventListener('mobile-back-pressed', handleMobileBack);
+    };
   }, [open, onOpenChange]);
 
   // Focus the input when opened

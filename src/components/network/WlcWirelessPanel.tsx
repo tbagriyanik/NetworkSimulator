@@ -243,6 +243,7 @@ export function WlcWirelessPanel({
                                             size="sm"
                                             className="h-7 w-7 p-0 text-primary-500 hover:text-primary-600"
                                             title={tr('Edit SSID', 'SSID Düzenle')}
+                                            aria-label={tr('Edit SSID', 'SSID Düzenle')}
                                             disabled={isDevicePoweredOff || busy}
                                             onClick={() => {
                                                 setWlanName(wlan.name);
@@ -260,6 +261,7 @@ export function WlcWirelessPanel({
                                             size="sm"
                                             className="h-7 w-7 p-0"
                                             title={wlan.status === 'enabled' ? tr('Disable', 'Devre Dışı Bırak') : tr('Enable', 'Etkinleştir')}
+                                            aria-label={wlan.status === 'enabled' ? tr('Disable', 'Devre Dışı Bırak') : tr('Enable', 'Etkinleştir')}
                                             disabled={isDevicePoweredOff || busy}
                                             onClick={() => toggleWlan(wlan.id, wlan.status)}
                                         >
@@ -270,6 +272,7 @@ export function WlcWirelessPanel({
                                             size="sm"
                                             className="h-7 w-7 p-0 text-error-500 hover:text-error-600"
                                             title={tr('Delete', 'Sil')}
+                                            aria-label={tr('Delete', 'Sil')}
                                             disabled={isDevicePoweredOff || busy}
                                             onClick={() => deleteWlan(wlan.id)}
                                         >
