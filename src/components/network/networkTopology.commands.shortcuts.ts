@@ -65,6 +65,7 @@ export function getKeyboardShortcuts(isTR: boolean): CommandDefinition {
       ['MQTT Paket Yakalama', isTR ? 'MQTT CONNECT, PUBLISH, SUBSCRIBE, Topic, QoS ve Payload bilgilerini incele' : 'Inspect MQTT CONNECT, PUBLISH, SUBSCRIBE, Topic, QoS and Payload details'],
       ['REST / RESTCONF', isTR ? 'İstek ve yanıt panellerini ayraçtan sürükleyerek yeniden boyutlandır' : 'Resize request and response panes using the draggable divider'],
       ['Modal Kapat / Mobil Geri', isTR ? 'Tüm modalları ESC veya mobil cihaz geri tuşu/hareketi ile kapat' : 'Close all modals and floating windows via ESC or mobile back button/gesture'],
+      ['Akıllı Sekmeli Görünüm', isTR ? 'Sekmeli yerleşimde tek cihaz kaldığında sekme barı otomatik gizlenir, 2+ cihazda görünür' : 'In tabbed layout, tab bar auto-hides when 1 device remains and shows on 2+ devices'],
     ]
   };
 }

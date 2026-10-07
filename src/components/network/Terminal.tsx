@@ -337,7 +337,18 @@ export function Terminal({
 
   const handleQuickCommand = (cmd: string) => {
     handleInputChange(cmd);
-    inputRef.current?.focus();
+    setTimeout(() => {
+      if (inputRef.current) {
+        inputRef.current.focus();
+        // Eğer komut boşlukla bitiyorsa imleci sona al; IP veya VLAN gibi varsayılan değer varsa seçili yap
+        const ipMatch = cmd.match(/\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/);
+        if (ipMatch && ipMatch.index !== undefined) {
+          inputRef.current.setSelectionRange(ipMatch.index, ipMatch.index + ipMatch[0].length);
+        } else {
+          inputRef.current.setSelectionRange(cmd.length, cmd.length);
+        }
+      }
+    }, 10);
   };
 
   const handlePaste = useCallback((e: React.ClipboardEvent<HTMLInputElement>) => {

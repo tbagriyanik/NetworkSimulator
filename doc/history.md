@@ -1,5 +1,25 @@
 # 📅 Network Simulator — Proje Geçmişi
 
+## v7.5.0 — 2026-10-07
+
+- **🪟 Akıllı Sekmeli Pencere Deneyimi (Multi-Window Tab Toolbar UX)**:
+  - `MultiDeviceWindowManager`: Sekmeli yerleşim modunda (`tabs`) sadece 1 cihaz penceresi kaldığında üstteki sekme çubuğu ve yerleşim denetimleri otomatik gizlenerek ekranda sade ve dikkat dağıtmayan bir tekli pencere görünümü sağlandı; 2 veya daha fazla cihaz açıldığında sekme çubuğu kendiliğinden geri geliyor.
+  - Sekme kapatma butonuna klavye erişilebilirliği (`Enter` ve `Space` tuşlarıyla kapatma) ile ekran okuyucu `aria-label` etiketleri kazandırıldı.
+- **🎨 Merkezi Pencere Odaklama & Vurgu Tasarım Sistemi (`windowStandards.ts`)**:
+  - `WINDOW_FOCUS_BORDER_CLASS`: Tekrarlanan hardcoded yeşil çerçeve ve gölge sınıfları merkezi tasarım token fonksiyonuna taşındı. `PCWindow`, `PagePanelWindows`, `TabletSplitView`, `DeviceInfoPopovers`, `PacketPopup` ve `RefreshReportPanel` bileşenleri bu standart token'a bağlandı.
+- **🛡️ Katı Tip Güvenliği & `any` Tiplerinin Temizlenmesi**:
+  - `PCWindow`: `pcDrag` (`UseDragReturn`), `pcPanelInitialTab` (`PCActiveTab`), `handlePCPanelNavigateWrapper` ve `t` sözlükleri kesin tiplere bağlandı; gereksiz ESLint `no-explicit-any` kuralları kaldırıldı.
+  - `usePCPanelDeviceSync`: E-posta kutuları (`MailInboxItem[]`, `MailSentItem[]`), NTP sunucu önayarları, DHCP form durumu (`DhcpFormState`) ve Wi-Fi güvenlik yapılandırmaları doğrudan ilişkili arayüz tiplerine bağlandı.
+- **🌐 Dil & Temiz Kod İyileştirmeleri**:
+  - `FileEditorModal`: Kod/metin editörünün alt bilgi çubuğu (footer) çoklu dil desteğine kavuşturularak `isEn` parametresine göre dinamik hale getirildi (`File`, `Lines`, `Characters`).
+  - React bileşenlerindeki gereksiz `isVisible={true}` JSX yazımları temizlendi (`isVisible`).
+- **🎓 Öğrenci Dostu Akıllı CLI & Pedagojik Terminal Asistanı (`cliErrors.ts`, `executorResultUtils.ts`)**:
+  - `getStudentCliHint`: Yanlış modda komut girildiğinde (ör. User modunda `conf t`, Privileged modunda `int g0/1`, Config modunda `no shutdown`) veya harf hatası yapıldığında (`conft`, `shw`), CLI çıktısına eğitici `💡 Öğrenme Notu` bloğu eklendi.
+  - `QuickCommandsBar`: En sık kullanılan temel konfigürasyon ve teşhis komut şablonları zenginleştirildi; her bir komut için Türkçe eğitici tooltip açıklamaları eklendi.
+  - `Terminal.tsx`: Hızlı komut çiplerine tıklandığında IP adresi gibi değişken parametrelerin otomatik olarak seçili (highlighted) hale gelmesi sağlanarak tek tuşla değiştirilebilme konforu sunuldu.
+- **⚡ Vitest Test Çıktısı & EventEmitter Bellek İyileştirmesi (`src/tests/setup.ts`)**:
+  - Paralel test koşumlarında her test modülü bootstrap olurken `process.on('warning')` dinleyicisinin tekrar tekrar eklenmesi engellendi (`listenerCount === 0` koruması eklendi). Testler arasındaki `MaxListenersExceededWarning` bellek sızıntısı uyarısı tamamen giderildi.
+
 ## v7.4.1 — 2026-10-06
 
 - **🪟 Evrensel Modal Mimarisi & Mobil Geri Tuşu Entegrasyonu**:

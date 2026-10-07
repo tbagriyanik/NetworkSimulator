@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CLI_ERRORS, cliModeError } from '@/lib/network/core/cliErrors';
+import { CLI_ERRORS, cliModeError, getStudentCliHint } from '@/lib/network/core/cliErrors';
 
 describe('CLI_ERRORS', () => {
   it('should define invalidInput error', () => {
@@ -53,3 +53,35 @@ describe('cliModeError', () => {
     expect(result).toContain('unknown');
   });
 });
+
+describe('getStudentCliHint', () => {
+  it('should suggest enable when running privileged command in user mode', () => {
+    const hint = getStudentCliHint('conf t', 'user');
+    expect(hint).toBeDefined();
+    expect(hint?.tr).toContain('enable');
+  });
+
+  it('should suggest configure terminal when configuring in privileged mode', () => {
+    const hint = getStudentCliHint('int g0/1', 'privileged');
+    expect(hint).toBeDefined();
+    expect(hint?.tr).toContain('configure terminal');
+  });
+
+  it('should suggest entering interface mode when running no shutdown in global config', () => {
+    const hint = getStudentCliHint('no shutdown', 'config');
+    expect(hint).toBeDefined();
+    expect(hint?.tr).toContain('interface');
+  });
+
+  it('should suggest correction for common typos like conft', () => {
+    const hint = getStudentCliHint('conft', 'privileged');
+    expect(hint).toBeDefined();
+    expect(hint?.en).toContain('conf t');
+  });
+
+  it('should return undefined when no hint is necessary', () => {
+    const hint = getStudentCliHint('show ip int brief', 'privileged');
+    expect(hint).toBeUndefined();
+  });
+});
+

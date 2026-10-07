@@ -1,16 +1,27 @@
 import type { CommandMode, CommandResult, SwitchState } from './types';
+import { getStudentCliHint } from './core/cliErrors';
 
 export function processCommandResult(result: CommandResult, input: string, mode: CommandMode, state: SwitchState, language: 'tr' | 'en', getSuggestions: (input: string, mode: CommandMode, state?: SwitchState) => string[]): CommandResult {
-  if (!result.success && result.error && !result.requiresPassword && !result.newState?.awaitingPassword && !result.error.includes('cancelled') && !result.error.includes('Access denied') && !result.error.includes('Erişim reddedildi')) {
+  let updatedResult = { ...result };
+
+  // Öğrenciler için rehber niteliğinde mod ve komut ipucu ekleme
+  if (!updatedResult.success && !updatedResult.hint) {
+    const studentHint = getStudentCliHint(input, mode);
+    if (studentHint) {
+      updatedResult.hint = studentHint;
+    }
+  }
+
+  if (!updatedResult.success && updatedResult.error && !updatedResult.requiresPassword && !updatedResult.newState?.awaitingPassword && !updatedResult.error.includes('cancelled') && !updatedResult.error.includes('Access denied') && !updatedResult.error.includes('Erişim reddedildi')) {
     const suggestions = getSuggestions(input, mode, state);
     if (suggestions.length > 0) {
       const title = language === 'tr' ? 'Tahmini Öneriler' : 'Estimated Suggestions';
-      let error = result.error;
+      let error = updatedResult.error;
       const trIndex = error.indexOf('\n\nBunu mu demek istediniz?');
       if (trIndex !== -1) error = error.substring(0, trIndex);
       const enIndex = error.indexOf('\n\nDid you mean?');
       if (enIndex !== -1) error = error.substring(0, enIndex);
-      return { ...result, error: `${error}\n\n${title}: ${suggestions.join(', ')}` };
+      updatedResult = { ...updatedResult, error: `${error}\n\n${title}: ${suggestions.join(', ')}` };
     }
   }
 
