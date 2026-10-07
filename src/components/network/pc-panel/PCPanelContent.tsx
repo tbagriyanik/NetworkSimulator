@@ -39,6 +39,7 @@ export function PCPanelContent() {
           internalPcHostname={internalPcHostname}
           pcIP={pcIP}
           wifiSignalStrength={wifiSignalStrength}
+          language={language}
         />
       )}
 

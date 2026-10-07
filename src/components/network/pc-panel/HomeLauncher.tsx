@@ -15,6 +15,8 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useGraphicsQuality } from '@/lib/store/appStore';
+import { TooltipWrapper } from '@/components/ui/TooltipWrapper';
+import { ShortcutBadge } from '@/components/ui/ShortcutBadge';
 import type { PCActiveTab } from './PCPanel.types';
 
 export interface LauncherApp {
@@ -73,6 +75,45 @@ export function HomeLauncher({
     const interval = setInterval(updateTime, 1000);
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    if (isPoweredOff) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.tagName === 'SELECT' ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+
+      const num = parseInt(e.key, 10);
+      if (!isNaN(num) && num >= 1 && num <= apps.length) {
+        e.preventDefault();
+        onNavigate(apps[num - 1].tab);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [apps, isPoweredOff, onNavigate]);
+
+  const renderAppTooltip = (app: LauncherApp, index: number) => (
+    <div className="flex flex-col gap-1 p-0.5 min-w-[140px]">
+      <div className="flex items-center justify-between gap-3 font-semibold text-xs">
+        <span>{app.label}</span>
+        <ShortcutBadge shortcut={`${index + 1}`} variant="primary" />
+      </div>
+      <div className="text-[11px] opacity-80">{app.subtitle}</div>
+      <div className="text-[10px] text-accent-400 font-mono">
+        {isTr ? `${index + 1} tuşuna basarak açın` : `Press ${index + 1} to open`}
+      </div>
+    </div>
+  );
 
   return (
     <div
@@ -152,24 +193,28 @@ export function HomeLauncher({
         {/* Mobile App Grid (Smartphone App Grid) */}
         <div className="relative z-10 flex-1 overflow-y-auto px-4 py-3 custom-scrollbar">
           <div className="grid grid-cols-3 gap-y-4 gap-x-3">
-            {apps.map((app) => (
-              <button
-                key={app.tab}
-                type="button"
-                onClick={() => onNavigate(app.tab)}
-                disabled={isPoweredOff}
-                className="group flex flex-col items-center justify-center gap-1.5 text-center active:scale-90 transition-all duration-200 outline-none"
-              >
-                <div className={cn(
-                  "w-14 h-14 rounded-2xl flex items-center justify-center bg-gradient-to-br text-white shadow-lg shadow-black/30 group-hover:scale-105 transition-all border border-white/20",
-                  app.accent
-                )}>
-                  <app.icon className="w-7 h-7 drop-shadow-md" />
-                </div>
-                <span className="text-[11px] font-semibold text-white/90 tracking-tight leading-none truncate max-w-[80px]">
-                  {app.label}
-                </span>
-              </button>
+            {apps.map((app, index) => (
+              <TooltipWrapper key={app.tab} side="top" title={renderAppTooltip(app, index)}>
+                <button
+                  type="button"
+                  onClick={() => onNavigate(app.tab)}
+                  disabled={isPoweredOff}
+                  className="group relative flex flex-col items-center justify-center gap-1.5 text-center active:scale-90 transition-all duration-200 outline-none p-1 rounded-xl w-full"
+                >
+                  <div className={cn(
+                    "w-14 h-14 rounded-2xl flex items-center justify-center bg-gradient-to-br text-white shadow-lg shadow-black/30 group-hover:scale-105 transition-all border border-white/20",
+                    app.accent
+                  )}>
+                    <app.icon className="w-7 h-7 drop-shadow-md" />
+                  </div>
+                  <span className="text-[11px] font-semibold text-white/90 tracking-tight leading-none truncate max-w-[80px]">
+                    {app.label}
+                  </span>
+                  <span className="absolute bottom-0 right-0 w-4 h-4 rounded-full bg-slate-900/95 border border-white/40 text-[10px] font-bold text-white flex items-center justify-center shadow-md pointer-events-none">
+                    {index + 1}
+                  </span>
+                </button>
+              </TooltipWrapper>
             ))}
           </div>
         </div>
@@ -196,27 +241,31 @@ export function HomeLauncher({
         {/* Tablet Apps Grid */}
         <div className="relative z-10 flex-1 overflow-y-auto custom-scrollbar">
           <div className="grid grid-cols-3 gap-4 h-full items-stretch">
-            {apps.map((app) => (
-              <button
-                key={app.tab}
-                type="button"
-                onClick={() => onNavigate(app.tab)}
-                disabled={isPoweredOff}
-                className={cn(
-                  "group flex flex-col items-center justify-center text-center p-4 rounded-2xl border backdrop-blur-md transition-all active:scale-[0.98]",
-                  app.buttonClass,
-                  isDark ? "bg-white/[0.04] hover:bg-white/[0.08] border-white/10" : "bg-white/80 hover:bg-white border-slate-200"
-                )}
-              >
-                <div className={cn(
-                  "h-14 w-14 rounded-2xl flex items-center justify-center bg-gradient-to-br text-white shadow-md transition-shadow mb-2",
-                  app.accent
-                )}>
-                  <app.icon className="w-7 h-7" />
-                </div>
-                <div className="text-sm font-bold tracking-tight truncate w-full">{app.label}</div>
-                <div className="text-xs opacity-70 font-medium truncate w-full">{app.subtitle}</div>
-              </button>
+            {apps.map((app, index) => (
+              <TooltipWrapper key={app.tab} side="top" title={renderAppTooltip(app, index)}>
+                <button
+                  type="button"
+                  onClick={() => onNavigate(app.tab)}
+                  disabled={isPoweredOff}
+                  className={cn(
+                    "group relative flex flex-col items-center justify-center text-center p-4 rounded-2xl border backdrop-blur-md transition-all active:scale-[0.98] w-full",
+                    app.buttonClass,
+                    isDark ? "bg-white/[0.04] hover:bg-white/[0.08] border-white/10" : "bg-white/80 hover:bg-white border-slate-200"
+                  )}
+                >
+                  <div className={cn(
+                    "h-14 w-14 rounded-2xl flex items-center justify-center bg-gradient-to-br text-white shadow-md transition-shadow mb-2",
+                    app.accent
+                  )}>
+                    <app.icon className="w-7 h-7" />
+                  </div>
+                  <div className="text-sm font-bold tracking-tight truncate w-full">{app.label}</div>
+                  <div className="text-xs opacity-70 font-medium truncate w-full">{app.subtitle}</div>
+                  <span className="absolute bottom-2 right-2 w-4 h-4 rounded-full bg-slate-900/95 border border-white/40 text-[10px] font-bold text-white flex items-center justify-center shadow-md pointer-events-none">
+                    {index + 1}
+                  </span>
+                </button>
+              </TooltipWrapper>
             ))}
           </div>
         </div>
@@ -246,33 +295,37 @@ export function HomeLauncher({
         {/* Desktop Canvas (Desktop Icons Grid) */}
         <div className="relative z-10 flex-1 p-6 overflow-y-auto custom-scrollbar flex flex-col justify-between">
           <div className="grid grid-cols-4 @[1100px]:grid-cols-6 gap-6 items-start">
-            {apps.map((app) => (
-              <button
-                key={app.tab}
-                type="button"
-                onClick={() => onNavigate(app.tab)}
-                disabled={isPoweredOff}
-                className={cn(
-                  "group flex flex-col items-center justify-center text-center p-3 rounded-xl transition-all duration-200 hover:bg-white/10 dark:hover:bg-white/5 border border-transparent hover:border-white/15 hover:shadow-lg focus:ring-2 focus:ring-primary/50 outline-none active:scale-95",
-                  isPoweredOff && "opacity-40 cursor-not-allowed"
-                )}
-              >
-                <div className={cn(
-                  "w-16 h-16 rounded-2xl flex items-center justify-center bg-gradient-to-br text-white shadow-lg group-hover:scale-110 transition-transform mb-2 border border-white/20",
-                  app.accent
-                )}>
-                  <app.icon className="w-8 h-8 drop-shadow" />
-                </div>
-                <span className={cn(
-                  "text-xs font-semibold tracking-tight px-2 py-0.5 rounded group-hover:bg-black/30 text-center truncate max-w-[110px]",
-                  isDark ? "text-white" : "text-slate-800"
-                )}>
-                  {app.label}
-                </span>
-                <span className={cn("text-[10px] opacity-60 truncate max-w-[100px]", isDark ? "text-slate-400" : "text-slate-500")}>
-                  {app.subtitle}
-                </span>
-              </button>
+            {apps.map((app, index) => (
+              <TooltipWrapper key={app.tab} side="top" title={renderAppTooltip(app, index)}>
+                <button
+                  type="button"
+                  onClick={() => onNavigate(app.tab)}
+                  disabled={isPoweredOff}
+                  className={cn(
+                    "group relative flex flex-col items-center justify-center text-center p-3 rounded-xl transition-all duration-200 hover:bg-white/10 dark:hover:bg-white/5 border border-transparent hover:border-white/15 hover:shadow-lg focus:ring-2 focus:ring-primary/50 outline-none active:scale-95 w-full",
+                    isPoweredOff && "opacity-40 cursor-not-allowed"
+                  )}
+                >
+                  <div className={cn(
+                    "w-16 h-16 rounded-2xl flex items-center justify-center bg-gradient-to-br text-white shadow-lg group-hover:scale-110 transition-transform mb-2 border border-white/20",
+                    app.accent
+                  )}>
+                    <app.icon className="w-8 h-8 drop-shadow" />
+                  </div>
+                  <span className={cn(
+                    "text-xs font-semibold tracking-tight px-2 py-0.5 rounded group-hover:bg-black/30 text-center truncate max-w-[110px]",
+                    isDark ? "text-white" : "text-slate-800"
+                  )}>
+                    {app.label}
+                  </span>
+                  <span className={cn("text-[10px] opacity-60 truncate max-w-[100px]", isDark ? "text-slate-400" : "text-slate-500")}>
+                    {app.subtitle}
+                  </span>
+                  <span className="absolute bottom-1.5 right-1.5 w-5 h-5 rounded-full bg-slate-900/95 border border-white/40 text-[11px] font-bold text-white flex items-center justify-center shadow-md pointer-events-none">
+                    {index + 1}
+                  </span>
+                </button>
+              </TooltipWrapper>
             ))}
           </div>
         </div>

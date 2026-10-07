@@ -309,49 +309,49 @@ export function FileEditorModal({
 
   const headerActions = (
     <div className="flex max-w-[min(70vw,680px)] flex-nowrap items-center justify-end gap-0.5 overflow-x-auto">
-      <TooltipWrapper title="Yeni">
-        <Button size="sm" variant="ghost" onClick={handleNewFile} className="h-8 w-8 p-0 shrink-0"><File className="h-3.5 w-3.5" /></Button>
+      <TooltipWrapper title={isEn ? 'New' : 'Yeni'}>
+        <Button size="sm" variant="ghost" onClick={handleNewFile} className="h-8 w-8 p-0 shrink-0" aria-label={isEn ? 'New' : 'Yeni'}><File className="h-3.5 w-3.5" /></Button>
       </TooltipWrapper>
-      <TooltipWrapper title="Aç">
-        <Button size="sm" variant="ghost" onClick={handleOpenFile} className="h-8 w-8 p-0 shrink-0"><FolderOpen className="h-3.5 w-3.5" /></Button>
+      <TooltipWrapper title={isEn ? 'Open' : 'Aç'}>
+        <Button size="sm" variant="ghost" onClick={handleOpenFile} className="h-8 w-8 p-0 shrink-0" aria-label={isEn ? 'Open' : 'Aç'}><FolderOpen className="h-3.5 w-3.5" /></Button>
       </TooltipWrapper>
-      <TooltipWrapper title="Kaydet">
-        <Button size="sm" variant="outline" onClick={handleSave} className="h-8 w-8 p-0 shrink-0"><Save className="h-3.5 w-3.5" /></Button>
-      </TooltipWrapper>
-      <span className="mx-1 h-6 w-px bg-secondary-600/40 shrink-0" aria-hidden="true" />
-      <TooltipWrapper title="Geri al">
-        <Button size="sm" variant="ghost" disabled={historyIndex === 0} onClick={undo} className="h-8 w-8 p-0 shrink-0"><Undo2 className="h-3.5 w-3.5" /></Button>
-      </TooltipWrapper>
-      <TooltipWrapper title="Yinele">
-        <Button size="sm" variant="ghost" disabled={historyIndex >= history.length - 1} onClick={redo} className="h-8 w-8 p-0 shrink-0"><Redo2 className="h-3.5 w-3.5" /></Button>
+      <TooltipWrapper title={isEn ? 'Save' : 'Kaydet'}>
+        <Button size="sm" variant="outline" onClick={handleSave} className="h-8 w-8 p-0 shrink-0" aria-label={isEn ? 'Save' : 'Kaydet'}><Save className="h-3.5 w-3.5" /></Button>
       </TooltipWrapper>
       <span className="mx-1 h-6 w-px bg-secondary-600/40 shrink-0" aria-hidden="true" />
-      <TooltipWrapper title="Kes">
-        <Button size="sm" variant="ghost" onClick={() => void editSelected('cut')} className="h-8 w-8 p-0 shrink-0"><Scissors className="h-3.5 w-3.5" /></Button>
+      <TooltipWrapper title={isEn ? 'Undo' : 'Geri al'}>
+        <Button size="sm" variant="ghost" disabled={historyIndex === 0} onClick={undo} className="h-8 w-8 p-0 shrink-0" aria-label={isEn ? 'Undo' : 'Geri al'}><Undo2 className="h-3.5 w-3.5" /></Button>
       </TooltipWrapper>
-      <TooltipWrapper title="Kopyala">
-        <Button size="sm" variant="ghost" onClick={() => void editSelected('copy')} className="h-8 w-8 p-0 shrink-0"><Copy className="h-3.5 w-3.5" /></Button>
-      </TooltipWrapper>
-      <TooltipWrapper title="Yapıştır">
-        <Button size="sm" variant="ghost" onClick={() => void editSelected('paste')} className="h-8 w-8 p-0 shrink-0"><ClipboardPaste className="h-3.5 w-3.5" /></Button>
-      </TooltipWrapper>
-      <TooltipWrapper title="Sil">
-        <Button size="sm" variant="ghost" onClick={() => void editSelected('delete')} className="h-8 w-8 p-0 shrink-0"><Trash2 className="h-3.5 w-3.5" /></Button>
-      </TooltipWrapper>
-      <TooltipWrapper title="Tümünü seç">
-        <Button size="sm" variant="ghost" onClick={() => void editSelected('selectAll')} className="h-8 w-8 p-0 shrink-0"><ListChecks className="h-3.5 w-3.5" /></Button>
+      <TooltipWrapper title={isEn ? 'Redo' : 'Yinele'}>
+        <Button size="sm" variant="ghost" disabled={historyIndex >= history.length - 1} onClick={redo} className="h-8 w-8 p-0 shrink-0" aria-label={isEn ? 'Redo' : 'Yinele'}><Redo2 className="h-3.5 w-3.5" /></Button>
       </TooltipWrapper>
       <span className="mx-1 h-6 w-px bg-secondary-600/40 shrink-0" aria-hidden="true" />
-      <TooltipWrapper title="Yazı küçült">
-        <Button size="sm" variant="ghost" disabled={fontSize <= 12} onClick={() => setFontSize(size => Math.max(12, size - 1))} className="h-8 w-8 p-0 shrink-0"><Minus className="h-3.5 w-3.5" /></Button>
+      <TooltipWrapper title={isEn ? 'Cut' : 'Kes'}>
+        <Button size="sm" variant="ghost" onClick={() => void editSelected('cut')} className="h-8 w-8 p-0 shrink-0" aria-label={isEn ? 'Cut' : 'Kes'}><Scissors className="h-3.5 w-3.5" /></Button>
+      </TooltipWrapper>
+      <TooltipWrapper title={isEn ? 'Copy' : 'Kopyala'}>
+        <Button size="sm" variant="ghost" onClick={() => void editSelected('copy')} className="h-8 w-8 p-0 shrink-0" aria-label={isEn ? 'Copy' : 'Kopyala'}><Copy className="h-3.5 w-3.5" /></Button>
+      </TooltipWrapper>
+      <TooltipWrapper title={isEn ? 'Paste' : 'Yapıştır'}>
+        <Button size="sm" variant="ghost" onClick={() => void editSelected('paste')} className="h-8 w-8 p-0 shrink-0" aria-label={isEn ? 'Paste' : 'Yapıştır'}><ClipboardPaste className="h-3.5 w-3.5" /></Button>
+      </TooltipWrapper>
+      <TooltipWrapper title={isEn ? 'Delete' : 'Sil'}>
+        <Button size="sm" variant="ghost" onClick={() => void editSelected('delete')} className="h-8 w-8 p-0 shrink-0" aria-label={isEn ? 'Delete' : 'Sil'}><Trash2 className="h-3.5 w-3.5" /></Button>
+      </TooltipWrapper>
+      <TooltipWrapper title={isEn ? 'Select all' : 'Tümünü seç'}>
+        <Button size="sm" variant="ghost" onClick={() => void editSelected('selectAll')} className="h-8 w-8 p-0 shrink-0" aria-label={isEn ? 'Select all' : 'Tümünü seç'}><ListChecks className="h-3.5 w-3.5" /></Button>
+      </TooltipWrapper>
+      <span className="mx-1 h-6 w-px bg-secondary-600/40 shrink-0" aria-hidden="true" />
+      <TooltipWrapper title={isEn ? 'Decrease font size' : 'Yazı küçült'}>
+        <Button size="sm" variant="ghost" disabled={fontSize <= 12} onClick={() => setFontSize(size => Math.max(12, size - 1))} className="h-8 w-8 p-0 shrink-0" aria-label={isEn ? 'Decrease font size' : 'Yazı küçült'}><Minus className="h-3.5 w-3.5" /></Button>
       </TooltipWrapper>
       <span className="min-w-8 text-center text-xs font-mono shrink-0">{fontSize}</span>
-      <TooltipWrapper title="Yazı büyüt">
-        <Button size="sm" variant="ghost" disabled={fontSize >= 20} onClick={() => setFontSize(size => Math.min(20, size + 1))} className="h-8 w-8 p-0 shrink-0"><Plus className="h-3.5 w-3.5" /></Button>
+      <TooltipWrapper title={isEn ? 'Increase font size' : 'Yazı büyüt'}>
+        <Button size="sm" variant="ghost" disabled={fontSize >= 20} onClick={() => setFontSize(size => Math.min(20, size + 1))} className="h-8 w-8 p-0 shrink-0" aria-label={isEn ? 'Increase font size' : 'Yazı büyüt'}><Plus className="h-3.5 w-3.5" /></Button>
       </TooltipWrapper>
       <span className="mx-1 h-6 w-px bg-secondary-600/40 shrink-0" aria-hidden="true" />
-      <TooltipWrapper title="Satır kaydırma">
-        <Button size="sm" variant={wordWrap ? 'default' : 'ghost'} onClick={() => setWordWrap(value => !value)} className="h-8 w-8 p-0 shrink-0"><WrapText className="h-3.5 w-3.5" /></Button>
+      <TooltipWrapper title={isEn ? 'Toggle line wrap' : 'Satır kaydırma'}>
+        <Button size="sm" variant={wordWrap ? 'default' : 'ghost'} onClick={() => setWordWrap(value => !value)} className="h-8 w-8 p-0 shrink-0" aria-label={isEn ? 'Toggle line wrap' : 'Satır kaydırma'}><WrapText className="h-3.5 w-3.5" /></Button>
       </TooltipWrapper>
       {(isPythonFile || isBatFile) && (
         <TooltipWrapper title={language === 'tr' ? "Kaydet ve CMD'de Çalıştır (F5 / Ctrl+Enter)" : "Save & Run in CMD (F5 / Ctrl+Enter)"}>
@@ -427,74 +427,74 @@ export function FileEditorModal({
           <span className="text-[10px] font-bold uppercase tracking-wider text-secondary-500 mr-1">
             HTML:
           </span>
-          <TooltipWrapper title="Kalın <b>">
-            <Button size="sm" variant="ghost" onClick={() => applyHtmlTag('b')} className="h-7 px-2 font-black text-xs shrink-0">
+          <TooltipWrapper title={isEn ? 'Bold <b>' : 'Kalın <b>'}>
+            <Button size="sm" variant="ghost" onClick={() => applyHtmlTag('b')} className="h-7 px-2 font-black text-xs shrink-0" aria-label={isEn ? 'Bold <b>' : 'Kalın <b>'}>
               <Bold className="w-3.5 h-3.5 mr-0.5" /> B
             </Button>
           </TooltipWrapper>
-          <TooltipWrapper title="İtalik <i>">
-            <Button size="sm" variant="ghost" onClick={() => applyHtmlTag('i')} className="h-7 px-2 italic text-xs shrink-0">
+          <TooltipWrapper title={isEn ? 'Italic <i>' : 'İtalik <i>'}>
+            <Button size="sm" variant="ghost" onClick={() => applyHtmlTag('i')} className="h-7 px-2 italic text-xs shrink-0" aria-label={isEn ? 'Italic <i>' : 'İtalik <i>'}>
               <Italic className="w-3.5 h-3.5 mr-0.5" /> I
             </Button>
           </TooltipWrapper>
-          <TooltipWrapper title="Altı Çizili <u>">
-            <Button size="sm" variant="ghost" onClick={() => applyHtmlTag('u')} className="h-7 px-2 underline text-xs shrink-0">
+          <TooltipWrapper title={isEn ? 'Underline <u>' : 'Altı Çizili <u>'}>
+            <Button size="sm" variant="ghost" onClick={() => applyHtmlTag('u')} className="h-7 px-2 underline text-xs shrink-0" aria-label={isEn ? 'Underline <u>' : 'Altı Çizili <u>'}>
               <Underline className="w-3.5 h-3.5 mr-0.5" /> U
             </Button>
           </TooltipWrapper>
 
           <span className="mx-1 h-4 w-px bg-secondary-600/40 shrink-0" aria-hidden="true" />
 
-          <TooltipWrapper title="Başlık 1 <h1>">
-            <Button size="sm" variant="ghost" onClick={() => applyHtmlTag('h1')} className="h-7 px-2 font-bold text-xs shrink-0">
+          <TooltipWrapper title={isEn ? 'Heading 1 <h1>' : 'Başlık 1 <h1>'}>
+            <Button size="sm" variant="ghost" onClick={() => applyHtmlTag('h1')} className="h-7 px-2 font-bold text-xs shrink-0" aria-label={isEn ? 'Heading 1 <h1>' : 'Başlık 1 <h1>'}>
               <Heading1 className="w-3.5 h-3.5 mr-0.5" /> H1
             </Button>
           </TooltipWrapper>
-          <TooltipWrapper title="Başlık 2 <h2>">
-            <Button size="sm" variant="ghost" onClick={() => applyHtmlTag('h2')} className="h-7 px-2 font-bold text-xs shrink-0">
+          <TooltipWrapper title={isEn ? 'Heading 2 <h2>' : 'Başlık 2 <h2>'}>
+            <Button size="sm" variant="ghost" onClick={() => applyHtmlTag('h2')} className="h-7 px-2 font-bold text-xs shrink-0" aria-label={isEn ? 'Heading 2 <h2>' : 'Başlık 2 <h2>'}>
               <Heading2 className="w-3.5 h-3.5 mr-0.5" /> H2
             </Button>
           </TooltipWrapper>
-          <TooltipWrapper title="Başlık 3 <h3>">
-            <Button size="sm" variant="ghost" onClick={() => applyHtmlTag('h3')} className="h-7 px-2 font-bold text-xs shrink-0">
+          <TooltipWrapper title={isEn ? 'Heading 3 <h3>' : 'Başlık 3 <h3>'}>
+            <Button size="sm" variant="ghost" onClick={() => applyHtmlTag('h3')} className="h-7 px-2 font-bold text-xs shrink-0" aria-label={isEn ? 'Heading 3 <h3>' : 'Başlık 3 <h3>'}>
               <Heading3 className="w-3.5 h-3.5 mr-0.5" /> H3
             </Button>
           </TooltipWrapper>
-          <TooltipWrapper title="Paragraf <p>">
-            <Button size="sm" variant="ghost" onClick={() => applyHtmlTag('p')} className="h-7 px-2 font-semibold text-xs shrink-0">
+          <TooltipWrapper title={isEn ? 'Paragraph <p>' : 'Paragraf <p>'}>
+            <Button size="sm" variant="ghost" onClick={() => applyHtmlTag('p')} className="h-7 px-2 font-semibold text-xs shrink-0" aria-label={isEn ? 'Paragraph <p>' : 'Paragraf <p>'}>
               P
             </Button>
           </TooltipWrapper>
 
           <span className="mx-1 h-4 w-px bg-secondary-600/40 shrink-0" aria-hidden="true" />
 
-          <TooltipWrapper title="Bağlantı <a>">
-            <Button size="sm" variant="ghost" onClick={() => applyHtmlTag('a', true)} className="h-7 px-2 text-xs shrink-0">
+          <TooltipWrapper title={isEn ? 'Link <a>' : 'Bağlantı <a>'}>
+            <Button size="sm" variant="ghost" onClick={() => applyHtmlTag('a', true)} className="h-7 px-2 text-xs shrink-0" aria-label={isEn ? 'Link <a>' : 'Bağlantı <a>'}>
               <LinkIcon className="w-3.5 h-3.5 mr-0.5" /> a
             </Button>
           </TooltipWrapper>
-          <TooltipWrapper title="Resim <img>">
-            <Button size="sm" variant="ghost" onClick={() => applyHtmlTag('img', true)} className="h-7 px-2 text-xs shrink-0">
+          <TooltipWrapper title={isEn ? 'Image <img>' : 'Resim <img>'}>
+            <Button size="sm" variant="ghost" onClick={() => applyHtmlTag('img', true)} className="h-7 px-2 text-xs shrink-0" aria-label={isEn ? 'Image <img>' : 'Resim <img>'}>
               <Image className="w-3.5 h-3.5 mr-0.5" /> img
             </Button>
           </TooltipWrapper>
-          <TooltipWrapper title="Kod <code>">
-            <Button size="sm" variant="ghost" onClick={() => applyHtmlTag('code')} className="h-7 px-2 text-xs shrink-0 font-mono">
+          <TooltipWrapper title={isEn ? 'Code <code>' : 'Kod <code>'}>
+            <Button size="sm" variant="ghost" onClick={() => applyHtmlTag('code')} className="h-7 px-2 text-xs shrink-0 font-mono" aria-label={isEn ? 'Code <code>' : 'Kod <code>'}>
               <Code className="w-3.5 h-3.5 mr-0.5" /> code
             </Button>
           </TooltipWrapper>
-          <TooltipWrapper title="Bölüm <div>">
-            <Button size="sm" variant="ghost" onClick={() => applyHtmlTag('div')} className="h-7 px-2 text-xs shrink-0 font-mono">
+          <TooltipWrapper title={isEn ? 'Block <div>' : 'Bölüm <div>'}>
+            <Button size="sm" variant="ghost" onClick={() => applyHtmlTag('div')} className="h-7 px-2 text-xs shrink-0 font-mono" aria-label={isEn ? 'Block <div>' : 'Bölüm <div>'}>
               div
             </Button>
           </TooltipWrapper>
-          <TooltipWrapper title="Satır İçi <span>">
-            <Button size="sm" variant="ghost" onClick={() => applyHtmlTag('span')} className="h-7 px-2 text-xs shrink-0 font-mono">
+          <TooltipWrapper title={isEn ? 'Inline <span>' : 'Satır İçi <span>'}>
+            <Button size="sm" variant="ghost" onClick={() => applyHtmlTag('span')} className="h-7 px-2 text-xs shrink-0 font-mono" aria-label={isEn ? 'Inline <span>' : 'Satır İçi <span>'}>
               span
             </Button>
           </TooltipWrapper>
-          <TooltipWrapper title="Alt Satır <br>">
-            <Button size="sm" variant="ghost" onClick={() => applyHtmlTag('br', true)} className="h-7 px-2 text-xs shrink-0 font-mono">
+          <TooltipWrapper title={isEn ? 'Line Break <br>' : 'Alt Satır <br>'}>
+            <Button size="sm" variant="ghost" onClick={() => applyHtmlTag('br', true)} className="h-7 px-2 text-xs shrink-0 font-mono" aria-label={isEn ? 'Line Break <br>' : 'Alt Satır <br>'}>
               br
             </Button>
           </TooltipWrapper>

@@ -164,11 +164,61 @@ export function HttpServiceConfig({
           </div>
           <div className="flex items-center gap-2">
             <div className="flex gap-1">
-              <Button type="button" size="icon" variant="outline" title="Kalın (<b>)" className="h-8 w-8 text-xs font-black" onClick={() => applyHttpFormatting('b')}>B</Button>
-              <Button type="button" size="icon" variant="outline" title="İtalik (<i>)" className="h-8 w-8 text-xs font-black italic" onClick={() => applyHttpFormatting('i')}>I</Button>
-              <Button type="button" size="icon" variant="outline" title="Altı Çizili (<u>)" className="h-8 w-8 text-xs font-black underline" onClick={() => applyHttpFormatting('u')}>U</Button>
-              <Button type="button" size="icon" variant="outline" title="Bağlantı (<a>)" className="h-8 w-8 text-xs font-semibold gap-1" onClick={() => applyHttpFormatting('a')}><LinkIcon className="w-3.5 h-3.5" /></Button>
-              <Button type="button" size="icon" variant="outline" title="Resim (<img>)" className="h-8 w-8 text-xs font-semibold gap-1" onClick={() => applyHttpFormatting('img')}><ImageIcon className="w-3.5 h-3.5" /></Button>
+              <Button
+                type="button"
+                size="icon"
+                variant="outline"
+                title={language === 'tr' ? 'Kalın (<b>)' : 'Bold (<b>)'}
+                aria-label={language === 'tr' ? 'Kalın (<b>)' : 'Bold (<b>)'}
+                className="h-8 w-8 text-xs font-black"
+                onClick={() => applyHttpFormatting('b')}
+              >
+                B
+              </Button>
+              <Button
+                type="button"
+                size="icon"
+                variant="outline"
+                title={language === 'tr' ? 'İtalik (<i>)' : 'Italic (<i>)'}
+                aria-label={language === 'tr' ? 'İtalik (<i>)' : 'Italic (<i>)'}
+                className="h-8 w-8 text-xs font-black italic"
+                onClick={() => applyHttpFormatting('i')}
+              >
+                I
+              </Button>
+              <Button
+                type="button"
+                size="icon"
+                variant="outline"
+                title={language === 'tr' ? 'Altı Çizili (<u>)' : 'Underline (<u>)'}
+                aria-label={language === 'tr' ? 'Altı Çizili (<u>)' : 'Underline (<u>)'}
+                className="h-8 w-8 text-xs font-black underline"
+                onClick={() => applyHttpFormatting('u')}
+              >
+                U
+              </Button>
+              <Button
+                type="button"
+                size="icon"
+                variant="outline"
+                title={language === 'tr' ? 'Bağlantı (<a>)' : 'Link (<a>)'}
+                aria-label={language === 'tr' ? 'Bağlantı (<a>)' : 'Link (<a>)'}
+                className="h-8 w-8 text-xs font-semibold gap-1"
+                onClick={() => applyHttpFormatting('a')}
+              >
+                <LinkIcon className="w-3.5 h-3.5" />
+              </Button>
+              <Button
+                type="button"
+                size="icon"
+                variant="outline"
+                title={language === 'tr' ? 'Resim (<img>)' : 'Image (<img>)'}
+                aria-label={language === 'tr' ? 'Resim (<img>)' : 'Image (<img>)'}
+                className="h-8 w-8 text-xs font-semibold gap-1"
+                onClick={() => applyHttpFormatting('img')}
+              >
+                <ImageIcon className="w-3.5 h-3.5" />
+              </Button>
             </div>
             <span className="text-[10px] text-secondary-500">{language === 'tr' ? 'Seçili metni biçimlendir' : 'Format selected text'}</span>
           </div>
