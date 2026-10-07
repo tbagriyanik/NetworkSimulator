@@ -34,16 +34,28 @@ export const showPatterns: Record<string, CommandPattern> = {
     maxArgs: 0
   },
   'show interface trunk': {
-    pattern: /^show\s+interface\s+trunk$/i,
+    pattern: /^show\s+interface\s+(\S+\s+)?trunk$/i,
     modes: ['user', 'privileged'],
     minArgs: 0,
-    maxArgs: 0
+    maxArgs: 2
   },
   'show interfaces trunk': {
-    pattern: /^show\s+interfaces?\s+trunk$/i,
+    pattern: /^show\s+interfaces?\s+(\S+\s+)?trunk$/i,
     modes: ['user', 'privileged'],
     minArgs: 0,
-    maxArgs: 0
+    maxArgs: 2
+  },
+  'show interface switchport': {
+    pattern: /^show\s+interface\s+(\S+)\s+switchport$/i,
+    modes: ['user', 'privileged'],
+    minArgs: 1,
+    maxArgs: 2
+  },
+  'show interfaces switchport': {
+    pattern: /^show\s+interfaces?\s+(\S+\s+)?switchport$/i,
+    modes: ['user', 'privileged'],
+    minArgs: 0,
+    maxArgs: 2
   },
   'show interfaces': {
     pattern: /^show(\s+interfaces?|\s+int)(\s+(status|description|counter|\S+))?$/i,

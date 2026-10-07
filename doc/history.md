@@ -7,6 +7,9 @@
   - **Yapılandırma Modundan Çıkış (`Ctrl + Z`)**: Alt yapılandırma modlarındayken (`config`, `interface` vb.) `Ctrl + Z` kombinasyonu doğrudan `end` komutunu işleterek anında Privileged EXEC moduna dönüş sağlandı; EXEC modunda ise geri alma (undo) davranışı korundu.
   - Komut ve argüman parse işlemlerinde ardışık boşluk normalizasyonu (`replace(/\s+/g, ' ')`) eklendi. Öğrenciler komutlar veya argümanlar arasına birden fazla boşluk bıraktığında (`configure   terminal`, `int   gi0/1`, `no   shutdown`) komutun reddedilmesi engellendi.
   - CLI kısaltma çözümleyici (`resolveAliases`) ardışık boşluklara karşı dayanıklı hale getirildi.
+  - **Arayüz Switchport & Trunk İncelemesi (`showPatterns.ts`, `showInterfaceDisplay.ts`, `showCommands.ts`, `cliCompat.test.ts`)**: `show interfaces switchport`, `show interface <port> switchport` ve `show interface <port> trunk` komutları eklenerek portların Layer 2 özellikleri (Administrative/Operational mode, dot1q kapsülleme, native VLAN, trunk allowed VLAN değerleri) hem toplu hem de port bazında Cisco IOS standart çıktısıyla görüntülenebilir hale getirildi.
+  - **VLAN Filtreleme Desteği (`showSwitchingVlanMacCdp.ts`, `cliCompat.test.ts`)**: `show vlan id <id>` ve `show vlan name <name>` komutları tam olarak desteklenerek hedef VLAN'ın durum ve port eşlemelerinin tekil olarak filtrelenebilmesi sağlandı. Olmayan VLAN sorgularında Cisco hata mesajı (`% VLAN id X not found in mapping table`) döndürüldü.
+  - **Kullanıcı Modunda Ping Uyumu (`privilegedConnectivity.ts`, `cliCompat.test.ts`)**: `ping` komutu parser tanımlarında olduğu gibi fonksiyon seviyesinde de hem `user` (`>`) hem `privileged` (`#`) EXEC modlarında çalışacak şekilde normalize edildi.
   - **Yönlendirme Tablosu Özeti & BGP Desteği (`showPatterns.ts`, `showIpRouteDisplay.ts`)**: `show ip route summary` komutu eklenerek rota kaynakları (connected, static, ospf, rip, eigrp, bgp), subnet sayıları ve bellek tüketimi Cisco standart tablosu formatında görüntülendi. `show ip route bgp` filtrelemesi aktif edildi.
 - **🎓 CLI Pedagojik İpuçları Genişletildi (`cliErrors.ts`, `cliErrors.test.ts`)**:
   - `getStudentCliHint`: 12'den fazla yazım hatası ve mod uyumsuzluğu için yol gösterici ipuçları genişletildi.
@@ -14,6 +17,8 @@
   - CIDR notasyonuyla yapılan hatalı ping isteklerine (`ping 192.168.1.1/24`) özel bilgilendirme eklendi.
   - Genel yazım hataları (`conf`, `config`) için doğru komut yönlendirmesi sağlandı.
 - **🎨 Tasarım Token Standardizasyonu (Hardcoded Renklerin Temizlenmesi)**:
+  - `TopologyGeneratorDialog`: Demo proje zorluk seviyesi rozetleri (`levelColors`) ve enjekte edilmiş arıza etiketleri (`🔧 Fault`), hardcoded `green`, `red`, `emerald` sınıflarından merkezi semantic token'lara (`bg-success-*`, `bg-warning-*`, `bg-error-*`) geçirildi.
+  - `WindowSwitcherModal`: Sekme kapatma butonunun hover rengi `hover:bg-red-100` yerine dark-mode uyumlu `hover:bg-error-100 dark:hover:bg-error-950/50 hover:text-error-600` token'ına bağlandı.
   - `PacketTraceInspector`: `bg-rose-600`, `bg-emerald-500` hardcoded renkleri `bg-error-600`, `bg-success-500` semantic renk token'larına dönüştürüldü.
   - `MultiDeviceWindowManager`: Sekme çubuğundaki `bg-emerald-600` hardcoded rengi `bg-success-600` ve `border-success-400/30` token'larına bağlandı.
   - `WindowSwitcherModal`: Modal başlık ve sekme kontrol butonlarındaki `emerald` ve `blue` sınıfları `success` ve `primary` tasarım token'larına geçirildi.

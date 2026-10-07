@@ -12,6 +12,26 @@ export function cmdShowVlan(
   _ctx: CommandContext
 ): CommandResult {
   const isBrief = /brief|br/i.test(input);
+  const idMatch = input.match(/\bshow\s+vlan\s+id\s+(\d+)\b/i);
+  const nameMatch = input.match(/\bshow\s+vlan\s+name\s+(\S+)\b/i);
+
+  let targetVlanId: string | null = null;
+  if (idMatch) {
+    targetVlanId = idMatch[1];
+  } else if (nameMatch) {
+    const targetName = nameMatch[1].toLowerCase();
+    if (targetName === 'default') {
+      targetVlanId = '1';
+    } else {
+      const foundId = Object.keys(state.vlans || {}).find(vid => (state.vlans[Number(vid)]?.name || `vlan${vid}`).toLowerCase() === targetName);
+      if (foundId) {
+        targetVlanId = foundId;
+      } else {
+        return { success: false, error: `% VLAN name ${nameMatch[1]} not found in mapping table` };
+      }
+    }
+  }
+
   let output = '\nVLAN Name                             Status    Ports\n';
   output += '---- -------------------------------- --------- -------------------------------\n';
 
@@ -25,6 +45,24 @@ export function cmdShowVlan(
     if (!vlanPortMap[vlanId]) vlanPortMap[vlanId] = [];
     vlanPortMap[vlanId].push(p);
   });
+
+  if (targetVlanId) {
+    const vlanId = targetVlanId;
+    if (vlanId === '1') {
+      const vlan1Ports = vlanPortMap['1'] || [];
+      output += `1    default                          active    ${vlan1Ports.join(', ')}\n`;
+    } else if (state.vlans?.[Number(vlanId)]) {
+      const vlan = state.vlans[Number(vlanId)];
+      const vlanName = (vlan?.name || `VLAN${vlanId}`).padEnd(32);
+      const vlanStatus = (vlan?.status || 'active').padEnd(9);
+      const ports = (vlanPortMap[vlanId] || []).join(', ');
+      output += `${vlanId.padEnd(4)} ${vlanName} ${vlanStatus} ${ports}\n`;
+    } else {
+      return { success: false, error: `% VLAN id ${vlanId} not found in mapping table` };
+    }
+    output += '!\n';
+    return { success: true, output };
+  }
 
   // Default VLAN 1
   const vlan1Ports = vlanPortMap['1'] || [];

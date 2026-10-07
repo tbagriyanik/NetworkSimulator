@@ -55,7 +55,7 @@ export function formatHopTimes(base: number): string {
  * Ping - Test connectivity
  */
 export function cmdPing(state: SwitchState, input: string, ctx: CommandContext): CommandResult {
-    if (state.currentMode !== 'privileged') {
+    if (state.currentMode !== 'user' && state.currentMode !== 'privileged') {
         return { success: false, error: cliModeError() };
     }
 

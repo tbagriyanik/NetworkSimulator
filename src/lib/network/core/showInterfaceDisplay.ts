@@ -354,13 +354,23 @@ export function cmdShowInterface(
  */
 export function cmdShowInterfaceTrunk(
   state: SwitchState,
-  _input: string,
+  input: string,
   ctx: CommandContext
 ): CommandResult {
+  const match = input.match(/^show\s+interfaces?\s+(?:(\S+)\s+)?trunk$/i);
+  const targetPort = match?.[1]?.toLowerCase().replace(/\s+/g, '');
+
   const connections = ctx.connections || [];
   const sourceDeviceId = ctx.sourceDeviceId as string;
 
-  const portIds = Object.keys(state.ports || {}).filter(isPhysicalEthernetPort);
+  const portIds = Object.keys(state.ports || {}).filter(portName => {
+    if (!isPhysicalEthernetPort(portName)) return false;
+    if (targetPort) {
+      const pl = portName.toLowerCase().replace(/\s+/g, '');
+      return pl === targetPort || pl.includes(targetPort);
+    }
+    return true;
+  });
 
   const hasActiveConnection = (portId: string) =>
     connections.some((conn: CanvasConnection) =>
@@ -438,6 +448,62 @@ export function cmdShowInterfaceTrunk(
   output += '!\n';
   return { success: true, output };
 }
+
+/**
+ * Show Interface Switchport
+ */
+export function cmdShowInterfaceSwitchport(
+  state: SwitchState,
+  input: string,
+  _ctx: CommandContext
+): CommandResult {
+  const match = input.match(/^show\s+interfaces?\s+(?:(\S+)\s+)?switchport$/i);
+  const targetPort = match?.[1]?.toLowerCase().replace(/\s+/g, '');
+
+  const portsToDisplay = Object.keys(state.ports || {}).filter(portName => {
+    if (!isPhysicalEthernetPort(portName)) return false;
+    if (targetPort) {
+      const pl = portName.toLowerCase().replace(/\s+/g, '');
+      return pl === targetPort || pl.includes(targetPort);
+    }
+    return true;
+  });
+
+  if (portsToDisplay.length === 0) {
+    if (targetPort) {
+      return { success: false, error: `% Interface ${match?.[1]} not found` };
+    }
+    return { success: true, output: '\nNo switchport interfaces found\n!\n' };
+  }
+
+  let output = '\n';
+  portsToDisplay.forEach(portId => {
+    const port = state.ports?.[portId] || {};
+    const formatted = formatPortName(portId);
+    const isSwitchport = !port.isRoutedPort && port.mode !== 'routed';
+    const adminMode = port.mode === 'trunk' ? 'trunk' : port.mode === 'dynamic-auto' ? 'dynamic auto' : port.mode === 'dynamic-desirable' ? 'dynamic desirable' : 'static access';
+    const operMode = port.mode === 'trunk' ? 'trunk' : 'static access';
+    const nativeVlan = getNativeVlanString(port);
+    const accessVlan = port.vlan || 1;
+    const trunkVlans = getAllowedVlansString(port);
+
+    output += `Name: ${formatted}\n`;
+    output += `Switchport: ${isSwitchport ? 'Enabled' : 'Disabled'}\n`;
+    output += `Administrative Mode: ${adminMode}\n`;
+    output += `Operational Mode: ${operMode}\n`;
+    output += `Administrative Trunking Encapsulation: dot1q\n`;
+    output += `Operational Trunking Encapsulation: dot1q\n`;
+    output += `Negotiation of Trunking: ${port.mode?.startsWith('dynamic') ? 'On' : 'Off'}\n`;
+    output += `Access Mode VLAN: ${accessVlan} (default)\n`;
+    output += `Trunking Native Mode VLAN: ${nativeVlan} (default)\n`;
+    output += `Trunking VLANs Enabled: ${trunkVlans}\n`;
+    output += `Pruning VLANs Enabled: 2-1001\n\n`;
+  });
+
+  output += '!\n';
+  return { success: true, output };
+}
+
 
 /**
  * Show IP Interface Brief

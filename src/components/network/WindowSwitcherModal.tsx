@@ -295,7 +295,7 @@ export const WindowSwitcherModal: React.FC<WindowSwitcherModalProps> = ({
                       e.stopPropagation();
                       closeDeviceWindow(item.id);
                     }}
-                    className="shrink-0 rounded-md p-1.5 text-secondary-500 transition-colors hover:bg-red-100 hover:text-red-600"
+                    className="shrink-0 rounded-md p-1.5 text-secondary-500 transition-colors hover:bg-error-100 dark:hover:bg-error-950/50 hover:text-error-600 dark:hover:text-error-400"
                   >
                     <X className="h-4 w-4" />
                   </button>

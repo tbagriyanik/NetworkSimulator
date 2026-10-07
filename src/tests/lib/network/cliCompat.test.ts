@@ -810,4 +810,41 @@ describe('show interfaces counters derive from port.statistics (no dead literals
     expect(res.output).toContain('connected');
     expect(res.output).toContain('static');
   });
+
+  it('ping is allowed in user EXEC mode', () => {
+    const s = makeBaseState(); // user mode
+    expect(s.currentMode).toBe('user');
+    const res = exec(s, 'ping 192.168.1.1');
+    // Ping should not fail with mode error
+    expect(res.error).not.toContain('% Invalid input');
+    expect(res.error).not.toContain('EXEC');
+  });
+
+  it('show interfaces switchport displays Layer 2 switchport properties', () => {
+    const s = { ...makeBaseState(), currentMode: 'privileged' as const };
+    const res = exec(s, 'show interfaces switchport');
+    expect(res.success).toBe(true);
+    expect(res.output).toContain('Switchport: Enabled');
+    expect(res.output).toContain('Administrative Mode:');
+    expect(res.output).toContain('Operational Mode:');
+    expect(res.output).toContain('Access Mode VLAN:');
+  });
+
+  it('show interface <port> trunk works cleanly', () => {
+    const s = { ...makeBaseState(), currentMode: 'privileged' as const };
+    const res = exec(s, 'show interface gi1/0/1 trunk');
+    expect(res.success).toBe(true);
+    expect(res.output).toContain('No trunking ports found');
+  });
+
+  it('show vlan id and show vlan name filter properly', () => {
+    const s = { ...makeBaseState(), currentMode: 'privileged' as const };
+    const resId1 = exec(s, 'show vlan id 1');
+    expect(resId1.success).toBe(true);
+    expect(resId1.output).toContain('default');
+
+    const resNonExistent = exec(s, 'show vlan id 999');
+    expect(resNonExistent.success).toBe(false);
+    expect(resNonExistent.error).toContain('% VLAN id 999 not found');
+  });
 });

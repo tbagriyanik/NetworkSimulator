@@ -20,7 +20,7 @@ import {
   cmdShowIpInterfaceBrief, cmdShowInterfacesStatus,
   cmdShowIpInterface, cmdShowIpv6InterfaceBrief,
   cmdShowNameif, cmdShowControllers, cmdShowIpAccessGroup,
-  cmdShowInterfacesCounters,
+  cmdShowInterfacesCounters, cmdShowInterfaceSwitchport,
 } from './showInterfaceDisplay';
 
 import {
@@ -164,6 +164,8 @@ export const showHandlers: Record<string, CommandHandler> = {
   'show interface': cmdShowInterface,
   'show interface trunk': cmdShowInterfaceTrunk,
   'show interfaces trunk': cmdShowInterfaceTrunk,
+  'show interface switchport': cmdShowInterfaceSwitchport,
+  'show interfaces switchport': cmdShowInterfaceSwitchport,
   'show ip interface brief': cmdShowIpInterfaceBrief,
   'show vlan brief': cmdShowVlan,
   'show vlan': cmdShowVlan,

@@ -632,9 +632,9 @@ export function TopologyGeneratorDialog({
                 {filteredDemoProjects.map(p => {
                   const isSelected = selectedDemoId === p.id;
                   const levelColors = {
-                    basic: 'bg-green-500/20 text-green-400',
-                    intermediate: 'bg-yellow-500/20 text-yellow-400',
-                    advanced: 'bg-red-500/20 text-red-400',
+                    basic: 'bg-success-500/20 text-success-500 dark:text-success-400',
+                    intermediate: 'bg-warning-500/20 text-warning-600 dark:text-warning-400',
+                    advanced: 'bg-error-500/20 text-error-600 dark:text-error-400',
                   };
 
                   return (
@@ -653,7 +653,7 @@ export function TopologyGeneratorDialog({
                       <div className="flex items-start gap-2.5 w-full min-w-0">
                         <div className={`p-2 rounded-lg shrink-0 transition-colors ${isSelected
                             ? 'bg-purple-500 text-white'
-                            : 'bg-emerald-500/20 text-emerald-400'
+                            : 'bg-success-500/20 text-success-500 dark:text-success-400'
                           }`}>
                           <Monitor className="w-4 h-4" />
                         </div>
@@ -679,7 +679,7 @@ export function TopologyGeneratorDialog({
                               #{p.tag}
                             </span>
                             {p.injectedFaults && p.injectedFaults.length > 0 && (
-                              <span className={`text-[10px] px-1 py-0.2 rounded font-mono ${isDark ? 'bg-red-900/30 text-red-400' : 'bg-red-100 text-red-600'
+                              <span className={`text-[10px] px-1 py-0.2 rounded font-mono ${isDark ? 'bg-error-950/40 text-error-400 border border-error-500/30' : 'bg-error-50 text-error-600 border border-error-200'
                                 }`}>
                                 🔧 Fault
                               </span>
