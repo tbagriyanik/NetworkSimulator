@@ -232,7 +232,7 @@ export function MultiDeviceWindowManager({
                 type="button"
                 onClick={() => setActiveTabId(win.id)}
                 className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all shrink-0 ${isActive
-                  ? 'bg-emerald-600 text-white shadow-md border border-emerald-400/30'
+                  ? 'bg-success-600 text-white shadow-md border border-success-400/30'
                   : 'bg-secondary-900/60 text-secondary-300 hover:bg-secondary-800 hover:text-white'
                   }`}
               >

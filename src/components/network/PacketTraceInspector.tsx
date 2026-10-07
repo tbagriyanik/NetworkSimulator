@@ -175,8 +175,8 @@ export const PacketTraceView: React.FC<{
                 className={`px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold border transition-all shrink-0 ${
                   hopPresetFilter === p.val
                     ? p.val === 'drop'
-                      ? 'bg-rose-600 text-white border-rose-400 font-bold'
-                      : 'bg-emerald-500 text-slate-950 border-emerald-400 font-bold'
+                      ? 'bg-error-600 text-white border-error-400 font-bold'
+                      : 'bg-success-500 text-secondary-950 border-success-400 font-bold'
                     : isDark
                     ? 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
                     : 'bg-white border-slate-300 text-slate-600 hover:bg-slate-100'

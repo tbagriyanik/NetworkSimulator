@@ -2,12 +2,21 @@
 
 ## v7.5.0 — 2026-10-07
 
+- **⌨️ CLI Kararlılığı & Ayrıştırma Güçlendirmesi (`parser.ts`, `cliCompat.test.ts`)**:
+  - Komut ve argüman parse işlemlerinde ardışık boşluk normalizasyonu (`replace(/\s+/g, ' ')`) eklendi. Öğrenciler komutlar veya argümanlar arasına birden fazla boşluk bıraktığında (`configure   terminal`, `int   gi0/1`, `no   shutdown`) komutun reddedilmesi engellendi.
+  - CLI kısaltma çözümleyici (`resolveAliases`) ardışık boşluklara karşı dayanıklı hale getirildi.
+- **🎓 CLI Pedagojik İpuçları Genişletildi (`cliErrors.ts`, `cliErrors.test.ts`)**:
+  - `getStudentCliHint`: 12'den fazla yazım hatası ve mod uyumsuzluğu için yol gösterici ipuçları genişletildi.
+  - Eksik IP adresi yapılandırması (`ip address 192.168.1.1` maskesiz) durumunda subnet maskesi gerekliliği uyarısı eklendi.
+  - CIDR notasyonuyla yapılan hatalı ping isteklerine (`ping 192.168.1.1/24`) özel bilgilendirme eklendi.
+  - Genel yazım hataları (`conf`, `config`) için doğru komut yönlendirmesi sağlandı.
+- **🎨 Tasarım Token Standardizasyonu (Hardcoded Renklerin Temizlenmesi)**:
+  - `PacketTraceInspector`: `bg-rose-600`, `bg-emerald-500` hardcoded renkleri `bg-error-600`, `bg-success-500` semantic renk token'larına dönüştürüldü.
+  - `MultiDeviceWindowManager`: Sekme çubuğundaki `bg-emerald-600` hardcoded rengi `bg-success-600` ve `border-success-400/30` token'larına bağlandı.
+  - `WindowSwitcherModal`: Modal başlık ve sekme kontrol butonlarındaki `emerald` ve `blue` sınıfları `success` ve `primary` tasarım token'larına geçirildi.
 - **🪟 Pencere Sınır Kontrolü (`useDrag.ts`)**:
   - Sürükleme sırasında (`handleMove`) ekran sınırları canlı (live) olarak uygulandı. Pencereler artık sürüklenirken ekranın dışına taşınamıyor; başlık çubuğunun her zaman görünür kalması için `DRAG_MARGIN = 48px` boşluk korunuyor.
   - `TOP_SAFE_OFFSET` (128px) ile birlikte sağ, sol ve alt kenarlarda da clamp uygulanıyor.
-- **🎓 CLI Pedagojik İpuçları Genişletildi (`cliErrors.ts`)**:
-  - `getStudentCliHint`: 10'dan fazla yeni yazım hatası ve mode uyumsuzluğu örüntüsü eklendi.
-  - Yeni ipuçları: `ping/traceroute` (User modunda), `spanning-tree/access-list/no` (Privileged modunda config yapılandırmaları), `duplex/speed/shutdown` (Config modunda interface komutları), `quit/logout` (exit/end karışıklığı), `en/enab/enabl`, `wr mem`, `copy run start`, `sh ip`, `noshutdown/noshut`.
 - **🪟 Akıllı Sekmeli Pencere Deneyimi (Multi-Window Tab Toolbar UX)**:
   - `MultiDeviceWindowManager`: Sekmeli yerleşim modunda (`tabs`) sadece 1 cihaz penceresi kaldığında üstteki sekme çubuğu ve yerleşim denetimleri otomatik gizlenerek ekranda sade ve dikkat dağıtmayan bir tekli pencere görünümü sağlandı; 2 veya daha fazla cihaz açıldığında sekme çubuğu kendiliğinden geri geliyor.
   - Sekme kapatma butonuna klavye erişilebilirliği (`Enter` ve `Space` tuşlarıyla kapatma) ile ekran okuyucu `aria-label` etiketleri kazandırıldı.

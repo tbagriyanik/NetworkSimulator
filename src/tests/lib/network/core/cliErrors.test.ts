@@ -83,5 +83,17 @@ describe('getStudentCliHint', () => {
     const hint = getStudentCliHint('show ip int brief', 'privileged');
     expect(hint).toBeUndefined();
   });
+
+  it('should suggest subnet mask for incomplete ip address', () => {
+    const hint = getStudentCliHint('ip address 192.168.1.1', 'interface');
+    expect(hint).toBeDefined();
+    expect(hint?.tr).toContain('subnet maskesi');
+  });
+
+  it('should warn against using subnet mask with ping', () => {
+    const hint = getStudentCliHint('ping 192.168.1.1/24', 'user');
+    expect(hint).toBeDefined();
+    expect(hint?.tr).toContain('CIDR');
+  });
 });
 

@@ -44,7 +44,7 @@ const cachedSortedPatternNames = Object.keys(commandPatterns)
 
 // Komut alias'larını çöz - Gelişmiş versiyon
 export function resolveAliases(input: string, state?: Partial<SwitchState>, currentMode?: CommandMode): string {
-  const trimmed = input.trim().toLowerCase();
+  const trimmed = input.trim().replace(/\s+/g, ' ').toLowerCase();
 
   // Alternatif 'undo <komut>' -> 'no <komut>'
   if (trimmed.startsWith('undo ')) {
@@ -209,7 +209,7 @@ export function parseCommand(input: string, currentMode: CommandMode, state?: Pa
   // Guided lesson text may be copied with surrounding quotation marks or a
   // sentence-ending period. Treat those as presentation punctuation, not as
   // part of the CLI command (e.g. `"enable".` -> `enable`).
-  const normalizedInput = input.trim().replace(/^["'“”]+|["'“”.,!?]+$/g, '').trim();
+  const normalizedInput = input.trim().replace(/^["'“”]+|["'“”.,!?]+$/g, '').trim().replace(/\s+/g, ' ');
 
   if (normalizedInput && normalizedInput.length > 256) {
     return {

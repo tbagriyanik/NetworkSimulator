@@ -229,6 +229,17 @@ describe('Command abbreviation support', () => {
     expect(res.output).toContain('Internet address is');
     expect(res.output).not.toContain('IP-Address'); // not the brief table
   });
+
+  it('handles multiple consecutive spaces seamlessly in commands and arguments', () => {
+    let s = makeBaseState();
+    s = run(s, 'enable').next;
+    s = run(s, 'configure   terminal').next;
+    expect(s.currentMode).toBe('config');
+    s = run(s, 'interface   gi0/1').next;
+    expect(s.currentMode).toBe('interface');
+    const res = run(s, 'no   shutdown');
+    expect(res.res.success).toBe(true);
+  });
 });
 
 // ---------------------------------------------------------------------------

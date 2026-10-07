@@ -179,8 +179,8 @@ export const WindowSwitcherModal: React.FC<WindowSwitcherModalProps> = ({
         {/* Modal Header */}
         <div className="flex items-center gap-3 pb-4 mb-5 border-b border-secondary-700/40">
           <div className="flex items-center gap-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-500/15 border border-emerald-400/20">
-              <AppWindow className="w-5 h-5 text-emerald-400" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-success-500/15 border border-success-400/20">
+              <AppWindow className="w-5 h-5 text-success-400" />
             </div>
             <div>
               <h3 className={WINDOW_TITLE_CLASS(isDark)}>
@@ -196,7 +196,7 @@ export const WindowSwitcherModal: React.FC<WindowSwitcherModalProps> = ({
                 useMultiWindowStore.getState().splitViewSideBySide();
                 closeSwitcher();
               }}
-              className="inline-flex items-center gap-1 rounded border border-blue-400/40 bg-blue-500/10 px-2 py-1 text-xs font-medium text-blue-400 transition-colors hover:bg-blue-500/20"
+              className="inline-flex items-center gap-1 rounded border border-primary-400/40 bg-primary-500/10 px-2 py-1 text-xs font-medium text-primary-400 transition-colors hover:bg-primary-500/20"
               title={language === 'tr' ? 'Pencereleri Yan Yana (Bölünmüş Ekran) Yerleştir' : 'Arrange Windows Side-by-Side'}
             >
               {language === 'tr' ? 'Yan Yana (Böl)' : 'Side-by-Side'}
@@ -207,12 +207,12 @@ export const WindowSwitcherModal: React.FC<WindowSwitcherModalProps> = ({
                 useMultiWindowStore.getState().setLayoutMode('tabs');
                 closeSwitcher();
               }}
-              className="inline-flex items-center gap-1 rounded border border-emerald-400/40 bg-emerald-500/10 px-2 py-1 text-xs font-medium text-emerald-400 transition-colors hover:bg-emerald-500/20"
+              className="inline-flex items-center gap-1 rounded border border-success-400/40 bg-success-500/10 px-2 py-1 text-xs font-medium text-success-400 transition-colors hover:bg-success-500/20"
               title={language === 'tr' ? 'Sekmeli Görünüm Moduna Geç' : 'Switch to Tabbed Layout'}
             >
               {language === 'tr' ? 'Sekmeli Görünüm' : 'Tabbed View'}
             </button>
-            <span className="text-xs font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+            <span className="text-xs font-mono px-2 py-0.5 rounded bg-success-500/20 text-success-400 border border-success-500/30">
               {displayList.length} {language === 'tr' ? 'Öğe' : 'Items'}
             </span>
             {openWindows.length > 0 && (

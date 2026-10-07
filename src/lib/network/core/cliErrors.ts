@@ -166,5 +166,31 @@ export function getStudentCliHint(input: string, currentMode?: string): { tr: st
     };
   }
 
+  // 6. IP adresi ve Subnet maske biçim hataları
+  if (trimmed.startsWith('ip address ') || trimmed.startsWith('ip add ')) {
+    const parts = trimmed.split(/\s+/);
+    if (parts.length === 3 && parts[2] !== 'dhcp') {
+      return {
+        tr: 'Eksik parametre: IP adresi bir subnet maskesi gerektirir (örn. "ip address 192.168.1.1 255.255.255.0").',
+        en: 'Incomplete parameter: IP address requires a subnet mask (e.g., "ip address 192.168.1.1 255.255.255.0").'
+      };
+    }
+  }
+
+  // 7. Sık yapılan genel yazım hataları
+  if (trimmed === 'conf' || trimmed === 'config') {
+    return {
+      tr: 'Bunu mu demek istediniz: "configure terminal" (veya "conf t")',
+      en: 'Did you mean: "configure terminal" (or "conf t")'
+    };
+  }
+
+  if (trimmed.startsWith('ping ') && trimmed.includes('/')) {
+    return {
+      tr: 'Ping komutunda subnet maskesi (CIDR /) kullanılmaz. Yalnızca hedef IP girin: örn. "ping 192.168.1.1"',
+      en: 'Do not use subnet mask (CIDR /) with ping. Enter only the destination IP: e.g. "ping 192.168.1.1"'
+    };
+  }
+
   return undefined;
 }
