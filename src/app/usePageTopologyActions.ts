@@ -495,36 +495,36 @@ export function usePageTopologyActions({
 
           // Step 2c: Move cursor to source device port
           registerTimeout(() => {
-            const srcSelector = `[data-device-id="${srcDev?.id}"]`;
-            const srcCoords = getElementCoords(srcSelector, srcDev ? srcDev.x + 80 : 200, srcDev ? srcDev.y + 120 : 200);
             const portName = conn.sourcePort || 'Port';
+            const srcPortSelector = `[data-device-id="${srcDev?.id}"][data-port-id="${conn.sourcePort}"], [data-device-id="${srcDev?.id}"] [data-port-id="${conn.sourcePort}"], [data-device-id="${srcDev?.id}"]`;
+            const srcCoords = getElementCoords(srcPortSelector, srcDev ? srcDev.x + 80 : 200, srcDev ? srcDev.y + 120 : 200);
             moveCursor(srcCoords.x, srcCoords.y, isTr ? `${srcDev?.name || ''} [${portName}] Bağlanıyor` : `Connecting to ${srcDev?.name || ''} [${portName}]`, false);
           }, delay);
           delay += 450;
 
           // Step 2d: Click source device port (clear click ripple & label)
           registerTimeout(() => {
-            const srcSelector = `[data-device-id="${srcDev?.id}"]`;
-            const srcCoords = getElementCoords(srcSelector, srcDev ? srcDev.x + 80 : 200, srcDev ? srcDev.y + 120 : 200);
             const portName = conn.sourcePort || 'Port';
+            const srcPortSelector = `[data-device-id="${srcDev?.id}"][data-port-id="${conn.sourcePort}"], [data-device-id="${srcDev?.id}"] [data-port-id="${conn.sourcePort}"], [data-device-id="${srcDev?.id}"]`;
+            const srcCoords = getElementCoords(srcPortSelector, srcDev ? srcDev.x + 80 : 200, srcDev ? srcDev.y + 120 : 200);
             moveCursor(srcCoords.x, srcCoords.y, isTr ? `${srcDev?.name || ''} [${portName}] Tıklandı ✓` : `${srcDev?.name || ''} [${portName}] Clicked ✓`, true);
           }, delay);
           delay += 500;
 
           // Step 2e: Move cursor to target device port
           registerTimeout(() => {
-            const tgtSelector = `[data-device-id="${tgtDev?.id}"]`;
-            const tgtCoords = getElementCoords(tgtSelector, tgtDev ? tgtDev.x + 80 : 350, tgtDev ? tgtDev.y + 120 : 250);
             const portName = conn.targetPort || 'Port';
+            const tgtPortSelector = `[data-device-id="${tgtDev?.id}"][data-port-id="${conn.targetPort}"], [data-device-id="${tgtDev?.id}"] [data-port-id="${conn.targetPort}"], [data-device-id="${tgtDev?.id}"]`;
+            const tgtCoords = getElementCoords(tgtPortSelector, tgtDev ? tgtDev.x + 80 : 350, tgtDev ? tgtDev.y + 120 : 250);
             moveCursor(tgtCoords.x, tgtCoords.y, isTr ? `${tgtDev?.name || ''} [${portName}] Bağlanıyor` : `Connecting to ${tgtDev?.name || ''} [${portName}]`, false);
           }, delay);
           delay += 450;
 
           // Step 2f: Click target device port to complete connection & record in timeline history
           registerTimeout(() => {
-            const tgtSelector = `[data-device-id="${tgtDev?.id}"]`;
-            const tgtCoords = getElementCoords(tgtSelector, tgtDev ? tgtDev.x + 80 : 350, tgtDev ? tgtDev.y + 120 : 250);
             const portName = conn.targetPort || 'Port';
+            const tgtPortSelector = `[data-device-id="${tgtDev?.id}"][data-port-id="${conn.targetPort}"], [data-device-id="${tgtDev?.id}"] [data-port-id="${conn.targetPort}"], [data-device-id="${tgtDev?.id}"]`;
+            const tgtCoords = getElementCoords(tgtPortSelector, tgtDev ? tgtDev.x + 80 : 350, tgtDev ? tgtDev.y + 120 : 250);
             moveCursor(tgtCoords.x, tgtCoords.y, isTr ? `${tgtDev?.name || ''} [${portName}] Bağlandı ✓` : `${tgtDev?.name || ''} [${portName}] Connected ✓`, true);
             setConnections(currentConnections);
 

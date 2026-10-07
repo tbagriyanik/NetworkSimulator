@@ -82,6 +82,8 @@ export function DeviceGridPortPin({
   return (
     <g
       key={port.id}
+      data-device-id={device.id}
+      data-port-id={port.id}
       transform={`translate(${portX}, ${portY})`}
       className={isDraggingInteractionDisabled ? 'cursor-default pointer-events-none' : 'cursor-pointer pointer-events-auto'}
       aria-label={`Port ${port.id} ${isConnected ? '(Connected)' : '(Available)'}`}
