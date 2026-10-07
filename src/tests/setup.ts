@@ -25,10 +25,12 @@ process.env.CERTIFICATE_SECRET ??= 'test-certificate-secret';
 // ── 2. Node's experimental localStorage warning ───────────────────────────
 // Node delivers process warnings on the microtask queue, which is why Vitest's
 // per-file suppression does not catch them. Filtering the event here does.
-process.on('warning', (warning: Error) => {
-  if (warning.name === 'ExperimentalWarning') return;
-  console.warn(warning.message);
-});
+if (process.listenerCount('warning') === 0) {
+  process.on('warning', (warning: Error) => {
+    if (warning.name === 'ExperimentalWarning') return;
+    console.warn(warning.message);
+  });
+}
 
 // Defining the property also short-circuits Node's getter entirely. jsdom does
 // not expose storage globals, so this never shadows a real implementation.

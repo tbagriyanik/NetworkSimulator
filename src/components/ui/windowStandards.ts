@@ -45,3 +45,16 @@ export const WINDOW_FOOTER_CLASS = (isDark = true) =>
       ? 'border-secondary-800 bg-secondary-950/40'
       : 'border-secondary-100 bg-secondary-50/50'
   );
+
+/** Standart pencere odaklanma/vurgu çerçevesi sınıfı */
+export const WINDOW_FOCUS_BORDER_CLASS = (isFocused: boolean, isDark = true) =>
+  cn(
+    isFocused
+      ? isDark
+        ? 'border-success-400 shadow-[0_0_0_1px_rgba(52,211,153,0.35)]'
+        : 'border-success-500 shadow-[0_0_0_1px_rgba(34,197,94,0.24)]'
+      : isDark
+        ? 'border-secondary-800'
+        : 'border-secondary-200'
+  );
+

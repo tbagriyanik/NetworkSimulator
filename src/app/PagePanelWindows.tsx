@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { MultiDeviceWindowManager } from '@/components/network/MultiDeviceWindowManager';
 import { WindowSwitcherModal } from '@/components/network/WindowSwitcherModal';
+import { WINDOW_FOCUS_BORDER_CLASS } from '@/components/ui/windowStandards';
 import type { usePageController } from './usePageController';
 
 const {
@@ -294,7 +295,7 @@ export function PagePanelWindows({
         modalSize={routerDrag.size}
         handlePointerDown={routerDrag.handlePointerDown}
         handleResizeStart={routerDrag.handleResizeStart}
-        className={focusedOverlay === 'router-info' ? "border-emerald-400 shadow-[0_0_0_1px_rgba(52,211,153,0.35)]" : "border-emerald-950/80"}
+        className={WINDOW_FOCUS_BORDER_CLASS(focusedOverlay === 'router-info', isDark)}
       />
 
       {showDiagnosticsModal && (

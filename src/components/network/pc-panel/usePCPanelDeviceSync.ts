@@ -1,7 +1,8 @@
-﻿import type React from 'react';
+import type React from 'react';
 import { useEffect, useRef } from 'react';
 import type { CanvasDevice } from '../NetworkTopology/types/networkTopology.types';
 import type { DhcpPoolConfig, PcFile } from './PCPanel.types';
+import type { MailInboxItem, MailSentItem, DhcpFormState } from './PCPanelContext';
 import { loadFs, readFile, getFtpFilesFromUploadDir } from './pcFileSystem';
 import { secureStorage } from '@/lib/storage/secureStorage';
 
@@ -30,27 +31,22 @@ interface UsePCPanelDeviceSyncOptions {
   setServiceMailDomain: (d: string) => void;
   setServiceMailUsername: (u: string) => void;
   setServiceMailPassword: (p: string) => void;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  setServiceMailInbox: (v: any) => void;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  setServiceMailSent: (v: any) => void;
+  setServiceMailInbox: React.Dispatch<React.SetStateAction<MailInboxItem[]>> | ((v: MailInboxItem[]) => void);
+  setServiceMailSent: React.Dispatch<React.SetStateAction<MailSentItem[]>> | ((v: MailSentItem[]) => void);
   setServiceNtpEnabled: (v: boolean) => void;
   setServiceNtpServer: (s: string) => void;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  setServiceNtpServerPreset: (v: any) => void;
+  setServiceNtpServerPreset: (v: 'pool.ntp.org' | 'local-clock' | 'custom') => void;
   setServiceNtpDate: (d: string) => void;
   setServiceNtpTime: (t: string) => void;
   setServiceDhcpEnabled: (v: boolean) => void;
   setServiceDhcpPools: (p: DhcpPoolConfig[]) => void;
   setDnsFormDomain: (v: string) => void;
   setDnsFormAddress: (v: string) => void;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  setDhcpForm: (v: any) => void;
+  setDhcpForm: React.Dispatch<React.SetStateAction<DhcpFormState>> | ((v: DhcpFormState) => void);
   setEditingDhcpIndex: (i: number | null) => void;
   setWifiEnabled: React.Dispatch<React.SetStateAction<boolean>>;
   setWifiSSID: (s: string) => void;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  setWifiSecurity: (s: any) => void;
+  setWifiSecurity: React.Dispatch<React.SetStateAction<'open' | 'wep' | 'wpa' | 'wpa2' | 'wpa3'>> | ((s: string) => void);
   setWifiPassword: (p: string) => void;
   setWifiChannel: (c: string) => void;
   setWifiBSSID: (b: string) => void;

@@ -375,10 +375,10 @@ export function FileEditorModal({
         : 'border-secondary-200 bg-secondary-100/60 text-secondary-600'
         }`}
     >
-      <span className="truncate mr-2">Dosya: {filePath}</span>
+      <span className="truncate mr-2">{isEn ? 'File' : 'Dosya'}: {filePath}</span>
       <div className="flex gap-4 shrink-0">
-        <span>Satır: {lineCount}</span>
-        <span>Karakter: {charCount}</span>
+        <span>{isEn ? 'Lines' : 'Satır'}: {lineCount}</span>
+        <span>{isEn ? 'Characters' : 'Karakter'}: {charCount}</span>
         <span>UTF-8</span>
       </div>
     </div>

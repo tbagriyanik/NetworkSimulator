@@ -9,6 +9,7 @@ import { CanvasDevice, CanvasConnection, DeviceType } from './NetworkTopology/ty
 import { CableInfo, SwitchState } from '@/lib/network/types';
 import type { Translations } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
+import { WINDOW_FOCUS_BORDER_CLASS } from '@/components/ui/windowStandards';
 import { TerminalOutput } from './Terminal';
 import { OutputLine as PCOutputLine, PCActiveTab, PcOutputsSetter } from './pc-panel/PCPanel.types';
 import type { TaskDefinition, TaskContext } from '@/lib/network/taskDefinitions';
@@ -146,7 +147,7 @@ export function TabletSplitView({
       )}
       {showPCPanel && (
         <div className="h-full flex flex-col">
-          <div className={cn("p-4 border-b flex items-center justify-between", isDark ? "bg-secondary-900" : "bg-secondary-50", focusedOverlay === 'pc-info' ? "border-emerald-400 shadow-[inset_0_0_0_1px_rgba(52,211,153,0.35)]" : "border-emerald-950/80")}>
+          <div className={cn("p-4 border-b flex items-center justify-between", isDark ? "bg-secondary-900" : "bg-secondary-50", WINDOW_FOCUS_BORDER_CLASS(focusedOverlay === 'pc-info', isDark))}>
             <h2 className="font-bold text-sm truncate">
               {t.pcTerminal} - {topologyDevices?.find((d: CanvasDevice) => d.id === showPCDeviceId)?.name || showPCDeviceId}
             </h2>
@@ -158,7 +159,7 @@ export function TabletSplitView({
             deviceId={showPCDeviceId}
             cableInfo={cableInfo}
             initialTab={pcPanelInitialTab}
-            isVisible={true}
+            isVisible
             onClose={() => setShowPCPanel(false)}
             onTogglePower={toggleDevicePower}
             topologyDevices={topologyDevices || undefined}
@@ -178,7 +179,7 @@ export function TabletSplitView({
       )}
       {showRouterPanel && (
         <div className="h-full flex flex-col">
-          <div className={cn("p-4 border-b flex items-center justify-between", isDark ? "bg-secondary-900" : "bg-secondary-50", focusedOverlay === 'router-info' ? "border-emerald-400 shadow-[inset_0_0_0_1px_rgba(52,211,153,0.35)]" : "border-emerald-950/80")}>
+          <div className={cn("p-4 border-b flex items-center justify-between", isDark ? "bg-secondary-900" : "bg-secondary-50", WINDOW_FOCUS_BORDER_CLASS(focusedOverlay === 'router-info', isDark))}>
             <h2 className="font-bold text-sm truncate">
               {t.configure} - {topologyDevices?.find((d: CanvasDevice) => d.id === showRouterDeviceId)?.name || showRouterDeviceId}
             </h2>
@@ -188,7 +189,7 @@ export function TabletSplitView({
           </div>
           <RouterPanel
             deviceId={showRouterDeviceId}
-            isVisible={true}
+            isVisible
             onClose={() => setShowRouterPanel(false)}
             topologyDevices={topologyDevices || undefined}
             topologyConnections={topologyConnections}

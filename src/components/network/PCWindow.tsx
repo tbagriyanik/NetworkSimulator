@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { DraggableWindowWrapper } from './DraggableWindowWrapper';
 import { PCPanel } from './PCPanel';
@@ -6,17 +6,19 @@ import { CanvasDevice, CanvasConnection } from './NetworkTopology/types/networkT
 import { CableInfo, SwitchState } from '@/lib/network/types';
 import { TerminalOutput } from './Terminal';
 import { OutputLine as PCOutputLine, PcOutputsSetter } from './pc-panel/PCPanel.types';
-import { cn } from '@/lib/utils';
+
+import type { UseDragReturn } from '@/hooks/useDrag';
+import type { PCActiveTab } from './pc-panel/PCPanel.types';
+
+import { WINDOW_FOCUS_BORDER_CLASS } from '@/components/ui/windowStandards';
 
 interface PCWindowProps {
   showPCPanel: boolean;
   setShowPCPanel: (show: boolean) => void;
   showPCDeviceId: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  pcDrag: any;
+  pcDrag: UseDragReturn;
   cableInfo: CableInfo;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  pcPanelInitialTab: any;
+  pcPanelInitialTab?: PCActiveTab | null;
   toggleDevicePower: (id: string) => void;
   topologyDevices?: CanvasDevice[];
   topologyConnections?: CanvasConnection[];
@@ -27,14 +29,12 @@ interface PCWindowProps {
   pcHistories: Map<string, string[]>;
   handleUpdatePCHistory: (id: string, history: string[]) => void;
   handleExecuteCommand: (id: string, cmd: string) => Promise<unknown>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  handlePCPanelNavigateWrapper: (deviceId: string, program: any) => void;
+  handlePCPanelNavigateWrapper: (deviceId: string, program: string) => void;
   handleDeviceDelete: (id: string) => void;
   focusedOverlay: string | null;
   isTablet?: boolean;
   isDark: boolean;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  t: Record<string, any>;
+  t: Record<string, string>;
 }
 
 export function PCWindow({
@@ -75,7 +75,7 @@ export function PCWindow({
       handlePointerDown={pcDrag.handlePointerDown}
       handleResizeStart={pcDrag.handleResizeStart}
       collapsible
-      className={cn(focusedOverlay === 'pc-info' ? "border-emerald-400 shadow-[0_0_0_1px_rgba(52,211,153,0.35)]" : "border-emerald-950/80")}
+      className={WINDOW_FOCUS_BORDER_CLASS(focusedOverlay === 'pc-info', isDark)}
     >
       <div className="flex-1 overflow-hidden relative rounded-b-xl">
         <PCPanel
@@ -83,8 +83,8 @@ export function PCWindow({
           className="h-full min-h-0 !border-none"
           deviceId={showPCDeviceId}
           cableInfo={cableInfo}
-          initialTab={pcPanelInitialTab}
-          isVisible={true}
+          initialTab={pcPanelInitialTab ?? undefined}
+          isVisible
           onClose={() => setShowPCPanel(false)}
           onTogglePower={toggleDevicePower}
           topologyDevices={topologyDevices || undefined}
@@ -96,8 +96,7 @@ export function PCWindow({
           pcHistories={pcHistories}
           onUpdatePCHistory={handleUpdatePCHistory}
           onExecuteDeviceCommand={handleExecuteCommand}
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          onNavigate={(program: any) => handlePCPanelNavigateWrapper(showPCDeviceId, program)}
+          onNavigate={(program: string) => handlePCPanelNavigateWrapper(showPCDeviceId, program)}
           onDeleteDevice={handleDeviceDelete}
           handleResizeStart={pcDrag.handleResizeStart}
         />

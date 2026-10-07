@@ -219,8 +219,8 @@ export function MultiDeviceWindowManager({
         </div>
       )}
 
-      {/* Tabbed View Navigation Bar when Tabs layout mode is enabled */}
-      {layoutMode === 'tabs' && openWindows.length > 0 && (
+      {/* Tabbed View Navigation Bar when Tabs layout mode is enabled and more than 1 window open */}
+      {layoutMode === 'tabs' && openWindows.length > 1 && (
         <div className="fixed top-12 left-1/2 -translate-x-1/2 z-[9989] flex items-center gap-1 p-1 rounded-xl bg-secondary-950/95 text-white border border-secondary-800 shadow-2xl backdrop-blur-lg max-w-4xl overflow-x-auto custom-scrollbar">
           {openWindows.map((win) => {
             const devObj = topologyDevices.find((d) => d.id === win.id);
@@ -241,9 +241,17 @@ export function MultiDeviceWindowManager({
                 <span
                   role="button"
                   tabIndex={0}
+                  aria-label={language === 'tr' ? `${devName} sekmesini kapat` : `Close ${devName} tab`}
                   onClick={(e) => {
                     e.stopPropagation();
                     closeDeviceWindow(win.id);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      closeDeviceWindow(win.id);
+                    }
                   }}
                   className="hover:text-red-400 ml-1 rounded p-0.5"
                 >
@@ -357,7 +365,7 @@ export function MultiDeviceWindowManager({
                   deviceId={win.id}
                   cableInfo={cableInfo}
                   initialTab={isPCActiveTab(win.initialTab) ? win.initialTab : 'home'}
-                  isVisible={true}
+                  isVisible
                   onClose={() => closeDeviceWindow(win.id)}
                   onTogglePower={toggleDevicePower}
                   topologyDevices={topologyDevices}
