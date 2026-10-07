@@ -30,7 +30,7 @@ export function cmdShowIpRoute(
   let lookupMask: string | undefined;
   if (tokens.length > 0) {
     const first = tokens[0].toLowerCase();
-    if (['ospf', 'eigrp', 'rip', 'static', 'connected'].includes(first)) {
+    if (['ospf', 'eigrp', 'rip', 'bgp', 'static', 'connected', 'summary'].includes(first)) {
       filter = first;
     } else if (/^\d{1,3}(\.\d{1,3}){3}\/\d{1,2}$/.test(first)) {
       const cidr = first.match(/^(\d{1,3}(\.\d{1,3}){3})\/(\d{1,2})$/);
@@ -44,6 +44,10 @@ export function cmdShowIpRoute(
         lookupMask = tokens[1];
       }
     }
+  }
+
+  if (filter === 'summary') {
+    return showRouteSummary(state, ctx);
   }
 
   if (lookupIp) {
@@ -408,3 +412,45 @@ function routeHopText(route: Route): { hop: string; intf?: string; line: string 
   const intf = via;
   return { hop: intf, intf, line: `is directly connected, ${intf}` };
 }
+
+function showRouteSummary(state: SwitchState, ctx: CommandContext): CommandResult {
+  const candidates = collectRouteCandidates(state, ctx);
+  let connectedCount = 0;
+  let staticCount = 0;
+  let ospfCount = 0;
+  let ripCount = 0;
+  let eigrpCount = 0;
+  let bgpCount = 0;
+
+  for (const c of candidates) {
+    if (c.type === 'connected') connectedCount++;
+    else if (c.type === 'static') staticCount++;
+    else if (c.code?.startsWith('O')) ospfCount++;
+    else if (c.code === 'R') ripCount++;
+    else if (c.code === 'D' || c.code === 'EX') eigrpCount++;
+    else if (c.code === 'B') bgpCount++;
+  }
+
+  const total = connectedCount + staticCount + ospfCount + ripCount + eigrpCount + bgpCount;
+
+  let out = '\nIP routing table name is default (0x0)\n';
+  out += 'Route Source    Networks    Subnets     Replicates  Overhead    Memory (bytes)\n';
+  out += `connected       ${connectedCount.toString().padEnd(12)}${connectedCount.toString().padEnd(12)}0           0           ${connectedCount * 64}\n`;
+  out += `static          ${staticCount.toString().padEnd(12)}${staticCount.toString().padEnd(12)}0           0           ${staticCount * 64}\n`;
+  if (ospfCount > 0) {
+    out += `ospf            ${ospfCount.toString().padEnd(12)}${ospfCount.toString().padEnd(12)}0           0           ${ospfCount * 64}\n`;
+  }
+  if (ripCount > 0) {
+    out += `rip             ${ripCount.toString().padEnd(12)}${ripCount.toString().padEnd(12)}0           0           ${ripCount * 64}\n`;
+  }
+  if (eigrpCount > 0) {
+    out += `eigrp           ${eigrpCount.toString().padEnd(12)}${eigrpCount.toString().padEnd(12)}0           0           ${eigrpCount * 64}\n`;
+  }
+  if (bgpCount > 0) {
+    out += `bgp             ${bgpCount.toString().padEnd(12)}${bgpCount.toString().padEnd(12)}0           0           ${bgpCount * 64}\n`;
+  }
+  out += `Total           ${total.toString().padEnd(12)}${total.toString().padEnd(12)}0           0           ${total * 64}\n`;
+
+  return { success: true, output: out };
+}
+

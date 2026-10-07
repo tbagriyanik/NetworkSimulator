@@ -800,4 +800,14 @@ describe('show interfaces counters derive from port.statistics (no dead literals
     expect(res.output).toContain('1234 packets input, 567890 bytes');
     expect(res.output).toContain('88 packets output, 9900 bytes');
   });
+
+  it('show ip route summary outputs standard Cisco summary table', () => {
+    const s = { ...makeBaseState(), currentMode: 'privileged' as const, ipRouting: true };
+    const res = exec(s, 'show ip route summary');
+    expect(res.success).toBe(true);
+    expect(res.output).toContain('IP routing table name is default');
+    expect(res.output).toContain('Route Source');
+    expect(res.output).toContain('connected');
+    expect(res.output).toContain('static');
+  });
 });

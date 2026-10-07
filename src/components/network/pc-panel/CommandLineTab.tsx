@@ -656,6 +656,20 @@ export function CommandLineTab({
                     return;
                   }
 
+                  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c') {
+                    const inputEl = e.currentTarget as HTMLInputElement;
+                    const start = inputEl.selectionStart || 0;
+                    const end = inputEl.selectionEnd || 0;
+                    if (start !== end && input) {
+                      return; // allow default copy
+                    }
+                    e.preventDefault();
+                    setInput('');
+                    setLinuxAutocompleteIndex(-1);
+                    setIsLinuxAutocompleteDismissed(false);
+                    return;
+                  }
+
                   if (activeTerminalTab === 'cmd') {
                     handleKeyDown(e);
                   } else {

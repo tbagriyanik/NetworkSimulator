@@ -474,6 +474,18 @@ export function Terminal({
       onRedo: handleRedo,
       queueCommands,
       processCommandQueue,
+      onCancelLine: () => {
+        setInput('');
+        setShowAutocomplete(false);
+        setAutocompleteIndex(-1);
+      },
+      onReturnToExec: () => {
+        if (state.currentMode && state.currentMode !== 'user' && state.currentMode !== 'privileged') {
+          void onCommand('end');
+        } else {
+          handleUndo();
+        }
+      },
     })) {
       return;
     }

@@ -2,9 +2,12 @@
 
 ## v7.5.0 — 2026-10-07
 
-- **⌨️ CLI Kararlılığı & Ayrıştırma Güçlendirmesi (`parser.ts`, `cliCompat.test.ts`)**:
+- **⌨️ CLI Kararlılığı & Kısayol Deneyimi (`useTerminalKeybindings.ts`, `Terminal.tsx`, `usePCPanelInput.ts`, `CommandLineTab.tsx`)**:
+  - **Cisco Break / Satır İptali (`Ctrl + C`)**: Terminalde veya konsolda seçili metin olmadığında `Ctrl + C` basıldığında satır içi komut girdisi ve otomatik tamamlama durumu sıfırlanarak Cisco IOS benzeri satır iptali sağlandı (seçili metin varken standart panoya kopyalama davranışı korundu).
+  - **Yapılandırma Modundan Çıkış (`Ctrl + Z`)**: Alt yapılandırma modlarındayken (`config`, `interface` vb.) `Ctrl + Z` kombinasyonu doğrudan `end` komutunu işleterek anında Privileged EXEC moduna dönüş sağlandı; EXEC modunda ise geri alma (undo) davranışı korundu.
   - Komut ve argüman parse işlemlerinde ardışık boşluk normalizasyonu (`replace(/\s+/g, ' ')`) eklendi. Öğrenciler komutlar veya argümanlar arasına birden fazla boşluk bıraktığında (`configure   terminal`, `int   gi0/1`, `no   shutdown`) komutun reddedilmesi engellendi.
   - CLI kısaltma çözümleyici (`resolveAliases`) ardışık boşluklara karşı dayanıklı hale getirildi.
+  - **Yönlendirme Tablosu Özeti & BGP Desteği (`showPatterns.ts`, `showIpRouteDisplay.ts`)**: `show ip route summary` komutu eklenerek rota kaynakları (connected, static, ospf, rip, eigrp, bgp), subnet sayıları ve bellek tüketimi Cisco standart tablosu formatında görüntülendi. `show ip route bgp` filtrelemesi aktif edildi.
 - **🎓 CLI Pedagojik İpuçları Genişletildi (`cliErrors.ts`, `cliErrors.test.ts`)**:
   - `getStudentCliHint`: 12'den fazla yazım hatası ve mod uyumsuzluğu için yol gösterici ipuçları genişletildi.
   - Eksik IP adresi yapılandırması (`ip address 192.168.1.1` maskesiz) durumunda subnet maskesi gerekliliği uyarısı eklendi.

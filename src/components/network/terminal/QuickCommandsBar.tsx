@@ -9,7 +9,7 @@ export const QUICK_COMMANDS: Record<string, string[]> = {
   config: ['interface GigabitEthernet0/1', 'int fa0/1', 'vlan 10', 'ip dhcp pool POOL1', 'ip route 0.0.0.0 0.0.0.0 ', 'router ospf 1', 'hostname ', 'exit', 'end'],
   interface: ['no shutdown', 'ip address 192.168.1.1 255.255.255.0', 'switchport mode access', 'switchport access vlan 10', 'switchport mode trunk', 'exit', 'end'],
   'config-if-range': ['switchport mode access', 'switchport access vlan 10', 'no shutdown', 'exit', 'end'],
-  line: ['password cisco', 'login', 'transport input ssh', 'exit', 'end'],
+  line: ['password netsim', 'login', 'transport input ssh', 'exit', 'end'],
   vlan: ['name SALES', 'exit', 'end'],
   'router-config': ['network 192.168.1.0 0.0.0.255 area 0', 'passive-interface default', 'exit', 'end'],
   'dhcp-config': ['network 192.168.1.0 255.255.255.0', 'default-router 192.168.1.1', 'dns-server 8.8.8.8', 'exit', 'end'],

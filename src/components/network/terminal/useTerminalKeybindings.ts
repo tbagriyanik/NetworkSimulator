@@ -10,13 +10,15 @@ export interface UseTerminalKeybindingsOptions {
   onRedo?: () => void;
   queueCommands?: (cmds: string[]) => void;
   processCommandQueue?: () => Promise<void>;
+  onCancelLine?: () => void;
+  onReturnToExec?: () => void;
 }
 
 export function handleTerminalShortcuts(
   e: KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>,
   options: UseTerminalKeybindingsOptions
 ): boolean {
-  const { input, setInput, inputRef, onUndo, onRedo, queueCommands, processCommandQueue } = options;
+  const { input, setInput, inputRef, onUndo, onRedo, queueCommands, processCommandQueue, onCancelLine, onReturnToExec } = options;
   const isCtrlOrMeta = e.ctrlKey || e.metaKey;
 
   if (!isCtrlOrMeta) return false;
@@ -25,6 +27,10 @@ export function handleTerminalShortcuts(
 
   if (key === 'z') {
     e.preventDefault();
+    if (onReturnToExec) {
+      onReturnToExec();
+      return true;
+    }
     onUndo?.();
     return true;
   }
@@ -115,17 +121,21 @@ export function handleTerminalShortcuts(
   }
 
   if (key === 'c') {
-    e.preventDefault();
-    if (inputRef.current && input) {
-      const start = inputRef.current.selectionStart || 0;
-      const end = inputRef.current.selectionEnd || 0;
-      if (start !== end) {
-        const selectedText = input.substring(start, end);
-        void navigator.clipboard?.writeText(selectedText);
-      } else {
-        void navigator.clipboard?.writeText(input);
-      }
+    const start = inputRef.current?.selectionStart || 0;
+    const end = inputRef.current?.selectionEnd || 0;
+    if (start !== end && input) {
+      e.preventDefault();
+      const selectedText = input.substring(start, end);
+      void navigator.clipboard?.writeText(selectedText);
+      return true;
     }
+    // No text selected in input field: acts as Cisco CLI break / cancel current line
+    e.preventDefault();
+    if (onCancelLine) {
+      onCancelLine();
+      return true;
+    }
+    setInput('');
     return true;
   }
 

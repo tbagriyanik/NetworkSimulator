@@ -435,52 +435,46 @@ export function usePCPanelInput(params: UsePCPanelInputParams) {
       return;
     }
 
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'x') {
-      return;
-    }
-
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c') {
-      return;
-    }
-
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'v') {
       return;
     }
 
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'x') {
-      e.preventDefault();
       const inputElement = e.currentTarget as HTMLInputElement;
       if (input) {
         const start = inputElement.selectionStart || 0;
         const end = inputElement.selectionEnd || 0;
         if (start !== end) {
+          e.preventDefault();
           const selectedText = input.substring(start, end);
           navigator.clipboard.writeText(selectedText).then(() => {
             const newInput = input.substring(0, start) + input.substring(end);
             setInput(newInput);
           });
+          return;
         }
       }
       return;
     }
 
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c') {
-      e.preventDefault();
       const inputElement = e.currentTarget as HTMLInputElement;
       if (input) {
         const start = inputElement.selectionStart || 0;
         const end = inputElement.selectionEnd || 0;
         if (start !== end) {
+          e.preventDefault();
           const selectedText = input.substring(start, end);
           navigator.clipboard.writeText(selectedText);
-        } else if (input) {
-          navigator.clipboard.writeText(input);
+          return;
         }
       }
-      return;
-    }
-
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'v') {
+      // No text selected: cancel current line like Cisco CLI break
+      e.preventDefault();
+      setInput('');
+      setShowAutocomplete(false);
+      setAutocompleteIndex(-1);
+      setAutocompleteNavigated(false);
       return;
     }
 

@@ -120,7 +120,7 @@ export const showPatterns: Record<string, CommandPattern> = {
     maxArgs: 1
   },
   'show ip route': {
-    pattern: /^show\s+ip\s+route(?:\s+(ospf|eigrp|rip|static|connected))?(?:\s+([0-9.]+)(?:\s+([0-9.]+))?|\s+([0-9.]+\/\d{1,2}))?$/i,
+    pattern: /^show\s+ip\s+route(?:\s+(ospf|eigrp|rip|bgp|static|connected|summary))?(?:\s+([0-9.]+)(?:\s+([0-9.]+))?|\s+([0-9.]+\/\d{1,2}))?$/i,
     modes: ['user', 'privileged'],
     minArgs: 0,
     maxArgs: 2
