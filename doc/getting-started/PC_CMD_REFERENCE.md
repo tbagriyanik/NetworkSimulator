@@ -3,6 +3,10 @@
 PC panelindeki **CMD (Komut İstemi)** sekmesinde kullanılabilen tüm komutlar ve parametreleri.
 
 > **Not:** Bu komutlar PC cihazının CMD terminalinde çalışır. Router/Switch CLI komutlarından farklıdır.
+> 
+> 🎨 **Terminal Temaları:** CMD ve Linux terminalleri 5 farklı renk temasını destekler (`Modern Dark`, `Matrix Green`, `Retro Amber`, `Dracula Violet`, `Cyberpunk Cyan`). Terminal araç çubuğundaki tema simgesinden değiştirilebilir.
+> 🛡️ **Parola Güvenliği:** `passwd`, `password` gibi hassas komutlar açık metin olarak terminal geçmişine kaydedilmez.
+> ⌨️ **Kısayollar:** `Ctrl + C` girdi satırını sıfırlar/iptal eder. `Tab` ile komut ve parametreler otomatik tamamlanır.
 
 ---
 

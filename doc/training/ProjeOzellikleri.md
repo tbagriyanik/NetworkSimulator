@@ -1,4 +1,19 @@
 
+## Terminal Renk Temaları, Pedagojik CLI Asistanı, Güvenlik Sertleştirmesi & Çoklu Pencere Deneyimi (2026-10-07 - v7.5.0)
+
+| Özellik | Güncel kapsam ve sınır |
+|---|---|
+| **Kişiselleştirilebilir Terminal Renk Temaları (`terminalThemes.ts`, `Terminal.tsx`, `CommandLineTab.tsx`)** | Ağ cihazı CLI'ı ve PC CMD/Linux terminalleri için 5 canlı renk teması (`Modern Dark`, `Matrix Green`, `Retro Amber`, `Dracula Violet`, `Cyberpunk Cyan`). Tema tercihleri `localStorage` ile kalıcı hale getirilmiştir. |
+| **Canlı Sözdizimi & Parametre Vurgulama (`TerminalOutputLines.tsx`)** | CLI çıktılarında eylem fiilleri (`show`/`ping` mavi, `configure`/`interface`/`vlan` sarı/kehribar), IP adresleri ve alt ağ maskeleri yeşil, arayüz port adları mor renkle semantik olarak ayrılarak görsel okunabilirlik artırılmıştır. |
+| **Canlı Port LED Göstergeleri (`DevicePcPorts.tsx`, `DeviceGridPortPin.tsx`)** | PC ve ağ portlarında fiziksel donanım benzeri canlı LED göstergeleri: aktif bağlantıda yeşil yanıp sönen (pulse), kesintide kırmızı, STP blokajında kehribar ışıklı görsel durum takibi. |
+| **Genişletilmiş Hızlı Komutlar Çubuğu (`QuickCommandsBar.tsx`)** | L2 switchport modları, trunk yapılandırması, VLAN ID sorgulamaları ve yönlendirme özet komutları için tek tıkla şablon doldurma; değişken parametreleri otomatik seçme (highlighting) ve iki dilli pedagojik ipuçları. |
+| **Öğrenci Dostu Akıllı CLI & Pedagojik Hata Kılavuzu (`cliErrors.ts`)** | Yanlış modda komut girildiğinde (ör. User modunda `conf t`, Privileged modunda `int g0/1`), eksik IP maskesinde veya yazım hatalarında (`conft`, `shw`) yol gösterici `💡 Öğrenme Notu` desteği. |
+| **Hassas Parola Güvenliği (`useTerminalHistory.ts`, `CommandLineTab.tsx`)** | `enable secret`, `enable password`, `password <pwd>`, `passwd` gibi hassas parola komutlarının terminal geçmişine (`commandHistory` / `linuxHistory`) açık metin kaydedilmesi engellenmiştir. |
+| **Kompakt Arayüz & Açılır Kutu İyileştirmeleri (`HomeLauncher.tsx`, `CommandLineAutocompleteBox.tsx`)** | PC masaüstü program başlatıcı ipuçları ve otomatik tamamlama kutuları sadeleştirilerek ekran alanını kapatmayan kompakt tek satırlık modern tasarıma dönüştürülmüştür. |
+| **Gelişmiş CLI Klavye Kısayolları (`useTerminalKeybindings.ts`)** | `Ctrl + C` ile komut satırını anında sıfırlama / satır iptali; `Ctrl + Z` ile alt yapılandırma modlarından doğrudan Privileged EXEC moduna dönüş desteği. |
+| **L2/L3 İnceleme Komutları (`showCommands.ts`, `showInterfaceDisplay.ts`, `showIpRouteDisplay.ts`)** | `show interfaces switchport`, `show interface <port> switchport`, `show interface <port> trunk`, `show vlan id <id>`, `show vlan name <name>`, `show ip route summary` ve `show ip route bgp` komutları tam çıktıyla desteklenmiştir. |
+| **Sürükleme Sınırları & Tekli Pencere Sadeliği (`useDrag.ts`, `MultiDeviceWindowManager.tsx`)** | Pencerelerin ekran dışına taşmasını önleyen güvenli sınır koruması (`DRAG_MARGIN`, `TOP_SAFE_OFFSET`); sekmeli görünümde tek pencere kaldığında sekme çubuğunun otomatik gizlenmesi. |
+
 ## Linux/macOS Not Nesnesi Uyumlaştırması, Yüksek/Düşük Grafik Modu Derinleştirmesi & Masaüstü IPC/WebView İyileştirmeleri (2026-10-04 - v7.3.1)
 
 | Özellik | Güncel kapsam ve sınır |

@@ -85,6 +85,8 @@ export function ShortcutsModal({
       icon: Keyboard,
       shortcuts: [
         { label: isTr ? 'Etkin Pencereyi Küçült' : 'Minimize Window', key: formatShortcutLabel('M') },
+        { label: isTr ? 'Satır İptali / Komut Kesme' : 'Cancel Command / Break', key: 'Ctrl+C' },
+        { label: isTr ? 'Yapılandırma Modundan Çıkış' : 'Exit Config Mode (End)', key: 'Ctrl+Z' },
         { label: isTr ? 'Komut Tamamlama' : 'Auto-Complete', key: 'Tab' },
         { label: isTr ? 'Komut Geçmişi' : 'Command History', key: '↑ / ↓' },
         { label: isTr ? 'Modal / Pencere Kapat' : 'Close Modal / Window', key: 'ESC / Mobil Back' },

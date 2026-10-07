@@ -4,7 +4,7 @@ import React from 'react';
 import { TooltipWrapper } from '@/components/ui/TooltipWrapper';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { ShortcutBadge } from '@/components/ui/ShortcutBadge';
-import { AlertCircle, Map, Grid, Keyboard } from 'lucide-react';
+import { AlertCircle, Map, Grid, Keyboard, RotateCcw } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useUiPreferences } from '@/hooks/useUiPreferences';
 
@@ -146,10 +146,11 @@ export function CanvasToolbar({
           <button
             onClick={resetView}
             aria-label={t.reset}
-            className={`px-2 py-1 text-xs rounded ui-hover-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${isDark ? 'text-secondary-300 hover:text-secondary-100' : 'text-secondary-600 hover:text-secondary-900'
+            className={`flex items-center gap-1.5 px-2 py-1 text-xs rounded ui-hover-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 transition-colors ${isDark ? 'text-secondary-300 hover:text-secondary-100 hover:bg-secondary-700' : 'text-secondary-600 hover:text-secondary-900 hover:bg-secondary-100'
               }`}
           >
-            {t.reset}
+            <RotateCcw className="w-3.5 h-3.5 shrink-0" />
+            <span>{t.reset}</span>
           </button>
         </TooltipTrigger>
         <TooltipContent className="flex items-center gap-2">

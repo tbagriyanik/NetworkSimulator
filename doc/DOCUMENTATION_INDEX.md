@@ -7,16 +7,22 @@ Bu indeks, Network Simulator projesinin tüm dokümantasyon dosyalarını ve iç
 ## 📖 Dokümantasyon Dosyaları
 
 ### 🚀 [training/ProjeOzellikleri.md](training/ProjeOzellikleri.md)
-**Amaç**: Sürüm Özellikleri, WebKit/Tuval Uyumlaştırması, Yüksek/Düşük Grafik Modu, Ağ Dokümantasyonu, STP Korumaları & Conntrack Motoru (v7.4.1)  
+**Amaç**: Sürüm Özellikleri, Terminal Renk Temaları, Pedagojik CLI Asistanı, Canlı Port LED'leri, Çoklu Pencere Deneyimi & Güvenlik Sertleştirmesi (v7.5.0)  
 **Okuma Süresi**: 15 dakika  
 **İçerik**:
+- Kişiselleştirilebilir Terminal Renk Temaları (Modern Dark, Matrix, Retro Amber, Dracula, Cyberpunk - `terminalThemes.ts`)
+- Canlı Sözdizimi & Parametre Vurgulama (`TerminalOutputLines.tsx`)
+- Canlı Port LED Göstergeleri (`DevicePcPorts.tsx`, `DeviceGridPortPin.tsx`)
+- Pedagojik CLI Hata Kılavuzu & Öğrenme Notları (`cliErrors.ts`)
+- Terminal Güvenliği: Hassas Parola Gizleme (`useTerminalHistory.ts`, `CommandLineTab.tsx`)
+- Gelişmiş CLI Klavye Kısayolları (`Ctrl + C` satır iptali, `Ctrl + Z` EXEC moduna dönüş)
+- L2/L3 İnceleme Komutları (`switchport`, `trunk`, `show vlan id`, `show ip route summary`)
 - Otomatik Ağ Dokümantasyon Raporu Motoru (`networkReportGenerator.ts`)
 - Dinamik Trafik Jeneratörü & Canlı Telekomünikasyon Hat Telemetrisi (`trafficGeneratorEngine.ts`)
-- STP Güvenlik Korumaları Motoru (PortFast, BPDU Guard, BPDU Filter, Root Guard, Loop Guard - `stpGuardsEngine.ts`)
+- STP Güvenlik Korumaları Motoru (PortFast, BPDU Guard, BPDU Filter, Root Guard, Loop Guard)
 - L2 Broadcast Storm & Fırtına Kontrol Motoru (`stormControlEngine.ts`)
 - BGP 13 Adımlı Yol Seçim Karar Nedeni Açıklayıcısı (`bgpBestPathExplainer.ts`)
 - Katman 4 Stateful Connection Tracking & SPI Tablosu (`conntrackEngine.ts`)
-- DHCP Relay & Option 82 İşleme Motoru (`dhcpRelayEngine.ts`)
 
 ---
 
@@ -445,6 +451,7 @@ doc/
 - [x] SDN & Intent-Based Networking Controller, Multicast İletim Pipeline, StoryMode Test Paketi & Radix UI Restorasyonu (v6.9.0) belgelendi
 - [x] Release Kontrol Listesi & Tek Kaynaktan Senkronizasyon Kılavuzu (`RELEASE_CHECKLIST.md`) eklendi
 - [x] Klavye & Tuval Yardım Penceresi İçeriği (ShortcutsModal, F1/Shift+?) Tüm Yeni Kısayollar ve Komutlarla Güncellendi
+- [x] Terminal Renk Temaları, Pedagojik CLI Rehberi, Canlı Port LED'leri, Parola Güvenliği & Kompakt Arayüz (v7.5.0) belgelendi
 
 ---
 

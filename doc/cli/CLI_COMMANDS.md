@@ -30,7 +30,8 @@ The simulator supports **729+ commands** across multiple configuration modes.
 ### Device Operations
 | Shortcut | Action |
 |----------|--------|
-| `Ctrl+C` | Copy configuration |
+| `Ctrl+C` | Cancel input / Break command line (or copy if text is selected) |
+| `Ctrl+Z` | Exit configuration sub-modes directly to Privileged EXEC (`end`) |
 | `Ctrl+V` | Paste configuration |
 | `Ctrl+X` | Cut configuration |
 | `Ctrl+S` | Save configuration |
@@ -46,10 +47,11 @@ The simulator supports **729+ commands** across multiple configuration modes.
 | `Shift+Tab` | Open Task Switcher (Pencere Deştirici) modal |
 | `Ctrl+M` | Minimize active device window |
 | `Side-by-Side` | Arrange open device windows side-by-side (Split View) |
-| `Tabbed View` | Switch open device windows to tabbed layout mode |
+| `Tabbed View` | Switch open device windows to tabbed layout mode (auto-hides on single window) |
 | `Double-click Header` | Toggle collapse / minimize window (PC Window, Router Panel, Packet Analysis, Refresh Report) |
 | `Click Terminal Output / History` | Focus command line input field |
 | `Tab` | Command auto-completion / suggestion completion (supports custom modes: `router-ospf`, `dhcp-config`, `vlan` and interface names) |
+| `Theme Switcher` | Switch color theme (Modern Dark, Matrix Green, Retro Amber, Dracula Violet, Cyberpunk Cyan) |
 
 ## Advanced Protocol Simulation & Diagnostic Features
 

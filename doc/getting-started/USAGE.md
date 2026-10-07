@@ -132,7 +132,8 @@ Simülatör, tek bir standart komut modelini korurken yaygın alternatif CLI bi�
 | `\| include/exclude/begin/section` | Filter `show` output / `show` çıktılarını borulama filtresiyle süzme |
 | `terminal history size <1-500>` | Set command history capacity / Komut geçmişi kapasitesini ayarlama |
 | `clear ip bgp/ospf/nat/mac/arp` | Clear routing, ARP, MAC & NAT states / Protokol, ARP, MAC ve NAT durumlarını temizleme |
-| `Ctrl + C` | Cancel command (CLI) / Komutu iptal et |
+| `Ctrl + C` | Cancel command / Reset input line (CLI) | Komut satırını iptal et / girdi satırını sıfırla |
+| `Ctrl + Z` | Exit config sub-mode directly to Exec (`end`) | Yapılandırma modundan doğrudan Privileged moda çık (`end`) |
 
 ---
 
