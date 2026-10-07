@@ -51,6 +51,12 @@ export function getStudentCliHint(input: string, currentMode?: string): { tr: st
         en: 'Enter Privileged EXEC mode first: "enable"'
       };
     }
+    if (trimmed.startsWith('ping ') && trimmed.includes('/')) {
+      return {
+        tr: 'Ping komutunda subnet maskesi (CIDR /) kullanılmaz. Yalnızca hedef IP girin: örn. "ping 192.168.1.1"',
+        en: 'Do not use subnet mask (CIDR /) with ping. Enter only the destination IP: e.g. "ping 192.168.1.1"'
+      };
+    }
     if (trimmed.startsWith('ping') || trimmed.startsWith('traceroute') || trimmed.startsWith('trace')) {
       return {
         tr: 'Bu komut User EXEC modunda da çalışır. Ayrıntılı ping için "enable" ile Privileged moda geçin.',
