@@ -172,6 +172,22 @@ export function TerminalHeaderActions({
           A+
         </Button>
       </TooltipWrapper>
+      <TooltipWrapper title={fontSize !== 13 ? (language === 'tr' ? 'Varsayılan Boyuta Sıfırla (13px)' : 'Reset Font Size (13px)') : (language === 'tr' ? 'Yazı Boyutu (13px)' : 'Font Size (13px)')}>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => {
+            if (fontSize !== 13) {
+              setFontSize(13);
+              safeSetItem('terminal-font-size', '13');
+            }
+          }}
+          className={cn("h-9 md:h-8 px-1.5 rounded-lg text-secondary-600 hover:text-secondary-900 font-mono text-xs select-none", isDark && "text-secondary-300 hover:text-secondary-100", fontSize !== 13 && "text-primary-500 font-bold hover:underline")}
+          aria-label={language === 'tr' ? 'Yazı Boyutu' : 'Font Size'}
+        >
+          {fontSize}px
+        </Button>
+      </TooltipWrapper>
       <TooltipWrapper title={t.fontLabel}>
         <Button variant="ghost" size="icon" onClick={() => setShowSettings(!showSettings)} className={cn("h-9 w-9 md:h-8 md:w-8 rounded-lg text-secondary-600 hover:text-secondary-900", showSettings && "bg-accent", isDark && "text-secondary-300 hover:text-secondary-100")} aria-label={t.fontLabel || 'Font Settings'}>
           <Type className="w-4 h-4" aria-hidden="true" />

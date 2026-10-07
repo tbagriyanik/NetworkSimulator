@@ -25,6 +25,17 @@ export function TerminalSettingsBar({ t, fontSize, setFontSize, onClear }: Termi
         onChange={(e) => { const v = parseInt(e.target.value); setFontSize(v); safeSetItem('terminal-font-size', String(v)); }}
         className="flex-1 h-1 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
       />
+      {fontSize !== 13 && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => { setFontSize(13); safeSetItem('terminal-font-size', '13'); }}
+          className="h-7 text-[10px] font-bold text-muted-foreground hover:text-foreground px-2"
+          title={t.reset || 'Reset'}
+        >
+          {t.reset || 'Reset (13px)'}
+        </Button>
+      )}
       <Button variant="ghost" size="sm" onClick={onClear} className="h-7 text-[10px] font-black tracking-widest text-error-500 gap-1.5">
         <Trash2 className="w-3 h-3" />
         {t.clearTerminalBtn}

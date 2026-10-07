@@ -180,6 +180,11 @@ function getNextTokenCandidates(
     return availablePorts.sort();
   }
 
+  // Check IP address command: suggest subnet mask after IP
+  if (tokens.length >= 3 && tokens[0] === 'ip' && tokens[1] === 'address' && /^\d{1,3}(\.\d{1,3}){3}$/.test(tokens[2])) {
+    return ['255.255.255.0', '255.255.0.0', '255.0.0.0', '255.255.255.252'];
+  }
+
   // Check commandHelp tree
   const helpObj = commandHelp[mode] || commandHelp.user || {};
   if (helpObj[lowerContext]) {

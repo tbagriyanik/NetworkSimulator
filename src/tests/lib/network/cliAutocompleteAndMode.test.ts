@@ -78,4 +78,10 @@ describe('CLI Abbreviation, Autocomplete, Error Messaging & Mode Validation', ()
       expect(val.error).toContain('% Incomplete command.');
     }
   });
+
+  it('10. Subnet mask suggestions after IP address', () => {
+    const res = getTabCompletion('ip address 192.168.1.1 ', 'interface', switchState);
+    expect(res.suggestions).toContain('255.255.255.0');
+    expect(res.suggestions).toContain('255.255.0.0');
+  });
 });

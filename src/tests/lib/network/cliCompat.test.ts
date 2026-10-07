@@ -801,7 +801,7 @@ describe('show interfaces counters derive from port.statistics (no dead literals
     expect(res.output).toContain('88 packets output, 9900 bytes');
   });
 
-  it('show ip route summary outputs standard Cisco summary table', () => {
+  it('show ip route summary outputs standard summary table', () => {
     const s = { ...makeBaseState(), currentMode: 'privileged' as const, ipRouting: true };
     const res = exec(s, 'show ip route summary');
     expect(res.success).toBe(true);

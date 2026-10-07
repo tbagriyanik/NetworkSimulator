@@ -469,7 +469,7 @@ export function usePCPanelInput(params: UsePCPanelInputParams) {
           return;
         }
       }
-      // No text selected: cancel current line like Cisco CLI break
+      // No text selected: cancel current line like CLI break
       e.preventDefault();
       setInput('');
       setShowAutocomplete(false);

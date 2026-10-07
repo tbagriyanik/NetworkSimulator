@@ -129,7 +129,7 @@ export function handleTerminalShortcuts(
       void navigator.clipboard?.writeText(selectedText);
       return true;
     }
-    // No text selected in input field: acts as Cisco CLI break / cancel current line
+    // No text selected in input field: acts as CLI break / cancel current line
     e.preventDefault();
     if (onCancelLine) {
       onCancelLine();
