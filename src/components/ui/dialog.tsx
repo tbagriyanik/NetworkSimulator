@@ -5,6 +5,7 @@ import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { X } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import { WINDOW_CLOSE_BUTTON_CLASS } from "@/components/ui/windowStandards"
 
 function Dialog({
   open,
@@ -65,28 +66,14 @@ function DialogContent({
 }) {
   React.useEffect(() => {
     if (typeof window === 'undefined') return;
-    const stateKey = `dialog_${Date.now()}`;
-    window.history.pushState({ modalOpen: true, stateKey }, '');
-    let hasPushed = true;
 
-    const handlePopState = () => {
-      if (hasPushed) {
-        hasPushed = false;
-        window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
-      }
+    const handleMobileBack = () => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     };
 
-    window.addEventListener('popstate', handlePopState);
+    window.addEventListener('mobile-back-pressed', handleMobileBack);
     return () => {
-      window.removeEventListener('popstate', handlePopState);
-      if (hasPushed) {
-        hasPushed = false;
-        try {
-          window.history.back();
-        } catch {
-          // Ignore history rollback failure if unmounting
-        }
-      }
+      window.removeEventListener('mobile-back-pressed', handleMobileBack);
     };
   }, []);
 
@@ -108,9 +95,9 @@ function DialogContent({
         {showCloseButton && (
           <DialogPrimitive.Close
             data-slot="dialog-close"
-            className="absolute right-4 top-4 w-6 h-6 rounded-md bg-error-500 hover:bg-error-600 active:scale-95 text-white transition-all inline-flex items-center justify-center focus:outline-none disabled:pointer-events-none shadow-sm border border-error-600/30"
+            className={cn("absolute right-4 top-4 disabled:pointer-events-none", WINDOW_CLOSE_BUTTON_CLASS)}
           >
-            <X className="h-3 w-3 stroke-[3]" />
+            <X className="h-3.5 w-3.5 stroke-[3]" />
             <span className="sr-only">Close</span>
           </DialogPrimitive.Close>
         )}

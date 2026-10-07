@@ -20,7 +20,7 @@ export function useModalDismiss({
   onClose,
   modalId = 'modal',
   enableEscape = true,
-  enableMobileBack = true,
+  enableMobileBack = false,
   lockScroll = true,
 }: UseModalDismissOptions) {
   const onCloseRef = useRef(onClose);

@@ -5,6 +5,7 @@ import { SwitchIcon, RouterIcon } from '@/components/network/PCPanelWidgets';
 import { TooltipWrapper } from '@/components/ui/TooltipWrapper';
 import { cn, normalizeMAC } from '@/lib/utils';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
+import { WINDOW_CLOSE_BUTTON_CLASS } from '@/components/ui/windowStandards';
 
 import { useDrag } from '@/hooks/useDrag';
 import { getWirelessSignalStrength } from '@/lib/network/connectivity';
@@ -124,8 +125,12 @@ export function PCInfoPopover({ pc, t, language, isDark, onClose, onFocus, zInde
               {windowCollapsed ? <ChevronDown className="w-3 h-3" /> : <ChevronUp className="w-3 h-3" />}
             </button>
             <TooltipWrapper title={t.close}>
-              <button aria-label={t.close} onClick={(e) => { e.stopPropagation(); onClose(); }} className={`w-5 h-5 rounded-md bg-error-500 hover:bg-error-600 cursor-pointer transition-colors inline-flex items-center justify-center shrink-0`}>
-                <X className="w-3 h-3 text-white pointer-events-none" />
+              <button
+                aria-label={t.close}
+                onClick={(e) => { e.stopPropagation(); onClose(); }}
+                className={WINDOW_CLOSE_BUTTON_CLASS}
+              >
+                <X className="w-3.5 h-3.5 stroke-[3] text-white pointer-events-none" />
               </button>
             </TooltipWrapper>
           </div>
@@ -422,9 +427,9 @@ export function RouterInfoPopover({ router, routerState, t, language, isDark, on
               <button
                 aria-label={t.close}
                 onClick={(e) => { e.stopPropagation(); onClose(); }}
-                className={`w-5 h-5 rounded-md bg-error-500 hover:bg-error-600 cursor-pointer transition-colors inline-flex items-center justify-center shrink-0`}
+                className={WINDOW_CLOSE_BUTTON_CLASS}
               >
-                <X className="w-3 h-3 text-white pointer-events-none" />
+                <X className="w-3.5 h-3.5 stroke-[3] text-white pointer-events-none" />
               </button>
             </TooltipWrapper>
           </div>

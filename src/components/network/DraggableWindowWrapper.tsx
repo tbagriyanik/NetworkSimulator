@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { useWindowStore } from '@/hooks/useWindowStore';
 import { DragPosition as ModalPosition, DragSize as ModalSize } from '@/hooks/useDrag';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { WINDOW_CLOSE_BUTTON_CLASS, WINDOW_TITLE_CLASS } from '@/components/ui/windowStandards';
 
 interface DraggableWindowWrapperProps {
   id: string;
@@ -103,25 +104,8 @@ export function DraggableWindowWrapper({
   useEffect(() => {
     if (!isOpen) return;
 
-    let localHistoryPushed = false;
-    if (typeof window !== 'undefined' && (isActive || (parentWindowId && activeWindowId !== parentWindowId))) {
-      try {
-        window.history.pushState({ floatingWindowId: id }, '');
-        localHistoryPushed = true;
-      } catch {
-        // Ignore if pushState fails
-      }
-    }
-
-    const handlePopState = () => {
-      localHistoryPushed = false;
-      onClose();
-      if (escapeRestoreWindowId) setActiveWindow(escapeRestoreWindowId);
-    };
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && (isActive || (parentWindowId && activeWindowId !== parentWindowId))) {
-        e.stopImmediatePropagation();
+    const handleDismiss = () => {
+      if (isActive || (parentWindowId && activeWindowId !== parentWindowId)) {
         if (onEscapeKeyDown) {
           onEscapeKeyDown();
         } else {
@@ -131,25 +115,24 @@ export function DraggableWindowWrapper({
       }
     };
 
-    const handleMobileBack = () => {
-      if (isActive || (parentWindowId && activeWindowId !== parentWindowId)) {
-        onClose();
-        if (escapeRestoreWindowId) setActiveWindow(escapeRestoreWindowId);
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.stopImmediatePropagation();
+        handleDismiss();
       }
+    };
+
+    const handleMobileBack = () => {
+      handleDismiss();
     };
 
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('mobile-back-pressed', handleMobileBack);
-    window.addEventListener('popstate', handlePopState);
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('mobile-back-pressed', handleMobileBack);
-      window.removeEventListener('popstate', handlePopState);
-      if (localHistoryPushed && window.history.state?.floatingWindowId === id) {
-        window.history.back();
-      }
     };
-  }, [isOpen, isActive, parentWindowId, activeWindowId, onClose, onEscapeKeyDown, escapeRestoreWindowId, setActiveWindow, id]);
+  }, [isOpen, isActive, parentWindowId, activeWindowId, onClose, onEscapeKeyDown, escapeRestoreWindowId, setActiveWindow]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -272,13 +255,13 @@ export function DraggableWindowWrapper({
           )}
           {typeof title === 'string' ? (
             <h2 className={cn(
-              "text-sm font-semibold truncate pointer-events-none cursor-grab active:cursor-grabbing",
-              isDark ? "text-secondary-100" : "text-secondary-900"
+              WINDOW_TITLE_CLASS(isDark),
+              "pointer-events-none cursor-grab active:cursor-grabbing"
             )}>
               {title}
             </h2>
           ) : (
-            <div className={cn("text-sm font-semibold flex-1 min-w-0 flex items-center cursor-grab active:cursor-grabbing", isDark ? "text-secondary-100" : "text-secondary-900")}>
+            <div className={cn(WINDOW_TITLE_CLASS(isDark), "flex-1 min-w-0 flex items-center cursor-grab active:cursor-grabbing")}>
               {title}
             </div>
           )}
@@ -318,9 +301,7 @@ export function DraggableWindowWrapper({
               e.stopPropagation();
               onClose();
             }}
-            className={cn(
-              "flex items-center justify-center w-6 h-6 ml-2 rounded-md bg-error-500 text-white hover:bg-error-600 active:scale-95 transition-all shrink-0 shadow-sm border border-error-600/30",
-            )}
+            className={cn(WINDOW_CLOSE_BUTTON_CLASS, "ml-2")}
             aria-label={t.close}
             title={t.close}
             onPointerDown={(e) => e.stopPropagation()}

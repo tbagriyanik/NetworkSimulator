@@ -339,6 +339,7 @@ export function MultiDeviceWindowManager({
               key={win.id}
               id={win.id}
               title={`PC Terminal - ${deviceName}`}
+              icon={<DeviceIcon type="pc" size={16} />}
               isOpen={true}
               onClose={() => closeDeviceWindow(win.id)}
               isDark={isDark}
@@ -386,6 +387,7 @@ export function MultiDeviceWindowManager({
               key={win.id}
               id={win.id}
               title={`Firewall - ${deviceName}`}
+              icon={<DeviceIcon type="firewall" size={16} />}
               isOpen={true}
               onClose={() => closeDeviceWindow(win.id)}
               isDark={isDark}

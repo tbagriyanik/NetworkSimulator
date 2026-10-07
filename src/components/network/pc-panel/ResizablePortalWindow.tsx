@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useGraphicsQuality } from '@/lib/store/appStore';
+import { WINDOW_CLOSE_BUTTON_CLASS, WINDOW_TITLE_CLASS } from '@/components/ui/windowStandards';
 
 export type WindowState = {
   x: number;
@@ -143,21 +144,6 @@ export function ResizablePortalWindow({
   useEffect(() => {
     if (!isOpen || !onClose) return;
 
-    let historyPushed = false;
-    if (typeof window !== 'undefined') {
-      try {
-        window.history.pushState({ resizablePortal: true }, '');
-        historyPushed = true;
-      } catch {
-        // Ignore
-      }
-    }
-
-    const handlePopState = () => {
-      historyPushed = false;
-      onClose();
-    };
-
     const handleMobileBack = () => {
       onClose();
     };
@@ -170,14 +156,9 @@ export function ResizablePortalWindow({
 
     window.addEventListener('mobile-back-pressed', handleMobileBack);
     window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('popstate', handlePopState);
     return () => {
       window.removeEventListener('mobile-back-pressed', handleMobileBack);
       window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('popstate', handlePopState);
-      if (historyPushed && window.history.state?.resizablePortal) {
-        window.history.back();
-      }
     };
   }, [isOpen, onClose]);
 
@@ -257,6 +238,7 @@ export function ResizablePortalWindow({
     };
 
     const handleUp = () => {
+      document.body.style.userSelect = '';
       const clamped = clampWindow(localWindowRef.current, minWidth, minHeight);
       localWindowRef.current = clamped;
 
@@ -308,6 +290,7 @@ export function ResizablePortalWindow({
   const startResize = (side: ResizeSide, e: React.PointerEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
+    document.body.style.userSelect = 'none';
     e.currentTarget.setPointerCapture(e.pointerId);
     localResizeRef.current = {
       side,
@@ -373,6 +356,7 @@ export function ResizablePortalWindow({
               const target = e.target as HTMLElement;
               if (target.closest('input, textarea, select, button')) return;
               e.preventDefault();
+              document.body.style.userSelect = 'none';
               e.currentTarget.setPointerCapture(e.pointerId);
               localDragRef.current = {
                 startX: e.clientX,
@@ -387,7 +371,7 @@ export function ResizablePortalWindow({
               {headerContent ? (
                 headerContent
               ) : (
-                <span className="text-[10px] sm:text-sm font-semibold truncate">{title}</span>
+                <span className={WINDOW_TITLE_CLASS(isDark)}>{title}</span>
               )}
             </div>
 
@@ -397,7 +381,7 @@ export function ResizablePortalWindow({
                 size="icon"
                 variant="ghost"
                 onClick={onClose}
-                className="h-6 w-6 shrink-0 rounded-md bg-error-500 text-white hover:bg-error-600 hover:text-white active:scale-95 transition-all shadow-sm border border-error-600/30"
+                className={WINDOW_CLOSE_BUTTON_CLASS}
                 aria-label="Kapat"
               >
                 <X className="w-3.5 h-3.5 stroke-[3]" />

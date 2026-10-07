@@ -6,6 +6,7 @@ import { X, ArrowUp, ArrowDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import { WINDOW_CLOSE_BUTTON_CLASS } from '@/components/ui/windowStandards';
 
 interface SearchOutputDialogProps {
   open: boolean;
@@ -76,6 +77,7 @@ export function SearchOutputDialog({
     if (target.closest('button, input, textarea, select, a, [role="button"]')) return;
     if (!popupRef.current) return;
     e.preventDefault();
+    document.body.style.userSelect = 'none';
     const rect = popupRef.current.getBoundingClientRect();
     const startX = e.clientX;
     const startY = e.clientY;
@@ -91,6 +93,7 @@ export function SearchOutputDialog({
       popupRef.current.style.top = `${origY + dy}px`;
     };
     const onUp = () => {
+      document.body.style.userSelect = '';
       if (!dragRef.current.dragging || !popupRef.current) return;
       dragRef.current.dragging = false;
       const finalX = Math.max(8, Math.min(window.innerWidth - 200, popupRef.current.getBoundingClientRect().left));
@@ -136,14 +139,11 @@ export function SearchOutputDialog({
             e.stopPropagation();
             onOpenChange(false);
           }}
-          className={cn(
-            'p-1 rounded transition-colors shrink-0',
-            isDark ? 'hover:bg-secondary-700 text-secondary-400 hover:text-white' : 'hover:bg-secondary-200 text-secondary-500 hover:text-secondary-900'
-          )}
+          className={WINDOW_CLOSE_BUTTON_CLASS}
           aria-label={labels.close}
           title={labels.close}
         >
-          <X className="w-4 h-4" />
+          <X className="w-3.5 h-3.5 stroke-[3]" />
         </button>
       </div>
 

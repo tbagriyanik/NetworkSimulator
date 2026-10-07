@@ -9,8 +9,10 @@ import { executeCommand } from '../../lib/network/executor';
 import { createInitialState } from '../../lib/network/initialState';
 import type { SwitchState } from '../../lib/network/types';
 import { validateIP, validateIPv6 } from './pc-panel/pcPanelHelpers';
-import { isNetworkOrBroadcastAddress, isValidSubnetMask } from '@/lib/network/core/interface/helpers';
+import { isValidSubnetMask, isNetworkOrBroadcastAddress } from '@/lib/network/core/interface/helpers';
 import { useModalDismiss } from '@/hooks/useModalDismiss';
+import { X } from 'lucide-react';
+import { WINDOW_CLOSE_BUTTON_CLASS, WINDOW_CANCEL_BUTTON_CLASS, WINDOW_TITLE_CLASS } from '@/components/ui/windowStandards';
 
 interface DeviceConfigModalProps {
   device: CanvasDevice;
@@ -437,7 +439,7 @@ export function DeviceConfigModal({
               </svg>
             </div>
             <div>
-              <h3 id="device-config-title" className="text-sm font-bold tracking-tight">
+              <h3 id="device-config-title" className={WINDOW_TITLE_CLASS(isDark)}>
                 {t.configure}
               </h3>
               <div className="text-[10px] font-mono opacity-50 leading-none mt-0.5">
@@ -448,14 +450,10 @@ export function DeviceConfigModal({
           <button
             type="button"
             onClick={onClose}
-            className={`p-1 rounded-lg transition-colors ${
-              isDark ? 'text-secondary-400 hover:text-white hover:bg-secondary-800' : 'text-secondary-400 hover:text-secondary-800 hover:bg-secondary-100'
-            }`}
+            className={WINDOW_CLOSE_BUTTON_CLASS}
             aria-label="Close"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <X className="w-4 h-4" />
           </button>
         </div>
 
@@ -817,11 +815,7 @@ export function DeviceConfigModal({
           <button
             type="button"
             onClick={onClose}
-            className={`flex-1 h-8.5 px-3 rounded-lg text-xs font-bold transition-all ${
-              isDark
-                ? 'bg-secondary-800 hover:bg-secondary-700 text-secondary-300 hover:text-white'
-                : 'bg-secondary-100 hover:bg-secondary-200 text-secondary-600 hover:text-secondary-900'
-            }`}
+            className={`flex-1 ${WINDOW_CANCEL_BUTTON_CLASS(isDark)}`}
           >
             {t.cancel}
           </button>

@@ -7,8 +7,9 @@ import {
   AssertionResult,
   NetworkAssertionType
 } from '@/lib/network/networkAssertionEngine';
-import { CheckCircle2, XCircle, Play, Plus, Trash2, CheckSquare } from 'lucide-react';
+import { CheckCircle2, XCircle, Play, Plus, Trash2, CheckSquare, X } from 'lucide-react';
 import { useModalDismiss } from '@/hooks/useModalDismiss';
+import { WINDOW_CLOSE_BUTTON_CLASS, WINDOW_CANCEL_BUTTON_CLASS, WINDOW_TITLE_CLASS } from '@/components/ui/windowStandards';
 
 interface AssertionPanelModalProps {
   isOpen: boolean;
@@ -118,16 +119,17 @@ export const AssertionPanelModal: React.FC<AssertionPanelModalProps> = ({
         <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800/50">
           <div className="flex items-center gap-2">
             <CheckSquare className="w-5 h-5 text-indigo-500" />
-            <h2 className="text-base font-bold text-slate-900 dark:text-white">
+            <h2 className={WINDOW_TITLE_CLASS(true)}>
               {t.title}
             </h2>
           </div>
           <button
             onClick={onClose}
             aria-label={language === 'tr' ? 'Kapat' : 'Close'}
-            className="text-xs px-2.5 py-1 rounded-md border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition"
+            title={language === 'tr' ? 'Kapat' : 'Close'}
+            className={WINDOW_CLOSE_BUTTON_CLASS}
           >
-            {language === 'tr' ? 'Kapat (ESC)' : 'Close (ESC)'}
+            <X className="w-4 h-4" />
           </button>
         </div>
 
@@ -252,7 +254,7 @@ export const AssertionPanelModal: React.FC<AssertionPanelModalProps> = ({
         <div className="px-6 py-3 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex items-center justify-end">
           <button
             onClick={onClose}
-            className="px-4 py-1.5 text-xs font-semibold rounded-lg border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition"
+            className={WINDOW_CANCEL_BUTTON_CLASS(true)}
           >
             {language === 'tr' ? 'Vazgeç' : 'Cancel'}
           </button>

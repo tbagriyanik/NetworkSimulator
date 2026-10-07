@@ -3,7 +3,7 @@ import type { PCActiveTab } from './PCPanel.types';
 
 interface UsePCPanelGlobalNavOptions {
   isVisible: boolean;
-  isMobile: boolean;
+  isMobile?: boolean;
   searchOpen: boolean;
   httpAppContent: string | null;
   setHttpAppContent: (c: string | null) => void;
@@ -19,7 +19,6 @@ interface UsePCPanelGlobalNavOptions {
  */
 export function usePCPanelGlobalNav({
   isVisible,
-  isMobile,
   searchOpen,
   httpAppContent,
   setHttpAppContent,
@@ -61,29 +60,10 @@ export function usePCPanelGlobalNav({
       }
     };
 
-    const handlePopState = (_e: PopStateEvent) => {
-      if (handleNavigation()) {
-        // Re-push state to prevent browser from actually going back to previous page
-        // only if we want to stay in the panel
-        if (isVisible) {
-          window.history.pushState({ pcPanel: true }, '', window.location.href);
-        }
-      }
-    };
-
-    // Push initial state for back button tracking on mobile
-    if (isMobile) {
-      window.history.pushState({ pcPanel: true }, '', window.location.href);
-      window.addEventListener('popstate', handlePopState);
-    }
-
     window.addEventListener('keydown', handleGlobalKeyDown);
 
     return () => {
       window.removeEventListener('keydown', handleGlobalKeyDown);
-      if (isMobile) {
-        window.removeEventListener('popstate', handlePopState);
-      }
     };
-  }, [isVisible, activeTab, goHome, onClose, httpAppContent, searchOpen, isMobile]);
+  }, [isVisible, activeTab, goHome, onClose, httpAppContent, searchOpen]);
 }

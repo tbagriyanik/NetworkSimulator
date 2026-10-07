@@ -29,6 +29,7 @@ import {
   validateTopologyCheckpoint,
 } from '@/lib/network/snapshotManager';
 import { useModalDismiss } from '@/hooks/useModalDismiss';
+import { WINDOW_CLOSE_BUTTON_CLASS, WINDOW_CANCEL_BUTTON_CLASS } from '@/components/ui/windowStandards';
 
 interface SnapshotManagerModalProps {
   isOpen: boolean;
@@ -325,8 +326,7 @@ export const SnapshotManagerModal: React.FC<SnapshotManagerModalProps> = ({
               onClick={onClose}
               aria-label={isTr ? 'Kapat' : 'Close'}
               title={isTr ? 'Kapat' : 'Close'}
-              className={`p-1.5 rounded-lg border transition ${isDark ? 'border-slate-700 hover:bg-slate-800 text-slate-400 hover:text-white' : 'border-slate-300 hover:bg-slate-100 text-slate-700'
-                }`}
+              className={WINDOW_CLOSE_BUTTON_CLASS}
             >
               <X className="w-4 h-4" aria-hidden="true" />
             </button>
@@ -551,8 +551,7 @@ export const SnapshotManagerModal: React.FC<SnapshotManagerModalProps> = ({
               <div className="flex justify-end gap-2 pt-2">
                 <button
                   onClick={() => setShowConfirmRollback(false)}
-                  className={`px-3 py-1.5 text-xs font-medium rounded-lg border ${isDark ? 'border-slate-700 hover:bg-slate-800 text-slate-400' : 'border-slate-300 hover:bg-slate-100 text-slate-700'
-                    }`}
+                  className={WINDOW_CANCEL_BUTTON_CLASS(isDark)}
                 >
                   {isTr ? 'Vazgeç' : 'Cancel'}
                 </button>

@@ -17,6 +17,7 @@ import { TooltipWrapper } from '@/components/ui/TooltipWrapper';
 import { cn } from '@/lib/utils';
 import { Info, Terminal, Search, X, ChevronDown, Compass, Mail, Loader2, MessageSquare, Bug, Lightbulb, Check, Play, Cpu, Copy, ChevronsUpDown } from 'lucide-react';
 import Image from 'next/image';
+import { WINDOW_CLOSE_BUTTON_CLASS } from '@/components/ui/windowStandards';
 import { getCommandCategories } from './networkTopology.commands';
 import { TutorialAnimationPlayer } from './TutorialAnimationPlayer';
 import { SubnettingPanel } from './pc-panel/SubnettingPanel';
@@ -212,10 +213,10 @@ export function AboutModal({ isOpen, onClose, onStartTour, isExamActive = false 
           <button
             type="button"
             onClick={onClose}
-            className="absolute right-4 top-4 z-20 w-5 h-5 rounded-md bg-error-500 hover:bg-error-600 text-white transition-colors inline-flex items-center justify-center focus:outline-none disabled:pointer-events-none"
+            className={cn('absolute right-4 top-4 z-20', WINDOW_CLOSE_BUTTON_CLASS)}
             aria-label={t.close}
           >
-            <X className="w-3 h-3" />
+            <X className="w-3.5 h-3.5 stroke-[3]" />
           </button>
         </TooltipWrapper>
         <DialogHeader className="p-0 pb-1 shrink-0">
@@ -364,7 +365,7 @@ export function AboutModal({ isOpen, onClose, onStartTour, isExamActive = false 
                       {isTR ? 'Sürüm' : 'Version'}
                     </span>
                     <span className="text-xs font-semibold text-secondary-800 dark:text-secondary-200">
-                      {process.env.APP_VERSION || '7.4.1'}
+                      {process.env.APP_VERSION || '7.5.0'}
                     </span>
                   </div>
                   <div className="flex flex-col">

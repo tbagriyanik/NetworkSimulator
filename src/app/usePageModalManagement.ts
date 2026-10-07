@@ -26,11 +26,7 @@ interface PageModalManagementOptions {
 }
 
 export function usePageModalManagement(options: PageModalManagementOptions): void {
-  const {
-    hasUnsavedChanges, modalHistoryPushedRef, showMobileMenu, confirmDialog, saveDialog,
-    showPCPanel, showFirewallPanel, showRouterPanel, showUnifiedDeviceModal, showAboutModal,
-    showProjectPicker, showOnboarding,
-  } = options;
+  const { hasUnsavedChanges } = options;
 
   const optionsRef = useRef(options);
   optionsRef.current = options;
@@ -49,10 +45,6 @@ export function usePageModalManagement(options: PageModalManagementOptions): voi
       opts.setShowMobileMenu(false);
       opts.setConfirmDialog(null);
       opts.setSaveDialog(null);
-      if (!opts.showPCPanel) opts.setShowPCPanel(false);
-      opts.setShowRouterPanel(false);
-      opts.setShowUnifiedDeviceModal(false);
-      opts.setShowAboutModal(false);
       opts.setShowProjectPicker(false);
       opts.setShowOnboarding(false);
       opts.setShowBasarilarim(false);
@@ -61,14 +53,4 @@ export function usePageModalManagement(options: PageModalManagementOptions): voi
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
-
-  useEffect(() => {
-    const anyModalOpen = showMobileMenu || !!confirmDialog || !!saveDialog || showPCPanel || showFirewallPanel || showRouterPanel || showUnifiedDeviceModal || showAboutModal || showProjectPicker || showOnboarding;
-    if (anyModalOpen && !modalHistoryPushedRef.current) {
-      window.history.pushState({ modal: true }, '');
-      modalHistoryPushedRef.current = true;
-    } else if (!anyModalOpen) {
-      modalHistoryPushedRef.current = false;
-    }
-  }, [showMobileMenu, confirmDialog, saveDialog, showPCPanel, showFirewallPanel, showRouterPanel, showUnifiedDeviceModal, showAboutModal, showProjectPicker, showOnboarding, modalHistoryPushedRef]);
 }

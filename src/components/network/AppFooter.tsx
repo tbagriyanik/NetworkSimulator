@@ -168,16 +168,16 @@ export function AppFooter({
           "hidden md:block fixed bottom-0 inset-x-0 z-40 border-t min-h-[48px] pb-3 pb-safe transition-colors duration-300",
           isHighQuality
             ? cn(
-                "backdrop-blur-xl shadow-lg",
-                isDark
-                  ? "bg-secondary-950/75 border-secondary-800/80 shadow-black/20"
-                  : "bg-white/80 border-secondary-200/80 shadow-primary-500/5"
-              )
+              "backdrop-blur-xl shadow-lg",
+              isDark
+                ? "bg-secondary-950/75 border-secondary-800/80 shadow-black/20"
+                : "bg-white/80 border-secondary-200/80 shadow-primary-500/5"
+            )
             : cn(
-                isDark
-                  ? "bg-secondary-950/95 border-secondary-900"
-                  : "bg-white/95 border-secondary-200"
-              ),
+              isDark
+                ? "bg-secondary-950/95 border-secondary-900"
+                : "bg-white/95 border-secondary-200"
+            ),
           (showProjectPicker || showOnboarding) && "hidden"
         )}
       >
@@ -282,7 +282,7 @@ export function AppFooter({
                       <button type="button" onClick={() => { if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('trigger-open-device-search')); }} className={`px-1.5 py-0.5 rounded text-[10px] font-mono cursor-pointer hover:ring-1 ${isDark ? 'bg-secondary-700 text-secondary-300 hover:ring-secondary-400' : 'bg-secondary-200 text-secondary-700 hover:ring-secondary-400'}`}>F3</button>
                       <span className="mx-1">{language === 'tr' ? 'Cihaz Ara' : 'Search Device'}</span>
                       <button type="button" onClick={() => { if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('trigger-topology-center-selected', { detail: { targetZoom: 1.0 } })); }} className={`px-1.5 py-0.5 rounded text-[10px] font-mono cursor-pointer hover:ring-1 ${isDark ? 'bg-secondary-700 text-secondary-300 hover:ring-secondary-400' : 'bg-secondary-200 text-secondary-700 hover:ring-secondary-400'}`}>Num ,</button>
-                      <span className="mx-1">{language === 'tr' ? 'Ortala %100' : 'Center 100%'}</span>
+                      <span className="mx-1">{language === 'tr' ? 'Ortala' : 'Center'}</span>
                       {(topologyDevices?.length || 0) > 0 && (
                         <>
                           <span className={`mx-2 ${isDark ? 'text-secondary-500' : 'text-secondary-400'}`}>|</span>
@@ -320,17 +320,17 @@ export function AppFooter({
           "md:hidden fixed bottom-0 inset-x-0 z-2 border-t min-h-[44px] pb-3 flex items-center px-3 text-[11px] select-none pb-safe transition-colors duration-300",
           isHighQuality
             ? cn(
-                "backdrop-blur-xl shadow-lg",
-                isDark
-                  ? "bg-secondary-950/75 border-secondary-800/80 text-secondary-300 shadow-black/20"
-                  : "bg-white/80 border-secondary-200/80 text-secondary-600 shadow-primary-500/5"
-              )
+              "backdrop-blur-xl shadow-lg",
+              isDark
+                ? "bg-secondary-950/75 border-secondary-800/80 text-secondary-300 shadow-black/20"
+                : "bg-white/80 border-secondary-200/80 text-secondary-600 shadow-primary-500/5"
+            )
             : cn(
-                "backdrop-blur-xl",
-                isDark
-                  ? "bg-secondary-900/95 border-secondary-800 text-secondary-300"
-                  : "bg-white/95 border-secondary-200 text-secondary-600"
-              ),
+              "backdrop-blur-xl",
+              isDark
+                ? "bg-secondary-900/95 border-secondary-800 text-secondary-300"
+                : "bg-white/95 border-secondary-200 text-secondary-600"
+            ),
           (showProjectPicker || showOnboarding) && "hidden"
         )}
       >

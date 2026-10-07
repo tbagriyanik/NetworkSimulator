@@ -175,14 +175,6 @@ export function UnifiedDevicePanel({
         }
     }, [isOpen, activeTab]);
 
-    useEffect(() => {
-        if (!isOpen) return;
-        const handleMobileBack = () => onOpenChange(false);
-        window.addEventListener('mobile-back-pressed', handleMobileBack);
-        return () => {
-            window.removeEventListener('mobile-back-pressed', handleMobileBack);
-        };
-    }, [isOpen, onOpenChange]);
 
     return (
         <>

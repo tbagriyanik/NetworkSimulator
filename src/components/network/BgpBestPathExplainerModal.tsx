@@ -4,8 +4,9 @@ import {
   compareBgpRoutes
 } from '@/lib/network/bgpBestPathExplainer';
 import type { BgpRoute } from '@/lib/network/bgpEngine';
-import { GitCommit, Trophy } from 'lucide-react';
+import { GitCommit, Trophy, X } from 'lucide-react';
 import { useModalDismiss } from '@/hooks/useModalDismiss';
+import { WINDOW_CLOSE_BUTTON_CLASS, WINDOW_CANCEL_BUTTON_CLASS, WINDOW_TITLE_CLASS } from '@/components/ui/windowStandards';
 
 interface BgpBestPathExplainerModalProps {
   isOpen: boolean;
@@ -120,16 +121,17 @@ export const BgpBestPathExplainerModal: React.FC<BgpBestPathExplainerModalProps>
         <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800/50">
           <div className="flex items-center gap-2">
             <GitCommit className="w-5 h-5 text-amber-500" />
-            <h2 className="text-base font-bold text-slate-900 dark:text-white">
+            <h2 className={WINDOW_TITLE_CLASS(true)}>
               {t.title}
             </h2>
           </div>
           <button
             onClick={onClose}
             aria-label={language === 'tr' ? 'Kapat' : 'Close'}
-            className="text-xs px-2.5 py-1 rounded-md border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition"
+            title={language === 'tr' ? 'Kapat' : 'Close'}
+            className={WINDOW_CLOSE_BUTTON_CLASS}
           >
-            {language === 'tr' ? 'Kapat (ESC)' : 'Close (ESC)'}
+            <X className="w-4 h-4" />
           </button>
         </div>
 
@@ -242,7 +244,7 @@ export const BgpBestPathExplainerModal: React.FC<BgpBestPathExplainerModalProps>
         <div className="px-6 py-3 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex items-center justify-end">
           <button
             onClick={onClose}
-            className="px-4 py-1.5 text-xs font-semibold rounded-lg border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition"
+            className={WINDOW_CANCEL_BUTTON_CLASS(true)}
           >
             {language === 'tr' ? 'Vazgeç' : 'Cancel'}
           </button>

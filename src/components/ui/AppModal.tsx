@@ -3,6 +3,7 @@
 import React, { useRef } from 'react';
 import { X } from 'lucide-react';
 import { useModalDismiss } from '@/hooks/useModalDismiss';
+import { WINDOW_CLOSE_BUTTON_CLASS, WINDOW_CANCEL_BUTTON_CLASS, WINDOW_TITLE_CLASS } from '@/components/ui/windowStandards';
 
 export interface AppModalProps {
   isOpen: boolean;
@@ -130,7 +131,7 @@ export function AppModal({
               </div>
             )}
             <div className="min-w-0">
-              <h3 className="text-sm font-bold tracking-tight truncate">
+              <h3 className={WINDOW_TITLE_CLASS(isDark)}>
                 {title}
               </h3>
               {subtitle && (
@@ -147,11 +148,7 @@ export function AppModal({
               onClick={onClose}
               title="Kapat (ESC)"
               aria-label="Kapat"
-              className={`p-1 rounded-lg transition-colors cursor-pointer shrink-0 ${
-                isDark
-                  ? 'text-secondary-400 hover:text-white hover:bg-secondary-800'
-                  : 'text-secondary-400 hover:text-secondary-800 hover:bg-secondary-100'
-              }`}
+              className={WINDOW_CLOSE_BUTTON_CLASS}
             >
               <X className="w-4 h-4" />
             </button>
@@ -182,11 +179,7 @@ export function AppModal({
                   <button
                     type="button"
                     onClick={onClose}
-                    className={`h-8.5 px-3.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                      isDark
-                        ? 'bg-secondary-800 hover:bg-secondary-700 text-secondary-300 hover:text-white'
-                        : 'bg-secondary-100 hover:bg-secondary-200 text-secondary-600 hover:text-secondary-900'
-                    }`}
+                    className={WINDOW_CANCEL_BUTTON_CLASS(isDark)}
                   >
                     {cancelLabel}
                   </button>

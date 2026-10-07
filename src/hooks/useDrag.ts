@@ -184,6 +184,7 @@ export function useDrag(options: UseDragOptions = {}): UseDragReturn {
     };
 
     document.body.style.cursor = 'grabbing';
+    document.body.style.userSelect = 'none';
     el.style.transition = 'none';
     setIsDragging(true);
   }, [origin, storageKey]);
@@ -202,6 +203,7 @@ export function useDrag(options: UseDragOptions = {}): UseDragReturn {
 
     modalElement.style.transition = 'none';
     document.body.style.cursor = 'grabbing';
+    document.body.style.userSelect = 'none';
 
     const pos = positionRef.current;
     dragRef.current = {
@@ -221,6 +223,8 @@ export function useDrag(options: UseDragOptions = {}): UseDragReturn {
 
     const modalElement = (e.currentTarget as HTMLElement).closest('[data-modal-content]') as HTMLElement;
     if (!modalElement) return;
+
+    document.body.style.userSelect = 'none';
 
     const pos = positionRef.current;
     const sz = sizeRef.current;
@@ -313,6 +317,7 @@ export function useDrag(options: UseDragOptions = {}): UseDragReturn {
         ds.element.style.willChange = '';
         ds.element.style.contain = '';
         document.body.style.cursor = '';
+        document.body.style.userSelect = '';
 
         const livePos = liveDragPosRef.current;
         const finalX = livePos?.x ?? ds.startPosX;

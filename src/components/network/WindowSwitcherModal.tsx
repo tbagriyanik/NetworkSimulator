@@ -1,12 +1,15 @@
-﻿'use client';
+'use client';
 
 import React, { useEffect, useCallback, useMemo } from 'react';
 import { useMultiWindowStore } from '@/hooks/useMultiWindowStore';
 import { useWindowStore } from '@/hooks/useWindowStore';
 import { useGraphicsQuality } from '@/lib/store/appStore';
 import type { CanvasDevice } from '@/components/network/NetworkTopology/types/networkTopology.types';
-import { Monitor, Server, Router, Shield, Radio, AppWindow, X } from 'lucide-react';
+import { DeviceIcon } from '@/components/network/DeviceIcon';
+import type { DeviceType } from '@/components/network/NetworkTopology/types/networkTopology.types';
+import { AppWindow, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { WINDOW_CLOSE_BUTTON_CLASS, WINDOW_TITLE_CLASS } from '@/components/ui/windowStandards';
 
 interface WindowSwitcherModalProps {
   topologyDevices?: CanvasDevice[];
@@ -15,21 +18,7 @@ interface WindowSwitcherModalProps {
 }
 
 const getDeviceIcon = (type: string) => {
-  switch (type) {
-    case 'pc':
-      return <Monitor className="w-6 h-6 text-cyan-400" />;
-    case 'switchL2':
-    case 'switchL3':
-      return <Server className="w-6 h-6 text-emerald-400" />;
-    case 'router':
-      return <Router className="w-6 h-6 text-blue-400" />;
-    case 'firewall':
-      return <Shield className="w-6 h-6 text-amber-400" />;
-    case 'wlc':
-      return <Radio className="w-6 h-6 text-purple-400" />;
-    default:
-      return <AppWindow className="w-6 h-6 text-secondary-400" />;
-  }
+  return <DeviceIcon type={type as DeviceType} size={24} />;
 };
 
 const getDeviceTypeName = (type: string, language: 'tr' | 'en') => {
@@ -151,9 +140,15 @@ export const WindowSwitcherModal: React.FC<WindowSwitcherModalProps> = ({
       }
     };
 
+    const handleMobileBack = () => {
+      closeSwitcher();
+    };
+
+    window.addEventListener('mobile-back-pressed', handleMobileBack);
     window.addEventListener('keydown', handleKeyDownCapture, true);
     window.addEventListener('keyup', handleKeyUp);
     return () => {
+      window.removeEventListener('mobile-back-pressed', handleMobileBack);
       window.removeEventListener('keydown', handleKeyDownCapture, true);
       window.removeEventListener('keyup', handleKeyUp);
     };
@@ -188,7 +183,7 @@ export const WindowSwitcherModal: React.FC<WindowSwitcherModalProps> = ({
               <AppWindow className="w-5 h-5 text-emerald-400" />
             </div>
             <div>
-              <h3 className="text-base font-bold tracking-tight">
+              <h3 className={WINDOW_TITLE_CLASS(isDark)}>
                 {language === 'tr' ? 'Görev Yöneticisi Pencere Listesi' : 'Task Switcher Windows'}
               </h3>
               <p className="text-[11px] text-secondary-400 mt-0.5">{language === 'tr' ? 'Açık cihaz pencereleri' : 'Open device windows'}</p>
@@ -227,12 +222,20 @@ export const WindowSwitcherModal: React.FC<WindowSwitcherModalProps> = ({
                   closeAllDeviceWindows();
                   closeSwitcher();
                 }}
-                className="ml-1 inline-flex items-center gap-1 rounded border border-red-300 px-2 py-1 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 dark:hover:bg-red-950/40"
+                className="ml-1 inline-flex items-center gap-1 rounded border border-error-500/40 px-2 py-1 text-xs font-medium text-error-500 transition-colors hover:bg-error-500/10"
               >
                 <X className="h-3 w-3" />
                 {language === 'tr' ? 'Tümünü kapat' : 'Close all'}
               </button>
             )}
+            <button
+              type="button"
+              onClick={closeSwitcher}
+              className={WINDOW_CLOSE_BUTTON_CLASS}
+              aria-label={language === 'tr' ? 'Kapat' : 'Close'}
+            >
+              <X className="h-3.5 w-3.5 stroke-[3]" />
+            </button>
           </div>
         </div>
 
