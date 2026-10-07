@@ -224,6 +224,23 @@ export function usePageTopologyActions({
         const iotDevices = devices.filter(d => d.type === 'iot');
         const printerDevices = devices.filter(d => d.type === 'printer');
 
+        // Helper to generate factory default names when devices are initially added
+        const getDefaultFactoryName = (devType: CanvasDevice['type'], indexOfType: number) => {
+          switch (devType) {
+            case 'router': return `Router${indexOfType}`;
+            case 'switchL2':
+            case 'switchL3': return `Switch${indexOfType}`;
+            case 'pc': return `PC${indexOfType}`;
+            case 'mobile': return `Mobile${indexOfType}`;
+            case 'printer': return `Printer${indexOfType}`;
+            case 'iot': return `IoT${indexOfType}`;
+            case 'wlc': return `WLC${indexOfType}`;
+            case 'firewall': return `Firewall${indexOfType}`;
+            case 'hub': return `Hub${indexOfType}`;
+            default: return `Device${indexOfType}`;
+          }
+        };
+
         // Helper function to extract exact required CLI commands based on topology scenario
         const getDeviceCliCommands = (routerDev: CanvasDevice): string[] => {
           const devState = deviceStates?.get(routerDev.id);
@@ -242,6 +259,12 @@ export function usePageTopologyActions({
             const dhcpPool = (devState as unknown as { dhcpPools?: Array<{ name: string; network: string; mask: string; defaultRouter?: string }> })?.dhcpPools || [];
 
             const configCommands: string[] = [];
+
+            // Configure Hostname if different from default or specified in deviceState
+            const targetHostname = devState?.hostname || routerDev.name;
+            if (targetHostname) {
+              configCommands.push(`hostname ${targetHostname}`);
+            }
 
             // Configure all assigned ports
             configuredPorts.forEach(p => {
@@ -302,6 +325,12 @@ export function usePageTopologyActions({
               : [];
 
             const switchConfigCmds: string[] = [];
+
+            // Configure Hostname if different from default
+            const targetHostname = devState?.hostname || routerDev.name;
+            if (targetHostname) {
+              switchConfigCmds.push(`hostname ${targetHostname}`);
+            }
 
             trunkPorts.forEach(tp => {
               switchConfigCmds.push(`interface ${tp.id}`);
@@ -365,9 +394,12 @@ export function usePageTopologyActions({
           const devSelector = `[data-toolbar-device="${devTypeKey}"], [data-toolbar-device="pc"]`;
 
           // Step 1a: Move cursor to toolbar icon FIRST (glide without click)
+          const devTypeCount = currentDevices.filter(item => item.type === dev.type).length - 1;
+          const initialFactoryName = getDefaultFactoryName(dev.type, Math.max(0, devTypeCount));
+
           registerTimeout(() => {
             currentStep++;
-            updateProgress(currentStep, isTr ? `${dev.name} seçiliyor` : `Selecting ${dev.name}`);
+            updateProgress(currentStep, isTr ? `${initialFactoryName} seçiliyor` : `Selecting ${initialFactoryName}`);
             const targetBtn = getElementCoords(devSelector, 220, 75);
             moveCursor(targetBtn.x, targetBtn.y, isTr ? `${dev.type.toUpperCase()} Seçiliyor` : `Selecting ${dev.type.toUpperCase()}`, false);
           }, delay);
@@ -384,7 +416,7 @@ export function usePageTopologyActions({
           registerTimeout(() => {
             const screenX = Math.min(window.innerWidth - 100, Math.max(120, dev.x + 80));
             const screenY = Math.min(window.innerHeight - 150, Math.max(150, dev.y + 120));
-            moveCursor(screenX, screenY, isTr ? `${dev.name} Yerleştiriliyor` : `Placing ${dev.name}`, false);
+            moveCursor(screenX, screenY, isTr ? `${initialFactoryName} Yerleştiriliyor` : `Placing ${initialFactoryName}`, false);
           }, delay);
           delay += 450;
 
@@ -392,31 +424,33 @@ export function usePageTopologyActions({
           registerTimeout(() => {
             const screenX = Math.min(window.innerWidth - 100, Math.max(120, dev.x + 80));
             const screenY = Math.min(window.innerHeight - 150, Math.max(150, dev.y + 120));
-            moveCursor(screenX, screenY, isTr ? `${dev.name} Eklendi` : `${dev.name} Placed`, true);
+            moveCursor(screenX, screenY, isTr ? `${initialFactoryName} Eklendi` : `${initialFactoryName} Placed`, true);
 
-            // Device is added to canvas on click in clean initial state (unconfigured IP / WiFi / Port IPs)
+            // Device is added to canvas on click in clean initial state with factory default name
             const sanitizedDevices = currentDevices.map((d, idx) => {
               if (idx === currentDevices.length - 1) {
                 // If it's a PC or WiFi client being placed, start with static 169.254.x.x APIPA IP & disabled/unconfigured WiFi
                 if (d.type === 'pc') {
                   const pcIndex = currentDevices.filter(item => item.type === 'pc').length;
                   const initialApipaIp = `169.254.1.${10 + pcIndex}`;
-                  return { ...d, ip: initialApipaIp, subnet: '255.255.0.0', gateway: '', dns: '', ipConfigMode: 'static' as const };
+                  return { ...d, name: initialFactoryName, ip: initialApipaIp, subnet: '255.255.0.0', gateway: '', dns: '', ipConfigMode: 'static' as const };
                 }
                 if (d.type === 'mobile') {
                   const mobileIndex = currentDevices.filter(item => item.type === 'mobile').length;
                   const initialApipaIp = `169.254.1.${20 + mobileIndex}`;
-                  return { ...d, ip: initialApipaIp, subnet: '255.255.0.0', wifi: d.wifi ? { ...d.wifi, enabled: false, ssid: '', password: '' } : undefined };
+                  return { ...d, name: initialFactoryName, ip: initialApipaIp, subnet: '255.255.0.0', wifi: d.wifi ? { ...d.wifi, enabled: false, ssid: '', password: '' } : undefined };
                 }
                 if (d.type === 'printer') {
-                  return { ...d, ip: '', subnet: '255.255.255.0', gateway: '', dns: '' };
+                  return { ...d, name: initialFactoryName, ip: '', subnet: '255.255.255.0', gateway: '', dns: '' };
                 }
                 if (d.type === 'iot') {
-                  return { ...d, ip: '', subnet: '255.255.255.0', gateway: '', dns: '' };
+                  return { ...d, name: initialFactoryName, ip: '', subnet: '255.255.255.0', gateway: '', dns: '' };
                 }
                 if (d.type === 'wlc') {
-                  return { ...d, ip: '', subnet: '255.255.255.0', gateway: '', wifi: d.wifi ? { ...d.wifi, enabled: false, ssid: '', password: '' } : undefined };
+                  return { ...d, name: initialFactoryName, ip: '', subnet: '255.255.255.0', gateway: '', wifi: d.wifi ? { ...d.wifi, enabled: false, ssid: '', password: '' } : undefined };
                 }
+                // Routers & Switches start with factory default name (e.g. Router0, Switch0)
+                return { ...d, name: initialFactoryName };
               }
               return d;
             });
@@ -580,7 +614,9 @@ export function usePageTopologyActions({
             const subnetCoords = getElementCoords('input[placeholder*="255.255.255.0"], input[placeholder*="255."], input[name="subnet"]', window.innerWidth / 2 + 100, window.innerHeight / 2 - 40);
             moveCursor(subnetCoords.x, subnetCoords.y, isTr ? `${pc1.name} Maske: ${defaultSubnet}` : `${pc1.name} Mask: ${defaultSubnet}`, false, defaultSubnet);
             pc1.subnet = defaultSubnet;
-            setDevices(devices.map(d => d.id === pc1.id ? { ...d, subnet: defaultSubnet } : d));
+            const updated = simulatedDevices.map(d => d.id === pc1.id ? { ...d, name: pc1.name, ip: targetPc1Ip, subnet: defaultSubnet } : d);
+            simulatedDevices = updated;
+            setDevices(updated);
             const subnetEl = (document.querySelector('input[placeholder*="255.255.255.0"]') || document.querySelector('input[placeholder*="255."]') || document.querySelector('input[name="subnet"]')) as HTMLInputElement | null;
             if (subnetEl) {
               subnetEl.focus();
@@ -589,7 +625,7 @@ export function usePageTopologyActions({
               subnetEl.dispatchEvent(new Event('change', { bubbles: true }));
             }
             window.dispatchEvent(new CustomEvent('commit-action-event', {
-              detail: { action: isTr ? `${pc1.name} Alt Ağ Maskesi: ${defaultSubnet} ayarlandı` : `Set ${pc1.name} Subnet Mask: ${defaultSubnet}` }
+              detail: { action: isTr ? `${pc1.name} Yapılandırıldı (IP: ${targetPc1Ip}, Maske: ${defaultSubnet})` : `Configured ${pc1.name} (IP: ${targetPc1Ip}, Mask: ${defaultSubnet})` }
             }));
           }, delay);
           delay += 1350;
@@ -645,7 +681,9 @@ export function usePageTopologyActions({
             const subnetCoords = getElementCoords('input[placeholder*="255.255.255.0"], input[placeholder*="255."], input[name="subnet"]', window.innerWidth / 2 + 100, window.innerHeight / 2 - 40);
             moveCursor(subnetCoords.x, subnetCoords.y, isTr ? `${pc2.name} Maske: ${defaultSubnet}` : `${pc2.name} Mask: ${defaultSubnet}`, false, defaultSubnet);
             pc2.subnet = defaultSubnet;
-            setDevices(devices.map(d => d.id === pc2.id ? { ...d, subnet: defaultSubnet } : d));
+            const updated = simulatedDevices.map(d => d.id === pc2.id ? { ...d, name: pc2.name, ip: targetPc2Ip, subnet: defaultSubnet } : d);
+            simulatedDevices = updated;
+            setDevices(updated);
             const subnetEl = (document.querySelector('input[placeholder*="255.255.255.0"]') || document.querySelector('input[placeholder*="255."]') || document.querySelector('input[name="subnet"]')) as HTMLInputElement | null;
             if (subnetEl) {
               subnetEl.focus();
@@ -654,7 +692,7 @@ export function usePageTopologyActions({
               subnetEl.dispatchEvent(new Event('change', { bubbles: true }));
             }
             window.dispatchEvent(new CustomEvent('commit-action-event', {
-              detail: { action: isTr ? `${pc2.name} Alt Ağ Maskesi: ${defaultSubnet} ayarlandı` : `Set ${pc2.name} Subnet Mask: ${defaultSubnet}` }
+              detail: { action: isTr ? `${pc2.name} Yapılandırıldı (IP: ${targetPc2Ip}, Maske: ${defaultSubnet})` : `Configured ${pc2.name} (IP: ${targetPc2Ip}, Mask: ${defaultSubnet})` }
             }));
           }, delay);
           delay += 1350;
@@ -783,13 +821,17 @@ export function usePageTopologyActions({
               updateProgress(currentStep, resultMsg);
               moveCursor(window.innerWidth / 2, window.innerHeight / 2 + 50, isTr ? `CLI İşlemi Başarılı!` : `CLI Operation Succeeded!`, false);
 
-              // Apply this router/switch's configured state to active device states
+              // Apply this router/switch's configured state to active device states & update device name from factory default
               if (devState) {
                 const updated = new Map(simulatedStates);
                 updated.set(routerDev.id, devState);
                 simulatedStates = updated;
                 setDeviceStates(updated);
               }
+
+              const updatedDevs = simulatedDevices.map(d => d.id === routerDev.id ? { ...d, name: routerDev.name } : d);
+              simulatedDevices = updatedDevs;
+              setDevices(updatedDevs);
 
               window.dispatchEvent(new CustomEvent('commit-action-event', {
                 detail: { action: resultMsg }
@@ -837,6 +879,7 @@ export function usePageTopologyActions({
 
               const updated = simulatedDevices.map(d => d.id === wifiDev.id ? {
                 ...d,
+                name: wifiDev.name,
                 wifi: d.wifi ? { ...d.wifi, enabled: true, ssid, password: pass } : { enabled: true, ssid, password: pass, mode: 'client' as const }
               } : d);
               simulatedDevices = updated;
@@ -884,7 +927,7 @@ export function usePageTopologyActions({
               updateProgress(currentStep, isTr ? `${printerDev.name} Ağ Yazıcısı Aktif (IP: ${printerIp})` : `${printerDev.name} Network Printer Ready (IP: ${printerIp})`);
               moveCursor(window.innerWidth / 2, window.innerHeight / 2 - 10, isTr ? `Yazıcı IP: ${printerIp}` : `Printer IP: ${printerIp}`, false);
 
-              const updated = simulatedDevices.map(d => d.id === printerDev.id ? { ...d, ip: printerIp } : d);
+              const updated = simulatedDevices.map(d => d.id === printerDev.id ? { ...d, name: printerDev.name, ip: printerIp } : d);
               simulatedDevices = updated;
               setDevices(updated);
 
@@ -933,7 +976,7 @@ export function usePageTopologyActions({
               updateProgress(currentStep, isTr ? `${iotDev.name} (${iotLabel}) Servisi Aktif (IP: ${iotIp})` : `${iotDev.name} (${iotLabel}) Service Active (IP: ${iotIp})`);
               moveCursor(window.innerWidth / 2, window.innerHeight / 2 - 10, isTr ? `${iotLabel} IP: ${iotIp}` : `${iotLabel} IP: ${iotIp}`, false);
 
-              const updated = simulatedDevices.map(d => d.id === iotDev.id ? { ...d, ip: iotIp } : d);
+              const updated = simulatedDevices.map(d => d.id === iotDev.id ? { ...d, name: iotDev.name, ip: iotIp } : d);
               simulatedDevices = updated;
               setDevices(updated);
 
@@ -982,6 +1025,7 @@ export function usePageTopologyActions({
 
               const updated = simulatedDevices.map(d => d.id === wlcDev.id ? {
                 ...d,
+                name: wlcDev.name,
                 ip: wlcIp,
                 wifi: d.wifi ? { ...d.wifi, enabled: true, ssid: wlanSsid } : { enabled: true, ssid: wlanSsid, mode: 'ap' as const }
               } : d);
