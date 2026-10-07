@@ -251,7 +251,7 @@ export function usePageTopologyActions({
             const targetBtn = getElementCoords(`[data-toolbar-device="${dev.type}"]`, 220, 75);
             moveCursor(targetBtn.x, targetBtn.y, isTr ? `${dev.type.toUpperCase()} Seç` : `Select ${dev.type.toUpperCase()}`, true);
           }, delay);
-          delay += 600;
+          delay += 900;
 
           // Step 1b: Move cursor to target canvas position, click, and ADD device to canvas
           registerTimeout(() => {
@@ -273,7 +273,7 @@ export function usePageTopologyActions({
               detail: { action: isTr ? `${dev.name} topolojiye eklendi` : `Added ${dev.name} to topology` }
             }));
           }, delay);
-          delay += 700;
+          delay += 1000;
         });
 
         // 2. Mouse moves to Cable Tool, clicks exact cable type button (straight, crossover, console, etc.) in toolbar, then connects ports
@@ -293,7 +293,7 @@ export function usePageTopologyActions({
             const cableBtn = getElementCoords(`[data-toolbar-cable="${cableTypeVal}"], [data-toolbar-cable="straight"]`, 330, 75);
             moveCursor(cableBtn.x, cableBtn.y, isTr ? `${cableLabel} Kablo Seç` : `Select ${cableLabel} Cable`, true);
           }, delay);
-          delay += 600;
+          delay += 900;
 
           // Click source device port
           registerTimeout(() => {
@@ -301,7 +301,7 @@ export function usePageTopologyActions({
             const startY = srcDev ? srcDev.y + 120 : 200;
             moveCursor(startX, startY, isTr ? `${srcDev?.name || ''} Portuna Tıkla` : `Click ${srcDev?.name || ''} Port`, true);
           }, delay);
-          delay += 650;
+          delay += 950;
 
           // Click target device to complete connection & record in timeline history
           registerTimeout(() => {
@@ -314,7 +314,7 @@ export function usePageTopologyActions({
               detail: { action: isTr ? `${srcDev?.name || ''} ➔ ${tgtDev?.name || ''} (${cableLabel}) bağlandı` : `Connected ${srcDev?.name || ''} ➔ ${tgtDev?.name || ''} (${cableLabel})` }
             }));
           }, delay);
-          delay += 700;
+          delay += 1000;
         });
 
         // 3. PC Device Configuration (Double Click to open window, enter IP visually, close window)
@@ -329,7 +329,7 @@ export function usePageTopologyActions({
             moveCursor(pc1.x + 80, pc1.y + 120, isTr ? `${pc1.name} Çift Tıkla (Aç)` : `Double Click ${pc1.name} (Open)`, true);
             useMultiWindowStore.getState().openDeviceWindow(pc1.id, 'pc', 'settings');
           }, delay);
-          delay += 800;
+          delay += 1100;
 
           // PC-1: IP Address input typing & visual populating & record in timeline history
           registerTimeout(() => {
@@ -350,7 +350,7 @@ export function usePageTopologyActions({
               detail: { action: isTr ? `${pc1.name} IP: 192.168.1.10 ayarlandı` : `Set ${pc1.name} IP: 192.168.1.10` }
             }));
           }, delay);
-          delay += 950;
+          delay += 1350;
 
           // PC-1: Close window after configuration
           registerTimeout(() => {
@@ -358,7 +358,7 @@ export function usePageTopologyActions({
             moveCursor(closeBtn.x, closeBtn.y, isTr ? `${pc1.name} Penceresini Kapat` : `Close ${pc1.name} Window`, true);
             useMultiWindowStore.getState().closeDeviceWindow(pc1.id);
           }, delay);
-          delay += 650;
+          delay += 850;
 
           // PC-2: Double click to open configuration window
           registerTimeout(() => {
@@ -367,7 +367,7 @@ export function usePageTopologyActions({
             moveCursor(pc2.x + 80, pc2.y + 120, isTr ? `${pc2.name} Çift Tıkla (Aç)` : `Double Click ${pc2.name} (Open)`, true);
             useMultiWindowStore.getState().openDeviceWindow(pc2.id, 'pc', 'settings');
           }, delay);
-          delay += 800;
+          delay += 1100;
 
           // PC-2: IP Address input typing & visual populating & record in timeline history
           registerTimeout(() => {
@@ -388,7 +388,7 @@ export function usePageTopologyActions({
               detail: { action: isTr ? `${pc2.name} IP: 192.168.1.20 ayarlandı` : `Set ${pc2.name} IP: 192.168.1.20` }
             }));
           }, delay);
-          delay += 950;
+          delay += 1350;
 
           // PC-2: Close window after configuration
           registerTimeout(() => {
@@ -396,7 +396,7 @@ export function usePageTopologyActions({
             moveCursor(closeBtn.x, closeBtn.y, isTr ? `${pc2.name} Penceresini Kapat` : `Close ${pc2.name} Window`, true);
             useMultiWindowStore.getState().closeDeviceWindow(pc2.id);
           }, delay);
-          delay += 650;
+          delay += 850;
 
           // 4. Test Ping via CMD on PC-1 (Perfect synchronization with pc-auto-type)
           const targetIp = pc2.ip || '192.168.1.20';
@@ -407,7 +407,7 @@ export function usePageTopologyActions({
             moveCursor(pc1.x + 80, pc1.y + 120, isTr ? `${pc1.name} CMD Aç` : `Open ${pc1.name} CMD`, true);
             useMultiWindowStore.getState().openDeviceWindow(pc1.id, 'pc', 'desktop');
           }, delay);
-          delay += 800;
+          delay += 1100;
 
           // Move cursor to input and trigger synchronized character typing
           registerTimeout(() => {
@@ -421,7 +421,7 @@ export function usePageTopologyActions({
               })
             );
           }, delay);
-          delay += Math.max(900, fullCmd.length * 65 + 250);
+          delay += Math.max(1100, fullCmd.length * 75 + 300);
 
           // Enter key press & timeline logging as command finishes typing
           registerTimeout(() => {
@@ -431,7 +431,7 @@ export function usePageTopologyActions({
               detail: { action: isTr ? `${pc1.name} CMD: ${fullCmd}` : `${pc1.name} CMD: ${fullCmd}` }
             }));
           }, delay);
-          delay += 650;
+          delay += 900;
 
           // Show Ping results badge & let video record the ping reply lines
           registerTimeout(() => {
@@ -439,7 +439,7 @@ export function usePageTopologyActions({
             updateProgress(currentStep, isTr ? `Komut Başarıyla Sonuçlandı! Paketler İletildi (Reply from ${targetIp})` : `Command Succeeded! Packets Delivered (Reply from ${targetIp})`);
             moveCursor(window.innerWidth / 2, window.innerHeight / 2 + 30, isTr ? `Komut Başarıyla Sonuçlandı! (Reply from ${targetIp}: bytes=32 time=1ms TTL=128)` : `Command Succeeded! (Reply from ${targetIp}: bytes=32 time=1ms TTL=128)`, false);
           }, delay);
-          delay += 2200;
+          delay += 3000;
 
           // Close PC-1 CMD window after showing results
           registerTimeout(() => {
@@ -447,7 +447,7 @@ export function usePageTopologyActions({
             moveCursor(closeBtn.x, closeBtn.y, isTr ? `${pc1.name} Penceresini Kapat` : `Close ${pc1.name} Window`, true);
             useMultiWindowStore.getState().closeDeviceWindow(pc1.id);
           }, delay);
-          delay += 650;
+          delay += 850;
         }
 
         // 5. Router / Switch CLI Configuration Step (Synchronized character-by-character typing with terminal-auto-type)
@@ -463,7 +463,7 @@ export function usePageTopologyActions({
               moveCursor(routerDev.x + 80, routerDev.y + 120, isTr ? `${routerDev.name} Konsol Aç` : `Open ${routerDev.name} Console`, true);
               useMultiWindowStore.getState().openDeviceWindow(routerDev.id, routerDev.type, 'console');
             }, delay);
-            delay += 800;
+            delay += 1100;
 
             // Synchronized CLI command typing per command line
             devCmds.forEach((cliCmd) => {
@@ -479,7 +479,7 @@ export function usePageTopologyActions({
                   })
                 );
               }, delay);
-              delay += Math.max(650, cliCmd.length * 60 + 200);
+              delay += Math.max(850, cliCmd.length * 70 + 250);
 
               // Enter key press & timeline logging as command finishes typing
               registerTimeout(() => {
@@ -489,7 +489,7 @@ export function usePageTopologyActions({
                   detail: { action: isTr ? `${routerDev.name} CLI: ${cliCmd}` : `${routerDev.name} CLI: ${cliCmd}` }
                 }));
               }, delay);
-              delay += 550;
+              delay += 800;
             });
 
             // Show CLI configuration output result & record in timeline history
@@ -504,7 +504,7 @@ export function usePageTopologyActions({
                 detail: { action: resultMsg }
               }));
             }, delay);
-            delay += 1800;
+            delay += 2500;
 
             // Close Router/Switch CLI window
             registerTimeout(() => {
@@ -512,7 +512,7 @@ export function usePageTopologyActions({
               moveCursor(closeBtn.x, closeBtn.y, isTr ? `${routerDev.name} Konsol Kapat` : `Close ${routerDev.name} Console`, true);
               useMultiWindowStore.getState().closeDeviceWindow(routerDev.id);
             }, delay);
-            delay += 650;
+            delay += 850;
           });
         }
 

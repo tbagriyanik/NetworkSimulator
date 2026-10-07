@@ -114,6 +114,15 @@ export function AppFooter({
     message: '',
   });
 
+  // Clear simulation status whenever projectName changes (new project or file opened)
+  const prevProjectNameRef = useRef(projectName);
+  useEffect(() => {
+    if (prevProjectNameRef.current !== projectName) {
+      prevProjectNameRef.current = projectName;
+      setSimulationStatus({ active: false, current: 0, total: 0, message: '' });
+    }
+  }, [projectName]);
+
   useEffect(() => {
     const handleProgress = (e: Event) => {
       const detail = (e as CustomEvent<{ active: boolean; current: number; total: number; message: string }>).detail;

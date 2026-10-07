@@ -1,4 +1,4 @@
-﻿import { useCallback } from 'react';
+import { useCallback } from 'react';
 import { generateRandomLinkLocalIpv4 } from '@/lib/network/linkLocal';
 import { useAppStore } from '@/lib/store/appStore';
 import { useMultiWindowStore } from '@/hooks/useMultiWindowStore';
@@ -178,8 +178,9 @@ export function useProjectReset({
     // Close network refresh report if open
     setRefreshNetworkReport(null);
 
-    // Close packet analysis popup explicitly
+    // Close packet analysis popup and clear simulation status explicitly
     window.dispatchEvent(new CustomEvent('network-refresh'));
+    window.dispatchEvent(new CustomEvent('clear-simulation-status'));
 
     // Force return to topology
     setActiveTab('topology');

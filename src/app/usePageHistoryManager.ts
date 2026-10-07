@@ -1,4 +1,4 @@
-﻿import { useCallback, useRef, useEffect, MutableRefObject } from 'react';
+import { useCallback, useRef, useEffect, MutableRefObject } from 'react';
 import { useHistory, ProjectState } from '@/hooks/useHistory';
 import { serializeState } from './page.utils';
 import { TabType, PCOutputLine } from './page.types';
@@ -106,8 +106,12 @@ export function usePageHistoryManager({
   }, []);
 
   const commitAction = useCallback((desc: string) => {
-    pendingActionDesc.current = desc;
-  }, []);
+    if (!desc || isApplyingHistoryRef.current) return;
+    const s = getCurrentStateRef.current();
+    pushState(s, activeTabRef.current === 'topology' ? 'topology' : 'device', desc);
+    lastPushedStateRef.current = serializeState(s);
+    pendingActionDesc.current = null;
+  }, [pushState, activeTabRef]);
 
   const applyProjectState = useCallback((state: ProjectState) => {
     markApplyingHistory();

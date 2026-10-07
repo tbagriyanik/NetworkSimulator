@@ -421,7 +421,7 @@ export function useHistory(initialState: ProjectState) {
       };
 
       const currentPresent = prev.items[prev.index]?.signature;
-      if (currentPresent && currentPresent === signature) {
+      if (!explicitDescription && currentPresent && currentPresent === signature) {
         return prev;
       }
 
