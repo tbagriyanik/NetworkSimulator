@@ -6,6 +6,7 @@ import type { CanvasDevice, CanvasNote } from '@/components/network/NetworkTopol
 const MIN_ZOOM = 0.2;
 const MAX_ZOOM = 3.0;
 const DEFAULT_ZOOM = 1.0;
+export const DEFAULT_PAN = { x: 32, y: 32 };
 
 interface CanvasZoomPanProps {
   zoom: number;
@@ -196,7 +197,7 @@ export function useCanvasZoomPan({
   // Reset view to top-left corner starting directly under canvas header
   const resetView = useCallback(() => {
     setZoom(DEFAULT_ZOOM);
-    setPan({ x: 0, y: 0 });
+    setPan(DEFAULT_PAN);
     window.scrollTo(0, 0);
   }, [setZoom, setPan]);
 

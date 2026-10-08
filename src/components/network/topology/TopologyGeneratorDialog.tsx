@@ -253,9 +253,9 @@ export function TopologyGeneratorDialog({
 
           const formattedDescription = [
             `🧪 ${title}`,
-            `🎯 Amaç: ${objective}`,
-            `📋 Açıklama: ${desc}`,
-            `⚙️ Doğrulama: ${isTr ? built.detailTr : built.detailEn}`,
+            `🎯 ${isTr ? 'Amaç' : 'Objective'}: ${objective}`,
+            `📋 ${isTr ? 'Açıklama' : 'Description'}: ${desc}`,
+            `⚙️ ${isTr ? 'Doğrulama' : 'Verification'}: ${isTr ? built.detailTr : built.detailEn}`,
           ].join('\n\n');
 
           onGenerate({

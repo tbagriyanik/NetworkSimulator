@@ -218,10 +218,10 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
           />
 
           <main className={cn(
-            "overflow-hidden flex flex-col min-h-0 pt-14 sm:pt-16",
+            "overflow-hidden flex flex-col min-h-0",
             page.preferences.showFooter ? "h-[calc(100vh-44px)]" : "h-screen",
-            page.activeTab === 'topology' ? 'md:pt-[116px]' : 'md:pt-16',
-            page.isTablet && (page.showPCPanel || page.showUnifiedDeviceModal || page.showRouterPanel) && "flex-row md:pt-16"
+            page.activeTab === 'topology' ? 'pt-[106px] sm:pt-[116px]' : 'pt-14 sm:pt-16',
+            page.isTablet && (page.showPCPanel || page.showUnifiedDeviceModal || page.showRouterPanel) && "flex-row"
           )}>
             <TopologySection
               preferences={page.preferences}

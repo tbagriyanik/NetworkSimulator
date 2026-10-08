@@ -798,5 +798,13 @@
   "generateSummary": "Özet Notu Oluştur",
   "saveAsPNG": "PNG Kaydet",
   "topologyGenerator": "Otomatik Topoloji Üretici",
-  "unknown": "Bilinmeyen"
+  "unknown": "Bilinmeyen",
+  "simulationPaused": "Simülasyon Duraklatıldı",
+  "simulationPausedDesc": "Devam etmek için Boşluk (Space) tuşuna veya alttaki Devam Et düğmesine basın",
+  "resumeSimulation": "Devam Et",
+  "pauseSimulation": "Duraklat",
+  "resumeSimulationTooltip": "Simülasyona devam et (Boşluk)",
+  "pauseSimulationTooltip": "Simülasyonu duraklat (Boşluk)",
+  "stopSimulationTooltip": "Adım adım simülasyonu durdur (Esc / Mobil Geri)",
+  "simulationStep": "Adım"
 }

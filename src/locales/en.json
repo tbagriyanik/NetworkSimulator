@@ -798,5 +798,13 @@
   "generateSummary": "Generate Summary Note",
   "saveAsPNG": "Save as PNG",
   "topologyGenerator": "Automatic Topology Generator",
-  "unknown": "Unknown"
+  "unknown": "Unknown",
+  "simulationPaused": "Simulation Paused",
+  "simulationPausedDesc": "Press Space key or click Resume button below to continue",
+  "resumeSimulation": "Resume",
+  "pauseSimulation": "Pause",
+  "resumeSimulationTooltip": "Resume simulation (Space)",
+  "pauseSimulationTooltip": "Pause simulation (Space)",
+  "stopSimulationTooltip": "Stop step by step simulation (Esc / Mobile Back)",
+  "simulationStep": "Step"
 }

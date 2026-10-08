@@ -157,7 +157,7 @@ export function useProjectReset({
 
     // Reset zoom and pan to top-left
     setZoom(1.0);
-    setPan({ x: 0, y: 0 });
+    setPan({ x: 32, y: 32 });
 
     if (typeof window !== 'undefined') {
       window.scrollTo(0, 0);

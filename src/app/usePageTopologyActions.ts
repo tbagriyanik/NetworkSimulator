@@ -159,7 +159,7 @@ export function usePageTopologyActions({
       resetToEmptyProject();
       setNotes([]);
       setZoom(1.0);
-      setPan({ x: 0, y: 0 });
+      setPan({ x: 32, y: 32 });
       if (data.projectName) {
         setProjectName(data.projectName);
       }

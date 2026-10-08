@@ -77,9 +77,10 @@ export function getSwitchCliCommands(switchDev: CanvasDevice, devState?: SwitchS
 
   if (devState?.vlans) {
     Object.values(devState.vlans).forEach((vlan) => {
-      if (vlan.id > 1) {
+      // Exclude default VLAN 1 and reserved Cisco VLANs (1002, 1003, 1004, 1005)
+      if (vlan.id > 1 && (vlan.id < 1002 || vlan.id > 1005)) {
         devCmds.push(`vlan ${vlan.id}`);
-        if (vlan.name && vlan.name !== `VLAN${vlan.id}`) {
+        if (vlan.name && vlan.name !== `VLAN${vlan.id}` && !vlan.name.toLowerCase().includes('default')) {
           devCmds.push(`name ${vlan.name}`);
         }
         devCmds.push('exit');
@@ -93,7 +94,12 @@ export function getSwitchCliCommands(switchDev: CanvasDevice, devState?: SwitchS
         devCmds.push(`interface ${p.id}`);
         devCmds.push('switchport mode trunk');
         devCmds.push('exit');
-      } else if (p.mode === 'access' && typeof p.accessVlan === 'number' && p.accessVlan > 1) {
+      } else if (
+        p.mode === 'access' &&
+        typeof p.accessVlan === 'number' &&
+        p.accessVlan > 1 &&
+        (p.accessVlan < 1002 || p.accessVlan > 1005)
+      ) {
         devCmds.push(`interface ${p.id}`);
         devCmds.push('switchport mode access');
         devCmds.push(`switchport access vlan ${p.accessVlan}`);
@@ -165,29 +171,55 @@ export function getRouterCliCommands(routerDev: CanvasDevice, devState?: SwitchS
     devCmds.push('exit');
   });
 
-  const dhcpPool = (devState as unknown as { dhcpPools?: Array<{ name: string; network: string; mask: string; defaultRouter?: string }> })?.dhcpPools || [];
-  dhcpPool.forEach((pool) => {
-    devCmds.push(`ip dhcp pool ${pool.name}`);
-    devCmds.push(`network ${pool.network} ${pool.mask}`);
-    if (pool.defaultRouter) {
-      devCmds.push(`default-router ${pool.defaultRouter}`);
+  // DHCP Pools (can be Record<string, ...> or Array<...>)
+  const rawDhcpPools = (devState as unknown as { dhcpPools?: unknown })?.dhcpPools;
+  if (rawDhcpPools) {
+    if (Array.isArray(rawDhcpPools)) {
+      rawDhcpPools.forEach((pool: { name?: string; network?: string; subnetMask?: string; mask?: string; defaultRouter?: string; dnsServer?: string }) => {
+        if (pool?.name && pool?.network) {
+          devCmds.push(`ip dhcp pool ${pool.name}`);
+          devCmds.push(`network ${pool.network} ${pool.subnetMask || pool.mask || '255.255.255.0'}`);
+          if (pool.defaultRouter) devCmds.push(`default-router ${pool.defaultRouter}`);
+          if (pool.dnsServer) devCmds.push(`dns-server ${pool.dnsServer}`);
+          devCmds.push('exit');
+        }
+      });
+    } else if (typeof rawDhcpPools === 'object') {
+      Object.entries(rawDhcpPools as Record<string, { network?: string; subnetMask?: string; mask?: string; defaultRouter?: string; dnsServer?: string }>).forEach(([name, pool]) => {
+        if (pool?.network) {
+          devCmds.push(`ip dhcp pool ${name}`);
+          devCmds.push(`network ${pool.network} ${pool.subnetMask || pool.mask || '255.255.255.0'}`);
+          if (pool.defaultRouter) devCmds.push(`default-router ${pool.defaultRouter}`);
+          if (pool.dnsServer) devCmds.push(`dns-server ${pool.dnsServer}`);
+          devCmds.push('exit');
+        }
+      });
     }
-    devCmds.push('exit');
-  });
+  }
 
-  const dynamicRoutes = (devState as unknown as { dynamicRoutes?: Array<{ destination: string; subnetMask: string; area?: number }> })?.dynamicRoutes || [];
-  const staticRoutes = (devState as unknown as { staticRoutes?: Array<{ destination: string; subnetMask: string; nextHop: string }> })?.staticRoutes || [];
-  const bgpCfg = (devState as unknown as { bgpConfig?: { localAs: number; neighbors: string[] } })?.bgpConfig;
-  const ripCfg = (devState as unknown as { ripConfig?: { version?: number; networks: string[] } })?.ripConfig;
+  const rawDynamicRoutes = (devState as unknown as { dynamicRoutes?: unknown })?.dynamicRoutes;
+  const dynamicRoutes = Array.isArray(rawDynamicRoutes)
+    ? (rawDynamicRoutes as Array<{ destination?: string; subnetMask?: string; area?: number }>)
+    : [];
+
+  const rawStaticRoutes = (devState as unknown as { staticRoutes?: unknown })?.staticRoutes;
+  const staticRoutes = Array.isArray(rawStaticRoutes)
+    ? (rawStaticRoutes as Array<{ destination?: string; subnetMask?: string; nextHop?: string }>)
+    : [];
+
+  const bgpCfg = (devState as unknown as { bgpConfig?: { localAs?: number; neighbors?: string[] } })?.bgpConfig;
+  const ripCfg = (devState as unknown as { ripConfig?: { version?: number; networks?: string[] } })?.ripConfig;
   const ospfId = (devState as unknown as { ospfProcessId?: string })?.ospfProcessId;
 
   if (ospfId || dynamicRoutes.length > 0) {
     devCmds.push(`router ospf ${ospfId || '1'}`);
     dynamicRoutes.forEach((r) => {
-      devCmds.push(`network ${r.destination} ${r.subnetMask} area ${r.area ?? 0}`);
+      if (r.destination && r.subnetMask) {
+        devCmds.push(`network ${r.destination} ${r.subnetMask} area ${r.area ?? 0}`);
+      }
     });
     devCmds.push('exit');
-  } else if (ripCfg && ripCfg.networks && ripCfg.networks.length > 0) {
+  } else if (ripCfg && Array.isArray(ripCfg.networks) && ripCfg.networks.length > 0) {
     devCmds.push('router rip');
     devCmds.push(`version ${ripCfg.version || 2}`);
     ripCfg.networks.forEach((net) => {
@@ -196,13 +228,16 @@ export function getRouterCliCommands(routerDev: CanvasDevice, devState?: SwitchS
     devCmds.push('exit');
   } else if (bgpCfg && bgpCfg.localAs) {
     devCmds.push(`router bgp ${bgpCfg.localAs}`);
-    (bgpCfg.neighbors || []).forEach((nbr) => {
+    const neighbors = Array.isArray(bgpCfg.neighbors) ? bgpCfg.neighbors : [];
+    neighbors.forEach((nbr) => {
       devCmds.push(`neighbor ${nbr} remote-as ${bgpCfg.localAs}`);
     });
     devCmds.push('exit');
   } else if (staticRoutes.length > 0) {
     staticRoutes.forEach((sr) => {
-      devCmds.push(`ip route ${sr.destination} ${sr.subnetMask} ${sr.nextHop}`);
+      if (sr.destination && sr.subnetMask && sr.nextHop) {
+        devCmds.push(`ip route ${sr.destination} ${sr.subnetMask} ${sr.nextHop}`);
+      }
     });
   }
 
@@ -252,6 +287,8 @@ export function calculateSimulationSteps(data: {
   return totalSteps;
 }
 
+let activeSimulationStopper: (() => void) | null = null;
+
 export function runStepByStepSimulation({
   data,
   setDevices,
@@ -259,6 +296,11 @@ export function runStepByStepSimulation({
   setDeviceStates,
   isTr,
 }: StepByStepSimulationParams) {
+  if (activeSimulationStopper) {
+    activeSimulationStopper();
+    activeSimulationStopper = null;
+  }
+
   // Start from empty screen
   setDevices([]);
   setConnections([]);
@@ -273,13 +315,15 @@ export function runStepByStepSimulation({
 
   let simulatedDevices: CanvasDevice[] = [];
   let simulatedStates = new Map<string, SwitchState>();
-  let delay = 300;
 
-  const timeouts: NodeJS.Timeout[] = [];
-  const registerTimeout = (fn: () => void, ms: number) => {
-    const id = setTimeout(fn, ms);
-    timeouts.push(id);
-    return id;
+  interface StepQueueItem {
+    run: () => void;
+    durationMs: number;
+  }
+
+  const stepQueue: StepQueueItem[] = [];
+  const addStep = (fn: () => void, durationMs = 400) => {
+    stepQueue.push({ run: fn, durationMs });
   };
 
   const moveCursor = (x: number, y: number, actionLabel?: string, clicking = false, typingText?: string) => {
@@ -294,21 +338,163 @@ export function runStepByStepSimulation({
     window.dispatchEvent(new CustomEvent('virtual-cursor-hide'));
   };
 
-  const stopSimulation = () => {
-    timeouts.forEach((t) => clearTimeout(t));
-    hideCursor();
+  let isPaused = false;
+  let isStopped = false;
+  let currentStep = 0;
+  let currentStepIdx = 0;
+  let currentMessage = '';
+  let currentTimer: NodeJS.Timeout | null = null;
+  let pauseWaiter: (() => void) | null = null;
+  let delayResolver: (() => void) | null = null;
+  let delayStartTimestamp = 0;
+  let remainingDelayMs = 0;
+
+  const totalSteps = calculateSimulationSteps({ devices, connections, deviceStates });
+
+  const updateProgress = (step: number, msg: string, paused = false) => {
+    currentMessage = msg;
     window.dispatchEvent(
       new CustomEvent('simulation-progress', {
-        detail: { active: false, current: 0, total: 0, message: isTr ? 'İptal Edildi' : 'Cancelled' },
+        detail: { active: true, paused, current: step, total: totalSteps, message: msg },
       })
     );
   };
 
-  const onStopReq = () => {
-    stopSimulation();
-    window.removeEventListener('simulation-stop', onStopReq);
+  const waitOrPause = (durationMs: number): Promise<void> => {
+    if (isStopped) return Promise.resolve();
+
+    return new Promise<void>((resolve) => {
+      delayResolver = resolve;
+      remainingDelayMs = durationMs;
+
+      const finishDelay = () => {
+        currentTimer = null;
+        delayResolver = null;
+        resolve();
+      };
+
+      const startTimer = () => {
+        if (isStopped) {
+          finishDelay();
+          return;
+        }
+        if (isPaused) {
+          pauseWaiter = () => {
+            pauseWaiter = null;
+            startTimer();
+          };
+          return;
+        }
+
+        if (remainingDelayMs <= 0) {
+          finishDelay();
+          return;
+        }
+
+        delayStartTimestamp = Date.now();
+        currentTimer = setTimeout(finishDelay, remainingDelayMs);
+      };
+
+      if (isPaused) {
+        pauseWaiter = () => {
+          pauseWaiter = null;
+          startTimer();
+        };
+      } else {
+        startTimer();
+      }
+    });
   };
+
+  const pauseSimulation = () => {
+    if (isStopped || isPaused) return;
+    isPaused = true;
+    if (currentTimer) {
+      clearTimeout(currentTimer);
+      currentTimer = null;
+      const elapsed = Date.now() - delayStartTimestamp;
+      remainingDelayMs = Math.max(0, remainingDelayMs - elapsed);
+    }
+    updateProgress(currentStep, currentMessage || (isTr ? 'Duraklatıldı' : 'Paused'), true);
+  };
+
+  const resumeSimulation = () => {
+    if (isStopped || !isPaused) return;
+    isPaused = false;
+    updateProgress(currentStep, currentMessage || (isTr ? 'Devam Ediyor' : 'Resuming'), false);
+    if (pauseWaiter) {
+      const waiter = pauseWaiter;
+      pauseWaiter = null;
+      waiter();
+    }
+  };
+
+  const togglePause = () => {
+    if (isPaused) {
+      resumeSimulation();
+    } else {
+      pauseSimulation();
+    }
+  };
+
+  const stopSimulation = () => {
+    if (isStopped) return;
+    isStopped = true;
+    isPaused = false;
+    if (currentTimer) {
+      clearTimeout(currentTimer);
+      currentTimer = null;
+    }
+    if (pauseWaiter) {
+      pauseWaiter = null;
+    }
+    if (delayResolver) {
+      const res = delayResolver;
+      delayResolver = null;
+      res();
+    }
+    hideCursor();
+    cleanupListeners();
+    if (activeSimulationStopper === stopSimulation) {
+      activeSimulationStopper = null;
+    }
+    window.dispatchEvent(
+      new CustomEvent('simulation-progress', {
+        detail: { active: false, paused: false, current: 0, total: 0, message: isTr ? 'İptal Edildi' : 'Cancelled' },
+      })
+    );
+  };
+
+  const onStopReq = () => stopSimulation();
+  const onPauseReq = () => pauseSimulation();
+  const onResumeReq = () => resumeSimulation();
+  const onToggleReq = () => togglePause();
+
+  const onCommandError = (e: Event) => {
+    const detail = (e as CustomEvent<{ deviceId?: string; command?: string; error?: string }>).detail;
+    if (isStopped) return;
+    pauseSimulation();
+    const cleanErr = detail?.error ? ` (${detail.error.trim().split('\n')[0]})` : '';
+    const alertMsg = isTr
+      ? `Hata: "${detail?.command || 'CLI'}" komutu başarısız oldu${cleanErr}. Otomatik ilerleme duraklatıldı.`
+      : `Error: "${detail?.command || 'CLI'}" command failed${cleanErr}. Auto-progression paused.`;
+    updateProgress(currentStep, alertMsg, true);
+  };
+
+  const cleanupListeners = () => {
+    window.removeEventListener('simulation-stop', onStopReq);
+    window.removeEventListener('simulation-pause', onPauseReq);
+    window.removeEventListener('simulation-resume', onResumeReq);
+    window.removeEventListener('simulation-toggle-pause', onToggleReq);
+    window.removeEventListener('terminal-command-error', onCommandError);
+  };
+
   window.addEventListener('simulation-stop', onStopReq);
+  window.addEventListener('simulation-pause', onPauseReq);
+  window.addEventListener('simulation-resume', onResumeReq);
+  window.addEventListener('simulation-toggle-pause', onToggleReq);
+  window.addEventListener('terminal-command-error', onCommandError);
+  activeSimulationStopper = stopSimulation;
 
   const getElementCoords = (selector: string, fallbackX: number, fallbackY: number) => {
     if (typeof document !== 'undefined') {
@@ -334,17 +520,6 @@ export function runStepByStepSimulation({
   const printerDevices = devices.filter((d) => d.type === 'printer');
   const iotDevices = devices.filter((d) => d.type === 'iot');
 
-  const totalSteps = calculateSimulationSteps({ devices, connections, deviceStates });
-
-  let currentStep = 0;
-  const updateProgress = (step: number, msg: string) => {
-    window.dispatchEvent(
-      new CustomEvent('simulation-progress', {
-        detail: { active: true, current: step, total: totalSteps, message: msg },
-      })
-    );
-  };
-
   // ==========================================
   // PHASE 1: PLACE ALL DEVICES (Initial Blank State)
   // ==========================================
@@ -356,31 +531,28 @@ export function runStepByStepSimulation({
     const initialFactoryName = getDefaultFactoryName(dev.type, Math.max(0, devTypeCount));
 
     // Step 1a: Move cursor to toolbar icon
-    registerTimeout(() => {
+    addStep(() => {
       currentStep++;
       updateProgress(currentStep, isTr ? `${initialFactoryName} seçiliyor` : `Selecting ${initialFactoryName}`);
       const targetBtn = getElementCoords(devSelector, 220, 75);
       moveCursor(targetBtn.x, targetBtn.y, isTr ? `${dev.type.toUpperCase()} Seçiliyor` : `Selecting ${dev.type.toUpperCase()}`, false);
-    }, delay);
-    delay += 400;
+    }, 400);
 
     // Step 1b: Click toolbar button
-    registerTimeout(() => {
+    addStep(() => {
       const targetBtn = getElementCoords(devSelector, 220, 75);
       moveCursor(targetBtn.x, targetBtn.y, isTr ? `${dev.type.toUpperCase()} Seçildi` : `Selected ${dev.type.toUpperCase()}`, true);
-    }, delay);
-    delay += 350;
+    }, 350);
 
     // Step 1c: Move cursor to canvas target position
-    registerTimeout(() => {
+    addStep(() => {
       const screenX = Math.min(window.innerWidth - 100, Math.max(120, dev.x + 80));
       const screenY = Math.min(window.innerHeight - 150, Math.max(150, dev.y + 120));
       moveCursor(screenX, screenY, isTr ? `${initialFactoryName} Tuvale Yerleştiriliyor` : `Placing ${initialFactoryName} on Canvas`, false);
-    }, delay);
-    delay += 400;
+    }, 400);
 
     // Step 1d: Click and place blank device
-    registerTimeout(() => {
+    addStep(() => {
       const screenX = Math.min(window.innerWidth - 100, Math.max(120, dev.x + 80));
       const screenY = Math.min(window.innerHeight - 150, Math.max(150, dev.y + 120));
       moveCursor(screenX, screenY, isTr ? `${initialFactoryName} Eklendi ✓` : `${initialFactoryName} Added ✓`, true);
@@ -462,8 +634,7 @@ export function runStepByStepSimulation({
           detail: { action: isTr ? `${initialFactoryName} topolojiye eklendi` : `Added ${initialFactoryName} to topology` },
         })
       );
-    }, delay);
-    delay += 750;
+    }, 750);
   });
 
   // ==========================================
@@ -482,7 +653,7 @@ export function runStepByStepSimulation({
 
     if (!isSameCableType) {
       lastSelectedCableType = cableTypeVal;
-      registerTimeout(() => {
+      addStep(() => {
         currentStep++;
         updateProgress(
           currentStep,
@@ -492,16 +663,14 @@ export function runStepByStepSimulation({
         );
         const cableBtnCoords = getElementCoords(cableSelector, 330, 75);
         moveCursor(cableBtnCoords.x, cableBtnCoords.y, isTr ? `${cableLabel} Kablo Seçiliyor` : `Selecting ${cableLabel} Cable`, false);
-      }, delay);
-      delay += 400;
+      }, 400);
 
-      registerTimeout(() => {
+      addStep(() => {
         const cableBtnCoords = getElementCoords(cableSelector, 330, 75);
         moveCursor(cableBtnCoords.x, cableBtnCoords.y, isTr ? `${cableLabel} Kablo Seçildi` : `Selected ${cableLabel} Cable`, true);
-      }, delay);
-      delay += 350;
+      }, 350);
     } else {
-      registerTimeout(() => {
+      addStep(() => {
         currentStep++;
         updateProgress(
           currentStep,
@@ -509,36 +678,33 @@ export function runStepByStepSimulation({
             ? `Kablo (${cableLabel}): ${srcDev?.name || ''} ➔ ${tgtDev?.name || ''}`
             : `Cable (${cableLabel}): ${srcDev?.name || ''} ➔ ${tgtDev?.name || ''}`
         );
-      }, delay);
+      }, 350);
     }
 
     // Source Port
-    registerTimeout(() => {
+    addStep(() => {
       const portName = conn.sourcePort || 'Port';
       const srcPortSelector = `[data-device-id="${srcDev?.id}"][data-port-id="${conn.sourcePort}"], [data-device-id="${srcDev?.id}"] [data-port-id="${conn.sourcePort}"], [data-device-id="${srcDev?.id}"]`;
       const srcCoords = getElementCoords(srcPortSelector, srcDev ? srcDev.x + 80 : 200, srcDev ? srcDev.y + 120 : 200);
       moveCursor(srcCoords.x, srcCoords.y, isTr ? `${srcDev?.name || ''} [${portName}] Bağlanıyor` : `Connecting to ${srcDev?.name || ''} [${portName}]`, false);
-    }, delay);
-    delay += 400;
+    }, 400);
 
-    registerTimeout(() => {
+    addStep(() => {
       const portName = conn.sourcePort || 'Port';
       const srcPortSelector = `[data-device-id="${srcDev?.id}"][data-port-id="${conn.sourcePort}"], [data-device-id="${srcDev?.id}"] [data-port-id="${conn.sourcePort}"], [data-device-id="${srcDev?.id}"]`;
       const srcCoords = getElementCoords(srcPortSelector, srcDev ? srcDev.x + 80 : 200, srcDev ? srcDev.y + 120 : 200);
       moveCursor(srcCoords.x, srcCoords.y, isTr ? `${srcDev?.name || ''} [${portName}] Tıklandı ✓` : `${srcDev?.name || ''} [${portName}] Clicked ✓`, true);
-    }, delay);
-    delay += 400;
+    }, 400);
 
     // Target Port
-    registerTimeout(() => {
+    addStep(() => {
       const portName = conn.targetPort || 'Port';
       const tgtPortSelector = `[data-device-id="${tgtDev?.id}"][data-port-id="${conn.targetPort}"], [data-device-id="${tgtDev?.id}"] [data-port-id="${conn.targetPort}"], [data-device-id="${tgtDev?.id}"]`;
       const tgtCoords = getElementCoords(tgtPortSelector, tgtDev ? tgtDev.x + 80 : 350, tgtDev ? tgtDev.y + 120 : 250);
       moveCursor(tgtCoords.x, tgtCoords.y, isTr ? `${tgtDev?.name || ''} [${portName}] Bağlanıyor` : `Connecting to ${tgtDev?.name || ''} [${portName}]`, false);
-    }, delay);
-    delay += 400;
+    }, 400);
 
-    registerTimeout(() => {
+    addStep(() => {
       const portName = conn.targetPort || 'Port';
       const tgtPortSelector = `[data-device-id="${tgtDev?.id}"][data-port-id="${conn.targetPort}"], [data-device-id="${tgtDev?.id}"] [data-port-id="${conn.targetPort}"], [data-device-id="${tgtDev?.id}"]`;
       const tgtCoords = getElementCoords(tgtPortSelector, tgtDev ? tgtDev.x + 80 : 350, tgtDev ? tgtDev.y + 120 : 250);
@@ -554,8 +720,7 @@ export function runStepByStepSimulation({
           },
         })
       );
-    }, delay);
-    delay += 750;
+    }, 750);
   });
 
   // ==========================================
@@ -565,16 +730,15 @@ export function runStepByStepSimulation({
     const devState = deviceStates?.get(switchDev.id);
     const switchCmds = getSwitchCliCommands(switchDev, devState);
 
-    registerTimeout(() => {
+    addStep(() => {
       currentStep++;
       updateProgress(currentStep, isTr ? `${switchDev.name} CLI Konsolu Açılıyor (VLAN & Port Yapılandırması)` : `Opening ${switchDev.name} CLI Console (VLAN & Port Config)`);
       moveCursor(switchDev.x + 80, switchDev.y + 120, isTr ? `${switchDev.name} Konsol Aç` : `Open ${switchDev.name} Console`, true);
       useMultiWindowStore.getState().openDeviceWindow(switchDev.id, switchDev.type, 'console');
-    }, delay);
-    delay += 900;
+    }, 900);
 
     switchCmds.forEach((cliCmd) => {
-      registerTimeout(() => {
+      addStep(() => {
         currentStep++;
         updateProgress(currentStep, `${switchDev.name} CLI: ${cliCmd}`);
         const cliCoords = getElementCoords('input[placeholder*="enable"], input[type="text"], [data-modal-content="true"] input', window.innerWidth / 2, window.innerHeight / 2 + 120);
@@ -584,10 +748,9 @@ export function runStepByStepSimulation({
             detail: { deviceId: switchDev.id, command: cliCmd },
           })
         );
-      }, delay);
-      delay += Math.max(700, cliCmd.length * 60 + 200);
+      }, Math.max(700, cliCmd.length * 60 + 200));
 
-      registerTimeout(() => {
+      addStep(() => {
         const cliCoords = getElementCoords('input[placeholder*="enable"], input[type="text"], [data-modal-content="true"] input', window.innerWidth / 2, window.innerHeight / 2 + 120);
         moveCursor(cliCoords.x + 35, cliCoords.y, `Enter ↵ (${cliCmd})`, true, cliCmd);
         window.dispatchEvent(
@@ -595,11 +758,10 @@ export function runStepByStepSimulation({
             detail: { action: `${switchDev.name} CLI: ${cliCmd}` },
           })
         );
-      }, delay);
-      delay += 600;
+      }, 600);
     });
 
-    registerTimeout(() => {
+    addStep(() => {
       currentStep++;
       const resultMsg = isTr
         ? `${switchDev.name} Switch ve VLAN Ayarları Başarıyla Yapılandırıldı`
@@ -618,15 +780,13 @@ export function runStepByStepSimulation({
       setDevices(updatedDevs);
 
       window.dispatchEvent(new CustomEvent('commit-action-event', { detail: { action: resultMsg } }));
-    }, delay);
-    delay += 1500;
+    }, 1500);
 
-    registerTimeout(() => {
+    addStep(() => {
       const closeBtn = getElementCoords(`[data-window-close="${switchDev.id}"]`, window.innerWidth / 2 + 220, window.innerHeight / 2 - 200);
       moveCursor(closeBtn.x, closeBtn.y, isTr ? `${switchDev.name} Kapat ✕` : `Close ${switchDev.name} ✕`, true);
       useMultiWindowStore.getState().closeDeviceWindow(switchDev.id);
-    }, delay);
-    delay += 500;
+    }, 500);
   });
 
   // ==========================================
@@ -636,16 +796,15 @@ export function runStepByStepSimulation({
     const devState = deviceStates?.get(routerDev.id);
     const routerCmds = getRouterCliCommands(routerDev, devState);
 
-    registerTimeout(() => {
+    addStep(() => {
       currentStep++;
       updateProgress(currentStep, isTr ? `${routerDev.name} CLI Konsolu Açılıyor (IP & Yönlendirme)` : `Opening ${routerDev.name} CLI Console (IP & Routing)`);
       moveCursor(routerDev.x + 80, routerDev.y + 120, isTr ? `${routerDev.name} Konsol Aç` : `Open ${routerDev.name} Console`, true);
       useMultiWindowStore.getState().openDeviceWindow(routerDev.id, routerDev.type, 'console');
-    }, delay);
-    delay += 900;
+    }, 900);
 
     routerCmds.forEach((cliCmd) => {
-      registerTimeout(() => {
+      addStep(() => {
         currentStep++;
         updateProgress(currentStep, `${routerDev.name} CLI: ${cliCmd}`);
         const cliCoords = getElementCoords('input[placeholder*="enable"], input[type="text"], [data-modal-content="true"] input', window.innerWidth / 2, window.innerHeight / 2 + 120);
@@ -655,10 +814,9 @@ export function runStepByStepSimulation({
             detail: { deviceId: routerDev.id, command: cliCmd },
           })
         );
-      }, delay);
-      delay += Math.max(700, cliCmd.length * 60 + 200);
+      }, Math.max(700, cliCmd.length * 60 + 200));
 
-      registerTimeout(() => {
+      addStep(() => {
         const cliCoords = getElementCoords('input[placeholder*="enable"], input[type="text"], [data-modal-content="true"] input', window.innerWidth / 2, window.innerHeight / 2 + 120);
         moveCursor(cliCoords.x + 35, cliCoords.y, `Enter ↵ (${cliCmd})`, true, cliCmd);
         window.dispatchEvent(
@@ -666,11 +824,10 @@ export function runStepByStepSimulation({
             detail: { action: `${routerDev.name} CLI: ${cliCmd}` },
           })
         );
-      }, delay);
-      delay += 600;
+      }, 600);
     });
 
-    registerTimeout(() => {
+    addStep(() => {
       currentStep++;
       const resultMsg = isTr
         ? `${routerDev.name} Router Arayüzleri ve Protokolleri Yapılandırıldı`
@@ -689,15 +846,13 @@ export function runStepByStepSimulation({
       setDevices(updatedDevs);
 
       window.dispatchEvent(new CustomEvent('commit-action-event', { detail: { action: resultMsg } }));
-    }, delay);
-    delay += 1500;
+    }, 1500);
 
-    registerTimeout(() => {
+    addStep(() => {
       const closeBtn = getElementCoords(`[data-window-close="${routerDev.id}"]`, window.innerWidth / 2 + 220, window.innerHeight / 2 - 200);
       moveCursor(closeBtn.x, closeBtn.y, isTr ? `${routerDev.name} Kapat ✕` : `Close ${routerDev.name} ✕`, true);
       useMultiWindowStore.getState().closeDeviceWindow(routerDev.id);
-    }, delay);
-    delay += 500;
+    }, 500);
   });
 
   // ==========================================
@@ -707,15 +862,14 @@ export function runStepByStepSimulation({
     const wlcIp = wlcDev.ip || '192.168.1.250';
     const wlanSsid = wlcDev.wifi?.ssid || 'Enterprise-Corp';
 
-    registerTimeout(() => {
+    addStep(() => {
       currentStep++;
       updateProgress(currentStep, isTr ? `${wlcDev.name} WLC Yönetim Paneli Açılıyor` : `Opening ${wlcDev.name} WLC Management Panel`);
       moveCursor(wlcDev.x + 80, wlcDev.y + 120, isTr ? `${wlcDev.name} Yönetim Aç` : `Open ${wlcDev.name} Management`, true);
       useMultiWindowStore.getState().openDeviceWindow(wlcDev.id, wlcDev.type, 'wireless');
-    }, delay);
-    delay += 900;
+    }, 900);
 
-    registerTimeout(() => {
+    addStep(() => {
       currentStep++;
       updateProgress(currentStep, isTr ? `${wlcDev.name} WLAN '${wlanSsid}' ve Yönetim IP'si (${wlcIp}) Yapılandırılıyor` : `${wlcDev.name} Configuring WLAN '${wlanSsid}' & IP (${wlcIp})`);
       moveCursor(window.innerWidth / 2, window.innerHeight / 2 - 10, `WLAN: ${wlanSsid} (WPA2-Enterprise)`, false);
@@ -742,15 +896,13 @@ export function runStepByStepSimulation({
           },
         })
       );
-    }, delay);
-    delay += 1200;
+    }, 1200);
 
-    registerTimeout(() => {
+    addStep(() => {
       const closeBtn = getElementCoords(`[data-window-close="${wlcDev.id}"]`, window.innerWidth / 2 + 200, window.innerHeight / 2 - 200);
       moveCursor(closeBtn.x, closeBtn.y, isTr ? `${wlcDev.name} Kapat ✕` : `Close ${wlcDev.name} ✕`, true);
       useMultiWindowStore.getState().closeDeviceWindow(wlcDev.id);
-    }, delay);
-    delay += 500;
+    }, 500);
   });
 
   // ==========================================
@@ -764,16 +916,15 @@ export function runStepByStepSimulation({
     const targetDns = pc.dns || '';
 
     // Step 6a: Open PC Settings Window
-    registerTimeout(() => {
+    addStep(() => {
       currentStep++;
       updateProgress(currentStep, isTr ? `${targetName} Ayar Paneli Açılıyor` : `Opening ${targetName} Settings`);
       moveCursor(pc.x + 80, pc.y + 120, isTr ? `${targetName} Ayarları Aç` : `Open ${targetName} Settings`, true);
       useMultiWindowStore.getState().openDeviceWindow(pc.id, 'pc', 'settings');
-    }, delay);
-    delay += 900;
+    }, 900);
 
     // Step 6b: Rename Device if changed
-    registerTimeout(() => {
+    addStep(() => {
       currentStep++;
       updateProgress(currentStep, isTr ? `${targetName} Cihaz İsmi Güncelleniyor` : `Updating device name: ${targetName}`);
       const nameCoords = getElementCoords('input[placeholder*="PC"], input[name="name"], [data-testid="device-name-input"]', window.innerWidth / 2 - 80, window.innerHeight / 2 - 100);
@@ -788,11 +939,10 @@ export function runStepByStepSimulation({
           detail: { action: isTr ? `${targetName} olarak adlandırıldı` : `Renamed to ${targetName}` },
         })
       );
-    }, delay);
-    delay += 1000;
+    }, 1000);
 
     // Step 6c: Set IP Address
-    registerTimeout(() => {
+    addStep(() => {
       currentStep++;
       updateProgress(currentStep, `${targetName} IP: ${targetIp}`);
       const ipCoords = getElementCoords('input[placeholder*="192.168.1.100"], input[placeholder*="192."], input[name="ip"]', window.innerWidth / 2 - 100, window.innerHeight / 2 - 40);
@@ -817,11 +967,10 @@ export function runStepByStepSimulation({
           detail: { action: isTr ? `${targetName} IP: ${targetIp} ayarlandı` : `Set ${targetName} IP: ${targetIp}` },
         })
       );
-    }, delay);
-    delay += 1100;
+    }, 1100);
 
     // Step 6d: Set Subnet Mask
-    registerTimeout(() => {
+    addStep(() => {
       currentStep++;
       updateProgress(currentStep, `${targetName} Alt Ağ Maskesi: ${targetSubnet}`);
       const subnetCoords = getElementCoords('input[placeholder*="255.255.255.0"], input[placeholder*="255."], input[name="subnet"]', window.innerWidth / 2 + 100, window.innerHeight / 2 - 40);
@@ -846,12 +995,11 @@ export function runStepByStepSimulation({
           detail: { action: isTr ? `${targetName} Maske: ${targetSubnet} ayarlandı` : `Set ${targetName} Mask: ${targetSubnet}` },
         })
       );
-    }, delay);
-    delay += 1100;
+    }, 1100);
 
     // Step 6e: Default Gateway (if defined)
     if (targetGateway) {
-      registerTimeout(() => {
+      addStep(() => {
         currentStep++;
         updateProgress(currentStep, `${targetName} Varsayılan Ağ Geçidi: ${targetGateway}`);
         const gwCoords = getElementCoords('input[placeholder*="Gateway"], input[name="gateway"]', window.innerWidth / 2 - 100, window.innerHeight / 2 + 20);
@@ -866,13 +1014,12 @@ export function runStepByStepSimulation({
             detail: { action: isTr ? `${targetName} Ağ Geçidi: ${targetGateway} ayarlandı` : `Set ${targetName} Gateway: ${targetGateway}` },
           })
         );
-      }, delay);
-      delay += 1000;
+      }, 1000);
     }
 
     // Step 6f: DNS Server (if defined)
     if (targetDns) {
-      registerTimeout(() => {
+      addStep(() => {
         currentStep++;
         updateProgress(currentStep, `${targetName} DNS Sunucusu: ${targetDns}`);
         const dnsCoords = getElementCoords('input[placeholder*="DNS"], input[name="dns"]', window.innerWidth / 2 + 100, window.innerHeight / 2 + 20);
@@ -887,15 +1034,14 @@ export function runStepByStepSimulation({
             detail: { action: isTr ? `${targetName} DNS: ${targetDns} ayarlandı` : `Set ${targetName} DNS: ${targetDns}` },
           })
         );
-      }, delay);
-      delay += 1000;
+      }, 1000);
     }
 
     // Step 6g: Wi-Fi Setup if enabled
     if (pc.wifi) {
       const ssid = pc.wifi.ssid || 'NetSim-WiFi';
       const pass = pc.wifi.password || 'password123';
-      registerTimeout(() => {
+      addStep(() => {
         currentStep++;
         updateProgress(currentStep, `${targetName} Wi-Fi Bağlantısı: '${ssid}'`);
         moveCursor(window.innerWidth / 2, window.innerHeight / 2 + 60, `Wi-Fi: ${ssid}`, false);
@@ -911,17 +1057,15 @@ export function runStepByStepSimulation({
             detail: { action: isTr ? `${targetName} Wi-Fi Bağlandı: '${ssid}'` : `${targetName} Connected Wi-Fi: '${ssid}'` },
           })
         );
-      }, delay);
-      delay += 1000;
+      }, 1000);
     }
 
     // Close PC Settings Window
-    registerTimeout(() => {
+    addStep(() => {
       const closeBtn = getElementCoords(`[data-window-close="${pc.id}"]`, window.innerWidth / 2 + 220, window.innerHeight / 2 - 180);
       moveCursor(closeBtn.x, closeBtn.y, isTr ? `${targetName} Kapat ✕` : `Close ${targetName} ✕`, true);
       useMultiWindowStore.getState().closeDeviceWindow(pc.id);
-    }, delay);
-    delay += 500;
+    }, 500);
   });
 
   // ==========================================
@@ -931,15 +1075,14 @@ export function runStepByStepSimulation({
     const ssid = wifiDev.wifi?.ssid || 'NetSim-WiFi';
     const pass = wifiDev.wifi?.password || 'password123';
 
-    registerTimeout(() => {
+    addStep(() => {
       currentStep++;
       updateProgress(currentStep, isTr ? `${wifiDev.name} Wi-Fi Ayarları Açılıyor` : `Opening ${wifiDev.name} Wi-Fi Settings`);
       moveCursor(wifiDev.x + 80, wifiDev.y + 120, isTr ? `${wifiDev.name} Wi-Fi Aç` : `Open ${wifiDev.name} Wi-Fi`, true);
       useMultiWindowStore.getState().openDeviceWindow(wifiDev.id, wifiDev.type, 'wireless');
-    }, delay);
-    delay += 900;
+    }, 900);
 
-    registerTimeout(() => {
+    addStep(() => {
       currentStep++;
       updateProgress(currentStep, isTr ? `${wifiDev.name} Wi-Fi: '${ssid}' Ağına Bağlanıyor` : `${wifiDev.name} Connecting to Wi-Fi '${ssid}'`);
       const ssidCoords = getElementCoords('input[placeholder*="SSID"], input[name="ssid"], [data-modal-content="true"] input', window.innerWidth / 2, window.innerHeight / 2 - 20);
@@ -962,15 +1105,13 @@ export function runStepByStepSimulation({
           detail: { action: isTr ? `${wifiDev.name} Wi-Fi Bağlandı: SSID '${ssid}'` : `Connected ${wifiDev.name} to Wi-Fi: '${ssid}'` },
         })
       );
-    }, delay);
-    delay += 1100;
+    }, 1100);
 
-    registerTimeout(() => {
+    addStep(() => {
       const closeBtn = getElementCoords(`[data-window-close="${wifiDev.id}"]`, window.innerWidth / 2 + 200, window.innerHeight / 2 - 200);
       moveCursor(closeBtn.x, closeBtn.y, isTr ? `${wifiDev.name} Kapat ✕` : `Close ${wifiDev.name} ✕`, true);
       useMultiWindowStore.getState().closeDeviceWindow(wifiDev.id);
-    }, delay);
-    delay += 500;
+    }, 500);
   });
 
   // ==========================================
@@ -979,15 +1120,14 @@ export function runStepByStepSimulation({
   printerDevices.forEach((printerDev) => {
     const printerIp = printerDev.ip || '192.168.1.20';
 
-    registerTimeout(() => {
+    addStep(() => {
       currentStep++;
       updateProgress(currentStep, isTr ? `${printerDev.name} Yazıcı Ayarları Açılıyor` : `Opening ${printerDev.name} Printer Settings`);
       moveCursor(printerDev.x + 80, printerDev.y + 120, isTr ? `${printerDev.name} Aç` : `Open ${printerDev.name}`, true);
       useMultiWindowStore.getState().openDeviceWindow(printerDev.id, 'printer', 'console');
-    }, delay);
-    delay += 900;
+    }, 900);
 
-    registerTimeout(() => {
+    addStep(() => {
       currentStep++;
       updateProgress(currentStep, isTr ? `${printerDev.name} Ağ Yazıcısı Aktif (IP: ${printerIp})` : `${printerDev.name} Network Printer Ready (IP: ${printerIp})`);
       moveCursor(window.innerWidth / 2, window.innerHeight / 2 - 10, `IP: ${printerIp}`, false);
@@ -1001,15 +1141,13 @@ export function runStepByStepSimulation({
           detail: { action: isTr ? `${printerDev.name} Ağ Yazıcısı Yapılandırıldı (IP: ${printerIp})` : `Configured ${printerDev.name} (IP: ${printerIp})` },
         })
       );
-    }, delay);
-    delay += 1000;
+    }, 1000);
 
-    registerTimeout(() => {
+    addStep(() => {
       const closeBtn = getElementCoords(`[data-window-close="${printerDev.id}"]`, window.innerWidth / 2 + 200, window.innerHeight / 2 - 200);
       moveCursor(closeBtn.x, closeBtn.y, isTr ? `${printerDev.name} Kapat ✕` : `Close ${printerDev.name} ✕`, true);
       useMultiWindowStore.getState().closeDeviceWindow(printerDev.id);
-    }, delay);
-    delay += 500;
+    }, 500);
   });
 
   iotDevices.forEach((iotDev) => {
@@ -1018,15 +1156,14 @@ export function runStepByStepSimulation({
     const sensorType = iotDev.iot?.sensorType || 'temperature';
     const iotLabel = kind === 'sensor' ? `${sensorType.toUpperCase()} Sensörü` : `${kind.toUpperCase()} Aktüatörü`;
 
-    registerTimeout(() => {
+    addStep(() => {
       currentStep++;
       updateProgress(currentStep, isTr ? `${iotDev.name} (${iotLabel}) Ayarları Açılıyor` : `Opening ${iotDev.name} (${iotLabel}) Settings`);
       moveCursor(iotDev.x + 80, iotDev.y + 120, isTr ? `${iotDev.name} Aç` : `Open ${iotDev.name}`, true);
       useMultiWindowStore.getState().openDeviceWindow(iotDev.id, 'iot', 'console');
-    }, delay);
-    delay += 900;
+    }, 900);
 
-    registerTimeout(() => {
+    addStep(() => {
       currentStep++;
       updateProgress(currentStep, isTr ? `${iotDev.name} (${iotLabel}) Aktif (IP: ${iotIp})` : `${iotDev.name} (${iotLabel}) Active (IP: ${iotIp})`);
       moveCursor(window.innerWidth / 2, window.innerHeight / 2 - 10, `IP: ${iotIp}`, false);
@@ -1040,15 +1177,13 @@ export function runStepByStepSimulation({
           detail: { action: isTr ? `${iotDev.name} [${iotLabel}] Yapılandırıldı (IP: ${iotIp})` : `Configured ${iotDev.name} [${iotLabel}] (IP: ${iotIp})` },
         })
       );
-    }, delay);
-    delay += 1000;
+    }, 1000);
 
-    registerTimeout(() => {
+    addStep(() => {
       const closeBtn = getElementCoords(`[data-window-close="${iotDev.id}"]`, window.innerWidth / 2 + 200, window.innerHeight / 2 - 200);
       moveCursor(closeBtn.x, closeBtn.y, isTr ? `${iotDev.name} Kapat ✕` : `Close ${iotDev.name} ✕`, true);
       useMultiWindowStore.getState().closeDeviceWindow(iotDev.id);
-    }, delay);
-    delay += 500;
+    }, 500);
   });
 
   // ==========================================
@@ -1075,7 +1210,7 @@ export function runStepByStepSimulation({
     const targetIp = pingTargetIp;
     const pingCmd = `ping ${targetIp}`;
 
-    registerTimeout(() => {
+    addStep(() => {
       currentStep++;
       updateProgress(
         currentStep,
@@ -1085,23 +1220,21 @@ export function runStepByStepSimulation({
       );
       moveCursor(src.x + 80, src.y + 120, isTr ? `${src.name} CMD Aç (Ping Testi)` : `Open ${src.name} CMD (Ping Test)`, true);
       useMultiWindowStore.getState().openDeviceWindow(src.id, 'pc', 'desktop');
-    }, delay);
-    delay += 1000;
+    }, 1000);
 
-    registerTimeout(() => {
+    addStep(() => {
       currentStep++;
       updateProgress(currentStep, isTr ? `Uçtan Uca Ağ Doğrulaması: ${pingCmd}` : `End-to-End Verification: ${pingCmd}`);
       const termCoords = getElementCoords('input[placeholder*="ping"], .custom-scrollbar input, [data-modal-content="true"] input', window.innerWidth / 2, window.innerHeight / 2 + 100);
-      moveCursor(termCoords.x, termCoords.y, `Komut: ${pingCmd}`, false);
+      moveCursor(termCoords.x, termCoords.y, isTr ? `Komut: ${pingCmd}` : `Command: ${pingCmd}`, false);
       window.dispatchEvent(
         new CustomEvent('pc-auto-type', {
           detail: { deviceId: src.id, command: pingCmd },
         })
       );
-    }, delay);
-    delay += Math.max(1000, pingCmd.length * 70 + 300);
+    }, Math.max(1000, pingCmd.length * 70 + 300));
 
-    registerTimeout(() => {
+    addStep(() => {
       const termCoords = getElementCoords('input[placeholder*="ping"], .custom-scrollbar input, [data-modal-content="true"] input', window.innerWidth / 2, window.innerHeight / 2 + 100);
       moveCursor(termCoords.x + 35, termCoords.y, `Enter ↵ (${pingCmd})`, true, pingCmd);
       window.dispatchEvent(
@@ -1109,10 +1242,9 @@ export function runStepByStepSimulation({
           detail: { action: `${src.name} CMD: ${pingCmd}` },
         })
       );
-    }, delay);
-    delay += 800;
+    }, 800);
 
-    registerTimeout(() => {
+    addStep(() => {
       currentStep++;
       updateProgress(
         currentStep,
@@ -1131,37 +1263,77 @@ export function runStepByStepSimulation({
           detail: { action: isTr ? `${src.name} ➔ ${targetIp} Ping Başarılı (4/4 Paket İletildi)` : `Ping ${src.name} ➔ ${targetIp} Succeeded (4/4 Packets Delivered)` },
         })
       );
-    }, delay);
-    delay += 2500;
+    }, 2500);
 
-    registerTimeout(() => {
+    addStep(() => {
       const closeBtn = getElementCoords(`[data-window-close="${src.id}"]`, window.innerWidth / 2 + 220, window.innerHeight / 2 - 200);
       moveCursor(closeBtn.x, closeBtn.y, isTr ? `${src.name} CMD Kapat ✕` : `Close ${src.name} CMD ✕`, true);
       useMultiWindowStore.getState().closeDeviceWindow(src.id);
-    }, delay);
-    delay += 500;
+    }, 500);
   }
 
   // ==========================================
   // PHASE 10: COMPLETE SIMULATION & CLEANUP
   // ==========================================
   const projName = data.projectName || (isTr ? 'Topoloji' : 'Topology');
-  registerTimeout(() => {
+  addStep(() => {
     hideCursor();
     setDevices(data.devices);
     setConnections(data.connections);
     setDeviceStates(deviceStates);
+    cleanupListeners();
     window.dispatchEvent(
       new CustomEvent('simulation-progress', {
         detail: {
           active: false,
+          paused: false,
           current: totalSteps,
           total: totalSteps,
           message: isTr ? `${projName} Başarıyla Tamamlandı! 🎉` : `${projName} Successfully Completed! 🎉`,
         },
       })
     );
-    window.removeEventListener('simulation-stop', onStopReq);
     window.dispatchEvent(new CustomEvent('add-summary-note'));
-  }, delay + 500);
+  }, 500);
+
+  // Execute queue runner loop
+  const runQueue = async () => {
+    await waitOrPause(300);
+
+    while (currentStepIdx < stepQueue.length && !isStopped) {
+      if (isPaused) {
+        await new Promise<void>((res) => {
+          pauseWaiter = res;
+        });
+        if (isStopped) break;
+      }
+
+      const item = stepQueue[currentStepIdx];
+      try {
+        item.run();
+      } catch (err) {
+        console.error('Simulation step error:', err);
+        pauseSimulation();
+        updateProgress(
+          currentStep,
+          isTr ? 'Adım çalıştırma hatası! Otomatik ilerleme duraklatıldı.' : 'Step execution error! Auto-progression paused.',
+          true
+        );
+      }
+      currentStepIdx++;
+
+      if (currentStepIdx < stepQueue.length && !isStopped) {
+        await waitOrPause(item.durationMs);
+      }
+    }
+
+    if (!isStopped) {
+      cleanupListeners();
+      if (activeSimulationStopper === stopSimulation) {
+        activeSimulationStopper = null;
+      }
+    }
+  };
+
+  runQueue();
 }

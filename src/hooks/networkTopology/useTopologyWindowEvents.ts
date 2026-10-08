@@ -174,7 +174,7 @@ export function useTopologyWindowEvents({
         resetView();
       } else {
         setZoom(1.0);
-        setPan({ x: 0, y: 0 });
+        setPan({ x: 32, y: 32 });
       }
     };
 

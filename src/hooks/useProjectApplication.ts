@@ -158,7 +158,7 @@ export function useProjectApplication({
     closeExam();
     addProjectRecord(loadedTitle);
     setZoom(1.0);
-    setPan({ x: 0, y: 0 });
+    setPan({ x: 32, y: 32 });
     if (typeof window !== 'undefined') {
       window.scrollTo(0, 0);
     }
@@ -199,7 +199,7 @@ export function useProjectApplication({
     addProjectRecord(loadedTitle);
 
     setZoom(1.0);
-    setPan({ x: 0, y: 0 });
+    setPan({ x: 32, y: 32 });
 
     if (typeof window !== 'undefined') {
       window.scrollTo(0, 0);

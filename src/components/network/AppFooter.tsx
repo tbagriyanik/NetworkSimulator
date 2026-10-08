@@ -9,7 +9,7 @@ import { useMultiWindowStore } from '@/hooks/useMultiWindowStore';
 import { useUiPreferences } from '@/hooks/useUiPreferences';
 import { useAppStore } from '@/lib/store/appStore';
 import { cn } from '@/lib/utils';
-import { Activity, Cpu, HardDrive, Gauge, Square, CheckCircle2, X } from 'lucide-react';
+import { Activity, Cpu, HardDrive, Gauge, Square, CheckCircle2, X, Play, Pause } from 'lucide-react';
 
 interface AppFooterProps {
   t: Translations;
@@ -104,11 +104,13 @@ export function AppFooter({
   // Simulation Step-by-Step Progress & Cancel Status
   const [simulationStatus, setSimulationStatus] = useState<{
     active: boolean;
+    paused?: boolean;
     current: number;
     total: number;
     message: string;
   }>({
     active: false,
+    paused: false,
     current: 0,
     total: 0,
     message: '',
@@ -119,18 +121,18 @@ export function AppFooter({
   useEffect(() => {
     if (prevProjectNameRef.current !== projectName) {
       prevProjectNameRef.current = projectName;
-      setSimulationStatus({ active: false, current: 0, total: 0, message: '' });
+      setSimulationStatus({ active: false, paused: false, current: 0, total: 0, message: '' });
     }
   }, [projectName]);
 
   useEffect(() => {
     const handleProgress = (e: Event) => {
-      const detail = (e as CustomEvent<{ active: boolean; current: number; total: number; message: string }>).detail;
+      const detail = (e as CustomEvent<{ active: boolean; paused?: boolean; current: number; total: number; message: string }>).detail;
       setSimulationStatus(detail);
     };
 
     const handleClearStatus = () => {
-      setSimulationStatus({ active: false, current: 0, total: 0, message: '' });
+      setSimulationStatus({ active: false, paused: false, current: 0, total: 0, message: '' });
     };
 
     window.addEventListener('simulation-progress', handleProgress);
@@ -356,32 +358,87 @@ export function AppFooter({
                 </span>
               </div>
 
-              {/* Simulation Step-by-Step Progress & Cancel Widget */}
+              {/* Simulation Step-by-Step Progress, Pause/Resume & Cancel Widget */}
               {simulationStatus.active ? (
-                <div className={`flex items-center gap-2 px-2.5 py-1 rounded-lg border shadow-sm animate-pulse z-[10000] relative pointer-events-auto ${
-                  isDark
-                    ? 'bg-purple-950/40 border-purple-500/40 text-purple-300'
-                    : 'bg-purple-50 border-purple-300 text-purple-800'
-                }`}>
-                  <span className={`w-2 h-2 rounded-full animate-ping ${isDark ? 'bg-purple-400' : 'bg-purple-600'}`} />
-                  <span className={`text-[11px] font-bold ${isDark ? 'text-purple-300' : 'text-purple-900'}`}>
-                    {language === 'tr' ? `Adım ${simulationStatus.current}/${simulationStatus.total}` : `Step ${simulationStatus.current}/${simulationStatus.total}`}
+                <div className={`flex items-center gap-2 px-2.5 py-1 rounded-lg border shadow-sm z-[10000] relative pointer-events-auto ${
+                  simulationStatus.paused
+                    ? isDark
+                      ? 'bg-amber-950/40 border-amber-500/40 text-amber-300'
+                      : 'bg-amber-50 border-amber-300 text-amber-900'
+                    : isDark
+                    ? 'bg-purple-950/40 border-purple-500/40 text-purple-300 animate-pulse'
+                    : 'bg-purple-50 border-purple-300 text-purple-800 animate-pulse'
+                }`}
+                title={language === 'tr' ? 'Kısayollar: Boşluk = Duraklat / Devam, Escape / Mobil Geri = Durdur' : 'Shortcuts: Space = Pause / Resume, Escape / Mobile Back = Stop'}
+                >
+                  <span className={`w-2 h-2 rounded-full ${
+                    simulationStatus.paused
+                      ? isDark ? 'bg-amber-400' : 'bg-amber-600'
+                      : `animate-ping ${isDark ? 'bg-purple-400' : 'bg-purple-600'}`
+                  }`} />
+                  <span className={`text-[11px] font-bold ${
+                    simulationStatus.paused
+                      ? isDark ? 'text-amber-300' : 'text-amber-950'
+                      : isDark ? 'text-purple-300' : 'text-purple-900'
+                  }`}>
+                    {t.simulationStep || (language === 'tr' ? 'Adım' : 'Step')} {simulationStatus.current}/{simulationStatus.total}
                   </span>
-                  <span className={`text-[10px] truncate max-w-[140px] ${isDark ? 'text-purple-200/80' : 'text-purple-700'}`} title={simulationStatus.message}>
-                    ({simulationStatus.message})
-                  </span>
+                  {simulationStatus.paused ? (
+                    <span className={`text-[10px] font-semibold px-1 py-0.2 rounded ${
+                      isDark ? 'bg-amber-500/20 text-amber-300' : 'bg-amber-100 text-amber-800'
+                    }`}>
+                      {language === 'tr' ? 'DURAKLATILDI' : 'PAUSED'}
+                    </span>
+                  ) : (
+                    <span className={`text-[10px] truncate max-w-[140px] ${isDark ? 'text-purple-200/80' : 'text-purple-700'}`} title={simulationStatus.message}>
+                      ({simulationStatus.message})
+                    </span>
+                  )}
+
+                  {/* Pause / Resume Button */}
+                  {simulationStatus.paused ? (
+                    <button
+                      type="button"
+                      onClick={() => window.dispatchEvent(new CustomEvent('simulation-resume'))}
+                      className={`flex items-center gap-1 px-1.5 py-0.5 ml-1 rounded text-[10px] font-bold transition-colors cursor-pointer border ${
+                        isDark
+                          ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 hover:bg-amber-500/30 hover:text-amber-100'
+                          : 'bg-amber-100 text-amber-800 border-amber-300 hover:bg-amber-200'
+                      }`}
+                      title={t.resumeSimulationTooltip || (language === 'tr' ? 'Simülasyona devam et (Boşluk)' : 'Resume simulation (Space)')}
+                    >
+                      <Play className="w-2.5 h-2.5 fill-current" />
+                      {t.resumeSimulation || (language === 'tr' ? 'Devam Et' : 'Resume')}
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => window.dispatchEvent(new CustomEvent('simulation-pause'))}
+                      className={`flex items-center gap-1 px-1.5 py-0.5 ml-1 rounded text-[10px] font-bold transition-colors cursor-pointer border ${
+                        isDark
+                          ? 'bg-secondary-800 text-secondary-200 border-secondary-600 hover:bg-secondary-700 hover:text-white'
+                          : 'bg-secondary-100 text-secondary-800 border-secondary-300 hover:bg-secondary-200'
+                      }`}
+                      title={t.pauseSimulationTooltip || (language === 'tr' ? 'Simülasyonu duraklat (Boşluk)' : 'Pause simulation (Space)')}
+                    >
+                      <Pause className="w-2.5 h-2.5 fill-current" />
+                      {t.pauseSimulation || (language === 'tr' ? 'Duraklat' : 'Pause')}
+                    </button>
+                  )}
+
+                  {/* Stop Button */}
                   <button
                     type="button"
                     onClick={handleStopSimulation}
-                    className={`flex items-center gap-1 px-1.5 py-0.5 ml-1 rounded text-[10px] font-bold transition-colors cursor-pointer border ${
+                    className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold transition-colors cursor-pointer border ${
                       isDark
                         ? 'bg-rose-500/20 text-rose-300 border-rose-500/40 hover:bg-rose-500/30 hover:text-rose-100'
                         : 'bg-rose-100 text-rose-800 border-rose-300 hover:bg-rose-200'
                     }`}
-                    title={language === 'tr' ? 'Adım adım simülasyonu durdur' : 'Stop step by step simulation'}
+                    title={t.stopSimulationTooltip || (language === 'tr' ? 'Adım adım simülasyonu durdur (Esc / Mobil Geri)' : 'Stop step by step simulation (Esc / Mobile Back)')}
                   >
                     <Square className="w-2.5 h-2.5 fill-current" />
-                    {language === 'tr' ? 'Durdur' : 'Stop'}
+                    {t.stopSimulation || (language === 'tr' ? 'Durdur' : 'Stop')}
                   </button>
                 </div>
               ) : simulationStatus.message ? (
@@ -454,29 +511,74 @@ export function AppFooter({
           </div>
         )}
         <div className="w-full flex items-center justify-between gap-2 overflow-hidden">
-          {/* Status & Device count */}
-          <div className="flex items-center gap-2 truncate">
-            <span className={`w-2 h-2 rounded-full shrink-0 ${hasUnsavedChanges ? 'bg-warning-400 animate-pulse' : 'bg-success-400'}`} />
-            <span className="truncate font-medium">
-              {hasUnsavedChanges ? t.unsaved : t.saved}
-            </span>
-            {projectName && (
-              <>
-                <span className="opacity-30">|</span>
-                <span className="truncate font-semibold max-w-[100px] sm:max-w-[150px]" title={projectName}>
-                  {projectName}
+          {/* Status & Device count or Simulation Controls */}
+          {simulationStatus.active ? (
+            <div className="w-full flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1.5 truncate">
+                <span className={`w-2 h-2 rounded-full ${simulationStatus.paused ? 'bg-amber-400' : 'bg-purple-400 animate-ping'}`} />
+                <span className="font-bold">
+                  {t.simulationStep || (language === 'tr' ? 'Adım' : 'Step')} {simulationStatus.current}/{simulationStatus.total}
                 </span>
-              </>
-            )}
-            {(topologyDevices?.length || 0) > 0 && (
-              <>
-                <span className="opacity-30">|</span>
-                <span className="truncate opacity-80">
-                  {getDeviceCountText(topologyDevices?.length || 0)}
-                </span>
-              </>
-            )}
-          </div>
+                {simulationStatus.paused && (
+                  <span className="text-[9px] font-bold text-amber-400">
+                    ({language === 'tr' ? 'DURAKLATILDI' : 'PAUSED'})
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-1 shrink-0">
+                {simulationStatus.paused ? (
+                  <button
+                    type="button"
+                    onClick={() => window.dispatchEvent(new CustomEvent('simulation-resume'))}
+                    className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40"
+                  >
+                    <Play className="w-2.5 h-2.5 fill-current" />
+                    {t.resumeSimulation || (language === 'tr' ? 'Devam' : 'Resume')}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => window.dispatchEvent(new CustomEvent('simulation-pause'))}
+                    className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-secondary-800 text-secondary-200 border border-secondary-600"
+                  >
+                    <Pause className="w-2.5 h-2.5 fill-current" />
+                    {t.pauseSimulation || (language === 'tr' ? 'Duraklat' : 'Pause')}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={handleStopSimulation}
+                  className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40"
+                >
+                  <Square className="w-2.5 h-2.5 fill-current" />
+                  {t.stopSimulation || (language === 'tr' ? 'Durdur' : 'Stop')}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 truncate">
+              <span className={`w-2 h-2 rounded-full shrink-0 ${hasUnsavedChanges ? 'bg-warning-400 animate-pulse' : 'bg-success-400'}`} />
+              <span className="truncate font-medium">
+                {hasUnsavedChanges ? t.unsaved : t.saved}
+              </span>
+              {projectName && (
+                <>
+                  <span className="opacity-30">|</span>
+                  <span className="truncate font-semibold max-w-[100px] sm:max-w-[150px]" title={projectName}>
+                    {projectName}
+                  </span>
+                </>
+              )}
+              {(topologyDevices?.length || 0) > 0 && (
+                <>
+                  <span className="opacity-30">|</span>
+                  <span className="truncate opacity-80">
+                    {getDeviceCountText(topologyDevices?.length || 0)}
+                  </span>
+                </>
+              )}
+            </div>
+          )}
 
         </div>
       </footer>

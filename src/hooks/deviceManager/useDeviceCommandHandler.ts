@@ -488,6 +488,11 @@ export function useDeviceCommandHandler({
         if (newState) {
           setDeviceStates(prev => new Map(prev).set(deviceId, { ...deviceState, ...newState }));
         }
+        window.dispatchEvent(
+          new CustomEvent('terminal-command-error', {
+            detail: { deviceId, command, error: error || 'Command execution failed' },
+          })
+        );
       }
       if (newOutputs.length > 0) {
         setDeviceOutputs(prev => new Map(prev).set(deviceId, [...(prev.get(deviceId) || []), ...newOutputs]));
@@ -511,6 +516,11 @@ export function useDeviceCommandHandler({
         });
       }
       setDeviceOutputs(prev => new Map(prev).set(deviceId, [...(prev.get(deviceId) || []), { id: `${Date.now()}-sys-err`, type: 'error', content: `System error: ${errorMsg}`, timestamp: Date.now() }]));
+      window.dispatchEvent(
+        new CustomEvent('terminal-command-error', {
+          detail: { deviceId, command, error: errorMsg },
+        })
+      );
       return { success: false, error: errorMsg };
     } finally {
       setIsLoading(false);
