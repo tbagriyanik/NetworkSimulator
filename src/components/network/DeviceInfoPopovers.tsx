@@ -338,7 +338,7 @@ export function PCInfoPopover({ pc, t, language, isDark, onClose, onFocus, zInde
   );
 }
 
-export function RouterInfoPopover({ router, routerState, t, language, isDark, onClose, onFocus, zIndex, handleDeviceDoubleClick, onOpenPanel, onOpenSettings, topologyConnections }: RouterInfoPopoverProps) {
+export function RouterInfoPopover({ router, routerState, t, language, isDark, onClose, onFocus, zIndex, isFocused = false, handleDeviceDoubleClick, onOpenPanel, onOpenSettings, topologyConnections }: RouterInfoPopoverProps) {
   const { preferences } = useUiPreferences();
   const { containerRef, handleDragStart, position } = useDrag({
     storageKey: `router-info-pos-${router.id}`,
@@ -406,7 +406,11 @@ export function RouterInfoPopover({ router, routerState, t, language, isDark, on
         zIndex
       }}
     >
-      <div className={`rounded-2xl overflow-hidden border shadow-2xl min-w-[200px] max-w-[280px] backdrop-blur-md ${isDark ? 'bg-secondary-950/75 border-success-500/30 shadow-black/40' : 'bg-white/75 border-success-500/50 shadow-secondary-200/50'}`}>
+      <div className={cn(
+        "rounded-2xl overflow-hidden border shadow-2xl min-w-[200px] max-w-[280px] backdrop-blur-md",
+        isDark ? "bg-secondary-950/75 shadow-black/40" : "bg-white/75 shadow-secondary-200/50",
+        WINDOW_FOCUS_BORDER_CLASS(isFocused, isDark)
+      )}>
         <div
           className={`flex items-center justify-between px-3 py-2 border-b select-none cursor-grab active:cursor-grabbing ${isDark ? 'bg-white/5 border-success-500/20' : 'bg-black/5 border-success-500/30'}`}
           onPointerDown={(e) => { onFocus(); handleDragStart(e); }}

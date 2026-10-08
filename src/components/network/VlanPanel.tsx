@@ -138,7 +138,7 @@ export function VlanPanel({ vlans, ports, deviceName, deviceModel, onExecuteComm
       </CardHeader>
       <CardContent>
         {isDevicePoweredOff && (
-          <div className="mb-4 px-3 py-2 rounded-lg border border-red-200 dark:border-red-500/30 bg-red-50 dark:bg-red-950/40 text-red-800 dark:text-red-200 text-xs font-bold tracking-wider text-center">
+          <div className="mb-4 px-3 py-2 rounded-lg border border-error-200 dark:border-error-500/30 bg-error-50 dark:bg-error-950/40 text-error-800 dark:text-error-200 text-xs font-bold tracking-wider text-center">
             {t.connectionError}
           </div>
         )}
@@ -204,7 +204,7 @@ export function VlanPanel({ vlans, ports, deviceName, deviceModel, onExecuteComm
                   key={`${vlan.id}-${vlan.name}`}
                   className={`grid grid-cols-12 gap-1 sm:gap-2 px-2 py-1.5 sm:py-2 text-[12px] rounded ${isDark ? 'hover:bg-secondary-700/50' : 'hover:bg-secondary-100'} ${isDefault ? 'opacity-75' : ''}`}
                 >
-                  <div className="col-span-1 font-mono text-yellow-400">
+                  <div className="col-span-1 font-mono text-warning-600 dark:text-warning-400 font-semibold">
                     {vlan.id}
                   </div>
                   <div className={`col-span-3 ${textPrimary} truncate`} title={vlan.name}>
@@ -228,7 +228,7 @@ export function VlanPanel({ vlans, ports, deviceName, deviceModel, onExecuteComm
                         variant="ghost"
                         onClick={() => handleDeleteVlan(vlan.id)}
                         disabled={isDevicePoweredOff}
-                        className="h-5 w-5 sm:h-6 sm:w-6 p-0 text-error-400 hover:text-error-300 hover:bg-secondary-700"
+                        className="h-5 w-5 sm:h-6 sm:w-6 p-0 text-error-500 hover:text-error-600 hover:bg-secondary-200 dark:hover:bg-secondary-700"
                         title={`${t.delete} VLAN ${vlan.id}`}
                         aria-label={`${t.delete} VLAN ${vlan.id}`}
                       >

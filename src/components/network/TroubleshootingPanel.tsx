@@ -168,7 +168,7 @@ export function TroubleshootingPanel({
         allResolved
           ? "border-success-500/50 dark:border-success-500/30"
           : "border-warning-500/50 dark:border-warning-500/30",
-        isMinimized ? "w-72 h-14" : "w-80 max-h-[calc(100vh-100px)]",
+        isMinimized ? "w-[calc(100vw-32px)] sm:w-72 h-14" : "w-[calc(100vw-32px)] sm:w-80 max-h-[calc(100vh-100px)]",
         isDragging ? "transition-none" : "transition-transform duration-300"
       )}
       style={{ 
@@ -199,19 +199,19 @@ export function TroubleshootingPanel({
           </span>
         </div>
         <div className="flex items-center gap-1">
-          <span className="text-xs font-medium text-secondary-400 mr-2">
+          <span className="text-xs font-medium text-secondary-500 dark:text-secondary-400 mr-2">
             {totalResolved}/{totalItems}
           </span>
           <button
             onClick={onMinimize}
-            className="p-1 hover:bg-white/10 rounded-md transition-colors"
+            className="p-1 hover:bg-secondary-500/10 rounded-md transition-colors text-secondary-700 dark:text-secondary-300"
             title={isMinimized ? t.expand : t.minimize}
           >
             {isMinimized ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
           </button>
           <button
             onClick={onClose}
-            className="p-1 hover:bg-white/10 rounded-md transition-colors text-secondary-500 hover:text-error-500"
+            className="p-1 hover:bg-secondary-500/10 rounded-md transition-colors text-secondary-500 hover:text-error-500"
             title={t.close || 'Close'}
           >
             <X className="w-4 h-4" />
@@ -321,15 +321,15 @@ export function TroubleshootingPanel({
                           <div className="flex-1">
                             <div className={cn(
                               "text-sm font-medium",
-                              isResolved ? "text-primary-300 line-through opacity-70" : "text-secondary-200"
+                              isResolved ? "text-primary-600 dark:text-primary-300 line-through opacity-70" : "text-secondary-900 dark:text-secondary-200"
                             )}>
                               {task.title[language as 'tr' | 'en'] || task.title.en}
                             </div>
-                            <div className={cn("text-[11px] mt-1", isResolved ? "text-primary-400/60" : "text-secondary-400")}>
+                            <div className={cn("text-[11px] mt-1", isResolved ? "text-primary-500/70 dark:text-primary-400/60" : "text-secondary-600 dark:text-secondary-400")}>
                               {task.description[language as 'tr' | 'en'] || task.description.en}
                             </div>
                             {task.hint && !isResolved && (
-                              <div className="text-xs text-warning-300/80 mt-1.5 italic">
+                              <div className="text-xs text-warning-700 dark:text-warning-300/80 mt-1.5 italic">
                                 {language === 'tr' ? 'İpucu:' : 'Hint:'} {task.hint[language as 'tr' | 'en'] || task.hint.en}
                               </div>
                             )}
@@ -343,11 +343,11 @@ export function TroubleshootingPanel({
             </div>
             
             {allResolved && (
-              <div className="mt-6 p-4 rounded-lg bg-success-950/40 border border-success-900/50 text-center animate-in fade-in zoom-in duration-500">
-                <div className="text-success-400 font-bold mb-1">
+              <div className="mt-6 p-4 rounded-lg bg-success-50 dark:bg-success-950/40 border border-success-200 dark:border-success-900/50 text-center animate-in fade-in zoom-in duration-500">
+                <div className="text-success-700 dark:text-success-400 font-bold mb-1">
                   {language === 'tr' ? 'Tebrikler!' : 'Congratulations!'}
                 </div>
-                <div className="text-success-300/80 text-sm mb-4">
+                <div className="text-success-600 dark:text-success-300/80 text-sm mb-4">
                   {language === 'tr' ? 'Tüm görevleri ve arızaları başarıyla tamamladınız.' : 'You successfully completed all tasks and faults.'}
                 </div>
                 {!isDesktopApp() && (

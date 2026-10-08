@@ -210,7 +210,7 @@ export default function NetworkTopologyContextMenu({
                   aria-label={f}
                   onClick={() => { if (contextMenu.noteId) onUpdateNoteStyle(contextMenu.noteId, { font: f }); onClose(); }}
                   className={`px-2 py-1 rounded text-left text-[11px] ${note?.font === f
-                    ? (isDark ? 'bg-secondary-600 text-white border-accent-500 border' : 'bg-secondary-200 text-black border-accent-500 border')
+                    ? (isDark ? 'bg-secondary-600 text-white border-accent-500 border' : 'bg-secondary-200 text-secondary-900 border-accent-500 border')
                     : (isDark ? 'hover:bg-secondary-700 text-secondary-200 hover:text-accent-400' : 'hover:bg-secondary-100 text-secondary-700 hover:text-accent-600')
                     }`}
                   style={{ fontFamily: f }}
@@ -232,7 +232,7 @@ export default function NetworkTopologyContextMenu({
                   aria-label={`${s}px`}
                   onClick={() => { if (contextMenu.noteId) onUpdateNoteStyle(contextMenu.noteId, { fontSize: s }); onClose(); }}
                   className={`px-2 py-1 rounded text-[11px] ${note?.fontSize === s
-                    ? (isDark ? 'bg-secondary-600 text-white border-accent-500 border' : 'bg-secondary-200 text-black border-accent-500 border')
+                    ? (isDark ? 'bg-secondary-600 text-white border-accent-500 border' : 'bg-secondary-200 text-secondary-900 border-accent-500 border')
                     : (isDark ? 'hover:bg-secondary-700 text-secondary-200 hover:text-accent-400' : 'hover:bg-secondary-100 text-secondary-700 hover:text-accent-600')
                     }`}
                 >
@@ -253,7 +253,7 @@ export default function NetworkTopologyContextMenu({
                   aria-label={`%${Math.round(o * 100)}`}
                   onClick={() => { if (contextMenu.noteId) onUpdateNoteStyle(contextMenu.noteId, { opacity: o }); onClose(); }}
                   className={`px-2 py-1 rounded text-[11px] ${note?.opacity === o
-                    ? (isDark ? 'bg-secondary-600 text-white border-accent-500 border' : 'bg-secondary-200 text-black border-accent-500 border')
+                    ? (isDark ? 'bg-secondary-600 text-white border-accent-500 border' : 'bg-secondary-200 text-secondary-900 border-accent-500 border')
                     : (isDark ? 'hover:bg-secondary-700 text-secondary-200 hover:text-accent-400' : 'hover:bg-secondary-100 text-secondary-700 hover:text-accent-600')
                     }`}
                 >
@@ -262,7 +262,7 @@ export default function NetworkTopologyContextMenu({
               ))}
             </div>
           </div>
-          <div className="pt-1 border-t border-secondary-700/30">
+          <div className="pt-1 border-t border-secondary-200 dark:border-secondary-700">
             {renderMenuItem({
               label: t.duplicateLabel,
               icon: 'copy',
@@ -309,7 +309,7 @@ export default function NetworkTopologyContextMenu({
             disabled: devices.length === 0 && notes.length === 0,
             onClick: () => { onSelectAll(); onClose(); }
           })}
-          <div className="my-1 border-t border-secondary-200/20" />
+          <div className="my-1 border-t border-secondary-200 dark:border-secondary-700" />
           {renderMenuItem({
             label: t.refreshNetwork,
             icon: 'refresh',
@@ -355,7 +355,7 @@ export default function NetworkTopologyContextMenu({
                   onClick: () => { if (contextMenu.deviceId) onOpenTasks(contextMenu.deviceId); onClose(); },
                   disabled: !device
                 })}
-                <div className="my-1 border-t border-secondary-200/20" />
+                <div className="my-1 border-t border-secondary-200 dark:border-secondary-700" />
                 {!isExamActive && renderMenuItem({
                   label: t.cut,
                   icon: 'cut',
@@ -396,7 +396,7 @@ export default function NetworkTopologyContextMenu({
                   disabled: devices.length === 0,
                   onClick: () => { onSelectAll(); onClose(); }
                 })}
-                <div className="my-1 border-t border-secondary-200/20" />
+                <div className="my-1 border-t border-secondary-200 dark:border-secondary-700" />
                 {renderMenuItem({
                   label: t.ping,
                   icon: 'ping',

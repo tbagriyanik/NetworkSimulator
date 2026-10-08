@@ -262,7 +262,7 @@ export const PacketCapturePanel = ({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={language === 'tr' ? 'IP, protokol veya içerik ara...' : 'Search IP, protocol or info...'}
-              className={`flex-1 bg-transparent outline-none text-xs placeholder:opacity-40 ${isDark ? 'text-white' : 'text-slate-900'}`}
+              className={`flex-1 bg-transparent outline-none text-xs placeholder:opacity-40 ${isDark ? 'text-white' : 'text-secondary-900'}`}
             />
             {searchQuery && (
               <button
@@ -336,7 +336,7 @@ export const PacketCapturePanel = ({
                 value={excludeQuery}
                 onChange={(e) => setExcludeQuery(e.target.value)}
                 placeholder={language === 'tr' ? 'cdp, arp, stp (virgül veya boşluk ile)...' : 'cdp, arp, stp (comma or space separated)...'}
-                className={`w-full bg-transparent outline-none text-xs ${isDark ? 'text-slate-100 placeholder:text-secondary-500' : 'text-slate-900 placeholder:text-slate-400'}`}
+                className={`w-full bg-transparent outline-none text-xs ${isDark ? 'text-secondary-100 placeholder:text-secondary-500' : 'text-secondary-900 placeholder:text-secondary-400'}`}
               />
               {excludeQuery && (
                 <button

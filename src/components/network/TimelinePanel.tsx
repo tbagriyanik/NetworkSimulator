@@ -121,7 +121,9 @@ export function TimelinePanel({
 
   const getActionLabel = (item: HistoryEntry, index: number) => {
     if (index === 0) return language === 'tr' ? 'Başlangıç Durumu' : 'Initial State';
-    if (item.description && item.description !== 'Değişiklik' && item.description !== 'Genel Değişiklik') return item.description;
+    if (item.description && item.description !== 'Değişiklik' && item.description !== 'Genel Değişiklik' && item.description !== 'General Change') return item.description;
+
+    const isTr = language === 'tr';
 
     // Dinamik olarak eski 'Değişiklik' etiketlerini düzeltme
     if (index > 0) {
@@ -131,10 +133,10 @@ export function TimelinePanel({
       // Cihaz ekleme / silme kontrolü
       if (curState.topologyDevices.length > prevState.topologyDevices.length) {
         const newDev = curState.topologyDevices.find(d => !prevState.topologyDevices.some(pd => pd.id === d.id));
-        return `Cihaz Eklendi: ${newDev?.name || 'Bilinmiyor'}`;
+        return isTr ? `Cihaz Eklendi: ${newDev?.name || 'Bilinmiyor'}` : `Device Added: ${newDev?.name || 'Unknown'}`;
       } else if (curState.topologyDevices.length < prevState.topologyDevices.length) {
         const removedDev = prevState.topologyDevices.find(d => !curState.topologyDevices.some(pd => pd.id === d.id));
-        return `Cihaz Silindi: ${removedDev?.name || 'Bilinmiyor'}`;
+        return isTr ? `Cihaz Silindi: ${removedDev?.name || 'Bilinmiyor'}` : `Device Removed: ${removedDev?.name || 'Unknown'}`;
       }
 
       // Bağlantı ekleme / silme kontrolü
@@ -143,14 +145,14 @@ export function TimelinePanel({
         if (newConn) {
           const sDev = curState.topologyDevices.find(d => d.id === newConn.sourceDeviceId)?.name || newConn.sourceDeviceId;
           const tDev = curState.topologyDevices.find(d => d.id === newConn.targetDeviceId)?.name || newConn.targetDeviceId;
-          return `${sDev} ve ${tDev} arasına bağlantı eklendi`;
+          return isTr ? `${sDev} ve ${tDev} arasına bağlantı eklendi` : `Link added between ${sDev} and ${tDev}`;
         }
       } else if (curState.topologyConnections.length < prevState.topologyConnections.length) {
         const removedConn = prevState.topologyConnections.find(c => !curState.topologyConnections.some(pc => pc.id === c.id));
         if (removedConn) {
           const sDev = prevState.topologyDevices.find(d => d.id === removedConn.sourceDeviceId)?.name || removedConn.sourceDeviceId;
           const tDev = prevState.topologyDevices.find(d => d.id === removedConn.targetDeviceId)?.name || removedConn.targetDeviceId;
-          return `${sDev} ve ${tDev} arasındaki bağlantı silindi`;
+          return isTr ? `${sDev} ve ${tDev} arasındaki bağlantı silindi` : `Link removed between ${sDev} and ${tDev}`;
         }
       }
 
@@ -159,7 +161,11 @@ export function TimelinePanel({
         const pd = prevState.topologyDevices.find(old => old.id === d.id);
         return pd && (pd.x !== d.x || pd.y !== d.y);
       });
-      if (movedDev) return `${movedDev.name} taşındı (Yeni Konum: ${Math.round(movedDev.x)}, ${Math.round(movedDev.y)})`;
+      if (movedDev) {
+        return isTr
+          ? `${movedDev.name} taşındı (Yeni Konum: ${Math.round(movedDev.x)}, ${Math.round(movedDev.y)})`
+          : `${movedDev.name} moved (New Pos: ${Math.round(movedDev.x)}, ${Math.round(movedDev.y)})`;
+      }
 
       const changedDev = curState.topologyDevices.find(d => {
         const pd = prevState.topologyDevices.find(old => old.id === d.id);
@@ -168,9 +174,11 @@ export function TimelinePanel({
       if (changedDev) {
         const pd = prevState.topologyDevices.find(old => old.id === changedDev.id);
         if (pd && pd.name !== changedDev.name) {
-          return `${changedDev.name}: hostname '${changedDev.name}' olarak değiştirildi`;
+          return isTr
+            ? `${changedDev.name}: hostname '${changedDev.name}' olarak değiştirildi`
+            : `${changedDev.name}: hostname changed to '${changedDev.name}'`;
         }
-        return `${changedDev.name} yapılandırması güncellendi`;
+        return isTr ? `${changedDev.name} yapılandırması güncellendi` : `${changedDev.name} configuration updated`;
       }
     }
 
@@ -310,12 +318,12 @@ export function TimelinePanel({
 
           <TooltipWrapper title={language === 'tr' ? 'Geçmişi İndir (TXT)' : 'Download History (TXT)'}>
             <Button variant="ghost" size="icon" className={cn("h-7 w-7", isDark ? "text-secondary-400 hover:text-primary-400" : "text-secondary-500 hover:text-primary-600")} onClick={() => {
-              const lines = historyItems.map((item, idx) => `Adım ${idx + 1}: ${getActionLabel(item, idx)}`);
+              const lines = historyItems.map((item, idx) => `${language === 'tr' ? 'Adım' : 'Step'} ${idx + 1}: ${getActionLabel(item, idx)}`);
               const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
               const url = URL.createObjectURL(blob);
               const a = document.createElement('a');
               a.href = url;
-              a.download = `islem_gecmisi_${new Date().getTime()}.txt`;
+              a.download = `${language === 'tr' ? 'islem_gecmisi' : 'timeline_history'}_${new Date().getTime()}.txt`;
               document.body.appendChild(a);
               a.click();
               document.body.removeChild(a);

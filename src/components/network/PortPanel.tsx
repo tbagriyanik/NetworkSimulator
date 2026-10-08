@@ -199,12 +199,12 @@ export function PortPanel({ ports, t, theme, deviceName, deviceModel, activeDevi
               </div>
               {port.type === 'serial' && port.serialEncapsulation && (
                 <div className={isDark ? 'text-secondary-300' : 'text-secondary-600'}>
-                  <span className={isDark ? 'text-secondary-500' : 'text-secondary-400'}>Encapsulation:</span> {port.serialEncapsulation.toUpperCase()}
+                  <span className={isDark ? 'text-secondary-500' : 'text-secondary-400'}>{t.language === 'tr' ? 'Kapsülleme:' : 'Encapsulation:'}</span> {port.serialEncapsulation.toUpperCase()}
                 </div>
               )}
               {port.type === 'serial' && port.dce !== undefined && (
                 <div className={isDark ? 'text-secondary-300' : 'text-secondary-600'}>
-                  <span className={isDark ? 'text-secondary-500' : 'text-secondary-400'}>Role:</span> {port.dce ? 'DCE' : 'DTE'}
+                  <span className={isDark ? 'text-secondary-500' : 'text-secondary-400'}>{t.language === 'tr' ? 'Rol:' : 'Role:'}</span> {port.dce ? 'DCE' : 'DTE'}
                 </div>
               )}
             </div>
@@ -274,7 +274,7 @@ export function PortPanel({ ports, t, theme, deviceName, deviceModel, activeDevi
               <span className={isDark ? 'text-secondary-500' : 'text-secondary-400'}>{t.status}:</span> {statusLabel}
             </div>
             {port.spanningTree && (
-              <div className={isDark ? 'text-warning-400' : 'text-warning-500'}>
+              <div className={isDark ? 'text-warning-400' : 'text-warning-600'}>
                 <span className={isDark ? 'text-secondary-500' : 'text-secondary-400'}>STP:</span>{' '}
                 {port.spanningTree.role === 'root' && 'Root'}{' '}
                 {port.spanningTree.role === 'designated' && 'Desg'}{' '}
@@ -289,13 +289,13 @@ export function PortPanel({ ports, t, theme, deviceName, deviceModel, activeDevi
             {port.ipAddress && (
               <div className={isDark ? 'text-secondary-300' : 'text-secondary-600'}>
                 <span className={isDark ? 'text-secondary-500' : 'text-secondary-400'}>IP:</span>{' '}
-                <span className="text-warning-400">{port.ipAddress}{port.subnetMask ? `/${port.subnetMask}` : ''}</span>
+                <span className="text-warning-600 dark:text-warning-400">{port.ipAddress}{port.subnetMask ? `/${port.subnetMask}` : ''}</span>
               </div>
             )}
             {port.ipv6Address && (
               <div className={isDark ? 'text-secondary-300' : 'text-secondary-600'}>
                 <span className={isDark ? 'text-secondary-500' : 'text-secondary-400'}>IPv6:</span>{' '}
-                <span className="text-warning-400">{port.ipv6Address}{port.ipv6Prefix ? `/${port.ipv6Prefix}` : ''}</span>
+                <span className="text-warning-600 dark:text-warning-400">{port.ipv6Address}{port.ipv6Prefix ? `/${port.ipv6Prefix}` : ''}</span>
               </div>
             )}
             <div className={isDark ? 'text-secondary-300' : 'text-secondary-600'}>
@@ -312,17 +312,17 @@ export function PortPanel({ ports, t, theme, deviceName, deviceModel, activeDevi
             </div>
             {port.type === 'serial' && port.serialEncapsulation && (
               <div className={isDark ? 'text-secondary-300' : 'text-secondary-600'}>
-                <span className={isDark ? 'text-secondary-500' : 'text-secondary-400'}>Encapsulation:</span> {port.serialEncapsulation.toUpperCase()}
+                <span className={isDark ? 'text-secondary-500' : 'text-secondary-400'}>{t.language === 'tr' ? 'Kapsülleme:' : 'Encapsulation:'}</span> {port.serialEncapsulation.toUpperCase()}
               </div>
             )}
             {port.type === 'serial' && port.dce !== undefined && (
               <div className={isDark ? 'text-secondary-300' : 'text-secondary-600'}>
-                <span className={isDark ? 'text-secondary-500' : 'text-secondary-400'}>Role:</span> {port.dce ? 'DCE' : 'DTE'}
+                <span className={isDark ? 'text-secondary-500' : 'text-secondary-400'}>{t.language === 'tr' ? 'Rol:' : 'Role:'}</span> {port.dce ? 'DCE' : 'DTE'}
               </div>
             )}
             {peerId && (
               <div className={isDark ? 'text-secondary-300' : 'text-secondary-600'}>
-                <span className={isDark ? 'text-secondary-500' : 'text-secondary-400'}>Connected to:</span> {peerId}
+                <span className={isDark ? 'text-secondary-500' : 'text-secondary-400'}>{t.language === 'tr' ? 'Bağlı Cihaz:' : 'Connected to:'}</span> {peerId}
               </div>
             )}
             {(port.description || port.name) && (
