@@ -618,13 +618,17 @@ export function runStepByStepSimulation({
         const state = deviceStates.get(d.id);
         if (state) {
           const cleanPorts: Record<string, typeof state.ports[string]> = {};
+          const isL2Switch = d.type === 'switchL2';
           Object.entries(state.ports || {}).forEach(([pId, p]) => {
             cleanPorts[pId] = {
               ...p,
               ipAddress: undefined,
               subnetMask: undefined,
-              mode: 'access',
+              mode: isL2Switch ? 'access' : 'routed',
               accessVlan: 1,
+              // Cisco Standartları: L2 Switch portları varsayılan olarak AÇIK (shutdown: false),
+              // Router, Firewall ve L3 Switch yönlendirici portları varsayılan olarak KAPALI (shutdown: true)
+              shutdown: isL2Switch ? false : (pId === 'console' ? false : true),
             };
           });
           currentStates.set(d.id, {

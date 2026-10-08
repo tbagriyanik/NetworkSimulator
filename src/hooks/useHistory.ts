@@ -55,8 +55,8 @@ export interface HistoryEntry {
   description?: string;
 }
 
-const MAX_HISTORY_ITEMS = 40;
-const MAX_HISTORY_BYTES = 3 * 1024 * 1024;
+const MAX_HISTORY_ITEMS = 150;
+const MAX_HISTORY_BYTES = 12 * 1024 * 1024;
 
 function estimateStateBytes(state: ProjectState): number {
   try {
@@ -209,8 +209,8 @@ export function useHistory(initialState: ProjectState) {
         return;
       }
 
-      // Persist only recent 15 history entries to stay well within localStorage quota limits
-      const maxPersistCount = 15;
+      // Persist recent 40 history entries to stay well within localStorage quota limits
+      const maxPersistCount = 40;
       const startIndex = Math.max(0, state.index - maxPersistCount + 1);
       const itemsToSave = state.items.slice(startIndex, state.index + 1);
       const adjustedIndex = state.index - startIndex;

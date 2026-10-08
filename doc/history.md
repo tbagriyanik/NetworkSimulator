@@ -8,6 +8,13 @@
   - **Yardım & Komut Rehberi Dil Senkronizasyonu**: `AboutModal` bileşeninde `useLanguage` entegrasyonu düzeltilerek komut kategorileri ve yardım dökümünün anında Türkçe/İngilizce diline geçmesi sağlandı.
   - **Ağ Doğrulama & BGP Açıklayıcısı**: `AssertionPanelModal` ve `BgpBestPathExplainerModal` bileşenlerine merkezi `useLanguage` kancası entegre edilerek başlıklar, butonlar, kural tipleri ve açıklama metinleri çift dilli yapıldı.
   - **DHCP Havuz Yönetimi Tablo Başlıkları**: `DhcpPoolManagerModal` içerisindeki sabit Türkçe başlıklar (`IP Adresi`, `MAC Adresi`, `Cihaz Adı`, `Kira Süresi`, `Tür`) iki dilli formatta uyarlandı.
+- **🎬 Topoloji Üretici & Adım Adım Simülasyon Geliştirmeleri (`topologyStepByStepSimulation.ts`, `VirtualCursorOverlay.tsx`, `AppFooter.tsx`)**:
+  - **Simülasyon Devam Et (Resume) Düzeltmesi**: Duraklatma (`pauseSimulation`) esnasında bekleme zamanlayıcısında (`remainingDelayMs`) kalan sürenin hafızada tutularak `resumeSimulation` çağrıldığında zamanlayıcının sorunsuz otomatik başlatılması sağlandı.
+  - **Duraklatmada Esnek Etkileşim**: Simülasyon duraklatıldığında kilit kalkanı (`Simulation Lock Shield`) devreden çıkarılarak kullanıcıların üst menülere, araç çubuklarına ve cihazlara çift tıklayarak panelleri açabilmesi sağlandı.
+  - **Gerçek Cihaz Adlarının Korunması**: Topoloji üretiminde simülasyon başlangıcında cihaz isimlerinin varsayılan `PC-2` gibi jenerik fabrika isimleriyle ezilmesi engellendi; senaryodaki gerçek cihaz adları (`PC1`, `R1-Alpha` vb.) ve `hostname` değerleri korundu.
+  - **Sabit Simülasyon Kontrol Düğmeleri**: Alt bilgi çubuğundaki `Devam Et / Duraklat` ve `Durdur` butonları `Adım X/Y` etiketinin sağında solda sabit konuma getirildi; mesaj metni sağ tarafta `...` (truncate) ile kesilerek arayüz kıpırdamaları önlendi.
+- **🖼️ Pencere Yöneticisi & Alt Tuşuyla Taşıma Desteği (`DraggableWindowWrapper.tsx`)**:
+  - **Alt + Tıkla & Sürükle (Alt-Drag)**: Tüm cihaz pencerelerinde (Terminal, Ayarlar, STP, Fiziksel Görünüm) `Alt` tuşuna basılı tutularak pencerenin herhangi bir alanından tutup sürüklenebilmesi sağlandı.
 - **🎨 Açık ve Koyu Tema (Light / Dark Mode) & Kontrast Standardizasyonu**:
   - **PDU Akış İnceleyici Sekme Renkleri (`EmbeddedPduInspector.tsx`)**: Açık modda pasif durumdaki sekme butonlarında yaşanan aşırı koyu zemin rengi düzeltildi (`bg-cyan-50 text-cyan-800` / `dark:bg-cyan-950/60 text-cyan-300`).
   - **Pencere Yöneticisi Çerçeve ve Rozetleri (`WindowSwitcherModal.tsx`)**: Hardcoded kenarlıklar `border-secondary-200 dark:border-secondary-700/40` ile değiştirildi; açık tema etiket ve sayaç renkleri tasarım token sistemine bağlandı.
