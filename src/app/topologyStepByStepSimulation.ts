@@ -626,7 +626,7 @@ export function runStepByStepSimulation({
               subnetMask: undefined,
               mode: isL2Switch ? 'access' : 'routed',
               accessVlan: 1,
-              // Cisco Standartları: L2 Switch portları varsayılan olarak AÇIK (shutdown: false),
+              // Standart: L2 Switch portları varsayılan olarak AÇIK (shutdown: false),
               // Router, Firewall ve L3 Switch yönlendirici portları varsayılan olarak KAPALI (shutdown: true)
               shutdown: isL2Switch ? false : (pId === 'console' ? false : true),
             };

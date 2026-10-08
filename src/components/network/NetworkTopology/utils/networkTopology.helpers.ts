@@ -197,6 +197,10 @@ export const getDeviceCenter = (device: CanvasDevice) => {
 interface PortLayout {
   /** Index of each port id within `device.ports`, by id. */
   indexById: Map<string, number>;
+  /** Port indices matching the rendered PC-like and generic device layouts. */
+  pcIndexById: Map<string, number>;
+  genericIndexById: Map<string, number>;
+  pcPortCount: number;
   /** Column offset for Gi-style ports on routers/WLCs. */
   giColById: Map<string, number>;
   /** Column offset for non-Gi built-in ports on routers/WLCs. */
@@ -205,14 +209,6 @@ interface PortLayout {
   moduleRowById: Map<string, number>;
   /** Absolute column offset for module ports. */
   moduleColById: Map<string, number>;
-  /** Index of each port id across the whole port array. */
-  totalPortCount: number;
-  /**
-   * Column used for a port that exists but is excluded from the port row
-   * (`wlan0`, `service*`). The straight-line version this replaces fell back to
-   * `findIndex` returning -1, which for a WLC was `giPorts.length - 1`.
-   */
-  otherColFallback: number;
 }
 
 const portLayoutCache = new WeakMap<readonly CanvasPort[], PortLayout>();
@@ -224,32 +220,38 @@ const setFirst = (target: Map<string, number>, key: string, value: number): void
 
 const buildPortLayout = (ports: readonly CanvasPort[], deviceType: DeviceType | string): PortLayout => {
   const indexById = new Map<string, number>();
+  const pcIndexById = new Map<string, number>();
+  const genericIndexById = new Map<string, number>();
+  let pcPortCount = 0;
+  let genericPortCount = 0;
   for (let i = 0; i < ports.length; i++) {
-    setFirst(indexById, ports[i].id, i);
+    const id = ports[i].id;
+    setFirst(indexById, id, i);
+    if (id !== 'wlan0') setFirst(pcIndexById, id, pcPortCount++);
+    if (id !== 'wlan0' && !id.startsWith('vlan')) setFirst(genericIndexById, id, genericPortCount++);
   }
 
   const layout: PortLayout = {
     indexById,
+    pcIndexById,
+    genericIndexById,
+    pcPortCount,
     giColById: new Map(),
     otherColById: new Map(),
     moduleRowById: new Map(),
     moduleColById: new Map(),
-    totalPortCount: ports.length,
-    otherColFallback: -1,
   };
 
-  const isRouterOrSwitch = deviceType === 'router' || deviceType === 'switchL2' || deviceType === 'switchL3';
+  const isRouter = deviceType === 'router';
 
   if (deviceType === 'wlc') {
-    // WLC: every non-service port in a single row, Gi first then the rest.
+    // WLC: every visible port in a single row, Gi first then the rest.
     // Module ports are part of that row, as they always have been here.
     const wlcPorts = ports.filter((p) => p.id !== 'wlan0' && !p.id.startsWith('service'));
     let giCount = 0;
     for (const p of wlcPorts) {
       if (p.id.toLowerCase().startsWith('gi')) giCount += 1;
     }
-    layout.otherColFallback = giCount - 1;
-
     // Non-Gi ports continue after the Gi ports, matching
     // `giPorts.length + otherPorts.findIndex(...)`.
     let giCol = 0;
@@ -261,7 +263,7 @@ const buildPortLayout = (ports: readonly CanvasPort[], deviceType: DeviceType | 
     return layout;
   }
 
-  if (!isRouterOrSwitch) return layout;
+  if (!isRouter) return layout;
 
   const portsPerRow = 8;
 
@@ -277,10 +279,7 @@ const buildPortLayout = (ports: readonly CanvasPort[], deviceType: DeviceType | 
 
   // Module ports go strictly on the row below all built-in ports.
   const modulePorts = ports.filter((p) => isModulePort(p.id));
-  const maxBuiltInRow =
-    deviceType === 'router'
-      ? 1 // Gi row 0, console/serial row 1, so modules start on row 2.
-      : Math.max(0, Math.floor((builtInPorts.length - 1) / portsPerRow));
+  const maxBuiltInRow = 1; // Gi row 0, console/serial row 1, so modules start on row 2.
   modulePorts.forEach((p, i) => {
     setFirst(layout.moduleColById, p.id, i % portsPerRow);
     setFirst(layout.moduleRowById, p.id, maxBuiltInRow + 1 + Math.floor(i / portsPerRow));
@@ -310,16 +309,16 @@ export const getPortPosition = (device: CanvasDevice, portId: string) => {
   if (portIndex === -1) return getDeviceCenter(device);
 
   const portsPerRow = (device.type === 'pc' || device.type === 'iot') ? 2 : 8;
-  const col = portIndex % portsPerRow;
-  const row = Math.floor(portIndex / portsPerRow);
 
   if (device.type === 'pc' || device.type === 'iot') {
+    const visiblePortIndex = layout.pcIndexById.get(portId);
+    if (visiblePortIndex === undefined) return getDeviceCenter(device);
     const pcPortSpacing = PC_PORT_SPACING;
-    const pcStartY = 85 / 2 - ((layout.totalPortCount - 1) * pcPortSpacing) / 2;
+    const pcStartY = 85 / 2 - ((layout.pcPortCount - 1) * pcPortSpacing) / 2;
     const devWidth = getDeviceWidth(device.type);
     return {
       x: device.x + devWidth - 8,
-      y: device.y + pcStartY + portIndex * pcPortSpacing
+      y: device.y + pcStartY + visiblePortIndex * pcPortSpacing
     };
   }
 
@@ -327,45 +326,49 @@ export const getPortPosition = (device: CanvasDevice, portId: string) => {
   let actualCol: number;
   let actualRow: number;
 
-  // Handle routers and switches with module ports
-  const isRouterOrSwitch = device.type === 'router' || device.type === 'switchL2' || device.type === 'switchL3';
-
   if (device.type === 'wlc') {
     const isGi = portId.toLowerCase().startsWith('gi');
-    // WLC: all ports in single row, console after gi ports
-    // The `-1` fallbacks keep the `findIndex` miss behaviour of the original
-    // lookups for ports that exist but sit outside the row (`wlan0`, `service*`).
+    // WLC: all visible ports in a single row, console after Gi ports.
     if (isGi) {
-      actualCol = layout.giColById.get(portId) ?? -1;
+      const portColumn = layout.giColById.get(portId);
+      if (portColumn === undefined) return getDeviceCenter(device);
+      actualCol = portColumn;
     } else {
-      actualCol = layout.otherColById.get(portId) ?? layout.otherColFallback;
+      const portColumn = layout.otherColById.get(portId);
+      if (portColumn === undefined) return getDeviceCenter(device);
+      actualCol = portColumn;
     }
     actualRow = 0;
-  } else if (isRouterOrSwitch) {
+  } else if (device.type === 'router') {
     // Check if current port is a module port
     const isModulePortId = isModulePort(portId);
 
     if (isModulePortId) {
-      actualCol = layout.moduleColById.get(portId) ?? 0;
-      actualRow = layout.moduleRowById.get(portId) ?? 0;
-    } else if (device.type === 'router') {
+      const portColumn = layout.moduleColById.get(portId);
+      const portRow = layout.moduleRowById.get(portId);
+      if (portColumn === undefined || portRow === undefined) return getDeviceCenter(device);
+      actualCol = portColumn;
+      actualRow = portRow;
+    } else {
       // Router built-in ports: gi ports row 0, other ports row 1
       if (portId.toLowerCase().startsWith('gi')) {
-        actualCol = layout.giColById.get(portId) ?? -1;
+        const portColumn = layout.giColById.get(portId);
+        if (portColumn === undefined) return getDeviceCenter(device);
+        actualCol = portColumn;
         actualRow = 0;
       } else {
-        actualCol = layout.otherColById.get(portId) ?? -1;
+        const portColumn = layout.otherColById.get(portId);
+        if (portColumn === undefined) return getDeviceCenter(device);
+        actualCol = portColumn;
         actualRow = 1;
       }
-    } else {
-      // Switch built-in ports maintain their original order
-      actualCol = col;
-      actualRow = row;
     }
   } else {
     // Other devices: standard positioning
-    actualCol = col;
-    actualRow = row;
+    const visiblePortIndex = layout.genericIndexById.get(portId);
+    if (visiblePortIndex === undefined) return getDeviceCenter(device);
+    actualCol = visiblePortIndex % portsPerRow;
+    actualRow = Math.floor(visiblePortIndex / portsPerRow);
   }
 
   const startX = device.type === 'cloud' ? 44 : PORT_START_X;

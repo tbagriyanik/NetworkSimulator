@@ -21,7 +21,9 @@ function buildCanvasFixture(deviceIds: string[], connectionIds: string[]) {
   for (const id of deviceIds) {
     const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     g.setAttribute('data-device-id', id);
+    g.classList.add('topology-device-draggable');
     const inner = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    inner.setAttribute('data-device-id', id);
     g.appendChild(inner);
     root.appendChild(g);
   }
@@ -64,6 +66,7 @@ describe('topologyDomCache — device elements', () => {
     const second = getCachedDeviceElement(cache, 'd1');
     expect(first).toBe(second);
     expect(first?.getAttribute('data-device-id')).toBe('d1');
+    expect(first?.classList.contains('topology-device-draggable')).toBe(true);
   });
 
   it('falls back to a targeted lookup for an unknown id and caches the result', () => {
@@ -85,6 +88,7 @@ describe('topologyDomCache — device elements', () => {
     // Re-attach under a new node, as a re-render would.
     const fresh = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     fresh.setAttribute('data-device-id', 'd1');
+    fresh.classList.add('topology-device-draggable');
     document.body.appendChild(fresh);
 
     const resolved = getCachedDeviceElement(cache, 'd1');

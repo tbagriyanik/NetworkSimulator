@@ -14,17 +14,8 @@ import { isModulePort } from '@/lib/network/portUtils';
 import type { CanvasDevice, CanvasPort } from '@/components/network/NetworkTopology/types/networkTopology.types';
 
 /**
- * `getPortPosition` was rewritten to derive the router/WLC port rows once per
- * port array (cached in a WeakMap) instead of rebuilding four filtered arrays on
- * every call. That call happens twice per cable per render and twice per cable
- * per drag frame, so the caching is the whole point — but a cached layout is
- * only safe if it produces exactly the same coordinates as the straight-line
- * version it replaced.
- *
- * `referenceGetPortPosition` below is the previous implementation, kept verbatim
- * as the oracle. These tests compare the two across every device shape and port
- * mix the app can produce, so a future edit to either side cannot silently move
- * a cable.
+ * Port endpoints must follow the same filtered port order as the rendered pins.
+ * The cached layout keeps that calculation cheap during cable updates and drags.
  */
 function referenceGetPortPosition(device: CanvasDevice, portId: string) {
   if (device.type === 'iot' && portId.toLowerCase() === 'wlan0') {
@@ -35,23 +26,23 @@ function referenceGetPortPosition(device: CanvasDevice, portId: string) {
   if (portIndex === -1) return getDeviceCenter(device);
 
   const portsPerRow = (device.type === 'pc' || device.type === 'iot') ? 2 : 8;
-  const col = portIndex % portsPerRow;
-  const row = Math.floor(portIndex / portsPerRow);
-
   if (device.type === 'pc' || device.type === 'iot') {
+    const visiblePorts = device.ports.filter(p => p.id !== 'wlan0');
+    const visiblePortIndex = visiblePorts.findIndex(p => p.id === portId);
+    if (visiblePortIndex === -1) return getDeviceCenter(device);
     const pcPortSpacing = PC_PORT_SPACING;
-    const pcStartY = 85 / 2 - ((device.ports.length - 1) * pcPortSpacing) / 2;
+    const pcStartY = 85 / 2 - ((visiblePorts.length - 1) * pcPortSpacing) / 2;
     const devWidth = getDeviceWidth(device.type);
     return {
       x: device.x + devWidth - 8,
-      y: device.y + pcStartY + portIndex * pcPortSpacing
+      y: device.y + pcStartY + visiblePortIndex * pcPortSpacing
     };
   }
 
   let actualCol: number;
   let actualRow: number;
 
-  const isRouterOrSwitch = device.type === 'router' || device.type === 'switchL2' || device.type === 'switchL3';
+  const isRouter = device.type === 'router';
 
   if (device.type === 'wlc') {
     const filteredPorts = device.ports.filter(p => p.id !== 'wlan0' && !p.id.startsWith('service'));
@@ -63,10 +54,12 @@ function referenceGetPortPosition(device: CanvasDevice, portId: string) {
     if (isGi) {
       actualCol = giPorts.findIndex(p => p.id === portId);
     } else {
-      actualCol = giPorts.length + otherPorts.findIndex(p => p.id === portId);
+      const otherPortIndex = otherPorts.findIndex(p => p.id === portId);
+      if (otherPortIndex === -1) return getDeviceCenter(device);
+      actualCol = giPorts.length + otherPortIndex;
     }
     actualRow = 0;
-  } else if (isRouterOrSwitch) {
+  } else if (isRouter) {
     const isModulePortId = isModulePort(portId);
 
     if (isModulePortId) {
@@ -83,7 +76,7 @@ function referenceGetPortPosition(device: CanvasDevice, portId: string) {
 
       actualCol = modulePortIndex % portsPerRow;
       actualRow = (maxBuiltInRow + 1) + Math.floor(modulePortIndex / portsPerRow);
-    } else if (device.type === 'router') {
+    } else {
       const filteredPorts = device.ports.filter(p => p.id !== 'wlan0' && !p.id.startsWith('service') && !isModulePort(p.id));
       const portIdLower = portId.toLowerCase();
       const giPorts = filteredPorts.filter(p => p.id.toLowerCase().startsWith('gi'));
@@ -95,15 +88,16 @@ function referenceGetPortPosition(device: CanvasDevice, portId: string) {
         actualRow = 0;
       } else {
         actualCol = otherPorts.findIndex(p => p.id === portId);
+        if (actualCol === -1) return getDeviceCenter(device);
         actualRow = 1;
       }
-    } else {
-      actualCol = col;
-      actualRow = row;
     }
   } else {
-    actualCol = col;
-    actualRow = row;
+    const visiblePorts = device.ports.filter(p => p.id !== 'wlan0' && !p.id.startsWith('vlan'));
+    const visiblePortIndex = visiblePorts.findIndex(p => p.id === portId);
+    if (visiblePortIndex === -1) return getDeviceCenter(device);
+    actualCol = visiblePortIndex % portsPerRow;
+    actualRow = Math.floor(visiblePortIndex / portsPerRow);
   }
 
   const startX = device.type === 'cloud' ? 44 : PORT_START_X;
@@ -186,7 +180,7 @@ const CASES: { name: string; device: CanvasDevice; extraPortIds?: string[] }[] =
   { name: 'cloud', device: makeDevice('cloud', []) },
 ];
 
-describe('getPortPosition — cached layout matches the previous implementation', () => {
+describe('getPortPosition — cached layout matches rendered port positions', () => {
   for (const { name, device, extraPortIds } of CASES) {
     it(`produces identical coordinates for every port of a ${name}`, () => {
       const queriedPorts = [

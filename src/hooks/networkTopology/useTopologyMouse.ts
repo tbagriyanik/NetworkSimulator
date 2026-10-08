@@ -405,12 +405,8 @@ export function useTopologyMouse(props: UseTopologyMouseProps) {
         }
 
         if (isActuallyDraggingRef.current) {
+          lastDragEventRef.current = { clientX: e.clientX, clientY: e.clientY, ctrlKey: e.ctrlKey };
           if (dragAnimationFrameRef.current !== null) return;
-
-          const clientX = e.clientX;
-          const clientY = e.clientY;
-          const ctrlKey = e.ctrlKey;
-          lastDragEventRef.current = { clientX, clientY, ctrlKey };
 
           dragAnimationFrameRef.current = requestAnimationFrame(() => {
             // Same rect source as every other branch, so the drag, the cable
@@ -422,16 +418,17 @@ export function useTopologyMouse(props: UseTopologyMouseProps) {
             const currentDragStartPos = dragStartPosRef.current;
             const currentDraggedDevice = draggedDeviceRef.current;
             const currentSnapToGrid = snapToGridRef.current;
+            const latestDragEvent = lastDragEventRef.current;
             const currentSelectedIds = selectedDeviceIdsRef.current;
             const currentStartPositions = dragStartDevicePositionsRef.current;
 
-            if (!currentDragStartPos || !currentDraggedDevice) {
+            if (!currentDragStartPos || !currentDraggedDevice || !latestDragEvent) {
               dragAnimationFrameRef.current = null;
               return;
             }
 
-            const mouseX = (clientX - rect.left - currentPan.x) / currentZoom;
-            const mouseY = (clientY - rect.top - currentPan.y) / currentZoom;
+            const mouseX = (latestDragEvent.clientX - rect.left - currentPan.x) / currentZoom;
+            const mouseY = (latestDragEvent.clientY - rect.top - currentPan.y) / currentZoom;
             const startMouseX = (currentDragStartPos.x - rect.left - currentPan.x) / currentZoom;
             const startMouseY = (currentDragStartPos.y - rect.top - currentPan.y) / currentZoom;
             const dx = mouseX - startMouseX;
@@ -446,7 +443,7 @@ export function useTopologyMouse(props: UseTopologyMouseProps) {
               ? currentSelectedIds
               : [currentDraggedDevice];
 
-            const doSnap = currentSnapToGrid || ctrlKey;
+            const doSnap = currentSnapToGrid || latestDragEvent.ctrlKey;
             const newPositions = computeDeltaPositions(currentStartPositions, devicesToMove, dx, dy, doSnap);
 
             newPositions.forEach((pos, id) => {
@@ -634,6 +631,7 @@ export function useTopologyMouse(props: UseTopologyMouseProps) {
     const handleMouseUp = (e: globalThis.MouseEvent) => {
       activePointerDragRef.current = false;
       activeDragPointerIdRef.current = null;
+      lastDragEventRef.current = { clientX: e.clientX, clientY: e.clientY, ctrlKey: e.ctrlKey };
 
       // Same rect source as the drag frames and the pan branch, so a commit can
       // never land on a different coordinate origin than the gesture that

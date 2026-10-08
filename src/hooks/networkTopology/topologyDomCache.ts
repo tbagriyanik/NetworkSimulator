@@ -50,7 +50,7 @@ export function collectDeviceElements(
 
   // A single pass over the tree is far cheaper than one query per id when the
   // ids being moved are only a subset of a large topology.
-  const nodes = root.querySelectorAll<SVGGElement>('[data-device-id]');
+  const nodes = root.querySelectorAll<SVGGElement>('.topology-device-draggable[data-device-id]');
   for (let i = 0; i < nodes.length; i++) {
     const node = nodes[i];
     const id = node.getAttribute('data-device-id');
@@ -61,7 +61,7 @@ export function collectDeviceElements(
   // rendered outside the canvas root).
   for (const id of deviceIds) {
     if (cache.devices.has(id)) continue;
-    const node = document.querySelector<SVGGElement>('[data-device-id="' + id + '"]');
+    const node = document.querySelector<SVGGElement>('.topology-device-draggable[data-device-id="' + id + '"]');
     if (node) cache.devices.set(id, node);
   }
 }
@@ -103,7 +103,7 @@ export function getCachedDeviceElement(
   const cached = cache.devices.get(deviceId);
   if (cached?.isConnected) return cached;
 
-  const node = document.querySelector<SVGGElement>('[data-device-id="' + deviceId + '"]');
+  const node = document.querySelector<SVGGElement>('.topology-device-draggable[data-device-id="' + deviceId + '"]');
   if (node) cache.devices.set(deviceId, node);
   else cache.devices.delete(deviceId);
   return node;
