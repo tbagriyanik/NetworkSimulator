@@ -161,19 +161,19 @@ export function DhcpPoolManagerModal({
             : 'bg-white/95 border-secondary-200 text-secondary-900 backdrop-blur-xl'
         }`}
       >
-        <DialogHeader className="pb-3 border-b border-secondary-800/40">
+        <DialogHeader className="pb-3 border-b border-secondary-200 dark:border-secondary-800/40">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-teal-500/10 text-teal-400 border border-teal-500/20">
+            <div className="p-2 rounded-xl bg-teal-500/10 text-teal-400 border border-teal-500/20 shrink-0">
               <Database className="w-5 h-5" />
             </div>
             <div>
               <DialogTitle className="text-base font-bold flex items-center gap-2">
                 {isTr ? 'DHCP Sunucu & Havuz Yönetimi' : 'DHCP Server & IP Pool Manager'}
-                <span className="text-xs px-2 py-0.5 rounded-md bg-secondary-800 text-secondary-300 font-mono">
+                <span className="text-xs px-2 py-0.5 rounded-md bg-secondary-100 dark:bg-secondary-800 text-secondary-700 dark:text-secondary-300 font-mono">
                   {deviceName}
                 </span>
               </DialogTitle>
-              <DialogDescription className="text-xs text-secondary-400">
+              <DialogDescription className="text-xs text-secondary-500 dark:text-secondary-400">
                 {isTr
                   ? 'Tanımlı IP havuzlarını, doluluk oranlarını ve aktif kiralanmış (Leased) istemcileri görüntüleyin.'
                   : 'Monitor configured DHCP pools, capacity utilization, and active client leases.'}
@@ -197,7 +197,7 @@ export function DhcpPoolManagerModal({
         ) : (
           <div className="space-y-4 pt-2">
             {/* Pool Selector Tabs */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-1">
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 custom-scrollbar">
               {pools.map((p) => {
                 const isSelected = activePool?.name === p.name;
                 const percent = Math.round((p.usedIps / p.totalIps) * 100);
@@ -205,7 +205,7 @@ export function DhcpPoolManagerModal({
                   <button
                     key={p.name}
                     onClick={() => setSelectedPoolName(p.name)}
-                    className={`px-3 py-2 rounded-xl border text-xs font-semibold flex items-center gap-2 transition-all ${
+                    className={`px-3 py-2 rounded-xl border text-xs font-semibold flex items-center gap-2 transition-all shrink-0 ${
                       isSelected
                         ? isDark
                           ? 'bg-teal-500/20 border-teal-500/50 text-teal-200 shadow-[0_0_12px_rgba(20,184,166,0.15)]'
@@ -216,7 +216,7 @@ export function DhcpPoolManagerModal({
                     }`}
                   >
                     <span>{p.name}</span>
-                    <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-secondary-800 text-secondary-300">
+                    <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-secondary-200 dark:bg-secondary-800 text-secondary-700 dark:text-secondary-300">
                       %{percent}
                     </span>
                   </button>
@@ -228,20 +228,20 @@ export function DhcpPoolManagerModal({
             {activePool && (
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                 <div className={`p-3 rounded-xl border ${isDark ? 'bg-secondary-900/40 border-secondary-800' : 'bg-secondary-50 border-secondary-200'}`}>
-                  <span className="text-[10px] uppercase font-mono text-secondary-400 block">{isTr ? 'Ağ Bloğu' : 'Network'}</span>
+                  <span className="text-[10px] uppercase font-mono text-secondary-500 dark:text-secondary-400 block">{isTr ? 'Ağ Bloğu' : 'Network'}</span>
                   <span className="text-xs font-bold font-mono">{activePool.network}</span>
                 </div>
                 <div className={`p-3 rounded-xl border ${isDark ? 'bg-secondary-900/40 border-secondary-800' : 'bg-secondary-50 border-secondary-200'}`}>
-                  <span className="text-[10px] uppercase font-mono text-secondary-400 block">{isTr ? 'Alt Ağ Maskesi' : 'Subnet Mask'}</span>
+                  <span className="text-[10px] uppercase font-mono text-secondary-500 dark:text-secondary-400 block">{isTr ? 'Alt Ağ Maskesi' : 'Subnet Mask'}</span>
                   <span className="text-xs font-bold font-mono">{activePool.mask}</span>
                 </div>
                 <div className={`p-3 rounded-xl border ${isDark ? 'bg-secondary-900/40 border-secondary-800' : 'bg-secondary-50 border-secondary-200'}`}>
-                  <span className="text-[10px] uppercase font-mono text-secondary-400 block">{isTr ? 'Varsayılan Ağ Geçidi' : 'Default Gateway'}</span>
-                  <span className="text-xs font-bold font-mono text-teal-400">{activePool.gateway}</span>
+                  <span className="text-[10px] uppercase font-mono text-secondary-500 dark:text-secondary-400 block">{isTr ? 'Varsayılan Ağ Geçidi' : 'Default Gateway'}</span>
+                  <span className="text-xs font-bold font-mono text-teal-600 dark:text-teal-400">{activePool.gateway}</span>
                 </div>
                 <div className={`p-3 rounded-xl border ${isDark ? 'bg-secondary-900/40 border-secondary-800' : 'bg-secondary-50 border-secondary-200'}`}>
-                  <span className="text-[10px] uppercase font-mono text-secondary-400 block">{isTr ? 'DNS Sunucusu' : 'DNS Server'}</span>
-                  <span className="text-xs font-bold font-mono text-sky-400">{activePool.dns}</span>
+                  <span className="text-[10px] uppercase font-mono text-secondary-500 dark:text-secondary-400 block">{isTr ? 'DNS Sunucusu' : 'DNS Server'}</span>
+                  <span className="text-xs font-bold font-mono text-sky-600 dark:text-sky-400">{activePool.dns}</span>
                 </div>
               </div>
             )}
@@ -250,15 +250,15 @@ export function DhcpPoolManagerModal({
             {activePool && (
               <div className={`p-3 rounded-xl border space-y-2 ${isDark ? 'bg-secondary-900/40 border-secondary-800' : 'bg-secondary-50 border-secondary-200'}`}>
                 <div className="flex justify-between text-xs">
-                  <span className="font-semibold text-secondary-300 flex items-center gap-1.5">
-                    <Users className="w-3.5 h-3.5 text-teal-400" />
+                  <span className="font-semibold text-secondary-700 dark:text-secondary-300 flex items-center gap-1.5">
+                    <Users className="w-3.5 h-3.5 text-teal-500 dark:text-teal-400" />
                     {isTr ? 'Havuz Doluluk Oranı' : 'Pool Capacity Utilization'}
                   </span>
-                  <span className="font-mono text-secondary-400">
+                  <span className="font-mono text-secondary-500 dark:text-secondary-400">
                     {activePool.usedIps} / {activePool.totalIps} IP (%{Math.round((activePool.usedIps / activePool.totalIps) * 100)})
                   </span>
                 </div>
-                <div className="w-full h-2 rounded-full bg-secondary-800 overflow-hidden">
+                <div className="w-full h-2 rounded-full bg-secondary-200 dark:bg-secondary-800 overflow-hidden">
                   <div
                     className="h-full bg-gradient-to-r from-teal-500 to-emerald-400 rounded-full transition-all duration-500"
                     style={{ width: `${Math.min(100, Math.round((activePool.usedIps / activePool.totalIps) * 100))}%` }}
@@ -270,12 +270,12 @@ export function DhcpPoolManagerModal({
             {/* Leases Table */}
             {activePool && (
               <div className="space-y-2">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-xs font-bold text-secondary-200 flex items-center gap-1.5">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <span className="text-xs font-bold text-secondary-800 dark:text-secondary-200 flex items-center gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400" />
                     {isTr ? 'Aktif Kiralanan IP Bağlantıları (DHCP Bindings)' : 'Active DHCP IP Bindings'}
                   </span>
-                  <div className="relative w-48">
+                  <div className="relative w-full sm:w-48">
                     <Search className="w-3 h-3 text-secondary-400 absolute left-2 top-2.5" />
                     <input
                       type="text"
@@ -283,32 +283,32 @@ export function DhcpPoolManagerModal({
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className={`w-full text-[11px] pl-7 pr-2 py-1 rounded-lg border focus:outline-none ${
-                        isDark ? 'bg-secondary-900 border-secondary-800 text-white' : 'bg-white border-secondary-300'
+                        isDark ? 'bg-secondary-900 border-secondary-800 text-white' : 'bg-white border-secondary-300 text-secondary-900'
                       }`}
                     />
                   </div>
                 </div>
 
-                <div className={`rounded-xl border overflow-hidden ${isDark ? 'border-secondary-800 bg-secondary-900/30' : 'border-secondary-200 bg-white'}`}>
-                  <table className="w-full text-left text-xs">
+                <div className={`rounded-xl border overflow-x-auto ${isDark ? 'border-secondary-800 bg-secondary-900/30' : 'border-secondary-200 bg-white'}`}>
+                  <table className="w-full text-left text-xs min-w-[500px]">
                     <thead className={`border-b text-[10px] font-bold uppercase tracking-wider ${isDark ? 'border-secondary-800 bg-secondary-900/80 text-secondary-400' : 'border-secondary-200 bg-secondary-100 text-secondary-600'}`}>
                       <tr>
-                        <th className="p-2.5">IP Adresi</th>
-                        <th className="p-2.5">MAC Adresi</th>
-                        <th className="p-2.5">Hostname</th>
-                        <th className="p-2.5">Kira Bitişi</th>
-                        <th className="p-2.5 text-right">Tür</th>
+                        <th className="p-2.5">{isTr ? 'IP Adresi' : 'IP Address'}</th>
+                        <th className="p-2.5">{isTr ? 'MAC Adresi' : 'MAC Address'}</th>
+                        <th className="p-2.5">{isTr ? 'Cihaz Adı' : 'Hostname'}</th>
+                        <th className="p-2.5">{isTr ? 'Kira Süresi' : 'Lease Duration'}</th>
+                        <th className="p-2.5 text-right">{isTr ? 'Tür' : 'Type'}</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-secondary-800/40">
+                    <tbody className="divide-y divide-secondary-200 dark:divide-secondary-800/40">
                       {filteredLeases.map((lease) => (
                         <tr key={lease.ip} className={isDark ? 'hover:bg-secondary-800/30' : 'hover:bg-secondary-50'}>
-                          <td className="p-2.5 font-mono text-teal-300 font-semibold">{lease.ip}</td>
-                          <td className="p-2.5 font-mono text-secondary-400">{lease.mac}</td>
-                          <td className="p-2.5 font-semibold text-secondary-200">{lease.hostname}</td>
-                          <td className="p-2.5 text-secondary-400">{lease.leaseExpires}</td>
+                          <td className="p-2.5 font-mono text-teal-600 dark:text-teal-300 font-semibold">{lease.ip}</td>
+                          <td className="p-2.5 font-mono text-secondary-500 dark:text-secondary-400">{lease.mac}</td>
+                          <td className="p-2.5 font-semibold text-secondary-800 dark:text-secondary-200">{lease.hostname}</td>
+                          <td className="p-2.5 text-secondary-500 dark:text-secondary-400">{lease.leaseExpires}</td>
                           <td className="p-2.5 text-right">
-                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-teal-500/10 text-teal-400 border border-teal-500/20 font-medium">
+                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20 font-medium">
                               {lease.type}
                             </span>
                           </td>

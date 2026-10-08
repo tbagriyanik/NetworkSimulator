@@ -33,7 +33,7 @@ interface AboutModalProps {
 type TabType = 'help' | 'about' | 'contact';
 
 export function AboutModal({ isOpen, onClose, onStartTour, isExamActive = false }: AboutModalProps) {
-  const { t } = useLanguage();
+  const { language, t } = useLanguage();
   const { theme } = useTheme();
   const CONTACT_NAME_MAX_LENGTH = 64;
   const CONTACT_EMAIL_MAX_LENGTH = 254;
@@ -43,8 +43,7 @@ export function AboutModal({ isOpen, onClose, onStartTour, isExamActive = false 
   );
   const isContactEnabled = process.env.NEXT_PUBLIC_IS_CONTACT_ENABLED == 'true';
   const isDark = theme === 'dark';
-  const lang = (t as unknown as Record<string, string>).language || 'en';
-  const isTR = lang === 'tr';
+  const isTR = language === 'tr';
 
   const [selectedAnimId, setSelectedAnimId] = useState<string>('broadcast-vis');
   const [animationKey, setAnimationKey] = useState<number>(0);
@@ -116,7 +115,7 @@ export function AboutModal({ isOpen, onClose, onStartTour, isExamActive = false 
       setSubmitStatus('error');
       setValidationErrors(prev => ({
         ...prev,
-        message: t.language === 'tr'
+        message: isTR
           ? 'Masaüstü uygulamasında iletişim formu için web sürümünü ziyaret ediniz.'
           : 'Please visit the web edition to submit feedback in desktop mode.'
       }));
@@ -365,7 +364,7 @@ export function AboutModal({ isOpen, onClose, onStartTour, isExamActive = false 
                       {isTR ? 'Sürüm' : 'Version'}
                     </span>
                     <span className="text-xs font-semibold text-secondary-800 dark:text-secondary-200">
-                      {process.env.APP_VERSION || '7.5.0'}
+                      {process.env.APP_VERSION || '7.6.0'}
                     </span>
                   </div>
                   <div className="flex flex-col">

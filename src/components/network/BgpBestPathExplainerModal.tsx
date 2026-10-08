@@ -6,6 +6,8 @@ import {
 import type { BgpRoute } from '@/lib/network/bgpEngine';
 import { GitCommit, Trophy, X } from 'lucide-react';
 import { useModalDismiss } from '@/hooks/useModalDismiss';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { WINDOW_CLOSE_BUTTON_CLASS, WINDOW_CANCEL_BUTTON_CLASS, WINDOW_TITLE_CLASS } from '@/components/ui/windowStandards';
 
 interface BgpBestPathExplainerModalProps {
@@ -99,9 +101,13 @@ const en = {
 export const BgpBestPathExplainerModal: React.FC<BgpBestPathExplainerModalProps> = ({
   isOpen,
   onClose,
-  language = 'tr',
+  language: propLanguage,
 }) => {
-  const t = language === 'en' ? en : tr;
+  const { language: contextLanguage } = useLanguage();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+  const effectiveLanguage = propLanguage || contextLanguage || 'tr';
+  const t = effectiveLanguage === 'en' ? en : tr;
   const [routeA] = useState<BgpRoute>(sampleRouteA);
   const [routeB] = useState<BgpRoute>(sampleRouteB);
 
@@ -115,20 +121,20 @@ export const BgpBestPathExplainerModal: React.FC<BgpBestPathExplainerModalProps>
   const comparison = compareBgpRoutes(routeA, routeB);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-      <div className="w-full max-w-4xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4">
+      <div className={`w-full max-w-4xl border rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] ${isDark ? 'bg-secondary-950 border-secondary-800 text-secondary-100' : 'bg-white border-secondary-200 text-secondary-900'}`}>
         {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800/50">
+        <div className={`px-4 sm:px-6 py-3.5 sm:py-4 border-b flex items-center justify-between ${isDark ? 'bg-secondary-900/60 border-secondary-800' : 'bg-secondary-50 border-secondary-200'}`}>
           <div className="flex items-center gap-2">
             <GitCommit className="w-5 h-5 text-amber-500" />
-            <h2 className={WINDOW_TITLE_CLASS(true)}>
+            <h2 className={WINDOW_TITLE_CLASS(isDark)}>
               {t.title}
             </h2>
           </div>
           <button
             onClick={onClose}
-            aria-label={language === 'tr' ? 'Kapat' : 'Close'}
-            title={language === 'tr' ? 'Kapat' : 'Close'}
+            aria-label={effectiveLanguage === 'tr' ? 'Kapat' : 'Close'}
+            title={effectiveLanguage === 'tr' ? 'Kapat' : 'Close'}
             className={WINDOW_CLOSE_BUTTON_CLASS}
           >
             <X className="w-4 h-4" />
@@ -136,13 +142,13 @@ export const BgpBestPathExplainerModal: React.FC<BgpBestPathExplainerModalProps>
         </div>
 
         {/* Body */}
-        <div className="p-6 overflow-y-auto space-y-6 flex-1">
+        <div className="p-4 sm:p-6 overflow-y-auto space-y-5 sm:space-y-6 flex-1 custom-scrollbar">
           {/* Route inputs comparison */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
             {/* Route A */}
-            <div className={`p-4 rounded-xl border ${comparison.winner === -1 ? 'border-emerald-500 bg-emerald-500/5' : 'border-slate-200 dark:border-slate-800'}`}>
+            <div className={`p-4 rounded-xl border ${comparison.winner === -1 ? 'border-emerald-500 bg-emerald-500/10' : (isDark ? 'bg-secondary-900/40 border-secondary-800' : 'bg-secondary-50 border-secondary-200')}`}>
               <div className="flex items-center justify-between mb-3">
-                <span className="font-bold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300">{t.routeA}</span>
+                <span className={`font-bold text-xs uppercase tracking-wider ${isDark ? 'text-secondary-300' : 'text-secondary-700'}`}>{t.routeA}</span>
                 {comparison.winner === -1 && (
                   <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/60 px-2.5 py-0.5 rounded-full">
                     <Trophy className="w-3.5 h-3.5" /> {t.winner}
@@ -151,28 +157,28 @@ export const BgpBestPathExplainerModal: React.FC<BgpBestPathExplainerModalProps>
               </div>
               <div className="space-y-2 text-xs">
                 <div className="flex justify-between">
-                  <span className="text-slate-500">{t.nextHop}</span>
-                  <span className="font-mono text-slate-800 dark:text-slate-200">{routeA.nextHop}</span>
+                  <span className={isDark ? 'text-secondary-400' : 'text-secondary-500'}>{t.nextHop}</span>
+                  <span className={`font-mono ${isDark ? 'text-secondary-200' : 'text-secondary-800'}`}>{routeA.nextHop}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-500">{t.asPath}</span>
-                  <span className="font-mono text-slate-800 dark:text-slate-200">[{routeA.asPath.join(', ')}]</span>
+                  <span className={isDark ? 'text-secondary-400' : 'text-secondary-500'}>{t.asPath}</span>
+                  <span className={`font-mono ${isDark ? 'text-secondary-200' : 'text-secondary-800'}`}>[{routeA.asPath.join(', ')}]</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-500">{t.weight}</span>
-                  <span className="font-mono text-slate-800 dark:text-slate-200">{routeA.weight}</span>
+                  <span className={isDark ? 'text-secondary-400' : 'text-secondary-500'}>{t.weight}</span>
+                  <span className={`font-mono ${isDark ? 'text-secondary-200' : 'text-secondary-800'}`}>{routeA.weight}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-500">{t.localPref}</span>
-                  <span className="font-mono text-slate-800 dark:text-slate-200">{routeA.localPref}</span>
+                  <span className={isDark ? 'text-secondary-400' : 'text-secondary-500'}>{t.localPref}</span>
+                  <span className={`font-mono ${isDark ? 'text-secondary-200' : 'text-secondary-800'}`}>{routeA.localPref}</span>
                 </div>
               </div>
             </div>
 
             {/* Route B */}
-            <div className={`p-4 rounded-xl border ${comparison.winner === 1 ? 'border-emerald-500 bg-emerald-500/5' : 'border-slate-200 dark:border-slate-800'}`}>
+            <div className={`p-4 rounded-xl border ${comparison.winner === 1 ? 'border-emerald-500 bg-emerald-500/10' : (isDark ? 'bg-secondary-900/40 border-secondary-800' : 'bg-secondary-50 border-secondary-200')}`}>
               <div className="flex items-center justify-between mb-3">
-                <span className="font-bold text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300">{t.routeB}</span>
+                <span className={`font-bold text-xs uppercase tracking-wider ${isDark ? 'text-secondary-300' : 'text-secondary-700'}`}>{t.routeB}</span>
                 {comparison.winner === 1 && (
                   <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/60 px-2.5 py-0.5 rounded-full">
                     <Trophy className="w-3.5 h-3.5" /> {t.winner}
@@ -181,20 +187,20 @@ export const BgpBestPathExplainerModal: React.FC<BgpBestPathExplainerModalProps>
               </div>
               <div className="space-y-2 text-xs">
                 <div className="flex justify-between">
-                  <span className="text-slate-500">{t.nextHop}</span>
-                  <span className="font-mono text-slate-800 dark:text-slate-200">{routeB.nextHop}</span>
+                  <span className={isDark ? 'text-secondary-400' : 'text-secondary-500'}>{t.nextHop}</span>
+                  <span className={`font-mono ${isDark ? 'text-secondary-200' : 'text-secondary-800'}`}>{routeB.nextHop}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-500">{t.asPath}</span>
-                  <span className="font-mono text-slate-800 dark:text-slate-200">[{routeB.asPath.join(', ')}]</span>
+                  <span className={isDark ? 'text-secondary-400' : 'text-secondary-500'}>{t.asPath}</span>
+                  <span className={`font-mono ${isDark ? 'text-secondary-200' : 'text-secondary-800'}`}>[{routeB.asPath.join(', ')}]</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-500">{t.weight}</span>
-                  <span className="font-mono text-slate-800 dark:text-slate-200">{routeB.weight}</span>
+                  <span className={isDark ? 'text-secondary-400' : 'text-secondary-500'}>{t.weight}</span>
+                  <span className={`font-mono ${isDark ? 'text-secondary-200' : 'text-secondary-800'}`}>{routeB.weight}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-500">{t.localPref}</span>
-                  <span className="font-mono text-slate-800 dark:text-slate-200">{routeB.localPref}</span>
+                  <span className={isDark ? 'text-secondary-400' : 'text-secondary-500'}>{t.localPref}</span>
+                  <span className={`font-mono ${isDark ? 'text-secondary-200' : 'text-secondary-800'}`}>{routeB.localPref}</span>
                 </div>
               </div>
             </div>
@@ -202,7 +208,7 @@ export const BgpBestPathExplainerModal: React.FC<BgpBestPathExplainerModalProps>
 
           {/* Decision Steps Pipeline */}
           <div className="space-y-3">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+            <h3 className={`text-xs font-bold uppercase tracking-wider ${isDark ? 'text-secondary-400' : 'text-secondary-500'}`}>
               {t.decisionHierarchyTitle}
             </h3>
             <div className="space-y-1.5">
@@ -215,14 +221,14 @@ export const BgpBestPathExplainerModal: React.FC<BgpBestPathExplainerModalProps>
                     key={step}
                     className={`p-3 rounded-xl border flex items-center justify-between text-xs transition ${
                       isDecisionStep
-                        ? 'border-amber-500 bg-amber-500/10 font-semibold text-slate-900 dark:text-white'
+                        ? 'border-amber-500 bg-amber-500/10 font-semibold'
                         : isPassedStep
-                        ? 'border-slate-200 dark:border-slate-800 opacity-60 text-slate-500'
-                        : 'border-slate-100 dark:border-slate-850 text-slate-400'
+                        ? (isDark ? 'border-secondary-800 opacity-60 text-secondary-400' : 'border-secondary-200 opacity-60 text-secondary-500')
+                        : (isDark ? 'border-secondary-900 text-secondary-500' : 'border-secondary-100 text-secondary-400')
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <span className="w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-[10px] font-bold">
+                      <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${isDark ? 'bg-secondary-800 text-secondary-300' : 'bg-secondary-200 text-secondary-700'}`}>
                         {idx + 1}
                       </span>
                       <span>{stepLabel}</span>
@@ -241,12 +247,12 @@ export const BgpBestPathExplainerModal: React.FC<BgpBestPathExplainerModalProps>
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-3 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex items-center justify-end">
+        <div className={`px-4 sm:px-6 py-3 border-t flex items-center justify-end ${isDark ? 'border-secondary-800 bg-secondary-900/50' : 'border-secondary-200 bg-secondary-50'}`}>
           <button
             onClick={onClose}
-            className={WINDOW_CANCEL_BUTTON_CLASS(true)}
+            className={WINDOW_CANCEL_BUTTON_CLASS(isDark)}
           >
-            {language === 'tr' ? 'Vazgeç' : 'Cancel'}
+            {effectiveLanguage === 'tr' ? 'Vazgeç' : 'Cancel'}
           </button>
         </div>
       </div>

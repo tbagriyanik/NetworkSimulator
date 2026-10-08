@@ -1,4 +1,13 @@
 
+## Çift Dilli Senkronizasyon (TR/ENG), Açık/Koyu Tema Kontrastı & Mobil/Responsive Uyumluluk (2026-10-08 - v7.6.0)
+
+| Özellik | Güncel kapsam ve sınır |
+|---|---|
+| **Dinamik Dil Bağlamı & Çift Dilli (TR / EN) Senkronizasyon (`LanguageContext.tsx`, `RoomJoinDialog.tsx`, `TeacherRoomPanel.tsx`, `AboutModal.tsx`)** | `LanguageContext` içerisine dinamik `language` alanı eklenerek `t.language` ve `useLanguage()` kancaları tüm uygulamada eşitlendi. Canlı sınıf/oda yönetimi diyalogları, hata ve masaüstü kısıtlama bildirimleri, komut rehberi ve yardım modalları Türkçe ve İngilizce dil seçimlerine tam uyumlu hale getirildi. |
+| **Açık & Koyu Tema (Light / Dark Mode) Kontrast Standardizasyonu (`EmbeddedPduInspector.tsx`, `WindowSwitcherModal.tsx`, `DhcpPoolManagerModal.tsx`)** | PDU akış inceleyicisindeki pasif butonların açık mod zemin kontrastı düzeltildi (`bg-cyan-50`), pencere listesi ve DHCP havuz yöneticisi diyaloglarındaki hardcoded kenarlıklar `secondary` tasarım token sistemine geçirildi. |
+| **Mobil & Responsive Arayüz Uyumluluğu (`SnapshotManagerModal.tsx`, `WindowSwitcherModal.tsx`, `EmbeddedPduInspector.tsx`, `DhcpPoolManagerModal.tsx`)** | Topoloji kayıt yöneticisi modalında küçük ekranlarda taşmaya yol açan sabit yükseklik `h-full sm:h-[650px] max-h-[92vh]` ile esnetildi; pencere yöneticisi ve PDU araç çubukları mobil dokunmatik ekranlara ve dar alanlara uyarlandı. |
+| **Ağ Doğrulama & BGP Açıklayıcı Entegrasyonu (`AssertionPanelModal.tsx`, `BgpBestPathExplainerModal.tsx`)** | Kural tanımlama formları, BGP karar adımları ve test yürütme alanları merkezi dil ve tema kancalarına bağlanarak hem açık/koyu modda hem de mobil ekranlarda tam uyumlu kılındı. |
+
 ## Otomatik Topoloji Simülasyonu, Terminal Renk Temaları, Pedagojik CLI Asistanı, Güvenlik Sertleştirmesi & Çoklu Pencere Deneyimi (2026-10-07 - v7.5.0)
 
 | Özellik | Güncel kapsam ve sınır |

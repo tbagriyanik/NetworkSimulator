@@ -1,6 +1,6 @@
 # Network Simulator
 
-![Version](https://img.shields.io/badge/version-7.5.0-blue)
+![Version](https://img.shields.io/badge/version-7.6.0-blue)
 ![Next.js](https://img.shields.io/badge/Next.js-16.3.8-black?logo=next.js)
 ![React](https://img.shields.io/badge/React-19.3.0-61DAFB?logo=react&logoColor=black)
 ![TypeScript](https://img.shields.io/badge/TypeScript-7.0.2-3178C6?logo=typescript&logoColor=white)
@@ -80,7 +80,7 @@ Simülatör, standart komut formatının yanı sıra yaygın olarak kullanılan 
 
 | Metrik / Metric | Değer / Value |
 | --- | --- |
-| Version / Sürüm | 7.5.0 |
+| Version / Sürüm | 7.6.0 |
 | Total Lines / Toplam Satır (`src/`) | ~251,737 |
 | Source Files / Kaynak Dosya | 1181 |
 | Test Files / Test Dosyaları | 249 |

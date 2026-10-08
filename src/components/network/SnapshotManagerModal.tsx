@@ -279,47 +279,48 @@ export const SnapshotManagerModal: React.FC<SnapshotManagerModalProps> = ({
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-md animate-in fade-in duration-200"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-2.5 sm:p-6 bg-black/80 backdrop-blur-md animate-in fade-in duration-200"
     >
       <div
-        className={`w-full max-w-4xl max-h-[90vh] h-[650px] rounded-2xl flex flex-col shadow-2xl border overflow-hidden ${isDark
+        className={`w-full max-w-4xl max-h-[92vh] sm:max-h-[90vh] h-full sm:h-[650px] rounded-2xl flex flex-col shadow-2xl border overflow-hidden ${isDark
           ? 'bg-secondary-950 !border-secondary-800 text-secondary-100 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.7)]'
           : 'bg-white !border-secondary-200 text-slate-900 shadow-2xl'
           }`}
       >
         {/* Modal Header */}
         <div
-          className={`px-5 py-4 border-b flex items-center justify-between shrink-0 ${isDark ? 'bg-secondary-950/80 border-secondary-800' : 'bg-secondary-50 border-secondary-200'
+          className={`px-4 sm:px-5 py-3 sm:py-4 border-b flex items-center justify-between gap-2 shrink-0 ${isDark ? 'bg-secondary-950/80 border-secondary-800' : 'bg-secondary-50 border-secondary-200'
             }`}
         >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shadow-inner">
-              <Camera className="w-5 h-5" />
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shadow-inner shrink-0">
+              <Camera className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-base font-bold tracking-tight">
-                  {isTr ? 'Topoloji Anlık Görüntü & Geri Yükleme Yöneticisi' : 'Topology Snapshot & Restore Manager'}
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="text-sm sm:text-base font-bold tracking-tight truncate">
+                  {isTr ? 'Topoloji Kayıt & Geri Yükleme' : 'Topology Snapshots'}
                 </h3>
-                <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                <span className="hidden sm:inline-block text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
                   {isTr ? 'Geri Yükleme Noktası' : 'Checkpoint'}
                 </span>
               </div>
-              <p className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+              <p className={`text-[11px] sm:text-xs truncate ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
                 {isTr
-                  ? 'Ağ topolojinizin anlık durumunu dondurun, kaydedin ve istediğiniz an tek tıkla geri yükleyin.'
-                  : 'Freeze, save, and restore your network topology state instantly at any point in time.'}
+                  ? 'Ağ topolojinizin anlık durumunu dondurun ve geri yükleyin.'
+                  : 'Freeze, save, and restore your network topology state.'}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <label className={`cursor-pointer px-3 py-1.5 text-xs font-semibold rounded-lg border flex items-center gap-1.5 transition active:scale-95 shadow-sm ${isDark
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            <label className={`cursor-pointer px-2.5 sm:px-3 py-1.5 text-xs font-semibold rounded-lg border flex items-center gap-1.5 transition active:scale-95 shadow-sm ${isDark
               ? 'border-slate-700 hover:bg-slate-800 text-slate-300'
               : 'border-slate-300 hover:bg-slate-100 text-slate-700'
               }`}>
               <Upload className={`w-3.5 h-3.5 ${isDark ? 'text-indigo-400' : 'text-indigo-600'}`} />
-              <span>{isTr ? 'JSON İçe Aktar' : 'Import JSON'}</span>
+              <span className="hidden sm:inline">{isTr ? 'JSON İçe Aktar' : 'Import JSON'}</span>
+              <span className="sm:hidden">{isTr ? 'İçe Aktar' : 'Import'}</span>
               <input type="file" accept=".json" onChange={handleImportJson} className="hidden" />
             </label>
             <button
@@ -336,7 +337,7 @@ export const SnapshotManagerModal: React.FC<SnapshotManagerModalProps> = ({
         {/* Feedback Alert */}
         {feedbackMsg && (
           <div
-            className={`px-6 py-2.5 text-xs font-medium flex items-center gap-2 border-b animate-in fade-in duration-150 ${feedbackMsg.type === 'success'
+            className={`px-4 sm:px-6 py-2.5 text-xs font-medium flex items-center gap-2 border-b animate-in fade-in duration-150 ${feedbackMsg.type === 'success'
               ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300'
               : 'bg-rose-500/15 border-rose-500/30 text-rose-300'
               }`}
@@ -348,7 +349,7 @@ export const SnapshotManagerModal: React.FC<SnapshotManagerModalProps> = ({
 
         {/* Action Toolbar */}
         <div
-          className={`px-6 py-3 border-b flex flex-wrap items-center justify-between gap-3 shrink-0 ${isDark ? 'bg-slate-900/60 border-slate-800' : 'bg-slate-100/60 border-slate-200'
+          className={`px-4 sm:px-6 py-2.5 sm:py-3 border-b flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-3 shrink-0 ${isDark ? 'bg-slate-900/60 border-slate-800' : 'bg-slate-100/60 border-slate-200'
             }`}
         >
           <div className="flex items-center gap-2 flex-1 max-w-sm">

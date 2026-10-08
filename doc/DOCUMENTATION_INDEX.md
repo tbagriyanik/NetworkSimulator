@@ -7,7 +7,7 @@ Bu indeks, Network Simulator projesinin tüm dokümantasyon dosyalarını ve iç
 ## 📖 Dokümantasyon Dosyaları
 
 ### 🚀 [training/ProjeOzellikleri.md](training/ProjeOzellikleri.md)
-**Amaç**: Sürüm Özellikleri, Otomatik Topoloji Simülasyonu, Terminal Renk Temaları, Pedagojik CLI Asistanı, Canlı Port LED'leri, Çoklu Pencere Deneyimi & Güvenlik Sertleştirmesi (v7.5.0)  
+**Amaç**: Sürüm Özellikleri, Çift Dilli Senkronizasyon (TR/ENG), Açık/Koyu Tema Kontrastı, Mobil/Responsive Uyumluluk & Ağ Simülasyonu (v7.6.0)  
 **Okuma Süresi**: 15 dakika  
 **İçerik**:
 - Otomatik Topoloji Üretimi & Canlı Sanal İmleç Simülasyon Motoru (`usePageTopologyActions.ts`, `VirtualCursorOverlay.tsx`)
@@ -453,6 +453,7 @@ doc/
 - [x] Release Kontrol Listesi & Tek Kaynaktan Senkronizasyon Kılavuzu (`RELEASE_CHECKLIST.md`) eklendi
 - [x] Klavye & Tuval Yardım Penceresi İçeriği (ShortcutsModal, F1/Shift+?) Tüm Yeni Kısayollar ve Komutlarla Güncellendi
 - [x] Terminal Renk Temaları, Pedagojik CLI Rehberi, Canlı Port LED'leri, Parola Güvenliği & Kompakt Arayüz (v7.5.0) belgelendi
+- [x] Çift Dilli Senkronizasyon (TR/ENG), Açık/Koyu Tema Kontrastı, Mobil/Responsive Uyumluluk (v7.6.0) belgelendi
 
 ---
 

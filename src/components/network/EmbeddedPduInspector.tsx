@@ -211,10 +211,43 @@ export const EmbeddedPduInspector: React.FC<EmbeddedPduInspectorProps> = ({
           )}
         </div>
 
-        <div className="flex items-center gap-2">
-          <button onClick={() => setActiveTab('osi')} className={`px-3 py-1 text-xs rounded ${activeTab === 'osi' ? 'bg-cyan-600 text-cyan-100' : 'bg-cyan-950/60 text-cyan-300'} border border-cyan-500/40`}>{t.tabOsi}</button>
-          <button onClick={() => setActiveTab('protocol')} className={`px-3 py-1 text-xs rounded ${activeTab === 'protocol' ? 'bg-cyan-600 text-cyan-100' : 'bg-cyan-950/60 text-cyan-300'} border border-cyan-500/40`}>{t.tabProtocol}</button>
-          <button onClick={() => setActiveTab('hex')} className={`px-3 py-1 text-xs rounded ${activeTab === 'hex' ? 'bg-cyan-600 text-cyan-100' : 'bg-cyan-950/60 text-cyan-300'} border border-cyan-500/40`}>{t.tabHex}</button>
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <button
+            onClick={() => setActiveTab('osi')}
+            className={`px-2.5 sm:px-3 py-1 text-xs rounded transition-colors ${
+              activeTab === 'osi'
+                ? 'bg-cyan-600 text-white font-semibold shadow-sm'
+                : isDark
+                ? 'bg-cyan-950/60 text-cyan-300 hover:bg-cyan-900/60'
+                : 'bg-cyan-50 text-cyan-800 hover:bg-cyan-100 border-cyan-200'
+            } border border-cyan-500/40`}
+          >
+            {t.tabOsi}
+          </button>
+          <button
+            onClick={() => setActiveTab('protocol')}
+            className={`px-2.5 sm:px-3 py-1 text-xs rounded transition-colors ${
+              activeTab === 'protocol'
+                ? 'bg-cyan-600 text-white font-semibold shadow-sm'
+                : isDark
+                ? 'bg-cyan-950/60 text-cyan-300 hover:bg-cyan-900/60'
+                : 'bg-cyan-50 text-cyan-800 hover:bg-cyan-100 border-cyan-200'
+            } border border-cyan-500/40`}
+          >
+            {t.tabProtocol}
+          </button>
+          <button
+            onClick={() => setActiveTab('hex')}
+            className={`px-2.5 sm:px-3 py-1 text-xs rounded transition-colors ${
+              activeTab === 'hex'
+                ? 'bg-cyan-600 text-white font-semibold shadow-sm'
+                : isDark
+                ? 'bg-cyan-950/60 text-cyan-300 hover:bg-cyan-900/60'
+                : 'bg-cyan-50 text-cyan-800 hover:bg-cyan-100 border-cyan-200'
+            } border border-cyan-500/40`}
+          >
+            {t.tabHex}
+          </button>
         </div>
       </div>
       {/* Content */}

@@ -177,29 +177,29 @@ export const WindowSwitcherModal: React.FC<WindowSwitcherModalProps> = ({
         )}
       >
         {/* Modal Header */}
-        <div className="flex items-center gap-3 pb-4 mb-5 border-b border-secondary-700/40">
-          <div className="flex items-center gap-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-success-500/15 border border-success-400/20">
-              <AppWindow className="w-5 h-5 text-success-400" />
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 sm:pb-4 mb-4 sm:mb-5 border-b border-secondary-200 dark:border-secondary-700/40">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-2xl bg-success-500/15 border border-success-400/20 shrink-0">
+              <AppWindow className="w-4 h-4 sm:w-5 sm:h-5 text-success-500 dark:text-success-400" />
             </div>
             <div>
               <h3 className={WINDOW_TITLE_CLASS(isDark)}>
                 {language === 'tr' ? 'Görev Yöneticisi Pencere Listesi' : 'Task Switcher Windows'}
               </h3>
-              <p className="text-[11px] text-secondary-400 mt-0.5">{language === 'tr' ? 'Açık cihaz pencereleri' : 'Open device windows'}</p>
+              <p className="text-[11px] text-secondary-500 dark:text-secondary-400 mt-0.5">{language === 'tr' ? 'Açık cihaz pencereleri' : 'Open device windows'}</p>
             </div>
           </div>
-          <div className="ml-auto flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap ml-auto sm:ml-0">
             <button
               type="button"
               onClick={() => {
                 useMultiWindowStore.getState().splitViewSideBySide();
                 closeSwitcher();
               }}
-              className="inline-flex items-center gap-1 rounded border border-primary-400/40 bg-primary-500/10 px-2 py-1 text-xs font-medium text-primary-400 transition-colors hover:bg-primary-500/20"
+              className="inline-flex items-center gap-1 rounded border border-primary-400/40 bg-primary-500/10 px-2 py-1 text-xs font-medium text-primary-600 dark:text-primary-400 transition-colors hover:bg-primary-500/20"
               title={language === 'tr' ? 'Pencereleri Yan Yana (Bölünmüş Ekran) Yerleştir' : 'Arrange Windows Side-by-Side'}
             >
-              {language === 'tr' ? 'Yan Yana (Böl)' : 'Side-by-Side'}
+              {language === 'tr' ? 'Yan Yana' : 'Side-by-Side'}
             </button>
             <button
               type="button"
@@ -207,12 +207,12 @@ export const WindowSwitcherModal: React.FC<WindowSwitcherModalProps> = ({
                 useMultiWindowStore.getState().setLayoutMode('tabs');
                 closeSwitcher();
               }}
-              className="inline-flex items-center gap-1 rounded border border-success-400/40 bg-success-500/10 px-2 py-1 text-xs font-medium text-success-400 transition-colors hover:bg-success-500/20"
+              className="inline-flex items-center gap-1 rounded border border-success-400/40 bg-success-500/10 px-2 py-1 text-xs font-medium text-success-600 dark:text-success-400 transition-colors hover:bg-success-500/20"
               title={language === 'tr' ? 'Sekmeli Görünüm Moduna Geç' : 'Switch to Tabbed Layout'}
             >
-              {language === 'tr' ? 'Sekmeli Görünüm' : 'Tabbed View'}
+              {language === 'tr' ? 'Sekmeli' : 'Tabs'}
             </button>
-            <span className="text-xs font-mono px-2 py-0.5 rounded bg-success-500/20 text-success-400 border border-success-500/30">
+            <span className="text-xs font-mono px-2 py-0.5 rounded bg-success-500/15 text-success-600 dark:text-success-400 border border-success-500/30">
               {displayList.length} {language === 'tr' ? 'Öğe' : 'Items'}
             </span>
             {openWindows.length > 0 && (
@@ -222,10 +222,10 @@ export const WindowSwitcherModal: React.FC<WindowSwitcherModalProps> = ({
                   closeAllDeviceWindows();
                   closeSwitcher();
                 }}
-                className="ml-1 inline-flex items-center gap-1 rounded border border-error-500/40 px-2 py-1 text-xs font-medium text-error-500 transition-colors hover:bg-error-500/10"
+                className="inline-flex items-center gap-1 rounded border border-error-500/40 px-2 py-1 text-xs font-medium text-error-500 transition-colors hover:bg-error-500/10"
               >
                 <X className="h-3 w-3" />
-                {language === 'tr' ? 'Tümünü kapat' : 'Close all'}
+                <span className="hidden sm:inline">{language === 'tr' ? 'Tümünü kapat' : 'Close all'}</span>
               </button>
             )}
             <button
@@ -240,7 +240,7 @@ export const WindowSwitcherModal: React.FC<WindowSwitcherModalProps> = ({
         </div>
 
         {/* Windows List / Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[60vh] overflow-y-auto custom-scrollbar p-1">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 max-h-[60vh] overflow-y-auto custom-scrollbar p-1">
           {displayList.map((item, index) => {
             const deviceObj = topologyDevices.find((d) => d.id === item.id);
             const name = deviceObj?.name || item.id;
@@ -261,7 +261,7 @@ export const WindowSwitcherModal: React.FC<WindowSwitcherModalProps> = ({
                   }
                 }}
                 className={cn(
-                  'flex items-center gap-3.5 p-3.5 rounded-2xl border transition-all cursor-pointer outline-none hover:-translate-y-0.5',
+                  'flex items-center gap-3.5 p-3 sm:p-3.5 rounded-2xl border transition-all cursor-pointer outline-none hover:-translate-y-0.5',
                   isSelected
                     ? isDark
                       ? 'bg-emerald-500/20 border-emerald-500 shadow-md ring-1 ring-emerald-500'
@@ -284,7 +284,7 @@ export const WindowSwitcherModal: React.FC<WindowSwitcherModalProps> = ({
                   <div className="flex items-center justify-between gap-1">
                     <h4 className="text-sm font-semibold truncate">{name}</h4>
                   </div>
-                  <p className="text-xs text-secondary-400 truncate mt-0.5">{typeLabel}</p>
+                  <p className="text-xs text-secondary-500 dark:text-secondary-400 truncate mt-0.5">{typeLabel}</p>
                 </div>
                 {isOpenAlready && (
                   <button
@@ -306,9 +306,9 @@ export const WindowSwitcherModal: React.FC<WindowSwitcherModalProps> = ({
         </div>
 
         {/* Modal Footer / Hints */}
-        <div className="mt-4 pt-3 border-t border-secondary-700/40 flex items-center justify-between text-[11px] text-secondary-400">
+        <div className="mt-4 pt-3 border-t border-secondary-200 dark:border-secondary-700/40 flex items-center justify-between text-[11px] text-secondary-500 dark:text-secondary-400">
           <div className="flex items-center gap-2">
-            <span className="px-1.5 py-0.5 rounded bg-secondary-800 font-mono text-[10px] text-secondary-300">
+            <span className="px-1.5 py-0.5 rounded bg-secondary-100 dark:bg-secondary-800 font-mono text-[10px] text-secondary-700 dark:text-secondary-300 border border-secondary-200 dark:border-secondary-700">
               Shift + Tab
             </span>
             <span>{language === 'tr' ? 'Pencere listesini aç / seç' : 'Open / select window'}</span>

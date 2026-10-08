@@ -18,7 +18,8 @@ import { isDesktopApp } from '@/lib/utils/desktopDetection';
 
 export function RoomJoinDialog() {
   const { showRoomJoinDialog, setShowRoomJoinDialog, joinRoom, studentRoomCode, studentDisplayName, leaveRoom } = useRoom();
-  const { t } = useLanguage();
+  const { language, t } = useLanguage();
+  const isTr = language === 'tr';
   const [code, setCode] = useState(() => secureStorage.getItem('room-join-code') || '');
   const [name, setName] = useState(() => secureStorage.getItem('room-student-name') || '');
   const [isLoading, setIsLoading] = useState(false);
@@ -42,7 +43,7 @@ export function RoomJoinDialog() {
         const json = await res.json();
         if (!cancelled && (!json.success || !json.data.exists)) {
           leaveRoom();
-          setRoomError(t.language === 'tr' ? 'Oda sonlandırıldı.' : 'Room was closed by teacher.');
+          setRoomError(isTr ? 'Oda sonlandırıldı.' : 'Room was closed by teacher.');
         }
       } catch {
         // Network error ignored during period check
@@ -50,7 +51,7 @@ export function RoomJoinDialog() {
     };
     const id = setInterval(check, 30000);
     return () => { cancelled = true; clearInterval(id); };
-  }, [studentRoomCode, t]);
+  }, [studentRoomCode, isTr, leaveRoom]);
 
   useEffect(() => {
     if (!showRoomJoinDialog) return;
@@ -66,7 +67,7 @@ export function RoomJoinDialog() {
     if (code.trim().length >= 4 && name.trim().length > 0) {
       if (isDesktopApp()) {
         setError(
-          t.language === 'tr'
+          isTr
             ? 'Masaüstü sürümünde canlı sınıf/oda özellikleri için internet ve web sürümü gereklidir.'
             : 'Live classroom rooms require the web version and internet access.'
         );
@@ -77,17 +78,17 @@ export function RoomJoinDialog() {
       try {
         const res = await fetch(`/api/room/${code.trim().toUpperCase()}`);
         if (res.status === 404) {
-          setError(t.language === 'tr' ? 'Oda bulunamadı...' : 'Room not found...');
+          setError(isTr ? 'Oda bulunamadı...' : 'Room not found...');
           return;
         }
         const json = await res.json();
         if (json.success && json.data.exists) {
           joinRoom(code.trim(), name.trim());
         } else {
-          setError(t.language === 'tr' ? 'Oda bulunamadı...' : 'Room not found...');
+          setError(isTr ? 'Oda bulunamadı...' : 'Room not found...');
         }
       } catch {
-        setError(t.language === 'tr' ? 'Bağlantı hatası...' : 'Connection error');
+        setError(isTr ? 'Bağlantı hatası...' : 'Connection error');
       } finally {
         setIsLoading(false);
       }

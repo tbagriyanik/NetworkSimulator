@@ -1,5 +1,24 @@
 # 📅 Network Simulator — Proje Geçmişi
 
+## v7.6.0 — 2026-10-08
+
+- **🌐 Tam Çift Dilli (TR / EN) Senkronizasyon & Dil Bağlamı Düzeltmeleri (`LanguageContext.tsx`, `RoomJoinDialog.tsx`, `TeacherRoomPanel.tsx`, `AboutModal.tsx`, `AssertionPanelModal.tsx`, `BgpBestPathExplainerModal.tsx`, `DhcpPoolManagerModal.tsx`)**:
+  - **Dinamik Dil Bağlamı Enjeksiyonu**: `LanguageContext` içerisindeki `t` nesnesine dinamik `language` alanı eklenerek bileşenlerdeki `t.language === 'tr'` ve `useLanguage()` kontrolleri tüm uygulamada senkronize ve kararlı hale getirildi.
+  - **Sınıf & Oda Yönetimi Çevirileri**: `RoomJoinDialog` ve `TeacherRoomPanel` modallarındaki oda sonlandırma, oda bulunamadı, bağlantı hatası ve masaüstü kısıtlama uyarıları seçili dile göre anlık güncellenebilir kılındı.
+  - **Yardım & Komut Rehberi Dil Senkronizasyonu**: `AboutModal` bileşeninde `useLanguage` entegrasyonu düzeltilerek komut kategorileri ve yardım dökümünün anında Türkçe/İngilizce diline geçmesi sağlandı.
+  - **Ağ Doğrulama & BGP Açıklayıcısı**: `AssertionPanelModal` ve `BgpBestPathExplainerModal` bileşenlerine merkezi `useLanguage` kancası entegre edilerek başlıklar, butonlar, kural tipleri ve açıklama metinleri çift dilli yapıldı.
+  - **DHCP Havuz Yönetimi Tablo Başlıkları**: `DhcpPoolManagerModal` içerisindeki sabit Türkçe başlıklar (`IP Adresi`, `MAC Adresi`, `Cihaz Adı`, `Kira Süresi`, `Tür`) iki dilli formatta uyarlandı.
+- **🎨 Açık ve Koyu Tema (Light / Dark Mode) & Kontrast Standardizasyonu**:
+  - **PDU Akış İnceleyici Sekme Renkleri (`EmbeddedPduInspector.tsx`)**: Açık modda pasif durumdaki sekme butonlarında yaşanan aşırı koyu zemin rengi düzeltildi (`bg-cyan-50 text-cyan-800` / `dark:bg-cyan-950/60 text-cyan-300`).
+  - **Pencere Yöneticisi Çerçeve ve Rozetleri (`WindowSwitcherModal.tsx`)**: Hardcoded kenarlıklar `border-secondary-200 dark:border-secondary-700/40` ile değiştirildi; açık tema etiket ve sayaç renkleri tasarım token sistemine bağlandı.
+  - **DHCP Sunucu & Havuz Diyaloğu (`DhcpPoolManagerModal.tsx`)**: Başlık çizgileri, ilerleme çubuğu zeminleri ve tablo ayırıcıları açık/koyu mod için optimize edildi.
+  - **Ağ Doğrulama & Protokol Modalları (`AssertionPanelModal.tsx`, `BgpBestPathExplainerModal.tsx`)**: Modal ve kart zeminleri merkezi `secondary` tema paletine geçirildi.
+- **📱 Mobil & Responsive Arayüz Desteği**:
+  - **Topoloji Anlık Görüntü Yöneticisi (`SnapshotManagerModal.tsx`)**: Küçük ve mobil ekranlarda taşmaya yol açan sabit `h-[650px]` yüksekliği `h-full sm:h-[650px] max-h-[92vh]` ve `p-2.5 sm:p-6` ile tam duyarlı hale getirildi; arama ve aksiyon araç çubuğu mobil cihazlarda alt alta esnek düzenle yerleştirildi.
+  - **Görev Yöneticisi Pencere Listesi (`WindowSwitcherModal.tsx`)**: 4 adet aksiyon ve sekme butonunun mobil ekranlarda taşması engellendi, flex-wrap ve kompakt görünümle ekran sınırları korundu.
+  - **Gelişmiş PDU İnceleyicisi (`EmbeddedPduInspector.tsx`)**: Oynatma, hız seçimi ve arama araç çubuğu butonları mobil ekranlarda dokunmatik hedeflere ve sarmaya uygun hale getirildi.
+  - **DHCP Kiralama Tablosu (`DhcpPoolManagerModal.tsx`)**: Havuz sekmeleri ve kiralama listesi tablosu yatay kaydırma desteği ile küçük ekranlarda okunabilir kılındı.
+
 ## v7.5.0 — 2026-10-07
 
 - **🎬 Otomatik Topoloji Üretimi & Canlı Sanal İmleç Simülasyonu (`usePageTopologyActions.ts`, `VirtualCursorOverlay.tsx`, `AppFooter.tsx`)**:

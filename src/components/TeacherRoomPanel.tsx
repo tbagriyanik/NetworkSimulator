@@ -41,7 +41,8 @@ function generateRoomCode(): string {
 
 function RoomMonitor({ roomCode, onClose }: { roomCode: string; onClose: () => void }) {
   const { students, error } = useRoomStudents(roomCode);
-  const { t } = useLanguage();
+  const { language, t } = useLanguage();
+  const isTr = language === 'tr';
   const [now, setNow] = useState(() => Date.now());
   const [copied, setCopied] = useState(false);
   const [sortField, setSortField] = useState<SortField>('name');
@@ -145,7 +146,7 @@ function RoomMonitor({ roomCode, onClose }: { roomCode: string; onClose: () => v
               <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleExportPDF} title={t.roomExportPDF} aria-label={t.roomExportPDF}>
                 <FileDown className="w-3 h-3" />
               </Button>
-              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleCopy} aria-label={copied ? (t.language === 'tr' ? 'Kopyalandı' : 'Copied') : t.copy}>
+              <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleCopy} aria-label={copied ? (isTr ? 'Kopyalandı' : 'Copied') : t.copy}>
                 {copied ? <Check className="w-3 h-3 text-success-500" /> : <Copy className="w-3 h-3" />}
               </Button>
             </>
@@ -154,7 +155,7 @@ function RoomMonitor({ roomCode, onClose }: { roomCode: string; onClose: () => v
         </div>
       </div>
 
-      {error === 'unauthorized' && <p className="text-xs text-error-400">{t.language === 'tr' ? 'Oda sahibi siz değilsiniz.' : 'You are not the room owner.'}</p>}
+      {error === 'unauthorized' && <p className="text-xs text-error-400">{isTr ? 'Oda sahibi siz değilsiniz.' : 'You are not the room owner.'}</p>}
       {error && error !== 'unauthorized' && <p className="text-xs text-destructive">{t.roomConnError}</p>}
 
       {error !== 'unauthorized' && (
@@ -233,7 +234,8 @@ function RoomMonitor({ roomCode, onClose }: { roomCode: string; onClose: () => v
 
 export function TeacherRoomPanel() {
   const { showTeacherPanel, setShowTeacherPanel, studentRoomCode } = useRoom();
-  const { t } = useLanguage();
+  const { language, t } = useLanguage();
+  const isTr = language === 'tr';
   const [roomCodeInput, setRoomCodeInput] = useState(() => safeGetSessionItem('teacher-room-code') || '');
   const [activeCode, setActiveCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -277,7 +279,7 @@ export function TeacherRoomPanel() {
   const handleCreate = async () => {
     if (isDesktopApp()) {
       setError(
-        t.language === 'tr'
+        isTr
           ? 'Öğretmen oda yönetimi ve canlı sınıf özellikleri için lütfen web sürümünü kullanınız.'
           : 'Teacher room creation and live classroom features require the web version.'
       );
@@ -304,7 +306,7 @@ export function TeacherRoomPanel() {
         setError(json.error || 'Failed to create room');
       }
     } catch {
-      setError(t.language === 'tr' ? 'Bağlantı hatası' : 'Connection error');
+      setError(isTr ? 'Bağlantı hatası' : 'Connection error');
     } finally {
       setIsLoading(false);
     }
@@ -313,7 +315,7 @@ export function TeacherRoomPanel() {
   const handleJoinMonitor = async () => {
     if (isDesktopApp()) {
       setError(
-        t.language === 'tr'
+        isTr
           ? 'Öğretmen oda yönetimi ve canlı sınıf özellikleri için lütfen web sürümünü kullanınız.'
           : 'Teacher room creation and live classroom features require the web version.'
       );
@@ -329,10 +331,10 @@ export function TeacherRoomPanel() {
       if (json.success && json.data?.exists) {
         setActiveCode(code);
       } else {
-        setError(t.language === 'tr' ? 'Oda bulunamadı...' : 'Room not found...');
+        setError(isTr ? 'Oda bulunamadı...' : 'Room not found...');
       }
     } catch {
-      setError(t.language === 'tr' ? 'Bağlantı hatası...' : 'Connection error...');
+      setError(isTr ? 'Bağlantı hatası...' : 'Connection error...');
     } finally {
       setIsLoading(false);
     }

@@ -45,7 +45,10 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // Determine current translations based on language
-  const translationsMap: Record<Language, Translations> = { en: en as Translations, tr: tr as unknown as Translations };
+  const translationsMap: Record<Language, Translations> = {
+    en: { ...en, language: 'en' } as unknown as Translations,
+    tr: { ...tr, language: 'tr' } as unknown as Translations,
+  };
   const t: Translations = translationsMap[language];
 
   const handleSetLanguage = (lang: Language) => {
