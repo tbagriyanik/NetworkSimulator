@@ -32,6 +32,7 @@ import { generateTopology } from './scenarioGenerators';
 import { TEST_TOPOLOGY_SCENARIOS, type TestTopologyScenario } from './testTopologyScenarios';
 import { exampleProjects, type ExampleProject } from '@/lib/network/exampleProjects';
 import { addTopologyRecord } from '@/utils/achievementRecords';
+import { calculateSimulationSteps } from '@/app/topologyStepByStepSimulation';
 
 interface TopologyGeneratorDialogProps {
   open: boolean;
@@ -92,6 +93,29 @@ export function TopologyGeneratorDialog({
   const selectedDemo = useMemo(() => {
     return demoProjects.find(p => p.id === selectedDemoId) ?? demoProjects[0];
   }, [demoProjects, selectedDemoId]);
+
+  const previewStepCount = useMemo(() => {
+    try {
+      if (activeTab === 'architectures') {
+        const gen = generateTopology(scenario, pcCount);
+        return calculateSimulationSteps(gen);
+      } else if (activeTab === 'testLabs') {
+        if (!selectedTest) return 0;
+        const built = selectedTest.build(isTr);
+        return calculateSimulationSteps(built);
+      } else {
+        if (!selectedDemo) return 0;
+        const deviceStates = new Map(selectedDemo.data.devices.map(d => [d.id, d.state]));
+        return calculateSimulationSteps({
+          devices: selectedDemo.data.topology.devices,
+          connections: selectedDemo.data.topology.connections,
+          deviceStates,
+        });
+      }
+    } catch {
+      return 0;
+    }
+  }, [activeTab, scenario, pcCount, selectedTest, selectedDemo, isTr]);
 
   const handleClose = useCallback(() => {
     if (!isLoading) onOpenChange(false);
@@ -279,10 +303,14 @@ export function TopologyGeneratorDialog({
           }
         }
         onOpenChange(false);
-      } catch {
+      } catch (err) {
+        console.error('Topology generation error:', err);
+        const errMsg = err instanceof Error ? err.message : '';
         toast({
           title: isTr ? 'Hata' : 'Error',
-          description: isTr ? 'Topoloji oluşturulurken bir sorun oluştu.' : 'Failed to generate topology.',
+          description: isTr
+            ? `Topoloji oluşturulurken bir sorun oluştu${errMsg ? `: ${errMsg}` : '.'}`
+            : `Failed to generate topology${errMsg ? `: ${errMsg}` : '.'}`,
           variant: 'destructive',
         });
       } finally {
@@ -796,10 +824,12 @@ export function TopologyGeneratorDialog({
                   ? 'border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/20 hover:text-emerald-200'
                   : 'border-emerald-600/40 text-emerald-700 hover:bg-emerald-50 hover:text-emerald-800'
                 }`}
-              title={isTr ? 'Boş ekrandan başlayarak her cihazı ve kabloyu 500ms aralıklarla adım adım ekler' : 'Builds topology step by step with 500ms delays from an empty canvas'}
+              title={isTr ? 'Boş ekrandan başlayarak tüm cihazları, kabloları ve konfigürasyonları adım adım uygular' : 'Builds and configures topology step by step from an empty canvas'}
             >
               <Play className="w-3.5 h-3.5 fill-current" />
-              {isTr ? 'Adım Adım Yap' : 'Step by Step'}
+              {isTr
+                ? `Adım Adım Yap${previewStepCount > 0 ? ` (${previewStepCount} Adım)` : ''}`
+                : `Step by Step${previewStepCount > 0 ? ` (${previewStepCount} Steps)` : ''}`}
             </Button>
             <Button
               onClick={() => handleGenerate(false)}
