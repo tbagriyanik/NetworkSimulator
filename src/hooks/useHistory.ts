@@ -194,6 +194,7 @@ export function useHistory(initialState: ProjectState) {
         }
       } catch (e) {
         logger.warn('Could not load history from localStorage', e);
+        try { secureStorage.removeItem('netsim_history'); } catch { /* ignore */ }
       }
     }
     return {

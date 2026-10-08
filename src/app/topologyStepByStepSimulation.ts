@@ -43,10 +43,7 @@ export function getDefaultFactoryName(devType: CanvasDevice['type'], indexOfType
 
 export function getSwitchCliCommands(switchDev: CanvasDevice, devState?: SwitchState): string[] {
   const devCmds: string[] = ['enable', 'configure terminal'];
-  const targetHostname = devState?.hostname || switchDev.name;
-  if (targetHostname) {
-    devCmds.push(`hostname ${targetHostname}`);
-  }
+
 
   // Security & Password Configurations (Applied safely within configure terminal)
   if (devState?.security) {
@@ -122,12 +119,9 @@ export function getSwitchCliCommands(switchDev: CanvasDevice, devState?: SwitchS
   return devCmds;
 }
 
-export function getRouterCliCommands(routerDev: CanvasDevice, devState?: SwitchState): string[] {
+export function getRouterCliCommands(_routerDev: CanvasDevice, devState?: SwitchState): string[] {
   const devCmds: string[] = ['enable', 'configure terminal'];
-  const targetHostname = devState?.hostname || routerDev.name;
-  if (targetHostname) {
-    devCmds.push(`hostname ${targetHostname}`);
-  }
+
 
   // Security & Password Configurations (Applied safely within configure terminal)
   if (devState?.security) {
@@ -273,7 +267,7 @@ export function calculateSimulationSteps(data: {
   });
   totalSteps += wlcDevices.length * 3;
   pcDevices.forEach((pc) => {
-    totalSteps += 4;
+    totalSteps += 3;
     if (pc.gateway) totalSteps += 1;
     if (pc.dns) totalSteps += 1;
     if (pc.wifi) totalSteps += 1;
@@ -536,12 +530,12 @@ export function runStepByStepSimulation({
     const devTypeKey = dev.type === ('switch' as unknown as string) ? 'switchL2' : dev.type;
     const devSelector = `[data-toolbar-device="${devTypeKey}"], [data-toolbar-device="pc"]`;
     const devTypeCount = currentDevices.filter((item) => item.type === dev.type).length - 1;
-    const initialFactoryName = getDefaultFactoryName(dev.type, Math.max(0, devTypeCount));
+    const targetDevName = dev.name || getDefaultFactoryName(dev.type, Math.max(0, devTypeCount));
 
     // Step 1a: Move cursor to toolbar icon
     addStep(() => {
       currentStep++;
-      updateProgress(currentStep, isTr ? `${initialFactoryName} seçiliyor` : `Selecting ${initialFactoryName}`);
+      updateProgress(currentStep, isTr ? `${targetDevName} seçiliyor` : `Selecting ${targetDevName}`);
       const targetBtn = getElementCoords(devSelector, 220, 75);
       moveCursor(targetBtn.x, targetBtn.y, isTr ? `${dev.type.toUpperCase()} Seçiliyor` : `Selecting ${dev.type.toUpperCase()}`, false);
     }, 400);
@@ -556,17 +550,16 @@ export function runStepByStepSimulation({
     addStep(() => {
       const screenX = Math.min(window.innerWidth - 100, Math.max(120, dev.x + 80));
       const screenY = Math.min(window.innerHeight - 150, Math.max(150, dev.y + 120));
-      moveCursor(screenX, screenY, isTr ? `${initialFactoryName} Tuvale Yerleştiriliyor` : `Placing ${initialFactoryName} on Canvas`, false);
+      moveCursor(screenX, screenY, isTr ? `${targetDevName} Tuvale Yerleştiriliyor` : `Placing ${targetDevName} on Canvas`, false);
     }, 400);
 
     // Step 1d: Click and place blank device
     addStep(() => {
       const screenX = Math.min(window.innerWidth - 100, Math.max(120, dev.x + 80));
       const screenY = Math.min(window.innerHeight - 150, Math.max(150, dev.y + 120));
-      moveCursor(screenX, screenY, isTr ? `${initialFactoryName} Eklendi ✓` : `${initialFactoryName} Added ✓`, true);
+      moveCursor(screenX, screenY, isTr ? `${targetDevName} Eklendi ✓` : `${targetDevName} Added ✓`, true);
 
       const sanitizedDevices = currentDevices.map((d, idx) => {
-        const targetDevName = d.name || initialFactoryName;
         if (idx === currentDevices.length - 1) {
           if (d.type === 'pc') {
             const pcIndex = currentDevices.filter((item) => item.type === 'pc').length;
@@ -633,7 +626,7 @@ export function runStepByStepSimulation({
           });
           currentStates.set(d.id, {
             ...state,
-            hostname: d.name || state.hostname || initialFactoryName,
+            hostname: d.name || state.hostname || targetDevName,
             vlans: { 1: { id: 1, name: 'default', status: 'active', ports: [] } },
             ports: cleanPorts,
           });
@@ -644,7 +637,7 @@ export function runStepByStepSimulation({
 
       window.dispatchEvent(
         new CustomEvent('commit-action-event', {
-          detail: { action: isTr ? `${initialFactoryName} topolojiye eklendi` : `Added ${initialFactoryName} to topology` },
+          detail: { action: isTr ? `${targetDevName} topolojiye eklendi` : `Added ${targetDevName} to topology` },
         })
       );
     }, 750);
@@ -746,7 +739,8 @@ export function runStepByStepSimulation({
     addStep(() => {
       currentStep++;
       updateProgress(currentStep, isTr ? `${switchDev.name} CLI Konsolu Açılıyor (VLAN & Port Yapılandırması)` : `Opening ${switchDev.name} CLI Console (VLAN & Port Config)`);
-      moveCursor(switchDev.x + 80, switchDev.y + 120, isTr ? `${switchDev.name} Konsol Aç` : `Open ${switchDev.name} Console`, true);
+      const devCoords = getElementCoords(`[data-device-id="${switchDev.id}"]`, switchDev.x + 80, switchDev.y + 120);
+      moveCursor(devCoords.x, devCoords.y, isTr ? `${switchDev.name} Konsol Aç` : `Open ${switchDev.name} Console`, true);
       useMultiWindowStore.getState().openDeviceWindow(switchDev.id, switchDev.type, 'console');
     }, 900);
 
@@ -754,7 +748,7 @@ export function runStepByStepSimulation({
       addStep(() => {
         currentStep++;
         updateProgress(currentStep, `${switchDev.name} CLI: ${cliCmd}`);
-        const cliCoords = getElementCoords('input[placeholder*="enable"], input[type="text"], [data-modal-content="true"] input', window.innerWidth / 2, window.innerHeight / 2 + 120);
+        const cliCoords = getElementCoords(`[data-modal-id="${switchDev.id}"] input, [data-modal-id="${switchDev.id}"] textarea, input[placeholder*="enable"], input[type="text"]`, window.innerWidth / 2, window.innerHeight / 2 + 120);
         moveCursor(cliCoords.x, cliCoords.y, `${switchDev.name} CLI: ${cliCmd}`, false);
         window.dispatchEvent(
           new CustomEvent('terminal-auto-type', {
@@ -764,7 +758,7 @@ export function runStepByStepSimulation({
       }, Math.max(700, cliCmd.length * 60 + 200));
 
       addStep(() => {
-        const cliCoords = getElementCoords('input[placeholder*="enable"], input[type="text"], [data-modal-content="true"] input', window.innerWidth / 2, window.innerHeight / 2 + 120);
+        const cliCoords = getElementCoords(`[data-modal-id="${switchDev.id}"] input, [data-modal-id="${switchDev.id}"] textarea, input[placeholder*="enable"], input[type="text"]`, window.innerWidth / 2, window.innerHeight / 2 + 120);
         moveCursor(cliCoords.x + 35, cliCoords.y, `Enter ↵ (${cliCmd})`, true, cliCmd);
         window.dispatchEvent(
           new CustomEvent('commit-action-event', {
@@ -812,7 +806,8 @@ export function runStepByStepSimulation({
     addStep(() => {
       currentStep++;
       updateProgress(currentStep, isTr ? `${routerDev.name} CLI Konsolu Açılıyor (IP & Yönlendirme)` : `Opening ${routerDev.name} CLI Console (IP & Routing)`);
-      moveCursor(routerDev.x + 80, routerDev.y + 120, isTr ? `${routerDev.name} Konsol Aç` : `Open ${routerDev.name} Console`, true);
+      const devCoords = getElementCoords(`[data-device-id="${routerDev.id}"]`, routerDev.x + 80, routerDev.y + 120);
+      moveCursor(devCoords.x, devCoords.y, isTr ? `${routerDev.name} Konsol Aç` : `Open ${routerDev.name} Console`, true);
       useMultiWindowStore.getState().openDeviceWindow(routerDev.id, routerDev.type, 'console');
     }, 900);
 
@@ -820,7 +815,7 @@ export function runStepByStepSimulation({
       addStep(() => {
         currentStep++;
         updateProgress(currentStep, `${routerDev.name} CLI: ${cliCmd}`);
-        const cliCoords = getElementCoords('input[placeholder*="enable"], input[type="text"], [data-modal-content="true"] input', window.innerWidth / 2, window.innerHeight / 2 + 120);
+        const cliCoords = getElementCoords(`[data-modal-id="${routerDev.id}"] input, [data-modal-id="${routerDev.id}"] textarea, input[placeholder*="enable"], input[type="text"]`, window.innerWidth / 2, window.innerHeight / 2 + 120);
         moveCursor(cliCoords.x, cliCoords.y, `${routerDev.name} CLI: ${cliCmd}`, false);
         window.dispatchEvent(
           new CustomEvent('terminal-auto-type', {
@@ -830,7 +825,7 @@ export function runStepByStepSimulation({
       }, Math.max(700, cliCmd.length * 60 + 200));
 
       addStep(() => {
-        const cliCoords = getElementCoords('input[placeholder*="enable"], input[type="text"], [data-modal-content="true"] input', window.innerWidth / 2, window.innerHeight / 2 + 120);
+        const cliCoords = getElementCoords(`[data-modal-id="${routerDev.id}"] input, [data-modal-id="${routerDev.id}"] textarea, input[placeholder*="enable"], input[type="text"]`, window.innerWidth / 2, window.innerHeight / 2 + 120);
         moveCursor(cliCoords.x + 35, cliCoords.y, `Enter ↵ (${cliCmd})`, true, cliCmd);
         window.dispatchEvent(
           new CustomEvent('commit-action-event', {
@@ -878,14 +873,16 @@ export function runStepByStepSimulation({
     addStep(() => {
       currentStep++;
       updateProgress(currentStep, isTr ? `${wlcDev.name} WLC Yönetim Paneli Açılıyor` : `Opening ${wlcDev.name} WLC Management Panel`);
-      moveCursor(wlcDev.x + 80, wlcDev.y + 120, isTr ? `${wlcDev.name} Yönetim Aç` : `Open ${wlcDev.name} Management`, true);
+      const devCoords = getElementCoords(`[data-device-id="${wlcDev.id}"]`, wlcDev.x + 80, wlcDev.y + 120);
+      moveCursor(devCoords.x, devCoords.y, isTr ? `${wlcDev.name} Yönetim Aç` : `Open ${wlcDev.name} Management`, true);
       useMultiWindowStore.getState().openDeviceWindow(wlcDev.id, wlcDev.type, 'wireless');
     }, 900);
 
     addStep(() => {
       currentStep++;
       updateProgress(currentStep, isTr ? `${wlcDev.name} WLAN '${wlanSsid}' ve Yönetim IP'si (${wlcIp}) Yapılandırılıyor` : `${wlcDev.name} Configuring WLAN '${wlanSsid}' & IP (${wlcIp})`);
-      moveCursor(window.innerWidth / 2, window.innerHeight / 2 - 10, `WLAN: ${wlanSsid} (WPA2-Enterprise)`, false);
+      const winCoords = getElementCoords(`[data-modal-id="${wlcDev.id}"]`, window.innerWidth / 2, window.innerHeight / 2 - 10);
+      moveCursor(winCoords.x, winCoords.y, `WLAN: ${wlanSsid} (WPA2-Enterprise)`, false);
 
       const updated = simulatedDevices.map((d) =>
         d.id === wlcDev.id
@@ -912,7 +909,7 @@ export function runStepByStepSimulation({
     }, 1200);
 
     addStep(() => {
-      const closeBtn = getElementCoords(`[data-window-close="${wlcDev.id}"]`, window.innerWidth / 2 + 200, window.innerHeight / 2 - 200);
+      const closeBtn = getElementCoords(`[data-window-close="${wlcDev.id}"], [data-modal-id="${wlcDev.id}"] [data-window-close]`, window.innerWidth / 2 + 200, window.innerHeight / 2 - 200);
       moveCursor(closeBtn.x, closeBtn.y, isTr ? `${wlcDev.name} Kapat ✕` : `Close ${wlcDev.name} ✕`, true);
       useMultiWindowStore.getState().closeDeviceWindow(wlcDev.id);
     }, 500);
@@ -932,42 +929,25 @@ export function runStepByStepSimulation({
     addStep(() => {
       currentStep++;
       updateProgress(currentStep, isTr ? `${targetName} Ayar Paneli Açılıyor` : `Opening ${targetName} Settings`);
-      moveCursor(pc.x + 80, pc.y + 120, isTr ? `${targetName} Ayarları Aç` : `Open ${targetName} Settings`, true);
+      const devCoords = getElementCoords(`[data-device-id="${pc.id}"]`, pc.x + 80, pc.y + 120);
+      moveCursor(devCoords.x, devCoords.y, isTr ? `${targetName} Ayarları Aç` : `Open ${targetName} Settings`, true);
       useMultiWindowStore.getState().openDeviceWindow(pc.id, 'pc', 'settings');
     }, 900);
 
-    // Step 6b: Rename Device if changed
-    addStep(() => {
-      currentStep++;
-      updateProgress(currentStep, isTr ? `${targetName} Cihaz İsmi Güncelleniyor` : `Updating device name: ${targetName}`);
-      const nameCoords = getElementCoords('input[placeholder*="PC"], input[name="name"], [data-testid="device-name-input"]', window.innerWidth / 2 - 80, window.innerHeight / 2 - 100);
-      moveCursor(nameCoords.x, nameCoords.y, isTr ? `İsim: ${targetName}` : `Name: ${targetName}`, false, targetName);
-
-      const updated = simulatedDevices.map((d) => (d.id === pc.id ? { ...d, name: targetName } : d));
-      simulatedDevices = updated;
-      setDevices(updated);
-
-      window.dispatchEvent(
-        new CustomEvent('commit-action-event', {
-          detail: { action: isTr ? `${targetName} olarak adlandırıldı` : `Renamed to ${targetName}` },
-        })
-      );
-    }, 1000);
-
-    // Step 6c: Set IP Address
+    // Step 6b: Set IP Address
     addStep(() => {
       currentStep++;
       updateProgress(currentStep, `${targetName} IP: ${targetIp}`);
-      const ipCoords = getElementCoords('input[placeholder*="192.168.1.100"], input[placeholder*="192."], input[name="ip"]', window.innerWidth / 2 - 100, window.innerHeight / 2 - 40);
+      const ipCoords = getElementCoords(`[data-modal-id="${pc.id}"] input[placeholder*="192."], [data-modal-id="${pc.id}"] input[name="ip"], [data-modal-id="${pc.id}"] input`, window.innerWidth / 2 - 100, window.innerHeight / 2 - 40);
       moveCursor(ipCoords.x, ipCoords.y, `${targetName} IP: ${targetIp}`, false, targetIp);
 
       const updated = simulatedDevices.map((d) => (d.id === pc.id ? { ...d, name: targetName, ip: targetIp } : d));
       simulatedDevices = updated;
       setDevices(updated);
 
-      const ipEl = (document.querySelector('input[placeholder*="192.168.1.100"]') ||
-        document.querySelector('input[placeholder*="192."]') ||
-        document.querySelector('input[name="ip"]')) as HTMLInputElement | null;
+      const ipEl = (document.querySelector(`[data-modal-id="${pc.id}"] input[placeholder*="192."]`) ||
+        document.querySelector(`[data-modal-id="${pc.id}"] input[name="ip"]`) ||
+        document.querySelector('input[placeholder*="192.168.1.100"]')) as HTMLInputElement | null;
       if (ipEl) {
         ipEl.focus();
         ipEl.value = targetIp;
@@ -986,16 +966,16 @@ export function runStepByStepSimulation({
     addStep(() => {
       currentStep++;
       updateProgress(currentStep, `${targetName} Alt Ağ Maskesi: ${targetSubnet}`);
-      const subnetCoords = getElementCoords('input[placeholder*="255.255.255.0"], input[placeholder*="255."], input[name="subnet"]', window.innerWidth / 2 + 100, window.innerHeight / 2 - 40);
+      const subnetCoords = getElementCoords(`[data-modal-id="${pc.id}"] input[placeholder*="255."], [data-modal-id="${pc.id}"] input[name="subnet"]`, window.innerWidth / 2 + 100, window.innerHeight / 2 - 40);
       moveCursor(subnetCoords.x, subnetCoords.y, `${targetName} Mask: ${targetSubnet}`, false, targetSubnet);
 
       const updated = simulatedDevices.map((d) => (d.id === pc.id ? { ...d, name: targetName, ip: targetIp, subnet: targetSubnet } : d));
       simulatedDevices = updated;
       setDevices(updated);
 
-      const subnetEl = (document.querySelector('input[placeholder*="255.255.255.0"]') ||
-        document.querySelector('input[placeholder*="255."]') ||
-        document.querySelector('input[name="subnet"]')) as HTMLInputElement | null;
+      const subnetEl = (document.querySelector(`[data-modal-id="${pc.id}"] input[placeholder*="255."]`) ||
+        document.querySelector(`[data-modal-id="${pc.id}"] input[name="subnet"]`) ||
+        document.querySelector('input[placeholder*="255.255.255.0"]')) as HTMLInputElement | null;
       if (subnetEl) {
         subnetEl.focus();
         subnetEl.value = targetSubnet;
@@ -1015,7 +995,7 @@ export function runStepByStepSimulation({
       addStep(() => {
         currentStep++;
         updateProgress(currentStep, `${targetName} Varsayılan Ağ Geçidi: ${targetGateway}`);
-        const gwCoords = getElementCoords('input[placeholder*="Gateway"], input[name="gateway"]', window.innerWidth / 2 - 100, window.innerHeight / 2 + 20);
+        const gwCoords = getElementCoords(`[data-modal-id="${pc.id}"] input[placeholder*="Gateway"], [data-modal-id="${pc.id}"] input[name="gateway"]`, window.innerWidth / 2 - 100, window.innerHeight / 2 + 20);
         moveCursor(gwCoords.x, gwCoords.y, `Gateway: ${targetGateway}`, false, targetGateway);
 
         const updated = simulatedDevices.map((d) => (d.id === pc.id ? { ...d, gateway: targetGateway } : d));
@@ -1035,7 +1015,7 @@ export function runStepByStepSimulation({
       addStep(() => {
         currentStep++;
         updateProgress(currentStep, `${targetName} DNS Sunucusu: ${targetDns}`);
-        const dnsCoords = getElementCoords('input[placeholder*="DNS"], input[name="dns"]', window.innerWidth / 2 + 100, window.innerHeight / 2 + 20);
+        const dnsCoords = getElementCoords(`[data-modal-id="${pc.id}"] input[placeholder*="DNS"], [data-modal-id="${pc.id}"] input[name="dns"]`, window.innerWidth / 2 + 100, window.innerHeight / 2 + 20);
         moveCursor(dnsCoords.x, dnsCoords.y, `DNS: ${targetDns}`, false, targetDns);
 
         const updated = simulatedDevices.map((d) => (d.id === pc.id ? { ...d, dns: targetDns } : d));
@@ -1057,7 +1037,8 @@ export function runStepByStepSimulation({
       addStep(() => {
         currentStep++;
         updateProgress(currentStep, `${targetName} Wi-Fi Bağlantısı: '${ssid}'`);
-        moveCursor(window.innerWidth / 2, window.innerHeight / 2 + 60, `Wi-Fi: ${ssid}`, false);
+        const wifiCoords = getElementCoords(`[data-modal-id="${pc.id}"]`, window.innerWidth / 2, window.innerHeight / 2 + 60);
+        moveCursor(wifiCoords.x, wifiCoords.y, `Wi-Fi: ${ssid}`, false);
 
         const updated = simulatedDevices.map((d) =>
           d.id === pc.id ? { ...d, wifi: { ...pc.wifi, enabled: true, ssid, password: pass, mode: pc.wifi?.mode || 'client' } } : d
@@ -1075,7 +1056,7 @@ export function runStepByStepSimulation({
 
     // Close PC Settings Window
     addStep(() => {
-      const closeBtn = getElementCoords(`[data-window-close="${pc.id}"]`, window.innerWidth / 2 + 220, window.innerHeight / 2 - 180);
+      const closeBtn = getElementCoords(`[data-window-close="${pc.id}"], [data-modal-id="${pc.id}"] [data-window-close]`, window.innerWidth / 2 + 220, window.innerHeight / 2 - 180);
       moveCursor(closeBtn.x, closeBtn.y, isTr ? `${targetName} Kapat ✕` : `Close ${targetName} ✕`, true);
       useMultiWindowStore.getState().closeDeviceWindow(pc.id);
     }, 500);
@@ -1091,14 +1072,15 @@ export function runStepByStepSimulation({
     addStep(() => {
       currentStep++;
       updateProgress(currentStep, isTr ? `${wifiDev.name} Wi-Fi Ayarları Açılıyor` : `Opening ${wifiDev.name} Wi-Fi Settings`);
-      moveCursor(wifiDev.x + 80, wifiDev.y + 120, isTr ? `${wifiDev.name} Wi-Fi Aç` : `Open ${wifiDev.name} Wi-Fi`, true);
+      const devCoords = getElementCoords(`[data-device-id="${wifiDev.id}"]`, wifiDev.x + 80, wifiDev.y + 120);
+      moveCursor(devCoords.x, devCoords.y, isTr ? `${wifiDev.name} Wi-Fi Aç` : `Open ${wifiDev.name} Wi-Fi`, true);
       useMultiWindowStore.getState().openDeviceWindow(wifiDev.id, wifiDev.type, 'wireless');
     }, 900);
 
     addStep(() => {
       currentStep++;
       updateProgress(currentStep, isTr ? `${wifiDev.name} Wi-Fi: '${ssid}' Ağına Bağlanıyor` : `${wifiDev.name} Connecting to Wi-Fi '${ssid}'`);
-      const ssidCoords = getElementCoords('input[placeholder*="SSID"], input[name="ssid"], [data-modal-content="true"] input', window.innerWidth / 2, window.innerHeight / 2 - 20);
+      const ssidCoords = getElementCoords(`[data-modal-id="${wifiDev.id}"] input[placeholder*="SSID"], [data-modal-id="${wifiDev.id}"] input[name="ssid"]`, window.innerWidth / 2, window.innerHeight / 2 - 20);
       moveCursor(ssidCoords.x, ssidCoords.y, `SSID: ${ssid}`, false, ssid);
 
       const updated = simulatedDevices.map((d) =>
@@ -1121,7 +1103,7 @@ export function runStepByStepSimulation({
     }, 1100);
 
     addStep(() => {
-      const closeBtn = getElementCoords(`[data-window-close="${wifiDev.id}"]`, window.innerWidth / 2 + 200, window.innerHeight / 2 - 200);
+      const closeBtn = getElementCoords(`[data-window-close="${wifiDev.id}"], [data-modal-id="${wifiDev.id}"] [data-window-close]`, window.innerWidth / 2 + 200, window.innerHeight / 2 - 200);
       moveCursor(closeBtn.x, closeBtn.y, isTr ? `${wifiDev.name} Kapat ✕` : `Close ${wifiDev.name} ✕`, true);
       useMultiWindowStore.getState().closeDeviceWindow(wifiDev.id);
     }, 500);
@@ -1136,14 +1118,16 @@ export function runStepByStepSimulation({
     addStep(() => {
       currentStep++;
       updateProgress(currentStep, isTr ? `${printerDev.name} Yazıcı Ayarları Açılıyor` : `Opening ${printerDev.name} Printer Settings`);
-      moveCursor(printerDev.x + 80, printerDev.y + 120, isTr ? `${printerDev.name} Aç` : `Open ${printerDev.name}`, true);
+      const devCoords = getElementCoords(`[data-device-id="${printerDev.id}"]`, printerDev.x + 80, printerDev.y + 120);
+      moveCursor(devCoords.x, devCoords.y, isTr ? `${printerDev.name} Aç` : `Open ${printerDev.name}`, true);
       useMultiWindowStore.getState().openDeviceWindow(printerDev.id, 'printer', 'console');
     }, 900);
 
     addStep(() => {
       currentStep++;
       updateProgress(currentStep, isTr ? `${printerDev.name} Ağ Yazıcısı Aktif (IP: ${printerIp})` : `${printerDev.name} Network Printer Ready (IP: ${printerIp})`);
-      moveCursor(window.innerWidth / 2, window.innerHeight / 2 - 10, `IP: ${printerIp}`, false);
+      const winCoords = getElementCoords(`[data-modal-id="${printerDev.id}"]`, window.innerWidth / 2, window.innerHeight / 2 - 10);
+      moveCursor(winCoords.x, winCoords.y, `IP: ${printerIp}`, false);
 
       const updated = simulatedDevices.map((d) => (d.id === printerDev.id ? { ...d, name: printerDev.name, ip: printerIp } : d));
       simulatedDevices = updated;
@@ -1157,7 +1141,7 @@ export function runStepByStepSimulation({
     }, 1000);
 
     addStep(() => {
-      const closeBtn = getElementCoords(`[data-window-close="${printerDev.id}"]`, window.innerWidth / 2 + 200, window.innerHeight / 2 - 200);
+      const closeBtn = getElementCoords(`[data-window-close="${printerDev.id}"], [data-modal-id="${printerDev.id}"] [data-window-close]`, window.innerWidth / 2 + 200, window.innerHeight / 2 - 200);
       moveCursor(closeBtn.x, closeBtn.y, isTr ? `${printerDev.name} Kapat ✕` : `Close ${printerDev.name} ✕`, true);
       useMultiWindowStore.getState().closeDeviceWindow(printerDev.id);
     }, 500);
@@ -1172,14 +1156,16 @@ export function runStepByStepSimulation({
     addStep(() => {
       currentStep++;
       updateProgress(currentStep, isTr ? `${iotDev.name} (${iotLabel}) Ayarları Açılıyor` : `Opening ${iotDev.name} (${iotLabel}) Settings`);
-      moveCursor(iotDev.x + 80, iotDev.y + 120, isTr ? `${iotDev.name} Aç` : `Open ${iotDev.name}`, true);
+      const devCoords = getElementCoords(`[data-device-id="${iotDev.id}"]`, iotDev.x + 80, iotDev.y + 120);
+      moveCursor(devCoords.x, devCoords.y, isTr ? `${iotDev.name} Aç` : `Open ${iotDev.name}`, true);
       useMultiWindowStore.getState().openDeviceWindow(iotDev.id, 'iot', 'console');
     }, 900);
 
     addStep(() => {
       currentStep++;
       updateProgress(currentStep, isTr ? `${iotDev.name} (${iotLabel}) Aktif (IP: ${iotIp})` : `${iotDev.name} (${iotLabel}) Active (IP: ${iotIp})`);
-      moveCursor(window.innerWidth / 2, window.innerHeight / 2 - 10, `IP: ${iotIp}`, false);
+      const winCoords = getElementCoords(`[data-modal-id="${iotDev.id}"]`, window.innerWidth / 2, window.innerHeight / 2 - 10);
+      moveCursor(winCoords.x, winCoords.y, `IP: ${iotIp}`, false);
 
       const updated = simulatedDevices.map((d) => (d.id === iotDev.id ? { ...d, name: iotDev.name, ip: iotIp } : d));
       simulatedDevices = updated;
@@ -1193,7 +1179,7 @@ export function runStepByStepSimulation({
     }, 1000);
 
     addStep(() => {
-      const closeBtn = getElementCoords(`[data-window-close="${iotDev.id}"]`, window.innerWidth / 2 + 200, window.innerHeight / 2 - 200);
+      const closeBtn = getElementCoords(`[data-window-close="${iotDev.id}"], [data-modal-id="${iotDev.id}"] [data-window-close]`, window.innerWidth / 2 + 200, window.innerHeight / 2 - 200);
       moveCursor(closeBtn.x, closeBtn.y, isTr ? `${iotDev.name} Kapat ✕` : `Close ${iotDev.name} ✕`, true);
       useMultiWindowStore.getState().closeDeviceWindow(iotDev.id);
     }, 500);
