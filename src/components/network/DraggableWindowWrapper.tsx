@@ -218,6 +218,13 @@ export function DraggableWindowWrapper({
       onMouseDownCapture={handleFocus}
       onTouchStartCapture={handleFocus}
       onFocusCapture={handleFocus}
+      onPointerDown={(e) => {
+        if (e.altKey) {
+          const target = e.target as HTMLElement;
+          if (target.closest('button, input, select, textarea, [contenteditable="true"]')) return;
+          handlePointerDown?.(e, id);
+        }
+      }}
     >
       {/* Header */}
       <div

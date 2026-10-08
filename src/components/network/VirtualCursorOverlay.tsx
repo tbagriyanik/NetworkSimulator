@@ -59,9 +59,9 @@ export function VirtualCursorOverlay() {
     };
   }, []);
 
-  // Block keypresses (except Escape and Space) during simulation lock
+  // Block keypresses (except Escape and Space) during active running simulation lock
   useEffect(() => {
-    if (!isSimulationActive) return;
+    if (!isSimulationActive || isSimulationPaused) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -80,7 +80,7 @@ export function VirtualCursorOverlay() {
 
     window.addEventListener('keydown', handleKeyDown, { capture: true });
     return () => window.removeEventListener('keydown', handleKeyDown, { capture: true });
-  }, [isSimulationActive]);
+  }, [isSimulationActive, isSimulationPaused]);
 
   // Mobile / Browser back button (popstate) to stop simulation
   useEffect(() => {
@@ -121,8 +121,8 @@ export function VirtualCursorOverlay() {
 
   return (
     <>
-      {/* Simulation Lock Shield: Blocks user canvas zoom, device drag, clicks during active simulation */}
-      {isSimulationActive && (
+      {/* Simulation Lock Shield: Blocks user canvas zoom, device drag, clicks during active simulation (unblocked when paused) */}
+      {isSimulationActive && !isSimulationPaused && (
         <div
           className="fixed inset-0 z-[9990] bg-transparent cursor-wait pointer-events-auto select-none"
           onWheel={(e) => { e.preventDefault(); e.stopPropagation(); }}

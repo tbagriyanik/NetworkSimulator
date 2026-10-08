@@ -360,7 +360,7 @@ export function AppFooter({
 
               {/* Simulation Step-by-Step Progress, Pause/Resume & Cancel Widget */}
               {simulationStatus.active ? (
-                <div className={`flex items-center gap-2 px-2.5 py-1 rounded-lg border shadow-sm z-[10000] relative pointer-events-auto ${
+                <div className={`flex items-center gap-2 px-2.5 py-1 rounded-lg border shadow-sm z-[10000] relative pointer-events-auto max-w-[420px] ${
                   simulationStatus.paused
                     ? isDark
                       ? 'bg-amber-950/40 border-amber-500/40 text-amber-300'
@@ -371,36 +371,27 @@ export function AppFooter({
                 }`}
                 title={language === 'tr' ? 'Kısayollar: Boşluk = Duraklat / Devam, Escape / Mobil Geri = Durdur' : 'Shortcuts: Space = Pause / Resume, Escape / Mobile Back = Stop'}
                 >
-                  <span className={`w-2 h-2 rounded-full ${
+                  <span className={`w-2 h-2 rounded-full shrink-0 ${
                     simulationStatus.paused
                       ? isDark ? 'bg-amber-400' : 'bg-amber-600'
                       : `animate-ping ${isDark ? 'bg-purple-400' : 'bg-purple-600'}`
                   }`} />
-                  <span className={`text-[11px] font-bold ${
+
+                  {/* Step counter label (fixed position) */}
+                  <span className={`text-[11px] font-bold shrink-0 ${
                     simulationStatus.paused
                       ? isDark ? 'text-amber-300' : 'text-amber-950'
                       : isDark ? 'text-purple-300' : 'text-purple-900'
                   }`}>
                     {t.simulationStep || (language === 'tr' ? 'Adım' : 'Step')} {simulationStatus.current}/{simulationStatus.total}
                   </span>
-                  {simulationStatus.paused ? (
-                    <span className={`text-[10px] font-semibold px-1 py-0.2 rounded ${
-                      isDark ? 'bg-amber-500/20 text-amber-300' : 'bg-amber-100 text-amber-800'
-                    }`}>
-                      {language === 'tr' ? 'DURAKLATILDI' : 'PAUSED'}
-                    </span>
-                  ) : (
-                    <span className={`text-[10px] truncate max-w-[140px] ${isDark ? 'text-purple-200/80' : 'text-purple-700'}`} title={simulationStatus.message}>
-                      ({simulationStatus.message})
-                    </span>
-                  )}
 
-                  {/* Pause / Resume Button */}
+                  {/* Pause / Resume Button (Positioned at the front, fixed) */}
                   {simulationStatus.paused ? (
                     <button
                       type="button"
                       onClick={() => window.dispatchEvent(new CustomEvent('simulation-resume'))}
-                      className={`flex items-center gap-1 px-1.5 py-0.5 ml-1 rounded text-[10px] font-bold transition-colors cursor-pointer border ${
+                      className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold transition-colors cursor-pointer border shrink-0 ${
                         isDark
                           ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 hover:bg-amber-500/30 hover:text-amber-100'
                           : 'bg-amber-100 text-amber-800 border-amber-300 hover:bg-amber-200'
@@ -414,7 +405,7 @@ export function AppFooter({
                     <button
                       type="button"
                       onClick={() => window.dispatchEvent(new CustomEvent('simulation-pause'))}
-                      className={`flex items-center gap-1 px-1.5 py-0.5 ml-1 rounded text-[10px] font-bold transition-colors cursor-pointer border ${
+                      className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold transition-colors cursor-pointer border shrink-0 ${
                         isDark
                           ? 'bg-secondary-800 text-secondary-200 border-secondary-600 hover:bg-secondary-700 hover:text-white'
                           : 'bg-secondary-100 text-secondary-800 border-secondary-300 hover:bg-secondary-200'
@@ -426,11 +417,11 @@ export function AppFooter({
                     </button>
                   )}
 
-                  {/* Stop Button */}
+                  {/* Stop Button (Positioned at the front, fixed) */}
                   <button
                     type="button"
                     onClick={handleStopSimulation}
-                    className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold transition-colors cursor-pointer border ${
+                    className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold transition-colors cursor-pointer border shrink-0 ${
                       isDark
                         ? 'bg-rose-500/20 text-rose-300 border-rose-500/40 hover:bg-rose-500/30 hover:text-rose-100'
                         : 'bg-rose-100 text-rose-800 border-rose-300 hover:bg-rose-200'
@@ -440,6 +431,19 @@ export function AppFooter({
                     <Square className="w-2.5 h-2.5 fill-current" />
                     {t.stopSimulation || (language === 'tr' ? 'Durdur' : 'Stop')}
                   </button>
+
+                  {/* Message text with ellipsis (truncated on the right) */}
+                  {simulationStatus.paused ? (
+                    <span className={`text-[10px] font-semibold px-1 py-0.2 rounded shrink-0 ${
+                      isDark ? 'bg-amber-500/20 text-amber-300' : 'bg-amber-100 text-amber-800'
+                    }`}>
+                      {language === 'tr' ? 'DURAKLATILDI' : 'PAUSED'}
+                    </span>
+                  ) : (
+                    <span className={`text-[10px] truncate max-w-[150px] min-w-0 ${isDark ? 'text-purple-200/80' : 'text-purple-700'}`} title={simulationStatus.message}>
+                      ({simulationStatus.message})
+                    </span>
+                  )}
                 </div>
               ) : simulationStatus.message ? (
                 <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-md border text-[11px] font-medium ${

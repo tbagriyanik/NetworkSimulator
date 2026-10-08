@@ -77,7 +77,7 @@ export function getSwitchCliCommands(switchDev: CanvasDevice, devState?: SwitchS
 
   if (devState?.vlans) {
     Object.values(devState.vlans).forEach((vlan) => {
-      // Exclude default VLAN 1 and reserved Cisco VLANs (1002, 1003, 1004, 1005)
+      // Exclude default VLAN 1 and reserved VLANs (1002, 1003, 1004, 1005)
       if (vlan.id > 1 && (vlan.id < 1002 || vlan.id > 1005)) {
         devCmds.push(`vlan ${vlan.id}`);
         if (vlan.name && vlan.name !== `VLAN${vlan.id}` && !vlan.name.toLowerCase().includes('default')) {
@@ -426,6 +426,14 @@ export function runStepByStepSimulation({
       const waiter = pauseWaiter;
       pauseWaiter = null;
       waiter();
+    } else if (remainingDelayMs > 0 && !currentTimer && delayResolver) {
+      delayStartTimestamp = Date.now();
+      const currentResolver = delayResolver;
+      currentTimer = setTimeout(() => {
+        currentTimer = null;
+        delayResolver = null;
+        currentResolver();
+      }, remainingDelayMs);
     }
   };
 
@@ -558,13 +566,14 @@ export function runStepByStepSimulation({
       moveCursor(screenX, screenY, isTr ? `${initialFactoryName} Eklendi ✓` : `${initialFactoryName} Added ✓`, true);
 
       const sanitizedDevices = currentDevices.map((d, idx) => {
+        const targetDevName = d.name || initialFactoryName;
         if (idx === currentDevices.length - 1) {
           if (d.type === 'pc') {
             const pcIndex = currentDevices.filter((item) => item.type === 'pc').length;
             const initialApipaIp = `169.254.1.${10 + pcIndex}`;
             return {
               ...d,
-              name: initialFactoryName,
+              name: targetDevName,
               ip: initialApipaIp,
               subnet: '255.255.0.0',
               gateway: '',
@@ -578,26 +587,26 @@ export function runStepByStepSimulation({
             const initialApipaIp = `169.254.1.${20 + mobileIndex}`;
             return {
               ...d,
-              name: initialFactoryName,
+              name: targetDevName,
               ip: initialApipaIp,
               subnet: '255.255.0.0',
               wifi: d.wifi ? { ...d.wifi, enabled: false, ssid: '', password: '', mode: d.wifi.mode || 'client' } : undefined,
             };
           }
           if (d.type === 'printer' || d.type === 'iot') {
-            return { ...d, name: initialFactoryName, ip: '', subnet: '255.255.255.0', gateway: '', dns: '' };
+            return { ...d, name: targetDevName, ip: '', subnet: '255.255.255.0', gateway: '', dns: '' };
           }
           if (d.type === 'wlc') {
             return {
               ...d,
-              name: initialFactoryName,
+              name: targetDevName,
               ip: '',
               subnet: '255.255.255.0',
               gateway: '',
               wifi: d.wifi ? { ...d.wifi, enabled: false, ssid: '', password: '', mode: d.wifi.mode || 'ap' } : undefined,
             };
           }
-          return { ...d, name: initialFactoryName, ip: '' };
+          return { ...d, name: targetDevName, ip: '' };
         }
         return d;
       });
@@ -620,7 +629,7 @@ export function runStepByStepSimulation({
           });
           currentStates.set(d.id, {
             ...state,
-            hostname: initialFactoryName,
+            hostname: d.name || state.hostname || initialFactoryName,
             vlans: { 1: { id: 1, name: 'default', status: 'active', ports: [] } },
             ports: cleanPorts,
           });
