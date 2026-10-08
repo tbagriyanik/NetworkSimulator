@@ -98,6 +98,7 @@ Simülatör, tek bir standart komut modelini korurken yaygın alternatif CLI bi�
 | `Shift + Arrow Keys` | Move selected device(s) faster | Seçili cihaz(lar)ı daha hızlı taşı |
 | `Delete` / `Backspace` | Delete selected | Seçili öğeyi sil |
 | `Escape` | Cancel selection / Close mode | Seçimi iptal et / Modu kapat |
+| `Alt + Click + Drag` | Move device window holding Alt key (Alt-Drag) | Alt tuşuna basılı tutarak cihaz penceresini taşı (Alt-Drag) |
 | `Shift + Click / Drag` | Multi-select devices | Çoklu seçim |
 | `Tab` | Focus the next device / window | Sonraki cihazı / pencereyi odakla |
 | `End` | Focus last element | Son öğeye odaklan |

@@ -64,6 +64,8 @@ export function getKeyboardShortcuts(isTR: boolean): CommandDefinition {
       ['Grafik Kalitesi (High/Low)', isTR ? 'Yüksekte modern ambiyans & cam dolgusu, düşükte sıfır efekt ve tam akıcılık' : 'High quality with modern ambient glass fills, low quality with zero-effects max performance'],
       ['MQTT Paket Yakalama', isTR ? 'MQTT CONNECT, PUBLISH, SUBSCRIBE, Topic, QoS ve Payload bilgilerini incele' : 'Inspect MQTT CONNECT, PUBLISH, SUBSCRIBE, Topic, QoS and Payload details'],
       ['REST / RESTCONF', isTR ? 'İstek ve yanıt panellerini ayraçtan sürükleyerek yeniden boyutlandır' : 'Resize request and response panes using the draggable divider'],
+      ['Alt + Sol Tık + Sürükle (Pencere)', isTR ? 'Cihaz pencerelerini herhangi bir noktadan tutarak taşı (Alt-Drag)' : 'Drag device windows from any point holding Alt (Alt-Drag)'],
+      ['Simülasyon Devam / Duraklat', isTR ? 'Topoloji simülasyonunu duraklatıp panellere erişme veya kaldığı yerden devam ettirme' : 'Pause topology simulation to access panels or resume playback'],
       ['Modal Kapat / Mobil Geri', isTR ? 'Tüm modalları ESC veya mobil cihaz geri tuşu/hareketi ile kapat' : 'Close all modals and floating windows via ESC or mobile back button/gesture'],
       ['Akıllı Sekmeli Görünüm', isTR ? 'Sekmeli yerleşimde tek cihaz kaldığında sekme barı otomatik gizlenir, 2+ cihazda görünür' : 'In tabbed layout, tab bar auto-hides when 1 device remains and shows on 2+ devices'],
     ]

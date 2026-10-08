@@ -25,6 +25,9 @@
   - **Görev Yöneticisi Pencere Listesi (`WindowSwitcherModal.tsx`)**: 4 adet aksiyon ve sekme butonunun mobil ekranlarda taşması engellendi, flex-wrap ve kompakt görünümle ekran sınırları korundu.
   - **Gelişmiş PDU İnceleyicisi (`EmbeddedPduInspector.tsx`)**: Oynatma, hız seçimi ve arama araç çubuğu butonları mobil ekranlarda dokunmatik hedeflere ve sarmaya uygun hale getirildi.
   - **DHCP Kiralama Tablosu (`DhcpPoolManagerModal.tsx`)**: Havuz sekmeleri ve kiralama listesi tablosu yatay kaydırma desteği ile küçük ekranlarda okunabilir kılındı.
+- **📚 Dokümantasyon & Yardım İçerik Güncellemesi (`AboutModal.tsx`, `networkTopology.commands.shortcuts.ts`, `USAGE.md`, `QUICK_REFERENCE.md`, `DOCUMENTATION_INDEX.md`)**:
+  - **Kısayol & Etkileşim Dökümü**: `AboutModal` ve `networkTopology.commands.shortcuts.ts` içerisine `Alt + Sol Tık + Sürükle` pencere taşıma ve simülasyon kontrol detayları eklendi.
+  - **Kullanım Rehberi Senkronizasyonu**: `doc/getting-started/USAGE.md` tuval/pencere kısayolları ve dokümantasyon indeksi v7.6.0 güncelleştirmeleriyle tam uyumlu hale getirildi.
 
 ## v7.5.0 — 2026-10-07
 
