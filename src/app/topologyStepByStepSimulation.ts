@@ -441,6 +441,17 @@ export function getFirewallCliCommands(devState?: SwitchState): string[] {
   return devCmds;
 }
 
+// The walkthrough adds the mode-entry commands itself. Some imported/demo
+// states may already contain one of those lines, so do not emit it twice.
+function removeDuplicateModeEntryCommands(commands: string[]): string[] {
+  return commands.filter((command) => {
+    const normalized = command.trim().toLowerCase();
+    return normalized !== 'enable' &&
+      normalized !== 'configure terminal' &&
+      normalized !== 'conf t';
+  });
+}
+
 /**
  * Returns the verification command list for a firewall (inspects the applied
  * rules), so the calculator and the simulation agree on the step count.
@@ -972,7 +983,7 @@ export function runStepByStepSimulation({
   // ==========================================
   switchDevices.forEach((switchDev) => {
     const devState = deviceStates?.get(switchDev.id);
-    const switchCmds = getSwitchCliCommands(switchDev, devState);
+    const switchCmds = removeDuplicateModeEntryCommands(getSwitchCliCommands(switchDev, devState));
     if (switchCmds.length === 0) return;
 
     addStep(() => {
@@ -998,7 +1009,7 @@ export function runStepByStepSimulation({
             detail: { deviceId: switchDev.id, command: typedCmd },
           })
         );
-      }, Math.max(700, cliCmd.length * 60 + 200));
+      }, Math.max(1000, typedCmd.length * 45 + 550));
 
       addStep(() => {
         const cliCoords = getElementCoords(`[data-modal-id="${switchDev.id}"] input, [data-modal-id="${switchDev.id}"] textarea, input[placeholder*="enable"], input[type="text"]`, window.innerWidth / 2, window.innerHeight / 2 + 120);
@@ -1022,7 +1033,7 @@ export function runStepByStepSimulation({
             detail: { deviceId: switchDev.id, command: verifyCmd },
           })
         );
-      }, Math.max(700, verifyCmd.length * 60 + 200));
+      }, Math.max(1000, verifyCmd.length * 45 + 550));
 
       addStep(() => {
         const cliCoords = getElementCoords(`[data-modal-id="${switchDev.id}"] input, [data-modal-id="${switchDev.id}"] textarea, input[type="text"]`, window.innerWidth / 2, window.innerHeight / 2 + 120);
@@ -1072,7 +1083,7 @@ export function runStepByStepSimulation({
   // ==========================================
   routerDevices.forEach((routerDev) => {
     const devState = deviceStates?.get(routerDev.id);
-    const routerCmds = getRouterCliCommands(routerDev, devState);
+    const routerCmds = removeDuplicateModeEntryCommands(getRouterCliCommands(routerDev, devState));
     if (routerCmds.length === 0) return;
 
     addStep(() => {
@@ -1096,7 +1107,7 @@ export function runStepByStepSimulation({
             detail: { deviceId: routerDev.id, command: typedCmd },
           })
         );
-      }, Math.max(700, cliCmd.length * 60 + 200));
+      }, Math.max(1000, typedCmd.length * 45 + 550));
 
       addStep(() => {
         const cliCoords = getElementCoords(`[data-modal-id="${routerDev.id}"] input, [data-modal-id="${routerDev.id}"] textarea, input[placeholder*="enable"], input[type="text"]`, window.innerWidth / 2, window.innerHeight / 2 + 120);
@@ -1120,7 +1131,7 @@ export function runStepByStepSimulation({
             detail: { deviceId: routerDev.id, command: verifyCmd },
           })
         );
-      }, Math.max(700, verifyCmd.length * 60 + 200));
+      }, Math.max(1000, verifyCmd.length * 45 + 550));
 
       addStep(() => {
         const cliCoords = getElementCoords(`[data-modal-id="${routerDev.id}"] input, [data-modal-id="${routerDev.id}"] textarea, input[type="text"]`, window.innerWidth / 2, window.innerHeight / 2 + 120);
@@ -1170,7 +1181,7 @@ export function runStepByStepSimulation({
   // ==========================================
   firewallDevices.forEach((fwDev) => {
     const devState = deviceStates?.get(fwDev.id);
-    const fwCmds = getFirewallCliCommands(devState);
+    const fwCmds = removeDuplicateModeEntryCommands(getFirewallCliCommands(devState));
     if (fwCmds.length === 0) return;
 
     addStep(() => {
@@ -1194,7 +1205,7 @@ export function runStepByStepSimulation({
             detail: { deviceId: fwDev.id, command: typedCmd },
           })
         );
-      }, Math.max(700, cliCmd.length * 60 + 200));
+      }, Math.max(1000, typedCmd.length * 45 + 550));
 
       addStep(() => {
         const cliCoords = getElementCoords(`[data-modal-id="${fwDev.id}"] input, [data-modal-id="${fwDev.id}"] textarea, input[type="text"]`, window.innerWidth / 2, window.innerHeight / 2 + 120);
@@ -1218,7 +1229,7 @@ export function runStepByStepSimulation({
             detail: { deviceId: fwDev.id, command: verifyCmd },
           })
         );
-      }, Math.max(700, verifyCmd.length * 60 + 200));
+      }, Math.max(1000, verifyCmd.length * 45 + 550));
 
       addStep(() => {
         const cliCoords = getElementCoords(`[data-modal-id="${fwDev.id}"] input, [data-modal-id="${fwDev.id}"] textarea, input[type="text"]`, window.innerWidth / 2, window.innerHeight / 2 + 120);

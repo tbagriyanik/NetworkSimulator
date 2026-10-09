@@ -80,10 +80,16 @@ export type { TerminalProps };
 
 export function splitAutoTypeCommands(command: string): string[] {
   if (!command) return [];
-  return command
+  const lines = command
     .split(/\r?\n/)
     .map((line) => line.trim())
     .filter((line) => line.length > 0);
+
+  // Generated sequences can contain a mode-entry line already supplied by
+  // the walkthrough. Do not submit an identical adjacent command twice.
+  return lines.filter((line, index) =>
+    index === 0 || line.toLowerCase() !== lines[index - 1].toLowerCase()
+  );
 }
 
 export function Terminal({
@@ -263,41 +269,59 @@ export function Terminal({
   const isReloadConfirmationPending = false;
 
   const handleSubmitRef = useRef<((cmd?: string) => Promise<void>) | null>(null);
+  const autoTypeChainRef = useRef<Promise<void>>(Promise.resolve());
+  const lastAutoTypedCommandRef = useRef('');
 
   useEffect(() => {
+    let cancelled = false;
+
     const handleAutoType = (e: Event) => {
       const { deviceId: eventDeviceId, command } = (e as CustomEvent).detail;
       if (eventDeviceId !== deviceId) return;
 
       const commands = splitAutoTypeCommands(command);
-      if (commands.length > 1) {
-        setInput('');
-        queueCommands(commands);
-        void processCommandQueue();
-        return;
-      }
+      const typeCommands = async () => {
+        for (const payload of commands) {
+          if (cancelled) return;
 
-      const payload = commands[0] ?? '';
-      let i = 0;
-      setInput('');
-      const typeInterval = setInterval(() => {
-        if (i < payload.length) {
-          const char = payload.charAt(i);
-          setInput(prev => prev + char);
-          i++;
-        } else {
-          clearInterval(typeInterval);
-          setTimeout(() => {
-            if (handleSubmitRef.current) {
-              handleSubmitRef.current(payload);
-            }
-          }, 300);
+          const normalizedPayload = payload.toLowerCase();
+          if (normalizedPayload === lastAutoTypedCommandRef.current) continue;
+
+          // Render every command completely before submitting it. This keeps
+          // pasted/generated sequences readable and prevents React updates
+          // from interleaving characters from adjacent commands.
+          setInput('');
+          for (const char of payload) {
+            if (cancelled) return;
+            setInput(prev => prev + char);
+            await new Promise(resolve => setTimeout(resolve, 45));
+          }
+
+          if (cancelled) return;
+          await new Promise(resolve => setTimeout(resolve, 180));
+          if (handleSubmitRef.current) {
+            lastAutoTypedCommandRef.current = normalizedPayload;
+            await handleSubmitRef.current(payload);
+          }
+          if (commands.length > 1) {
+            await new Promise(resolve => setTimeout(resolve, 140));
+          }
         }
-      }, 70);
+      };
+
+      // Serialize generated typing per terminal. A new simulation step must
+      // wait for the previous command to finish typing and executing; otherwise
+      // both timers append to the same input and produce duplicate/garbled CLI.
+      autoTypeChainRef.current = autoTypeChainRef.current
+        .catch(() => undefined)
+        .then(typeCommands);
     };
     window.addEventListener('terminal-auto-type', handleAutoType);
-    return () => window.removeEventListener('terminal-auto-type', handleAutoType);
-  }, [deviceId, processCommandQueue, queueCommands]);
+    return () => {
+      cancelled = true;
+      window.removeEventListener('terminal-auto-type', handleAutoType);
+    };
+  }, [deviceId]);
 
   const handleSubmit = async (cmdToExecute?: string) => {
     if (state.awaitingConfigSource) {

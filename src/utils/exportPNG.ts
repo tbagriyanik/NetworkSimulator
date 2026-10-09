@@ -3,6 +3,7 @@ import { isCableCompatible, SwitchState } from '@/lib/network/types';
 import { CABLE_COLORS } from '@/components/network/NetworkTopology/utils/networkTopology.constants';
 import { logger } from '../lib/logger';
 import { colors } from '@/lib/design-tokens/colors';
+import { getDevicePairKey } from '@/components/network/NetworkTopology/utils/networkTopology.helpers';
 
 export interface ExportPNGOptions {
   svgElement: SVGSVGElement;
@@ -40,7 +41,10 @@ export function exportTopologyToPNG(options: ExportPNGOptions): void {
 
   try {
     // Resolve actual app fonts from CSS custom properties
-    const sansFont = getComputedStyle(document.body).getPropertyValue('--font-inria-sans').trim() || 'Inria Sans, sans-serif';
+    // next/font's generated family name is scoped to the page CSS. A PNG is
+    // rendered from a standalone SVG Blob, so use the actual embedded family
+    // name instead of copying that generated CSS variable value.
+    const exportFontFamily = 'Inria Sans';
 
     // Determine which devices are visibile in the DOM (have full rendering)
     const domDeviceIds = new Set<string>();
@@ -100,7 +104,7 @@ export function exportTopologyToPNG(options: ExportPNGOptions): void {
       label.setAttribute('fill', c.text);
       label.setAttribute('font-size', '9');
       label.setAttribute('font-weight', 'bold');
-      label.setAttribute('font-family', sansFont);
+      label.setAttribute('font-family', exportFontFamily);
       label.textContent = device.name;
       g.appendChild(label);
 
@@ -112,7 +116,7 @@ export function exportTopologyToPNG(options: ExportPNGOptions): void {
         ipLabel.setAttribute('fill', c.text);
         ipLabel.setAttribute('font-size', '7');
         ipLabel.setAttribute('opacity', '0.7');
-        ipLabel.setAttribute('font-family', sansFont);
+        ipLabel.setAttribute('font-family', exportFontFamily);
         ipLabel.textContent = device.ip;
         g.appendChild(ipLabel);
       }
@@ -121,7 +125,7 @@ export function exportTopologyToPNG(options: ExportPNGOptions): void {
     };
 
     // Set default font on SVG root so inherited text uses app sans-serif
-    clone.setAttribute('font-family', sansFont);
+    clone.setAttribute('font-family', exportFontFamily);
 
     // The SVG is rendered from a Blob, so it does not inherit the app's
     // next/font styles. Embed the app font faces with absolute URLs to avoid
@@ -160,12 +164,12 @@ export function exportTopologyToPNG(options: ExportPNGOptions): void {
       if (insideNote) return;
 
       // Override font-family attribute (SVG attribute form)
-      el.setAttribute('font-family', sansFont);
+      el.setAttribute('font-family', exportFontFamily);
 
       // Override font-family inside inline style (e.g. style="font-family:monospace")
       const styleVal = el.getAttribute('style');
       if (styleVal && styleVal.includes('font-family')) {
-        el.setAttribute('style', styleVal.replace(/font-family\s*:[^;]+/g, `font-family:${sansFont}`));
+        el.setAttribute('style', styleVal.replace(/font-family\s*:[^;]+/g, `font-family:${exportFontFamily}`));
       }
     });
 
@@ -175,6 +179,38 @@ export function exportTopologyToPNG(options: ExportPNGOptions): void {
     });
 
     // Rebuild all connections with proper port positions, colors, and labels
+    // Keep the same parallel-connection ordering as the live topology.
+    const connectionMeta = new Map<string, { index: number; total: number }>();
+    const groupedConnections = new Map<string, string[]>();
+    connections.forEach((conn) => {
+      const pair = getDevicePairKey(conn.sourceDeviceId, conn.targetDeviceId);
+      const ids = groupedConnections.get(pair) || [];
+      ids.push(conn.id);
+      groupedConnections.set(pair, ids);
+    });
+    groupedConnections.forEach((ids) => {
+      ids.forEach((id, index) => connectionMeta.set(id, { index, total: ids.length }));
+    });
+
+    const buildWavePath = (sx: number, sy: number, tx: number, ty: number) => {
+      const dx = tx - sx;
+      const dy = ty - sy;
+      const len = Math.sqrt(dx * dx + dy * dy) || 1;
+      const ux = dx / len;
+      const uy = dy / len;
+      const px = -uy;
+      const py = ux;
+      const waveCount = Math.max(3, Math.round(len / 28));
+      const amplitude = 8;
+      const points: string[] = [`M ${sx} ${sy}`];
+      for (let i = 0; i < waveCount; i++) {
+        const t1 = (i + 0.5) / waveCount;
+        const t2 = (i + 1) / waveCount;
+        points.push(`Q ${sx + ux * len * t1 + px * amplitude * (i % 2 === 0 ? 1 : -1)} ${sy + uy * len * t1 + py * amplitude * (i % 2 === 0 ? 1 : -1)} ${sx + ux * len * t2} ${sy + uy * len * t2}`);
+      }
+      return points.join(' ');
+    };
+
     connections.forEach(conn => {
       const src = devices.find(d => d.id === conn.sourceDeviceId);
       const dst = devices.find(d => d.id === conn.targetDeviceId);
@@ -185,20 +221,24 @@ export function exportTopologyToPNG(options: ExportPNGOptions): void {
       const dx = tgtPort.x - srcPort.x;
       const dy = tgtPort.y - srcPort.y;
       const len = Math.sqrt(dx * dx + dy * dy) || 1;
-      const defaultCurve = Math.min(32, Math.max(18, len * 0.10));
-      const perpX = (-dy / len) * defaultCurve;
-      const perpY = (dx / len) * defaultCurve;
-
-      const cp1 = {
-        x: srcPort.x + (dx * 0.28) + perpX * 1.15,
-        y: srcPort.y + (dy * 0.28) + perpY * 1.15,
-      };
-      const cp2 = {
-        x: tgtPort.x - (dx * 0.28) + perpX * 1.15,
-        y: tgtPort.y - (dy * 0.28) + perpY * 1.15,
-      };
-
-      const pathD = `M ${srcPort.x} ${srcPort.y} C ${cp1.x} ${cp1.y}, ${cp2.x} ${cp2.y}, ${tgtPort.x} ${tgtPort.y}`;
+      const meta = connectionMeta.get(conn.id) || { index: 0, total: 1 };
+      const baseSpacing = Math.min(36, Math.max(24, len * 0.12));
+      const offset = meta.total > 1 ? (meta.index - (meta.total - 1) / 2) * baseSpacing : 0;
+      const midX = (srcPort.x + tgtPort.x) / 2;
+      const midY = (srcPort.y + tgtPort.y) / 2;
+      const perpX = (-dy / len) * offset;
+      const perpY = (dx / len) * offset;
+      const isHorizontal = Math.abs(dx) >= Math.abs(dy);
+      const cp1 = isHorizontal
+        ? { x: midX + perpX, y: srcPort.y + perpY }
+        : { x: srcPort.x + perpX, y: midY + perpY };
+      const cp2 = isHorizontal
+        ? { x: midX + perpX, y: tgtPort.y + perpY }
+        : { x: tgtPort.x + perpX, y: midY + perpY };
+      const isWireless = conn.cableType === 'wireless';
+      const pathD = isWireless
+        ? buildWavePath(srcPort.x, srcPort.y, tgtPort.x, tgtPort.y)
+        : `M ${srcPort.x} ${srcPort.y} C ${cp1.x} ${cp1.y}, ${cp2.x} ${cp2.y}, ${tgtPort.x} ${tgtPort.y}`;
 
       // Check compatibility, shutdown status, offline status, and STP blocking
       const srcPortObj = src.ports.find(p => p.id === conn.sourcePort);
@@ -254,8 +294,8 @@ export function exportTopologyToPNG(options: ExportPNGOptions): void {
           y: mt * mt * mt * srcPort.y + 3 * mt * mt * t * cp1.y + 3 * mt * t * t * cp2.y + t * t * t * tgtPort.y,
         };
       };
-      const srcLabelPos = bezierPoint(0.42);
-      const tgtLabelPos = bezierPoint(0.58);
+      const srcLabelPos = isWireless ? { x: srcPort.x + dx * 0.42, y: srcPort.y + dy * 0.42 } : bezierPoint(0.42);
+      const tgtLabelPos = isWireless ? { x: srcPort.x + dx * 0.58, y: srcPort.y + dy * 0.58 } : bezierPoint(0.58);
       const labelOffsetY = -10;
 
       const addLabel = (pos: { x: number; y: number }, text: string) => {
@@ -268,7 +308,7 @@ export function exportTopologyToPNG(options: ExportPNGOptions): void {
         halo.setAttribute('stroke-linejoin', 'round');
         halo.setAttribute('font-size', '9');
         halo.setAttribute('font-weight', 'bold');
-        halo.setAttribute('font-family', sansFont);
+        halo.setAttribute('font-family', exportFontFamily);
         halo.setAttribute('text-anchor', 'middle');
         halo.setAttribute('opacity', '0.85');
         halo.textContent = text;
@@ -280,7 +320,7 @@ export function exportTopologyToPNG(options: ExportPNGOptions): void {
         label.setAttribute('fill', cableColor);
         label.setAttribute('font-size', '9');
         label.setAttribute('font-weight', 'bold');
-        label.setAttribute('font-family', sansFont);
+        label.setAttribute('font-family', exportFontFamily);
         label.setAttribute('text-anchor', 'middle');
         label.setAttribute('opacity', '0.85');
         label.textContent = text;
