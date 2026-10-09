@@ -11,6 +11,8 @@ Bu indeks, Network Simulator projesinin tüm dokümantasyon dosyalarını ve iç
 **Okuma Süresi**: 15 dakika  
 **İçerik**:
 - Otomatik Topoloji Üretimi & Canlı Sanal İmleç Simülasyon Motoru (`usePageTopologyActions.ts`, `VirtualCursorOverlay.tsx`)
+- Generate CLI komut kuyruğu, karakter karakter yazım ve cihaz penceresi yaşam döngüsü (`topologyStepByStepSimulation.ts`, `Terminal.tsx`)
+- Canvas hit-area, Alt-drag pencere taşıma ve PNG/topoloji geometri eşleşmesi (`DeviceRenderer.tsx`, `useDrag.ts`, `exportPNG.ts`)
 - Kişiselleştirilebilir Terminal Renk Temaları (Modern Dark, Matrix, Retro Amber, Dracula, Cyberpunk - `terminalThemes.ts`)
 - Canlı Sözdizimi & Parametre Vurgulama (`TerminalOutputLines.tsx`)
 - Canlı Port LED Göstergeleri (`DevicePcPorts.tsx`, `DeviceGridPortPin.tsx`)

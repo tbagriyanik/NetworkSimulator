@@ -2,6 +2,8 @@
 
 ## v7.6.0 — 2026-10-08
 
+- **🧭 Generate ve Canvas Etkileşim Tutarlılığı:** Otomatik CLI komutları cihaz bazında seri kuyruğa alındı; karakter kaybı, eşzamanlı yazım ve tekrarlanan `configure terminal` / `ip routing` komutları engellendi. İşlemsiz cihaz pencereleri açılmıyor, işlem tamamlanınca açılan pencereler kapanıyor. Cihazların tam gövde hit-area'sı, Alt-drag pencere taşıma ve PNG exportta canlı kablo geometrisi/font eşleşmesi güncellendi.
+
 - **🌐 Tam Çift Dilli (TR / EN) Senkronizasyon & Dil Bağlamı Düzeltmeleri (`LanguageContext.tsx`, `RoomJoinDialog.tsx`, `TeacherRoomPanel.tsx`, `AboutModal.tsx`, `AssertionPanelModal.tsx`, `BgpBestPathExplainerModal.tsx`, `DhcpPoolManagerModal.tsx`)**:
   - **Dinamik Dil Bağlamı Enjeksiyonu**: `LanguageContext` içerisindeki `t` nesnesine dinamik `language` alanı eklenerek bileşenlerdeki `t.language === 'tr'` ve `useLanguage()` kontrolleri tüm uygulamada senkronize ve kararlı hale getirildi.
   - **Sınıf & Oda Yönetimi Çevirileri**: `RoomJoinDialog` ve `TeacherRoomPanel` modallarındaki oda sonlandırma, oda bulunamadı, bağlantı hatası ve masaüstü kısıtlama uyarıları seçili dile göre anlık güncellenebilir kılındı.

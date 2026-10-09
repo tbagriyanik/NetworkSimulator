@@ -110,6 +110,19 @@
 5. Topoloji canvas'a otomatik olarak yüklenir; tüm cihazlar konfigüre edilmiş hâlde gelir
 6. Ping atarak veya `show` komutlarıyla doğrulayın
 
+### Adım adım simülasyon davranışı
+
+Adım adım yürütme seçildiğinde CLI komutları terminalde eksiksiz ve karakter karakter yazılır. Komutlar cihaz bazında sıraya alınır; `enable` ve `configure terminal` tamamlanmadan sonraki yapılandırma komutu gönderilmez. Aynı mode-entry komutunun tekrar gönderilmesi engellenir.
+
+Bir cihaz için çalıştırılacak gerçek bir işlem yoksa o cihazın penceresi açılmaz. İşlem içeren cihaz pencereleri yapılandırma tamamlandıktan sonra otomatik kapanır. Simülasyonu duraklatmak veya durdurmak için alt çubuktaki kontrolleri ya da `Esc` tuşunu kullanabilirsiniz.
+
+### Pencere ve canvas etkileşimi
+
+- Cihaz gövdesinin tamamı tıklanabilir; düzensiz SVG cihaz şekillerinde de seçim alanı korunur.
+- Açık cihaz penceresinin herhangi bir alanını `Alt` basılıyken sol tıklayıp sürükleyerek taşıyabilirsiniz.
+- `Ctrl + sürükle` cihazları ızgaraya hizalar; `Space + sürükle` canvas'ı kaydırır.
+- PNG dışa aktarma, ekrandaki kablo eğrilerini ve paralel bağlantı ofsetlerini korur.
+
 ---
 
 ## 💡 İpuçları

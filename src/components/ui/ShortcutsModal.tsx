@@ -91,6 +91,7 @@ export function ShortcutsModal({
       icon: Keyboard,
       shortcuts: [
         { label: isTr ? 'Etkin Pencereyi Küçült' : 'Minimize Window', key: formatShortcutLabel('M') },
+        { label: isTr ? 'Pencereyi Taşı / Sürükle' : 'Drag / Move Window', key: 'Alt + Drag' },
         { label: isTr ? 'Satır İptali / Komut Kesme' : 'Cancel Command / Break', key: 'Ctrl+C' },
         { label: isTr ? 'Yapılandırma Modundan Çıkış' : 'Exit Config Mode (End)', key: 'Ctrl+Z' },
         { label: isTr ? 'Komut Tamamlama' : 'Auto-Complete', key: 'Tab' },
