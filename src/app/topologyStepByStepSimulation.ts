@@ -41,36 +41,190 @@ export function getDefaultFactoryName(devType: CanvasDevice['type'], indexOfType
   }
 }
 
-export function getSwitchCliCommands(switchDev: CanvasDevice, devState?: SwitchState): string[] {
-  const devCmds: string[] = ['enable', 'configure terminal'];
+/**
+ * Appends the console / VTY / enable password configuration commands to the
+ * guided CLI script. Passwords are configured through the console so the demo
+ * actually shows how to secure the device; the console session stays open even
+ * after console login is enabled (auth is only checked on connect), so the
+ * walkthrough never stalls at a password prompt.
+ */
+export function appendSecurityCommands(devCmds: string[], devState?: SwitchState): void {
+  const sec = devState?.security;
+  if (!sec) return;
 
+  if (sec.enableSecret) {
+    devCmds.push(`enable secret ${sec.enableSecret}`);
+  } else if (sec.enablePassword) {
+    devCmds.push(`enable password ${sec.enablePassword}`);
+  }
 
-  // Security & Password Configurations (Applied safely within configure terminal)
-  if (devState?.security) {
-    if (devState.security.enableSecret) {
-      devCmds.push(`enable secret ${devState.security.enableSecret}`);
-    } else if (devState.security.enablePassword) {
-      devCmds.push(`enable password ${devState.security.enablePassword}`);
-    }
+  if (sec.servicePasswordEncryption) {
+    devCmds.push('service password-encryption');
+  }
 
-    if (devState.security.servicePasswordEncryption) {
-      devCmds.push('service password-encryption');
-    }
-
-    if (devState.security.consoleLine?.password) {
-      devCmds.push('line console 0');
-      devCmds.push(`password ${devState.security.consoleLine.password}`);
+  if (sec.consoleLine?.password) {
+    devCmds.push('line console 0');
+    devCmds.push(`password ${sec.consoleLine.password}`);
+    if (sec.consoleLine.login) {
       devCmds.push('login');
-      devCmds.push('exit');
     }
+    devCmds.push('exit');
+  }
 
-    if (devState.security.vtyLines?.password) {
-      devCmds.push('line vty 0 4');
-      devCmds.push(`password ${devState.security.vtyLines.password}`);
+  if (sec.vtyLines?.password) {
+    devCmds.push('line vty 0 4');
+    devCmds.push(`password ${sec.vtyLines.password}`);
+    if (sec.vtyLines.login) {
       devCmds.push('login');
-      devCmds.push('exit');
+    }
+    devCmds.push('exit');
+  }
+}
+
+/**
+ * Returns the CLI commands used to verify that console / VTY / enable
+ * passwords were applied. Only emitted when the device actually carries
+ * password settings, so plain scenarios stay short.
+ */
+export function getSecurityVerificationCommands(devState?: SwitchState): string[] {
+  const sec = devState?.security;
+  if (!sec) return [];
+
+  const hasPasswords = !!(sec.enableSecret || sec.enablePassword || sec.consoleLine?.password || sec.vtyLines?.password);
+  return hasPasswords ? ['show running-config'] : [];
+}
+
+/**
+ * Appends global Spanning-Tree configuration (mode, per-VLAN priority and
+ * global priority) that the generator stored on the device state.
+ */
+export function appendSpanningTreeCommands(devCmds: string[], devState?: SwitchState): void {
+  if (devState?.spanningTreeMode) {
+    devCmds.push(`spanning-tree mode ${devState.spanningTreeMode}`);
+  }
+
+  const vlanConfigs = devState?.spanningTreeVlans;
+  if (vlanConfigs) {
+    Object.entries(vlanConfigs).forEach(([vlanId, cfg]) => {
+      if (cfg?.enabled === false) return;
+      if (cfg?.priority) {
+        devCmds.push(`spanning-tree vlan ${vlanId} priority ${cfg.priority}`);
+      } else if (cfg?.enabled) {
+        devCmds.push(`spanning-tree vlan ${vlanId}`);
+      }
+    });
+  }
+}
+
+/**
+ * Returns the per-port feature commands (access mode, trunk, Port-Security and
+ * EtherChannel membership) for a single switch port. Kept separate so both the
+ * switch CLI builder and the step calculator reuse the exact same logic.
+ */
+export function getSwitchPortFeatureCommands(port: SwitchState['ports'][string]): string[] {
+  const cmds: string[] = [];
+
+  // EtherChannel membership (interface-level channel-group command)
+  if (port.channelGroup !== undefined && port.channelMode) {
+    cmds.push(`channel-group ${port.channelGroup} mode ${port.channelMode}`);
+  }
+
+  // Port-Security
+  if (port.portSecurity?.enabled) {
+    cmds.push('switchport port-security');
+    if (port.portSecurity.maxAddresses) {
+      cmds.push(`switchport port-security maximum ${port.portSecurity.maxAddresses}`);
+    }
+    if (port.portSecurity.violationAction) {
+      cmds.push(`switchport port-security violation ${port.portSecurity.violationAction}`);
+    }
+    if (port.portSecurity.sticky) {
+      cmds.push('switchport port-security mac-address sticky');
     }
   }
+
+  // ACL bindings
+  if (port.accessGroupIn) cmds.push(`ip access-group ${port.accessGroupIn} in`);
+  if (port.accessGroupOut) cmds.push(`ip access-group ${port.accessGroupOut} out`);
+
+  return cmds;
+}
+
+/**
+ * Appends global ACL definitions (numbered and named) stored on the state.
+ */
+export function appendAclCommands(devCmds: string[], devState?: SwitchState): void {
+  const acls = devState?.accessLists;
+  if (!acls || Object.keys(acls).length === 0) return;
+
+  Object.entries(acls).forEach(([aclId, rules]) => {
+    const isNamed = isNaN(Number(aclId));
+    if (isNamed) {
+      devCmds.push(`ip access-list extended ${aclId}`);
+      rules.forEach((rule) => {
+        const seqMatch = rule.match(/^(\d+)\s+(.+)$/);
+        devCmds.push(seqMatch ? ` ${seqMatch[2]}` : ` ${rule}`);
+      });
+      devCmds.push('exit');
+    } else {
+      rules.forEach((rule) => {
+        const seqMatch = rule.match(/^(\d+)\s+(.+)$/);
+        devCmds.push(seqMatch ? `access-list ${aclId} ${seqMatch[2]}` : `access-list ${aclId} ${rule}`);
+      });
+    }
+  });
+}
+
+/**
+ * Appends NAT configuration (dynamic overload rules and static translations).
+ */
+export function appendNatCommands(devCmds: string[], devState?: SwitchState): void {
+  const staticRules = Array.isArray(devState?.natStaticTranslations) ? devState!.natStaticTranslations : [];
+  staticRules.forEach((t) => {
+    if (t.localIp && t.globalIp) {
+      devCmds.push(`ip nat inside source static ${t.localIp} ${t.globalIp}`);
+    }
+  });
+
+  const dynamicRules = Array.isArray(devState?.natDynamicRules) ? devState!.natDynamicRules : [];
+  dynamicRules.forEach((r) => {
+    if (!r.aclId) return;
+    const overload = r.overload === false ? '' : ' overload';
+    if (r.poolName) {
+      devCmds.push(`ip nat inside source list ${r.aclId} pool ${r.poolName}${overload}`);
+    } else if (r.interface) {
+      devCmds.push(`ip nat inside source list ${r.aclId} interface ${r.interface}${overload}`);
+    }
+  });
+}
+
+/**
+ * Returns true when the device carries any NAT configuration, so the step
+ * calculator can decide whether the interface-level `ip nat inside/outside`
+ * commands will be emitted.
+ */
+export function hasNatConfig(devState?: SwitchState): boolean {
+  const staticCount = Array.isArray(devState?.natStaticTranslations) ? devState!.natStaticTranslations.length : 0;
+  const dynamicCount = Array.isArray(devState?.natDynamicRules) ? devState!.natDynamicRules.length : 0;
+  return staticCount > 0 || dynamicCount > 0;
+}
+
+/**
+ * Appends the interface-level `ip nat inside` / `ip nat outside` markers based
+ * on each port's natSide flag.
+ */
+export function appendNatInterfaceCommands(cmds: string[], port: SwitchState['ports'][string]): void {
+  if (port.natSide === 'inside') cmds.push('ip nat inside');
+  else if (port.natSide === 'outside') cmds.push('ip nat outside');
+}
+
+export function getSwitchCliCommands(switchDev: CanvasDevice, devState?: SwitchState): string[] {
+  const devCmds: string[] = [];
+
+  appendSecurityCommands(devCmds, devState);
+  appendSpanningTreeCommands(devCmds, devState);
+  appendAclCommands(devCmds, devState);
+  appendNatCommands(devCmds, devState);
 
   if (devState?.vlans) {
     Object.values(devState.vlans).forEach((vlan) => {
@@ -87,68 +241,79 @@ export function getSwitchCliCommands(switchDev: CanvasDevice, devState?: SwitchS
 
   if (devState?.ports) {
     Object.values(devState.ports).forEach((p) => {
-      if (p.mode === 'trunk') {
-        devCmds.push(`interface ${p.id}`);
-        devCmds.push('switchport mode trunk');
-        devCmds.push('exit');
-      } else if (
+      const isSvi = p.id.toLowerCase().startsWith('vlan');
+
+      if (isSvi) {
+        // Switched Virtual Interface (interface vlan X): needs ip routing and a
+        // plain ip address. "no switchport" is meaningless for an SVI and is
+        // therefore never emitted here.
+        if (p.ipAddress && p.subnetMask) {
+          devCmds.push(`interface vlan ${p.id.replace(/[^0-9]/g, '')}`);
+          devCmds.push(`ip address ${p.ipAddress} ${p.subnetMask}`);
+          devCmds.push('no shutdown');
+          devCmds.push('exit');
+        }
+        return;
+      }
+
+      const featureCmds = getSwitchPortFeatureCommands(p);
+      const isTrunk = p.mode === 'trunk';
+      const isAccessWithVlan =
         p.mode === 'access' &&
         typeof p.accessVlan === 'number' &&
         p.accessVlan > 1 &&
-        (p.accessVlan < 1002 || p.accessVlan > 1005)
-      ) {
-        devCmds.push(`interface ${p.id}`);
+        (p.accessVlan < 1002 || p.accessVlan > 1005);
+      const isRoutedPort = !!p.ipAddress && !!p.subnetMask && p.mode !== 'access' && p.mode !== 'trunk';
+
+      // Nothing to configure on this port.
+      if (!isTrunk && !isAccessWithVlan && !isRoutedPort && featureCmds.length === 0) {
+        return;
+      }
+
+      devCmds.push(`interface ${p.id}`);
+      if (isTrunk) {
+        devCmds.push('switchport mode trunk');
+      } else if (isAccessWithVlan) {
         devCmds.push('switchport mode access');
         devCmds.push(`switchport access vlan ${p.accessVlan}`);
-        devCmds.push('exit');
-      } else if (p.ipAddress && p.subnetMask) {
-        devCmds.push(`interface ${p.id}`);
+      } else if (isRoutedPort) {
+        // Physical routed port: only these need "no switchport" before the IP.
         devCmds.push('no switchport');
         devCmds.push(`ip address ${p.ipAddress} ${p.subnetMask}`);
         devCmds.push('no shutdown');
-        devCmds.push('exit');
       }
+      featureCmds.forEach((cmd) => devCmds.push(cmd));
+      devCmds.push('exit');
     });
   }
+
+  // EtherChannel logical interface (interface port-channel N) trunking
+  const channelGroups = new Set<number>();
+  Object.values(devState?.ports || {}).forEach((p) => {
+    if (p.channelGroup !== undefined) channelGroups.add(p.channelGroup);
+  });
+  channelGroups.forEach((group) => {
+    const member = Object.values(devState!.ports).find((p) => p.channelGroup === group);
+    devCmds.push(`interface port-channel ${group}`);
+    if (member?.mode === 'trunk') {
+      devCmds.push('switchport mode trunk');
+    }
+    devCmds.push('exit');
+  });
 
   if (switchDev.type === 'switchL3' || (devState as unknown as { ipRouting?: boolean })?.ipRouting) {
     devCmds.push('ip routing');
   }
 
-  devCmds.push('end');
   return devCmds;
 }
 
 export function getRouterCliCommands(_routerDev: CanvasDevice, devState?: SwitchState): string[] {
-  const devCmds: string[] = ['enable', 'configure terminal'];
+  const devCmds: string[] = [];
 
-
-  // Security & Password Configurations (Applied safely within configure terminal)
-  if (devState?.security) {
-    if (devState.security.enableSecret) {
-      devCmds.push(`enable secret ${devState.security.enableSecret}`);
-    } else if (devState.security.enablePassword) {
-      devCmds.push(`enable password ${devState.security.enablePassword}`);
-    }
-
-    if (devState.security.servicePasswordEncryption) {
-      devCmds.push('service password-encryption');
-    }
-
-    if (devState.security.consoleLine?.password) {
-      devCmds.push('line console 0');
-      devCmds.push(`password ${devState.security.consoleLine.password}`);
-      devCmds.push('login');
-      devCmds.push('exit');
-    }
-
-    if (devState.security.vtyLines?.password) {
-      devCmds.push('line vty 0 4');
-      devCmds.push(`password ${devState.security.vtyLines.password}`);
-      devCmds.push('login');
-      devCmds.push('exit');
-    }
-  }
+  appendSecurityCommands(devCmds, devState);
+  appendAclCommands(devCmds, devState);
+  appendNatCommands(devCmds, devState);
 
   const configuredPorts = devState?.ports
     ? Object.values(devState.ports).filter((p) => p.ipAddress && p.subnetMask)
@@ -161,6 +326,7 @@ export function getRouterCliCommands(_routerDev: CanvasDevice, devState?: Switch
       devCmds.push(`encapsulation dot1Q ${subVlan}`);
     }
     devCmds.push(`ip address ${p.ipAddress} ${p.subnetMask}`);
+    appendNatInterfaceCommands(devCmds, p);
     devCmds.push('no shutdown');
     devCmds.push('exit');
   });
@@ -235,8 +401,51 @@ export function getRouterCliCommands(_routerDev: CanvasDevice, devState?: Switch
     });
   }
 
-  devCmds.push('end');
   return devCmds;
+}
+
+/**
+ * Firewall CLI script: routed interface IPs plus the firewall rule table.
+ * Rules are emitted in the standard IOS extended ACL form so the executor
+ * accepts them, keeping the guided demo consistent with the generated topology.
+ */
+export function getFirewallCliCommands(devState?: SwitchState): string[] {
+  const devCmds: string[] = [];
+
+  appendSecurityCommands(devCmds, devState);
+
+  const configuredPorts = devState?.ports
+    ? Object.values(devState.ports).filter((p) => p.ipAddress && p.subnetMask)
+    : [];
+  configuredPorts.forEach((p) => {
+    devCmds.push(`interface ${p.id}`);
+    devCmds.push(`ip address ${p.ipAddress} ${p.subnetMask}`);
+    devCmds.push('no shutdown');
+    devCmds.push('exit');
+  });
+
+  const rules = Array.isArray(devState?.firewallRules) ? devState!.firewallRules : [];
+  rules.forEach((rule) => {
+    if (rule.enabled === false) return;
+    const action = rule.action === 'allow' ? 'permit' : 'deny';
+    const protocol = (!rule.protocol || rule.protocol === 'any') ? 'ip' : rule.protocol;
+    const source = !rule.sourceIp || rule.sourceIp === '*' ? 'any' : rule.sourceIp;
+    const target = !rule.targetIp || rule.targetIp === '*' ? 'any' : rule.targetIp;
+    const hasPort = rule.port !== '*' && rule.port !== 'any' && protocol !== 'icmp' && protocol !== 'ip';
+    const portSuffix = hasPort ? ` eq ${rule.port}` : '';
+    devCmds.push(`access-list OUTSIDE-IN extended ${action} ${protocol} ${source} ${target}${portSuffix}`);
+  });
+
+  return devCmds;
+}
+
+/**
+ * Returns the verification command list for a firewall (inspects the applied
+ * rules), so the calculator and the simulation agree on the step count.
+ */
+export function getFirewallVerificationCommands(devState?: SwitchState): string[] {
+  const rules = Array.isArray(devState?.firewallRules) ? devState!.firewallRules : [];
+  return rules.length > 0 ? ['show access-lists'] : [];
 }
 
 export function calculateSimulationSteps(data: {
@@ -250,6 +459,7 @@ export function calculateSimulationSteps(data: {
 
   const switchDevices = devices.filter((d) => d.type === 'switchL2' || d.type === 'switchL3');
   const routerDevices = devices.filter((d) => d.type === 'router');
+  const firewallDevices = devices.filter((d) => d.type === 'firewall');
   const pcDevices = devices.filter((d) => d.type === 'pc');
   const wlcDevices = devices.filter((d) => d.type === 'wlc');
   const wifiDevices = devices.filter((d) => d.type === 'mobile' || (d.type !== 'pc' && !!d.wifi));
@@ -258,12 +468,19 @@ export function calculateSimulationSteps(data: {
 
   let totalSteps = devices.length + connections.length;
   switchDevices.forEach((d) => {
-    const cmds = getSwitchCliCommands(d, deviceStates.get(d.id));
-    totalSteps += 3 + cmds.length;
+    const state = deviceStates.get(d.id);
+    const cmds = getSwitchCliCommands(d, state);
+    totalSteps += 3 + cmds.length + getSecurityVerificationCommands(state).length * 2;
   });
   routerDevices.forEach((d) => {
-    const cmds = getRouterCliCommands(d, deviceStates.get(d.id));
-    totalSteps += 3 + cmds.length;
+    const state = deviceStates.get(d.id);
+    const cmds = getRouterCliCommands(d, state);
+    totalSteps += 3 + cmds.length + getSecurityVerificationCommands(state).length * 2;
+  });
+  firewallDevices.forEach((d) => {
+    const state = deviceStates.get(d.id);
+    const cmds = getFirewallCliCommands(state);
+    totalSteps += 3 + cmds.length + getFirewallVerificationCommands(state).length * 2;
   });
   totalSteps += wlcDevices.length * 3;
   pcDevices.forEach((pc) => {
@@ -516,6 +733,7 @@ export function runStepByStepSimulation({
 
   const switchDevices = devices.filter((d) => d.type === 'switchL2' || d.type === 'switchL3');
   const routerDevices = devices.filter((d) => d.type === 'router');
+  const firewallDevices = devices.filter((d) => d.type === 'firewall');
   const pcDevices = devices.filter((d) => d.type === 'pc');
   const wlcDevices = devices.filter((d) => d.type === 'wlc');
   const wifiDevices = devices.filter((d) => d.type === 'mobile' || (d.type !== 'pc' && !!d.wifi));
@@ -624,9 +842,27 @@ export function runStepByStepSimulation({
               shutdown: isL2Switch ? false : (pId === 'console' ? false : true),
             };
           });
+          // Guided step-by-step demo must add devices without any password
+          // configuration. Carrying the scenario's security block over
+          // (enable secret / console / vty passwords) makes the device ask for
+          // credentials on the very first `enable`, so the walkthrough gets
+          // stuck at the password prompt. Reset to a clean, open state here and
+          // let users configure passwords manually if they want them.
+          const cleanSecurity: SwitchState['security'] = {
+            ...state.security,
+            enableSecret: undefined,
+            enableSecretEncrypted: false,
+            enablePassword: undefined,
+            servicePasswordEncryption: false,
+            users: [],
+            consoleLine: { ...state.security.consoleLine, login: false, loginLocal: false, password: undefined },
+            vtyLines: { ...state.security.vtyLines, login: false, loginLocal: false, password: undefined },
+          };
+
           currentStates.set(d.id, {
             ...state,
             hostname: d.name || state.hostname || targetDevName,
+            security: cleanSecurity,
             vlans: { 1: { id: 1, name: 'default', status: 'active', ports: [] } },
             ports: cleanPorts,
           });
@@ -744,7 +980,11 @@ export function runStepByStepSimulation({
       useMultiWindowStore.getState().openDeviceWindow(switchDev.id, switchDev.type, 'console');
     }, 900);
 
-    switchCmds.forEach((cliCmd) => {
+    switchCmds.forEach((cliCmd, cmdIdx) => {
+      // The very first command silently enters privileged + config mode
+      // (`enable` / `configure terminal`) in the same keystroke stream, so the
+      // mode-entry lines never show up as separate, trivial steps.
+      const typedCmd = cmdIdx === 0 ? `enable\nconfigure terminal\n${cliCmd}` : cliCmd;
       addStep(() => {
         currentStep++;
         updateProgress(currentStep, `${switchDev.name} CLI: ${cliCmd}`);
@@ -752,7 +992,7 @@ export function runStepByStepSimulation({
         moveCursor(cliCoords.x, cliCoords.y, `${switchDev.name} CLI: ${cliCmd}`, false);
         window.dispatchEvent(
           new CustomEvent('terminal-auto-type', {
-            detail: { deviceId: switchDev.id, command: cliCmd },
+            detail: { deviceId: switchDev.id, command: typedCmd },
           })
         );
       }, Math.max(700, cliCmd.length * 60 + 200));
@@ -763,6 +1003,34 @@ export function runStepByStepSimulation({
         window.dispatchEvent(
           new CustomEvent('commit-action-event', {
             detail: { action: `${switchDev.name} CLI: ${cliCmd}` },
+          })
+        );
+      }, 600);
+    });
+
+    getSecurityVerificationCommands(devState).forEach((verifyCmd) => {
+      addStep(() => {
+        currentStep++;
+        updateProgress(currentStep, isTr ? `${switchDev.name} Doğrulama: ${verifyCmd}` : `${switchDev.name} Verify: ${verifyCmd}`);
+        const cliCoords = getElementCoords(`[data-modal-id="${switchDev.id}"] input, [data-modal-id="${switchDev.id}"] textarea, input[type="text"]`, window.innerWidth / 2, window.innerHeight / 2 + 120);
+        moveCursor(cliCoords.x, cliCoords.y, `${switchDev.name} CLI: ${verifyCmd}`, false);
+        window.dispatchEvent(
+          new CustomEvent('terminal-auto-type', {
+            detail: { deviceId: switchDev.id, command: verifyCmd },
+          })
+        );
+      }, Math.max(700, verifyCmd.length * 60 + 200));
+
+      addStep(() => {
+        const cliCoords = getElementCoords(`[data-modal-id="${switchDev.id}"] input, [data-modal-id="${switchDev.id}"] textarea, input[type="text"]`, window.innerWidth / 2, window.innerHeight / 2 + 120);
+        moveCursor(cliCoords.x + 35, cliCoords.y, `Enter ↵ (${verifyCmd})`, true, verifyCmd);
+        window.dispatchEvent(
+          new CustomEvent('commit-action-event', {
+            detail: {
+              action: isTr
+                ? `${switchDev.name} parolaları doğrulandı (${verifyCmd})`
+                : `${switchDev.name} passwords verified (${verifyCmd})`,
+            },
           })
         );
       }, 600);
@@ -811,7 +1079,9 @@ export function runStepByStepSimulation({
       useMultiWindowStore.getState().openDeviceWindow(routerDev.id, routerDev.type, 'console');
     }, 900);
 
-    routerCmds.forEach((cliCmd) => {
+    routerCmds.forEach((cliCmd, cmdIdx) => {
+      // First command silently enters privileged + config mode in one stream.
+      const typedCmd = cmdIdx === 0 ? `enable\nconfigure terminal\n${cliCmd}` : cliCmd;
       addStep(() => {
         currentStep++;
         updateProgress(currentStep, `${routerDev.name} CLI: ${cliCmd}`);
@@ -819,7 +1089,7 @@ export function runStepByStepSimulation({
         moveCursor(cliCoords.x, cliCoords.y, `${routerDev.name} CLI: ${cliCmd}`, false);
         window.dispatchEvent(
           new CustomEvent('terminal-auto-type', {
-            detail: { deviceId: routerDev.id, command: cliCmd },
+            detail: { deviceId: routerDev.id, command: typedCmd },
           })
         );
       }, Math.max(700, cliCmd.length * 60 + 200));
@@ -830,6 +1100,34 @@ export function runStepByStepSimulation({
         window.dispatchEvent(
           new CustomEvent('commit-action-event', {
             detail: { action: `${routerDev.name} CLI: ${cliCmd}` },
+          })
+        );
+      }, 600);
+    });
+
+    getSecurityVerificationCommands(devState).forEach((verifyCmd) => {
+      addStep(() => {
+        currentStep++;
+        updateProgress(currentStep, isTr ? `${routerDev.name} Doğrulama: ${verifyCmd}` : `${routerDev.name} Verify: ${verifyCmd}`);
+        const cliCoords = getElementCoords(`[data-modal-id="${routerDev.id}"] input, [data-modal-id="${routerDev.id}"] textarea, input[type="text"]`, window.innerWidth / 2, window.innerHeight / 2 + 120);
+        moveCursor(cliCoords.x, cliCoords.y, `${routerDev.name} CLI: ${verifyCmd}`, false);
+        window.dispatchEvent(
+          new CustomEvent('terminal-auto-type', {
+            detail: { deviceId: routerDev.id, command: verifyCmd },
+          })
+        );
+      }, Math.max(700, verifyCmd.length * 60 + 200));
+
+      addStep(() => {
+        const cliCoords = getElementCoords(`[data-modal-id="${routerDev.id}"] input, [data-modal-id="${routerDev.id}"] textarea, input[type="text"]`, window.innerWidth / 2, window.innerHeight / 2 + 120);
+        moveCursor(cliCoords.x + 35, cliCoords.y, `Enter ↵ (${verifyCmd})`, true, verifyCmd);
+        window.dispatchEvent(
+          new CustomEvent('commit-action-event', {
+            detail: {
+              action: isTr
+                ? `${routerDev.name} parolaları doğrulandı (${verifyCmd})`
+                : `${routerDev.name} passwords verified (${verifyCmd})`,
+            },
           })
         );
       }, 600);
@@ -860,6 +1158,99 @@ export function runStepByStepSimulation({
       const closeBtn = getElementCoords(`[data-window-close="${routerDev.id}"]`, window.innerWidth / 2 + 220, window.innerHeight / 2 - 200);
       moveCursor(closeBtn.x, closeBtn.y, isTr ? `${routerDev.name} Kapat ✕` : `Close ${routerDev.name} ✕`, true);
       useMultiWindowStore.getState().closeDeviceWindow(routerDev.id);
+    }, 500);
+  });
+
+  // ==========================================
+  // PHASE 4b: FIREWALL CONFIGURATION (Interfaces & Rule Table)
+  // ==========================================
+  firewallDevices.forEach((fwDev) => {
+    const devState = deviceStates?.get(fwDev.id);
+    const fwCmds = getFirewallCliCommands(devState);
+
+    addStep(() => {
+      currentStep++;
+      updateProgress(currentStep, isTr ? `${fwDev.name} CLI Konsolu Açılıyor (Arayüz & Kural Yapılandırması)` : `Opening ${fwDev.name} CLI Console (Interface & Rule Config)`);
+      const devCoords = getElementCoords(`[data-device-id="${fwDev.id}"]`, fwDev.x + 80, fwDev.y + 120);
+      moveCursor(devCoords.x, devCoords.y, isTr ? `${fwDev.name} Konsol Aç` : `Open ${fwDev.name} Console`, true);
+      useMultiWindowStore.getState().openDeviceWindow(fwDev.id, fwDev.type, 'console');
+    }, 900);
+
+    fwCmds.forEach((cliCmd, cmdIdx) => {
+      // First command silently enters privileged + config mode in one stream.
+      const typedCmd = cmdIdx === 0 ? `enable\nconfigure terminal\n${cliCmd}` : cliCmd;
+      addStep(() => {
+        currentStep++;
+        updateProgress(currentStep, `${fwDev.name} CLI: ${cliCmd}`);
+        const cliCoords = getElementCoords(`[data-modal-id="${fwDev.id}"] input, [data-modal-id="${fwDev.id}"] textarea, input[type="text"]`, window.innerWidth / 2, window.innerHeight / 2 + 120);
+        moveCursor(cliCoords.x, cliCoords.y, `${fwDev.name} CLI: ${cliCmd}`, false);
+        window.dispatchEvent(
+          new CustomEvent('terminal-auto-type', {
+            detail: { deviceId: fwDev.id, command: typedCmd },
+          })
+        );
+      }, Math.max(700, cliCmd.length * 60 + 200));
+
+      addStep(() => {
+        const cliCoords = getElementCoords(`[data-modal-id="${fwDev.id}"] input, [data-modal-id="${fwDev.id}"] textarea, input[type="text"]`, window.innerWidth / 2, window.innerHeight / 2 + 120);
+        moveCursor(cliCoords.x + 35, cliCoords.y, `Enter ↵ (${cliCmd})`, true, cliCmd);
+        window.dispatchEvent(
+          new CustomEvent('commit-action-event', {
+            detail: { action: `${fwDev.name} CLI: ${cliCmd}` },
+          })
+        );
+      }, 600);
+    });
+
+    getFirewallVerificationCommands(devState).forEach((verifyCmd) => {
+      addStep(() => {
+        currentStep++;
+        updateProgress(currentStep, isTr ? `${fwDev.name} Doğrulama: ${verifyCmd}` : `${fwDev.name} Verify: ${verifyCmd}`);
+        const cliCoords = getElementCoords(`[data-modal-id="${fwDev.id}"] input, [data-modal-id="${fwDev.id}"] textarea, input[type="text"]`, window.innerWidth / 2, window.innerHeight / 2 + 120);
+        moveCursor(cliCoords.x, cliCoords.y, `${fwDev.name} CLI: ${verifyCmd}`, false);
+        window.dispatchEvent(
+          new CustomEvent('terminal-auto-type', {
+            detail: { deviceId: fwDev.id, command: verifyCmd },
+          })
+        );
+      }, Math.max(700, verifyCmd.length * 60 + 200));
+
+      addStep(() => {
+        const cliCoords = getElementCoords(`[data-modal-id="${fwDev.id}"] input, [data-modal-id="${fwDev.id}"] textarea, input[type="text"]`, window.innerWidth / 2, window.innerHeight / 2 + 120);
+        moveCursor(cliCoords.x + 35, cliCoords.y, `Enter ↵ (${verifyCmd})`, true, verifyCmd);
+        window.dispatchEvent(
+          new CustomEvent('commit-action-event', {
+            detail: {
+              action: isTr
+                ? `${fwDev.name} kuralları doğrulandı (${verifyCmd})`
+                : `${fwDev.name} rules verified (${verifyCmd})`,
+            },
+          })
+        );
+      }, 600);
+    });
+
+    addStep(() => {
+      currentStep++;
+      const resultMsg = isTr
+        ? `${fwDev.name} Güvenlik Duvarı Arayüzleri ve Kuralları Yapılandırıldı`
+        : `${fwDev.name} Firewall Interfaces & Rules Configured`;
+      updateProgress(currentStep, resultMsg);
+      moveCursor(window.innerWidth / 2, window.innerHeight / 2 + 50, isTr ? `Firewall Yapılandırması Tamam!` : `Firewall Config Completed!`, false);
+
+      if (devState) {
+        const updated = new Map(simulatedStates);
+        updated.set(fwDev.id, devState);
+        simulatedStates = updated;
+        setDeviceStates(updated);
+      }
+      window.dispatchEvent(new CustomEvent('commit-action-event', { detail: { action: resultMsg } }));
+    }, 1500);
+
+    addStep(() => {
+      const closeBtn = getElementCoords(`[data-window-close="${fwDev.id}"]`, window.innerWidth / 2 + 220, window.innerHeight / 2 - 200);
+      moveCursor(closeBtn.x, closeBtn.y, isTr ? `${fwDev.name} Kapat ✕` : `Close ${fwDev.name} ✕`, true);
+      useMultiWindowStore.getState().closeDeviceWindow(fwDev.id);
     }, 500);
   });
 

@@ -420,8 +420,9 @@ export function useDrag(options: UseDragOptions = {}): UseDragReturn {
 
 /**
  * Renders nothing. Mount once in the app tree.
- * Listens for mousedown/pointerdown on [data-drag-handle] elements
- * and handles dragging of parent [data-draggable-id] elements.
+ * Listens for mousedown on [data-drag-handle] elements and, when Alt is held,
+ * anywhere inside [data-draggable-id] windows. Interactive controls remain
+ * excluded so Alt-drag never interferes with buttons or form fields.
  */
 export function GlobalDragManager() {
   const dragRef = useRef<{
@@ -456,8 +457,9 @@ export function GlobalDragManager() {
       if (typeof window !== 'undefined' && window.innerWidth < 640) return;
 
       const handle = target.closest('[data-drag-handle]');
-      if (!handle) return;
-      const dialog = (handle as HTMLElement).closest('[data-draggable-id]') as HTMLElement;
+      const altDrag = e.altKey;
+      if (!handle && !altDrag) return;
+      const dialog = (altDrag ? target : handle as HTMLElement).closest('[data-draggable-id]') as HTMLElement;
       if (!dialog) return;
       const id = dialog.getAttribute('data-draggable-id');
       if (!id) return;

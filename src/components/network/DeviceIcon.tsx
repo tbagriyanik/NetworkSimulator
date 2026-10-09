@@ -32,7 +32,7 @@ export function DeviceIcon({
     return DEVICE_ICON_COLORS[type as keyof typeof DEVICE_ICON_COLORS] ?? DEVICE_ICON_COLORS.pc;
   })();
 
-  const strokeWidth = active ? 2 : 1.25;
+  const strokeWidth = active ? 2.25 : 1.7;
   const svgProps = {
     width: size,
     height: size,

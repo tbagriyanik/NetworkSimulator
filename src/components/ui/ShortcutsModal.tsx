@@ -1,10 +1,13 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ShortcutBadge } from '@/components/ui/ShortcutBadge';
-import { Keyboard, Command, MousePointer, Cpu } from 'lucide-react';
+import { KeyboardLayout } from '@/components/ui/KeyboardLayout';
+import { Keyboard, Command, MousePointer, Cpu, List, LayoutGrid } from 'lucide-react';
 import { isMacPlatform, formatShortcutLabel } from '@/lib/utils/platform';
+import { cn } from '@/lib/utils';
 
 interface ShortcutsModalProps {
   open: boolean;
@@ -22,6 +25,9 @@ export function ShortcutsModal({
   const isTr = language === 'tr';
   const isMac = isMacPlatform();
   const modText = isMac ? '⌘' : 'Ctrl';
+
+  const [activeTab, setActiveTab] = useState('list');
+  const [selectedShortcut, setSelectedShortcut] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -108,6 +114,87 @@ export function ShortcutsModal({
       shortcuts: [...group.shortcuts].sort((a, b) => a.label.localeCompare(b.label, locale)),
     }));
 
+  // Flattened, alphabetically sorted shortcut list used by the keyboard tab.
+  const allShortcuts = useMemo(
+    () =>
+      shortcutGroups
+        .flatMap((group) => group.shortcuts.map((sc) => ({ ...sc, group: group.title })))
+        .sort((a, b) => a.label.localeCompare(b.label, locale)),
+    [shortcutGroups, locale]
+  );
+
+  /**
+   * Maps a human readable shortcut ("Ctrl+S", "Shift + Click", "Alt+F") to the
+   * canonical key ids understood by the visual keyboard layout.
+   */
+  const shortcutToKeyIds = (shortcut: string): string[] => {
+    return shortcut
+      .split('+')
+      .map((part) => part.trim().toLowerCase())
+      .flatMap((part) => {
+        if (!part) return [];
+        switch (part) {
+          case 'ctrl':
+          case 'control':
+          case '⌘':
+          case 'cmd':
+            return ['ctrl'];
+          case 'shift':
+            return ['shift'];
+          case 'alt':
+          case '⌥':
+            return ['alt'];
+          case 'tab':
+            return ['tab'];
+          case 'esc':
+          case 'escape':
+            return ['esc'];
+          case 'enter':
+          case 'return':
+            return ['enter'];
+          case 'space':
+            return ['space'];
+          case 'delete':
+          case 'del':
+            return ['backspace'];
+          case '↑':
+            return ['up'];
+          case '↓':
+            return ['down'];
+          default: {
+            // Function keys, single characters and literal keys (e.g. f5, s, ,).
+            const fn = part.match(/^f(\d{1,2})$/);
+            if (fn) return [`f${fn[1]}`];
+            return [part];
+          }
+        }
+      });
+  };
+
+  const highlightKeys = selectedShortcut ? shortcutToKeyIds(selectedShortcut) : [];
+
+  /**
+   * Builds a key → description map so hovering a key on the visual keyboard can
+   * show what can be done with it. A key used by several shortcuts collects all
+   * of their labels.
+   */
+  const keyDescriptions = useMemo(() => {
+    const map = new Map<string, string[]>();
+    allShortcuts.forEach((sc) => {
+      shortcutToKeyIds(sc.key).forEach((id) => {
+        const list = map.get(id) ?? [];
+        if (!list.includes(sc.label)) list.push(sc.label);
+        map.set(id, list);
+      });
+    });
+    const result: Record<string, string> = {};
+    map.forEach((labels, id) => {
+      result[id] = labels.join(' · ');
+    });
+    return result;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allShortcuts]);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
@@ -128,32 +215,105 @@ export function ShortcutsModal({
           </div>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-h-[72vh] overflow-y-auto pr-1">
-          {shortcutGroups.map((group, gIdx) => {
-            const Icon = group.icon;
-            return (
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList
+            className={cn(
+              'mb-4 grid w-full grid-cols-2 sm:w-auto sm:inline-flex',
+              isDark ? 'bg-secondary-800 text-secondary-300' : 'bg-secondary-100 text-secondary-600'
+            )}
+          >
+            <TabsTrigger value="list" className="gap-2 cursor-pointer">
+              <List className="w-4 h-4" />
+              {isTr ? 'Kısayol Listesi' : 'Shortcut List'}
+            </TabsTrigger>
+            <TabsTrigger value="keyboard" className="gap-2 cursor-pointer">
+              <LayoutGrid className="w-4 h-4" />
+              {isTr ? 'Klavye Görünümü' : 'Keyboard View'}
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="list" className="mt-0">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-h-[62vh] overflow-y-auto pr-1">
+              {shortcutGroups.map((group, gIdx) => {
+                const Icon = group.icon;
+                return (
+                  <div
+                    key={gIdx}
+                    className={`p-4 rounded-xl border flex flex-col gap-3.5 ${isDark ? 'bg-secondary-950/40 border-secondary-800/60' : 'bg-secondary-50/60 border-secondary-200/80'}`}
+                  >
+                    <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary-500 border-b pb-2 dark:border-secondary-800 border-secondary-200/60">
+                      <Icon className="w-4 h-4 shrink-0" />
+                      <span>{group.title}</span>
+                    </div>
+                    <div className="flex flex-col gap-3">
+                      {group.shortcuts.map((sc, sIdx) => (
+                        <div key={sIdx} className="flex items-start justify-between gap-3 text-xs">
+                          <span className={`text-xs font-medium leading-normal flex-1 ${isDark ? 'text-secondary-300' : 'text-secondary-700'}`}>
+                            {sc.label}
+                          </span>
+                          <ShortcutBadge shortcut={sc.key} variant="primary" className="shrink-0 text-[10px] mt-0.5 whitespace-nowrap" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="keyboard" className="mt-0">
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 max-h-[62vh] overflow-y-auto pr-1">
+              <div className="lg:col-span-3 order-2 lg:order-1">
+                <KeyboardLayout
+                  highlightKeys={highlightKeys}
+                  keyDescriptions={keyDescriptions}
+                  labels={{
+                    highlightHint: isTr
+                      ? 'Kısayol seçip tuşların klavyede vurgulanışını görün'
+                      : 'Pick a shortcut to see its keys highlighted on the keyboard',
+                    selected: isTr ? 'Seçili kısayol' : 'Selected shortcut',
+                    emptyKey: isTr ? 'Bu tuşa atanmış bir kısayol yok' : 'No shortcut assigned to this key',
+                    modifierLegend: {
+                      ctrl: isTr ? 'Ctrl / ⌘ kombinasyonu' : 'Ctrl / ⌘ combination',
+                      shift: isTr ? 'Shift kombinasyonu' : 'Shift combination',
+                      alt: isTr ? 'Alt / ⌥ kombinasyonu' : 'Alt / ⌥ combination',
+                    },
+                  }}
+                />
+              </div>
+
               <div
-                key={gIdx}
-                className={`p-4 rounded-xl border flex flex-col gap-3.5 ${isDark ? 'bg-secondary-950/40 border-secondary-800/60' : 'bg-secondary-50/60 border-secondary-200/80'}`}
+                className={`lg:col-span-2 order-1 lg:order-2 rounded-xl border p-3 flex flex-col gap-2 max-h-[62vh] overflow-y-auto ${isDark ? 'bg-secondary-950/40 border-secondary-800/60' : 'bg-secondary-50/60 border-secondary-200/80'}`}
               >
-                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary-500 border-b pb-2 dark:border-secondary-800 border-secondary-200/60">
-                  <Icon className="w-4 h-4 shrink-0" />
-                  <span>{group.title}</span>
-                </div>
-                <div className="flex flex-col gap-3">
-                  {group.shortcuts.map((sc, sIdx) => (
-                    <div key={sIdx} className="flex items-start justify-between gap-3 text-xs">
-                      <span className={`text-xs font-medium leading-normal flex-1 ${isDark ? 'text-secondary-300' : 'text-secondary-700'}`}>
+                {allShortcuts.map((sc, idx) => {
+                  const isSelected = selectedShortcut === sc.key;
+                  return (
+                    <button
+                      key={`${sc.key}-${idx}`}
+                      type="button"
+                      onClick={() => setSelectedShortcut(isSelected ? null : sc.key)}
+                      className={cn(
+                        'w-full text-left px-3 py-2 rounded-lg border transition-colors cursor-pointer flex items-center justify-between gap-3',
+                        isSelected
+                          ? isDark
+                            ? 'bg-primary-900/50 border-primary-700/60'
+                            : 'bg-primary-50 border-primary-300'
+                          : isDark
+                            ? 'bg-secondary-900/40 border-secondary-800 hover:border-primary-700/60'
+                            : 'bg-white border-secondary-200 hover:border-primary-300'
+                      )}
+                    >
+                      <span className={cn('text-xs font-medium leading-normal flex-1', isDark ? 'text-secondary-300' : 'text-secondary-700')}>
                         {sc.label}
                       </span>
-                      <ShortcutBadge shortcut={sc.key} variant="primary" className="shrink-0 text-[10px] mt-0.5 whitespace-nowrap" />
-                    </div>
-                  ))}
-                </div>
+                      <ShortcutBadge shortcut={sc.key} variant="primary" className="shrink-0 text-[10px] whitespace-nowrap" />
+                    </button>
+                  );
+                })}
               </div>
-            );
-          })}
-        </div>
+            </div>
+          </TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );

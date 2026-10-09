@@ -2,25 +2,25 @@
 /* Dark mode color variables and canvas background */
 
 .dark {
-  --background: #09090b;
-  --foreground: #fafafa;
-  --card: #09090b;
+  --background: #0d1420;
+  --foreground: #edf2f7;
+  --card: #111c2b;
   --card-foreground: #fafafa;
-  --popover: #09090b;
-  --popover-foreground: #fafafa;
-  --primary: #fafafa;
-  --primary-foreground: #18181b;
-  --secondary: #27272a;
-  --secondary-foreground: #fafafa;
-  --muted: #27272a;
-  --muted-foreground: #a1a1aa;
-  --accent: #27272a;
-  --accent-foreground: #fafafa;
+  --popover: #111c2b;
+  --popover-foreground: #edf2f7;
+  --primary: #60a5fa;
+  --primary-foreground: #08111f;
+  --secondary: #1d2a3b;
+  --secondary-foreground: #edf2f7;
+  --muted: #182538;
+  --muted-foreground: #a9b8ca;
+  --accent: #153b48;
+  --accent-foreground: #8be3e0;
   --destructive: #7f1d1d;
   --destructive-foreground: #fafafa;
-  --border: #27272a;
-  --input: #27272a;
-  --ring: #d4d4d8;
+  --border: #314158;
+  --input: #3b4c65;
+  --ring: #60a5fa;
   --chart-1: #3b82f6;
   --chart-2: #10b981;
   --chart-3: #f59e0b;
@@ -32,9 +32,9 @@
   --note-green: 120 60% 60%;
   
   /* Canvas background gradient stops (dark mode) */
-  --canvas-bg-0: #1d2a4a;
-  --canvas-bg-1: #17223d;
-  --canvas-bg-2: #121a31;
-  --canvas-bg-3: #0e1427;
-  --canvas-bg-4: #080c1a;
+  --canvas-bg-0: #1a2a3b;
+  --canvas-bg-1: #162436;
+  --canvas-bg-2: #122031;
+  --canvas-bg-3: #0e1a2a;
+  --canvas-bg-4: #0a1422;
 }

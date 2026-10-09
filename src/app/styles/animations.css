@@ -477,6 +477,39 @@
   contain: layout style;
 }
 
+/* Interaction frames must stay deterministic: transitions, filters and
+   decorative animations competing with a pointer gesture create judder on
+   integrated GPUs. The visual state returns automatically after the gesture. */
+.topology-interacting,
+.topology-interacting * {
+  transition: none !important;
+}
+
+.topology-interacting .topology-device-draggable,
+.topology-interacting [class*="drop-shadow"],
+.topology-interacting [style*="filter"] {
+  filter: none !important;
+  box-shadow: none !important;
+}
+
+.topology-interacting .iot-sound-pulse,
+.topology-interacting .iot-motion-ping,
+.topology-interacting .iot-motion-ping-delayed,
+.topology-interacting .animate-cable-source,
+.topology-interacting .animate-cable-end,
+.topology-interacting .animate-ping-trail,
+.topology-interacting .animate-ping-glow,
+.topology-interacting .animate-ping-glow-low,
+.topology-interacting .ping-envelope {
+  animation-play-state: paused !important;
+}
+
+/* Avoid expensive hit-test and paint work for hidden SVG decoration while a
+   gesture is in progress. Interactive handles retain their own events. */
+.topology-interacting [data-decorative="true"] {
+  pointer-events: none !important;
+}
+
 /* The ambient mesh backdrop in the page shell animates a very large, heavily
    blurred surface. On integrated graphics that single element can consume a
    measurable share of the frame budget, so it is skipped whenever the OS asks

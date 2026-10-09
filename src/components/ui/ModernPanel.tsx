@@ -209,8 +209,12 @@ export function ModernPanel({
     const handleDragStart = (e: React.MouseEvent) => {
         if (!isOverlay || isMobile) return;
         const target = e.target as HTMLElement;
+        const isInteractive = target.closest('button, input, select, textarea, a, [role="button"], .no-drag');
+        if (isInteractive) return;
         const isHeader = target.closest('[data-drag-handle]') || target.closest('[data-drag-header]');
-        if (!isHeader) return;
+        // Alt turns the whole panel into a drag surface, which is useful when
+        // the title bar is narrow or temporarily covered by panel content.
+        if (!isHeader && !e.altKey) return;
 
         e.preventDefault();
         setIsDragging(true);

@@ -121,8 +121,8 @@ export function AppHeader({
             className={cn(
               "absolute inset-0 transition-opacity duration-500",
               isDark
-                ? "bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary-500/10 via-secondary-900/60 to-secondary-950/90"
-                : "bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary-400/10 via-white/70 to-secondary-50/90"
+                ? "bg-secondary-950/90"
+                : "bg-white/95"
             )}
           />
           <div

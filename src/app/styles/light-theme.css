@@ -2,25 +2,25 @@
 /* Light mode color variables and canvas background */
 
 :root {
-  --background: #ffffff;
-  --foreground: #09090b;
+  --background: #f8fafc;
+  --foreground: #172033;
   --card: #ffffff;
   --card-foreground: #09090b;
   --popover: #ffffff;
   --popover-foreground: #09090b;
-  --primary: #18181b;
+  --primary: #1d4ed8;
   --primary-foreground: #fafafa;
-  --secondary: #f4f4f5;
-  --secondary-foreground: #18181b;
-  --muted: #f4f4f5;
-  --muted-foreground: #71717a;
-  --accent: #f4f4f5;
-  --accent-foreground: #18181b;
+  --secondary: #e8eef7;
+  --secondary-foreground: #24324a;
+  --muted: #eef2f7;
+  --muted-foreground: #526176;
+  --accent: #e6f4f4;
+  --accent-foreground: #155e75;
   --destructive: #ef4444;
   --destructive-foreground: #fafafa;
-  --border: #e4e4e7;
-  --input: #e4e4e7;
-  --ring: #3b82f6;
+  --border: #cbd5e1;
+  --input: #b9c6d8;
+  --ring: #2563eb;
   --chart-1: #f97316;
   --chart-2: #06b6d4;
   --chart-3: #18181b;
@@ -33,9 +33,9 @@
   --radius: 0.5rem;
   
   /* Canvas background gradient stops (light mode) */
-  --canvas-bg-0: #f7f9ff;
-  --canvas-bg-1: #eef3fe;
-  --canvas-bg-2: #e3ebfa;
-  --canvas-bg-3: #d7e3f7;
-  --canvas-bg-4: #ccd9f3;
+  --canvas-bg-0: #f5f7fa;
+  --canvas-bg-1: #edf2f7;
+  --canvas-bg-2: #e3eaf2;
+  --canvas-bg-3: #d8e1eb;
+  --canvas-bg-4: #cbd7e4;
 }

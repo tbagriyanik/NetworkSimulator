@@ -13,6 +13,25 @@
   /* Unified hover surface for toolbar/header icon buttons */
   .ui-hover-surface {
     @apply transition-colors duration-150 hover:bg-secondary-100 dark:hover:bg-secondary-800;
+    border-radius: 0.5rem;
+  }
+
+  /* Shared modern surface language for panels and tool groups. */
+  .ui-surface {
+    background: color-mix(in srgb, var(--card) 96%, var(--primary) 4%);
+    border: 1px solid color-mix(in srgb, var(--border) 88%, var(--primary) 12%);
+    box-shadow: 0 8px 24px rgb(15 23 42 / 0.06);
+  }
+
+  .dark .ui-surface {
+    box-shadow: 0 10px 28px rgb(0 0 0 / 0.2);
+  }
+
+  /* Clearer interaction feedback without the glossy button effect. */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]) {
+    transition: background-color 150ms ease, border-color 150ms ease,
+      color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
   }
 
   /* Safe-area padding utilities for notch/home-bar devices */
@@ -47,16 +66,14 @@
     background-color: color-mix(in srgb, var(--background) 92%, transparent);
   }
 
-  /* Standard window border: 2px solid green (flat) applied to every
-     draggable window surface and liquid-glass panel/dialog. The top app
-     header is excluded (no frame). */
+  /* Consistent, restrained frame for draggable windows and dialogs. */
   [data-modal-content="true"],
   .liquid-glass:not(header):not(.history-panel),
   .liquid-glass-light:not(header):not(.history-panel):not(.tooltip-framed),
   .liquid-glass-strong:not(header):not(.history-panel) {
     border-style: solid !important;
-    border-width: 2px !important;
-    border-color: var(--color-success-500, #22c55e);
+    border-width: 1px !important;
+    border-color: color-mix(in srgb, var(--border) 78%, var(--primary) 22%);
   }
 
   /* "İşlem Geçmişi" (history) bar: no green frame, just a thin theme border. */
@@ -70,14 +87,15 @@
     border-width: 1px !important;
   }
 
-  /* Selected window: bright green border + glow shadow set in the component.
-     Background windows: pale green so the active one stays obvious. */
+  /* Selected window: use the primary accent as a calm, high-contrast cue. */
   [data-modal-content="true"][data-window-active="true"] {
-    border-color: var(--color-success-500, #22c55e) !important;
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 18%, transparent),
+      0 12px 30px rgb(15 23 42 / 0.12);
   }
 
   [data-modal-content="true"][data-window-active="false"] {
-    border-color: color-mix(in srgb, var(--color-success-500, #22c55e) 38%, var(--background)) !important;
+    border-color: color-mix(in srgb, var(--border) 72%, var(--background)) !important;
   }
 
   /* WebKit & Gecko cross-platform scrollbar compatibility for Notes */
