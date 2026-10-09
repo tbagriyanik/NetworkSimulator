@@ -78,6 +78,14 @@ interface TerminalProps {
 
 export type { TerminalProps };
 
+export function splitAutoTypeCommands(command: string): string[] {
+  if (!command) return [];
+  return command
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+}
+
 export function Terminal({
   deviceId,
   deviceName,
@@ -261,18 +269,27 @@ export function Terminal({
       const { deviceId: eventDeviceId, command } = (e as CustomEvent).detail;
       if (eventDeviceId !== deviceId) return;
 
+      const commands = splitAutoTypeCommands(command);
+      if (commands.length > 1) {
+        setInput('');
+        queueCommands(commands);
+        void processCommandQueue();
+        return;
+      }
+
+      const payload = commands[0] ?? '';
       let i = 0;
       setInput('');
       const typeInterval = setInterval(() => {
-        if (i < command.length) {
-          const char = command.charAt(i);
+        if (i < payload.length) {
+          const char = payload.charAt(i);
           setInput(prev => prev + char);
           i++;
         } else {
           clearInterval(typeInterval);
           setTimeout(() => {
             if (handleSubmitRef.current) {
-              handleSubmitRef.current(command);
+              handleSubmitRef.current(payload);
             }
           }, 300);
         }
@@ -280,7 +297,7 @@ export function Terminal({
     };
     window.addEventListener('terminal-auto-type', handleAutoType);
     return () => window.removeEventListener('terminal-auto-type', handleAutoType);
-  }, [deviceId]);
+  }, [deviceId, processCommandQueue, queueCommands]);
 
   const handleSubmit = async (cmdToExecute?: string) => {
     if (state.awaitingConfigSource) {
@@ -674,7 +691,7 @@ export function Terminal({
           onMouseUp={() => {
             const selectedText = window.getSelection()?.toString();
             if (selectedText && selectedText.trim().length > 0) {
-              navigator.clipboard?.writeText(selectedText)?.catch?.(() => {});
+              navigator.clipboard?.writeText(selectedText)?.catch?.(() => { });
             }
           }}
           onWheel={(event) => {

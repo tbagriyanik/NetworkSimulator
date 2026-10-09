@@ -116,7 +116,9 @@ export function useTerminalCommandQueue({
 
         // Wait until the command lifecycle is fully settled before next command.
         // This prevents pasted commands from overlapping.
-        await new Promise((resolve) => setTimeout(resolve, 20));
+        // Give the device state/prompt transition a beat before dispatching
+        // the next pasted command (notably `conf t` -> `vlan <id>`).
+        await new Promise((resolve) => setTimeout(resolve, 140));
         let guard = 0;
         while (isLoadingRef.current && guard < 600) {
           await new Promise((resolve) => setTimeout(resolve, 25));

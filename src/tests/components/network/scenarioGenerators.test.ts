@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { generateTopology } from '@/components/network/topology/scenarioGenerators';
 import { SCENARIOS } from '@/components/network/topology/topologyScenarios';
+import { getSwitchCliCommands } from '@/app/topologyStepByStepSimulation';
 
 describe('topology generator scenarios', () => {
   it('generates a valid device/state/port graph for every scenario', () => {
@@ -22,5 +23,20 @@ describe('topology generator scenarios', () => {
         expect(target.ports.some(p => p.id === connection.targetPort), `${scenario.id}: target port`).toBe(true);
       }
     }
+  });
+
+  it('emits ACL CLI entries without leading spaces for named ACLs', () => {
+    const state = {
+      accessLists: {
+        MYACL: ['10 permit ip 10.0.0.0 0.0.0.255', '20 deny ip any any'],
+      },
+    } as any;
+
+    const commands = getSwitchCliCommands({ id: 'sw1', type: 'switchL2' } as any, state);
+
+    expect(commands).toContain('ip access-list extended MYACL');
+    expect(commands).toContain('permit ip 10.0.0.0 0.0.0.255');
+    expect(commands).toContain('deny ip any any');
+    expect(commands.some(c => c.startsWith(' '))).toBe(false);
   });
 });

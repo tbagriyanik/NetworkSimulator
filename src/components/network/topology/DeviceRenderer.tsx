@@ -207,6 +207,21 @@ export const DeviceRenderer = React.memo(function DeviceRenderer({
         isPoweredOff={isPoweredOff}
       />
 
+      {/* Keep the whole device surface clickable, including transparent gaps
+          around non-rectangular SVG bodies (router, firewall and cloud). This
+          hit target stays behind the visual layers, so ports and badges keep
+          their own pointer handlers while clicks on the icon/body resolve to
+          the device group reliably. */}
+      <rect
+        x="0"
+        y="0"
+        width={deviceWidth}
+        height={deviceHeight}
+        fill="transparent"
+        pointerEvents="all"
+        data-device-hit-target="true"
+      />
+
       <DeviceBody device={device} deviceWidth={deviceWidth} deviceHeight={deviceHeight} isDark={isDark} />
 
       <DeviceWifiStatus

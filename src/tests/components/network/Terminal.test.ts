@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { splitAutoTypeCommands } from '@/components/network/Terminal';
 
 describe('Terminal Component', () => {
   it('should display CLI prompt', () => {
@@ -30,6 +31,11 @@ describe('Terminal Component', () => {
     const history = ['enable', 'configure terminal', 'hostname SW1'];
     const lastCmd = history[history.length - 1];
     expect(lastCmd).toBe('hostname SW1');
+  });
+
+  it('should split multi-line auto-typed CLI input into individual commands', () => {
+    const commands = splitAutoTypeCommands('enable\nconfigure terminal\nvlan 10');
+    expect(commands).toEqual(['enable', 'configure terminal', 'vlan 10']);
   });
 
   it('should clear terminal on cls/clear command', () => {

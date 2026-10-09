@@ -23,8 +23,6 @@ interface KeyboardRow {
 export interface KeyboardLayoutLabels {
   highlightHint: string;
   selected: string;
-  /** Tooltip shown for keys that are not part of any shortcut. */
-  emptyKey: string;
   /** Legend labels for the modifier colour-coding. */
   modifierLegend?: {
     ctrl: string;
@@ -180,14 +178,14 @@ export function KeyboardLayout({ highlightKeys = [], keyDescriptions = {}, label
 
   const MODIFIER_STYLES: Record<string, string> = {
     ctrl: isDark
-      ? 'bg-primary-500 text-white border-primary-400 shadow-lg shadow-primary-500/30 scale-[1.04]'
-      : 'bg-primary-500 text-white border-primary-400 shadow-md shadow-primary-500/30 scale-[1.04]',
+      ? 'bg-primary-400/25 text-primary-100 border-primary-400/70 shadow-sm shadow-primary-500/20 scale-[1.04]'
+      : 'bg-primary-100 text-primary-700 border-primary-300 shadow-sm shadow-primary-500/20 scale-[1.04]',
     shift: isDark
-      ? 'bg-accent-500 text-white border-accent-400 shadow-lg shadow-accent-500/30 scale-[1.04]'
-      : 'bg-accent-500 text-white border-accent-400 shadow-md shadow-accent-500/30 scale-[1.04]',
+      ? 'bg-accent-400/25 text-accent-100 border-accent-400/70 shadow-sm shadow-accent-500/20 scale-[1.04]'
+      : 'bg-accent-100 text-accent-700 border-accent-300 shadow-sm shadow-accent-500/20 scale-[1.04]',
     alt: isDark
-      ? 'bg-success-500 text-white border-success-400 shadow-lg shadow-success-500/30 scale-[1.04]'
-      : 'bg-success-500 text-white border-success-400 shadow-md shadow-success-500/30 scale-[1.04]',
+      ? 'bg-success-400/25 text-success-100 border-success-400/70 shadow-sm shadow-success-500/20 scale-[1.04]'
+      : 'bg-success-100 text-success-700 border-success-300 shadow-sm shadow-success-500/20 scale-[1.04]',
   };
 
   /** Returns the active (emphasised) class for a highlighted key. */
@@ -213,15 +211,15 @@ export function KeyboardLayout({ highlightKeys = [], keyDescriptions = {}, label
           {modifierLegend && (
             <div className="flex flex-wrap items-center gap-3">
               <span className="inline-flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-sm bg-primary-500" aria-hidden />
+                <span className="w-2.5 h-2.5 rounded-sm border border-primary-300 bg-primary-100 dark:border-primary-400/70 dark:bg-primary-400/25" aria-hidden />
                 <span className={isDark ? 'text-secondary-300' : 'text-secondary-600'}>{modifierLegend.ctrl}</span>
               </span>
               <span className="inline-flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-sm bg-accent-500" aria-hidden />
+                <span className="w-2.5 h-2.5 rounded-sm border border-accent-300 bg-accent-100 dark:border-accent-400/70 dark:bg-accent-400/25" aria-hidden />
                 <span className={isDark ? 'text-secondary-300' : 'text-secondary-600'}>{modifierLegend.shift}</span>
               </span>
               <span className="inline-flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-sm bg-success-500" aria-hidden />
+                <span className="w-2.5 h-2.5 rounded-sm border border-success-300 bg-success-100 dark:border-success-400/70 dark:bg-success-400/25" aria-hidden />
                 <span className={isDark ? 'text-secondary-300' : 'text-secondary-600'}>{modifierLegend.alt}</span>
               </span>
             </div>
@@ -257,26 +255,41 @@ export function KeyboardLayout({ highlightKeys = [], keyDescriptions = {}, label
               {row.keys.map((key, keyIdx) => {
                 const active = isHighlighted(key);
                 const description = getKeyDescription(key);
+                const keyCapClass = cn(
+                  'h-8 sm:h-10 flex items-center justify-center rounded-md border text-[10px] sm:text-xs font-semibold select-none',
+                  'transition-all duration-200',
+                  active
+                    ? getActiveClass(key)
+                    : isDark
+                      ? 'bg-secondary-800 text-secondary-300 border-secondary-700'
+                      : 'bg-white text-secondary-600 border-secondary-200'
+                );
+
+                // Only render a tooltip when the key actually has a shortcut.
+                if (!description) {
+                  return (
+                    <div
+                      key={`${key.id}-${keyIdx}`}
+                      style={{ flexGrow: key.width ?? 1, flexBasis: 0 }}
+                      className={keyCapClass}
+                    >
+                      {key.label}
+                    </div>
+                  );
+                }
+
                 return (
                   <Tooltip key={`${key.id}-${keyIdx}`}>
                     <TooltipTrigger asChild>
                       <div
                         style={{ flexGrow: key.width ?? 1, flexBasis: 0 }}
-                        className={cn(
-                          'h-8 sm:h-10 flex items-center justify-center rounded-md border text-[10px] sm:text-xs font-semibold select-none cursor-help',
-                          'transition-all duration-200',
-                          active
-                            ? getActiveClass(key)
-                            : isDark
-                              ? 'bg-secondary-800 text-secondary-300 border-secondary-700'
-                              : 'bg-white text-secondary-600 border-secondary-200'
-                        )}
+                        className={cn(keyCapClass, 'cursor-help')}
                       >
                         {key.label}
                       </div>
                     </TooltipTrigger>
                     <TooltipContent side="top" className="max-w-[240px] whitespace-normal text-center leading-snug">
-                      {description ?? labels.emptyKey}
+                      {description}
                     </TooltipContent>
                   </Tooltip>
                 );

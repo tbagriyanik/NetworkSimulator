@@ -163,13 +163,15 @@ export function appendAclCommands(devCmds: string[], devState?: SwitchState): vo
       devCmds.push(`ip access-list extended ${aclId}`);
       rules.forEach((rule) => {
         const seqMatch = rule.match(/^(\d+)\s+(.+)$/);
-        devCmds.push(seqMatch ? ` ${seqMatch[2]}` : ` ${rule}`);
+        const cliRule = (seqMatch ? seqMatch[2] : rule).trim();
+        devCmds.push(cliRule);
       });
       devCmds.push('exit');
     } else {
       rules.forEach((rule) => {
         const seqMatch = rule.match(/^(\d+)\s+(.+)$/);
-        devCmds.push(seqMatch ? `access-list ${aclId} ${seqMatch[2]}` : `access-list ${aclId} ${rule}`);
+        const cliRule = (seqMatch ? seqMatch[2] : rule).trim();
+        devCmds.push(`access-list ${aclId} ${cliRule}`);
       });
     }
   });
@@ -971,6 +973,7 @@ export function runStepByStepSimulation({
   switchDevices.forEach((switchDev) => {
     const devState = deviceStates?.get(switchDev.id);
     const switchCmds = getSwitchCliCommands(switchDev, devState);
+    if (switchCmds.length === 0) return;
 
     addStep(() => {
       currentStep++;
@@ -1070,6 +1073,7 @@ export function runStepByStepSimulation({
   routerDevices.forEach((routerDev) => {
     const devState = deviceStates?.get(routerDev.id);
     const routerCmds = getRouterCliCommands(routerDev, devState);
+    if (routerCmds.length === 0) return;
 
     addStep(() => {
       currentStep++;
@@ -1167,6 +1171,7 @@ export function runStepByStepSimulation({
   firewallDevices.forEach((fwDev) => {
     const devState = deviceStates?.get(fwDev.id);
     const fwCmds = getFirewallCliCommands(devState);
+    if (fwCmds.length === 0) return;
 
     addStep(() => {
       currentStep++;
@@ -1278,11 +1283,11 @@ export function runStepByStepSimulation({
       const updated = simulatedDevices.map((d) =>
         d.id === wlcDev.id
           ? {
-              ...d,
-              name: wlcDev.name,
-              ip: wlcIp,
-              wifi: d.wifi ? { ...d.wifi, enabled: true, ssid: wlanSsid } : { enabled: true, ssid: wlanSsid, mode: 'ap' as const },
-            }
+            ...d,
+            name: wlcDev.name,
+            ip: wlcIp,
+            wifi: d.wifi ? { ...d.wifi, enabled: true, ssid: wlanSsid } : { enabled: true, ssid: wlanSsid, mode: 'ap' as const },
+          }
           : d
       );
       simulatedDevices = updated;
@@ -1477,10 +1482,10 @@ export function runStepByStepSimulation({
       const updated = simulatedDevices.map((d) =>
         d.id === wifiDev.id
           ? {
-              ...d,
-              name: wifiDev.name,
-              wifi: d.wifi ? { ...d.wifi, enabled: true, ssid, password: pass, mode: d.wifi.mode || 'client' } : { enabled: true, ssid, password: pass, mode: 'client' as const },
-            }
+            ...d,
+            name: wifiDev.name,
+            wifi: d.wifi ? { ...d.wifi, enabled: true, ssid, password: pass, mode: d.wifi.mode || 'client' } : { enabled: true, ssid, password: pass, mode: 'client' as const },
+          }
           : d
       );
       simulatedDevices = updated;

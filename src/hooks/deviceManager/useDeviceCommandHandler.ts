@@ -67,8 +67,14 @@ export function useDeviceCommandHandler({
     }
 
     if (command.includes('\n')) {
-      for (const line of command.split('\n').filter(l => l.trim())) {
+      const lines = command.split('\n').filter(l => l.trim());
+      for (const [index, line] of lines.entries()) {
         await execute(deviceId, line.trim(), topologyDevices, setActiveDeviceId, setActiveDeviceType, topologyConnections, skipConfirm);
+        // The CLI state is updated synchronously in most cases, but React
+        // output/state subscribers and prompt changes settle on the next
+        // turn. A short gap keeps pasted/batched commands in order, e.g.
+        // `configure terminal` must finish before `vlan 10` is evaluated.
+        if (index < lines.length - 1) await sleep(140);
       }
       return { success: true };
     }

@@ -272,7 +272,6 @@ export function ShortcutsModal({
                       ? 'Kısayol seçip tuşların klavyede vurgulanışını görün'
                       : 'Pick a shortcut to see its keys highlighted on the keyboard',
                     selected: isTr ? 'Seçili kısayol' : 'Selected shortcut',
-                    emptyKey: isTr ? 'Bu tuşa atanmış bir kısayol yok' : 'No shortcut assigned to this key',
                     modifierLegend: {
                       ctrl: isTr ? 'Ctrl / ⌘ kombinasyonu' : 'Ctrl / ⌘ combination',
                       shift: isTr ? 'Shift kombinasyonu' : 'Shift combination',
