@@ -68,7 +68,7 @@
     "unrs-resolver"
   ],
   "allowScripts": {
-    "core-js@3.50.0": true,
-    "unrs-resolver@1.12.2": true
+    "unrs-resolver@1.12.2": true,
+    "core-js@3.51.0": true
   }
 }
