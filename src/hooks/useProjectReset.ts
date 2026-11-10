@@ -1,5 +1,4 @@
 import { useCallback } from 'react';
-import { generateRandomLinkLocalIpv4 } from '@/lib/network/linkLocal';
 import { useAppStore } from '@/lib/store/appStore';
 import { useMultiWindowStore } from '@/hooks/useMultiWindowStore';
 import { clearProjectLocalStorage } from '@/lib/storage/clearProjectStorage';
@@ -82,76 +81,12 @@ export function useProjectReset({
         pcOutputs: {}
       }
     }));
-    const usedIps = new Set<string>();
-    const pc1LinkLocal = generateRandomLinkLocalIpv4(usedIps);
-    usedIps.add(pc1LinkLocal);
-    const pc2LinkLocal = generateRandomLinkLocalIpv4(usedIps);
-    usedIps.add(pc2LinkLocal);
-
     // Clear all states and set defaults
     setDeviceStates(new Map());
     setDeviceOutputs(new Map());
     setPcOutputs(new Map());
     setPcHistories(new Map());
-    setTopologyDevices([
-      {
-        id: 'pc-1',
-        type: 'pc',
-        name: 'PC-1',
-        x: 50,
-        y: 50,
-        ip: pc1LinkLocal,
-        subnet: '255.255.0.0',
-        gateway: '0.0.0.0',
-        dns: '0.0.0.0',
-        macAddress: '00-e0-f7-01-a1-b1',
-        status: 'online',
-        services: {
-          http: { enabled: true, mode: 'simple', content: '<h1>Welcome to PC-1 Web Server</h1>' }
-        },
-        ports: [
-          { id: 'eth0', label: 'Eth0', status: 'disconnected' as const },
-          { id: 'com1', label: 'COM1', status: 'disconnected' as const }
-        ]
-      },
-      {
-        id: 'pc-2',
-        type: 'pc',
-        name: 'PC-2',
-        x: 50,
-        y: 150,
-        ip: pc2LinkLocal,
-        subnet: '255.255.0.0',
-        gateway: '0.0.0.0',
-        dns: '0.0.0.0',
-        macAddress: '00-e0-f7-01-a1-b2',
-        status: 'online',
-        services: {
-          http: { enabled: true, mode: 'simple', content: '<h1>Welcome to PC-2 Web Server</h1>' }
-        },
-        ports: [
-          { id: 'eth0', label: 'Eth0', status: 'disconnected' as const },
-          { id: 'com1', label: 'COM1', status: 'disconnected' as const }
-        ]
-      },
-      {
-        id: 'switch-1',
-        type: 'switchL2',
-        name: 'SWITCH-1',
-        x: 200,
-        y: 50,
-        macAddress: '0011.2233.4401',
-        ip: '',
-        status: 'online',
-        switchModel: 'NS-L2-24TT-L',
-        ports: [
-          ...Array.from({ length: 24 }, (_, i) => ({ id: `fa0/${i + 1}`, label: `Fa0/${i + 1}`, status: 'disconnected' as const })),
-          { id: 'gi0/1', label: 'Gi0/1', status: 'disconnected' as const },
-          { id: 'gi0/2', label: 'Gi0/2', status: 'disconnected' as const },
-          { id: 'console', label: 'Console', status: 'disconnected' as const }
-        ]
-      }
-    ]);
+    setTopologyDevices([]);
     setTopologyConnections([]);
     setTopologyNotes([]);
 
@@ -191,45 +126,7 @@ export function useProjectReset({
 
     // Reset history with the new initial state
     resetHistory({
-      topologyDevices: [
-        {
-          id: 'pc-1',
-          type: 'pc',
-          name: 'PC-1',
-          x: 50,
-          y: 50,
-          ip: pc1LinkLocal,
-          subnet: '255.255.0.0',
-          gateway: '0.0.0.0',
-          dns: '0.0.0.0',
-          macAddress: '00-e0-f7-01-a1-b1',
-          status: 'online',
-          services: {
-            http: { enabled: true, mode: 'simple', content: '<h1>Welcome to PC-1 Web Server</h1>' }
-          },
-          ports: [
-            { id: 'eth0', label: 'Eth0', status: 'disconnected' as const },
-            { id: 'com1', label: 'COM1', status: 'disconnected' as const }
-          ]
-        },
-        {
-          id: 'switch-1',
-          type: 'switchL2',
-          name: 'SWITCH-1',
-          x: 200,
-          y: 50,
-          macAddress: '0011.2233.4401',
-          ip: '',
-          status: 'online',
-          switchModel: 'NS-L2-24TT-L',
-          ports: [
-            { id: 'console', label: 'Console', status: 'disconnected' as const },
-            ...Array.from({ length: 24 }, (_, i) => ({ id: `fa0/${i + 1}`, label: `Fa0/${i + 1}`, status: 'disconnected' as const })),
-            { id: 'gi0/1', label: 'Gi0/1', status: 'disconnected' as const },
-            { id: 'gi0/2', label: 'Gi0/2', status: 'disconnected' as const }
-          ]
-        }
-      ],
+      topologyDevices: [],
       topologyConnections: [],
       topologyNotes: [],
       deviceStates: new Map(),

@@ -60,9 +60,6 @@ export interface NetworkTopologyProps {
   onDeviceDoubleClick?: (device: DeviceType, deviceId: string) => void;
   onTopologyChange?: (devices: CanvasDevice[], connections: CanvasConnection[], notes: CanvasNote[]) => void;
   onDeviceDelete?: (deviceId: string) => void;
-  initialDevices?: CanvasDevice[];
-  initialConnections?: CanvasConnection[];
-  initialNotes?: CanvasNote[];
   isActive?: boolean;
   activeDeviceId?: string | null;
   deviceStates?: Map<string, SwitchState>;

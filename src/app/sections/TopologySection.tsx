@@ -191,9 +191,6 @@ export function TopologySection({
               onDeviceDoubleClick={handleDeviceDoubleClick}
               onDeviceDelete={handleDeviceDelete}
               onDeviceRename={handleDeviceRename}
-              initialDevices={topologyDevices || undefined}
-              initialConnections={topologyConnections || undefined}
-              initialNotes={topologyNotes || undefined}
               isActive={activeTab === 'topology'}
               activeDeviceId={activeDeviceId}
               deviceStates={deviceStates}
