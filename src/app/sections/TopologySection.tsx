@@ -59,7 +59,6 @@ export type TopologySectionProps = Pick<
   | 'handleDeviceDelete'
   | 'handleDeviceRename'
   | 'topologyConnections'
-  | 'topologyNotes'
   | 'setDeviceStates'
   | 'zoom'
   | 'pan'
@@ -120,7 +119,6 @@ export function TopologySection({
   handleDeviceDelete,
   handleDeviceRename,
   topologyConnections,
-  topologyNotes,
   setDeviceStates,
   zoom,
   pan,

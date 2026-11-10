@@ -263,7 +263,6 @@ export default function Home({ initialProjectId }: { initialProjectId?: string }
               handleDeviceDelete={page.handleDeviceDelete}
               handleDeviceRename={page.handleDeviceRename}
               topologyConnections={page.topologyConnections}
-              topologyNotes={page.topologyNotes}
               setDeviceStates={page.setDeviceStates}
               zoom={page.zoom}
               pan={page.pan}
