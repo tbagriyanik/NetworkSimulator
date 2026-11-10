@@ -68,6 +68,34 @@ if (badgeRegex.test(readme)) {
   readme = readme.replace(badgeRegex, `$1~${Math.round(total / 1000)}k`);
 }
 
+// 2b. Match dependency badges from package.json / installed versions
+const deps = { ...pkg.dependencies, ...pkg.devDependencies };
+
+function getCleanVersion(spec) {
+  if (!spec) return null;
+  return spec.replace(/^[\^~>=<]+/, '');
+}
+
+const nextVersion = getCleanVersion(deps['next']);
+if (nextVersion) {
+  readme = readme.replace(/(img\.shields\.io\/badge\/Next\.js-)[^-\s")]+(-black)/, `$1${nextVersion}$2`);
+}
+
+const reactVersion = getCleanVersion(deps['react']);
+if (reactVersion) {
+  readme = readme.replace(/(img\.shields\.io\/badge\/React-)[^-\s")]+(-61DAFB)/, `$1${reactVersion}$2`);
+}
+
+const tsVersion = getCleanVersion(deps['typescript']);
+if (tsVersion) {
+  readme = readme.replace(/(img\.shields\.io\/badge\/TypeScript-)[^-\s")]+(-3178C6)/, `$1${tsVersion}$2`);
+}
+
+const tailwindVersion = getCleanVersion(deps['tailwindcss']);
+if (tailwindVersion) {
+  readme = readme.replace(/(img\.shields\.io\/badge\/Tailwind_CSS-)[^-\s")]+(-06B6D4)/, `$1${tailwindVersion}$2`);
+}
+
 // 3. Match Version in Markdown Table: | Version / Sürüm | 6.8.0 |
 const versionTableRegex = /(\|\s*Version[^|]*\|\s*)[^|\r\n]+(?=\|)/i;
 if (versionTableRegex.test(readme)) {
